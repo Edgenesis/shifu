@@ -1,7 +1,7 @@
 # ***shifud*** High-level design
 
 ## Introduction:
-This is a high-level design document for ***shifud*** component of the shifu system for edge devices. ***shifud*** is a daemonset that runs on every edgeNode, it discovers devices from a list of devices and spawn relative resouces to kube-apiserver.    
+This is a high-level design document for ***shifud*** component of the ***Shifu*** system for edge devices. ***shifud*** is a daemonset that runs on every ***edgeNode***. It discovers devices from a list of devices sent by ***shifuController*** and spawn relative resouces to kube-apiserver.    
 
 ## Design principles
 [TODO]
@@ -17,7 +17,7 @@ This is a high-level design document for ***shifud*** component of the shifu sys
 #### Software components
 
 ##### 1. ***deviceDiscoverer***
-***deviceDiscoverer*** is a process that continuously scans for device events on ***edgeNode***, including but not limited to network reachability, USB plug in event.
+***deviceDiscoverer*** is a process that continuously scans for device events on ***edgeNode***, including but not limited to network reachability, USB event.
 
 ##### 2. ***deviceVerifier***
 ***deviceVerifier*** is a process that interacts with ***edgeDevice*** and try to populate and verify their metadata to match ***shifuController***'s list
@@ -30,9 +30,9 @@ The overall input and output of ***shifud*** can be summarized in the following 
 [![shifud input and output overview](/img/shifud-input-output.PNG)](/img/shifud-input-output.PNG)    
 The input to ***shifud*** from shifuController should be a list of edge devices in the following format:    
 ```
-#deviceName, connection, type, brand, protocol
-deviceA, /tty/USB1, t_sensor, Xiaomi, USB
-deviceB, 10.0.0.1, IP_camera, Yunmi, IP
+#deviceName, connection, address, type, brand, protocol
+deviceA, USB, /tty/USB1, t_sensor, Xiaomi, MQTT
+deviceB, IP, 10.0.0.1, IP_camera, Yunmi, ONVIF
 ......
 ```
 
@@ -53,6 +53,12 @@ deviceB, 10.0.0.1, IP_camera, Yunmi, IP
     1. For TCP/IP type of edge devices, Ping/TCP connect can be use directly
     2. For udev/USB type of edge devices, ***deviceDiscoverer*** will utilize Linux's [udev](https://man7.org/linux/man-pages/man7/udev.7.html) tool    
 3. Once the device has been discovered, ***deviceVerifier*** will then start matching the device metatdata with device list through its connection protocol.
+    ```
+    sample udevadm output:
+    E: DEVNAME=/dev/video3
+    E: SUBSYSTEM=video4linux
+    E: ID_SERIAL=Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001
+    ```
 4. Once the verification is done, ***deviceShifuGenerator*** will send out the deviceShifu's deployment YAML file to the controller for spawning the actual deviceShifu:
    ```
    apiVersion: v1
@@ -62,9 +68,10 @@ deviceB, 10.0.0.1, IP_camera, Yunmi, IP
        labels:
            connection: USB
            location: /tty/USB1
+           protocol: MQTT
    spec:
        containers:
            -  name: shifu-deviceA
-              image: shifu-tsensor
-
-   ```
+              image: shifu-t-sensor
+    ......
+    ```
