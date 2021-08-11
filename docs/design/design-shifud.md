@@ -27,7 +27,7 @@ This is a high-level design document for ***shifud*** component of the shifu sys
 
 ### ***shifud*** input & output
 The overall input and output of ***shifud*** can be summarized in the following graph:
-[![shifud input and output overview](/img/shifud-input-output.png)](/img/shifud-input-output.png)    
+[![shifud input and output overview](/img/shifud-input-output.png)](/img/shifud-input-output.PNG)    
 The input to ***shifud*** from shifuController should be a list of edge devices in the following format:    
 ```
 #deviceName, connection, type, brand, protocol
@@ -37,7 +37,7 @@ deviceB, 10.0.0.1, IP_camera, Yunmi, IP
 ```
 
 ### Architecture diagrams
-[![shifud design overview](/img/shifud-design-overview.png)](/img//img/shifud-design-overview.png)    
+[![shifud design overview](/img/shifud-design-overview.png)](/img//img/shifud-design-overview.PNG)    
 
 #### ***shifud***'s execution flow:
 1. Upon receiving the list of devices, ***deviceDiscoverer*** starts local scanning using different protocols. The following protocols should be supported:
