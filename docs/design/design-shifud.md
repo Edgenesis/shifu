@@ -48,6 +48,7 @@ deviceB, IP, 10.0.0.1, IP_camera, Yunmi, ONVIF
    MQTT
    MODBUS
    OPC UA
+   PROFINET
    ```
 2. The discovery process depends on the protocol:
     1. For TCP/IP type of edge devices, Ping/TCP connect can be use directly
