@@ -60,16 +60,18 @@ deviceB, IP, 10.0.0.1, IP_camera, Yunmi, ONVIF
     E: ID_SERIAL=Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001
     ```
 4. Once the verification is done, ***deviceShifuGenerator*** will send out the deviceShifu's deployment YAML file to the Kubernetes
-   kind: edgeDevice
-   metadata:
-       name: shifu-deviceA
-       labels:
-           connection: USB
-           location: /tty/USB1
-           protocol: MQTT
-   spec:
-       containers:
-           -  name: shifu-deviceA
-              image: shifu-t-sensor
+    ```
+    apiVersion: v1
+    kind: edgeDevice
+    metadata:
+      name: shifu-deviceA
+      labels:
+        connection: USB
+        location: /tty/USB1
+        protocol: MQTT
+    spec:
+      containers:
+        - name: shifu-deviceA
+          image: shifu-t-sensor
     ......
     ```
