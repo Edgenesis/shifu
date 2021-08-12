@@ -27,7 +27,7 @@ This is a high-level design document for ***shifud*** component of the ***Shifu*
 
 ### ***shifud*** input & output
 The overall input and output of ***shifud*** can be summarized in the following graph:
-[![shifud input and output overview](/img/shifud-input-output.PNG)](/img/shifud-input-output.PNG)    
+[![shifud input and output overview](/img/shifud-input-output.svg)](/img/shifud-input-output.svg)    
 The input to ***shifud*** from shifuController should be a list of edge devices in the following format:    
 ```
 #deviceName, connection, address, type, brand, protocol
@@ -37,7 +37,7 @@ deviceB, IP, 10.0.0.1, IP_camera, Yunmi, ONVIF
 ```
 
 ### Architecture diagrams
-[![shifud design overview](/img/shifud-design-overview.PNG)](/img/shifud-design-overview.PNG)    
+[![shifud design overview](/img/shifud-design-overview.svg)](/img/shifud-design-overview.svg)    
 
 #### ***shifud***'s execution flow:
 1. Upon receiving the list of devices, ***deviceDiscoverer*** starts local scanning using different protocols. The following protocols should be supported:
@@ -59,10 +59,8 @@ deviceB, IP, 10.0.0.1, IP_camera, Yunmi, ONVIF
     E: SUBSYSTEM=video4linux
     E: ID_SERIAL=Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001
     ```
-4. Once the verification is done, ***deviceShifuGenerator*** will send out the deviceShifu's deployment YAML file to the controller for spawning the actual deviceShifu:
-   ```
-   apiVersion: v1
-   kind: deviceShifu
+4. Once the verification is done, ***deviceShifuGenerator*** will send out the deviceShifu's deployment YAML file to the Kubernetes
+   kind: edgeDevice
    metadata:
        name: shifu-deviceA
        labels:
