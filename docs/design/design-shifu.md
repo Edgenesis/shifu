@@ -7,6 +7,7 @@
       - [4. Easy to use SDKs](#4-easy-to-use-sdks)
   - [Design goals and non-goals](#design-goals-and-non-goals)
     - [Design goals](#design-goals)
+      - [Simple](#simple)
       - [Highly available](#highly-available)
         - [1. Self healing](#1-self-healing)
         - [2. Stable](#2-stable)
@@ -58,6 +59,11 @@ Shifu will always provide developers with super easy to use SDKs, simple because
 ## Design goals and non-goals
 
 ### Design goals
+
+#### Simple
+
+It is extremely important to have a simple architecture and logic to preserve a high standard of readability and maintainability.
+An easy-to-read and easy-to-change code base will enable developers to improve ***shifu*** or even create their very own versions of ***shifu***.
 
 #### Highly available
 
