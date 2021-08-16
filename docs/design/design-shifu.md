@@ -113,7 +113,7 @@ The current version of Shifu resembles a [Kubernetes Operator](https://kubernete
 
 ##### 2. ***edgeNode***
 
-***edgeNode*** is a [Kubernetes node](https://kubernetes.io/docs/concepts/architecture/nodes/) that can connect to multiple ***edgeDevices***.
+***edgeNode*** is a [Kubernetes node](https://kubernetes.io/docs/concepts/architecture/nodes/) that can connect to multiple ***edgeDevices***. By default, all worker nodes in the Kubernetes cluster are [tainted](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) ***edgeNode***. For example User is able to configure nodes to not be an ***edgeNode***, therefore isolating their application Pods and ***deviceShifu*** Pods.
 
 #### Software components
 
