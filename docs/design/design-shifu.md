@@ -7,6 +7,7 @@
       - [4. Easy to use SDKs](#4-easy-to-use-sdks)
   - [Design goals and non-goals](#design-goals-and-non-goals)
     - [Design goals](#design-goals)
+      - [Simple](#simple)
       - [Highly available](#highly-available)
         - [1. Self healing](#1-self-healing)
         - [2. Stable](#2-stable)
@@ -59,6 +60,11 @@ Shifu will always provide developers with super easy to use SDKs, simple because
 
 ### Design goals
 
+#### Simple
+
+It is extremely important to have a simple architecture and logic to preserve a high standard of readability and maintainability.
+An easy-to-read and easy-to-change code base will enable developers to improve ***shifu*** or even create their very own versions of ***shifu***.
+
 #### Highly available
 
 Being Shifu, robustness is a must. A highly resilient Shifu is very important to operator's mental health. Who wants to deal with crash loops everyday?
@@ -107,7 +113,7 @@ The current version of Shifu resembles a [Kubernetes Operator](https://kubernete
 
 ##### 2. ***edgeNode***
 
-***edgeNode*** is a [Kubernetes node](https://kubernetes.io/docs/concepts/architecture/nodes/) that can connect to multiple ***edgeDevices***.
+***edgeNode*** is a [Kubernetes node](https://kubernetes.io/docs/concepts/architecture/nodes/) that can connect to multiple ***edgeDevices***. By default, all worker nodes in the Kubernetes cluster are [tainted](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) with ***edgeNode***. For example User is able to configure nodes to not be an ***edgeNode***, therefore isolating their application Pods and ***deviceShifu*** Pods.
 
 #### Software components
 
