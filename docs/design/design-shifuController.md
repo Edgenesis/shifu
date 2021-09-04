@@ -14,7 +14,7 @@ Preferably the memory print for ***shifuController*** is under 100MB.
 
 #### highly available
 
-Being the control plane of ***shifu***, ***shifuController*** needs to be highly available. This is achieved by using Kubernetes deployment.
+Being the control plane of ***shifu***, ***shifuController*** needs to be highly available. This is achieved by using [Kubernetes deployment](https://kubernetes.io/docs/concepts/workloads/controllers/deployment/) and [Kubernetes service](https://kubernetes.io/docs/concepts/services-networking/service/).
 
 #### stateless
 
@@ -50,13 +50,17 @@ Whenever ***shifuController*** receives an ***edgeDevice*** connect event, ***sh
       2. Resource availability: The ***deviceShifu*** will be placed on the ***edgeNode*** with highest free memory.
 2. Add: Add the ***edgeDevice*** to ***edgeMap***.
 3. Compose: Compile all computed info and compose the corresponding ***deviceShifu*** deployment object.
-4. Create: Create the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
+4. Create: 
+   1. Create the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
+   2. Expose the newly ***deviceShifu*** as a Kubernetes Service. 
 
 #### 2. delete ***edgeDevice***
 
 Whenever ***shifuController*** receives an ***edgeDevice*** disconnect event, ***shifuController*** will:
 1. Remove: Remove the ***edgeDevice*** from ***edgeMap***.
-2. Delete: Delete the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
+2. Delete: 
+   1. Delete the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
+   2. Delete the ***deviceShifu***'s corresponding Kubernetes service.
 
 ### on ***edgeNode*** events
 
@@ -75,11 +79,143 @@ Whenever ***shifuController*** receives an ***edgeNode*** delete event, ***shifu
 1. Collect: ***shifuController*** will periodically collect resource information on ***edgeNodes***. This information will be used by 
    1. ***edgeMap*** for visualization purposes.
    2. reschedule purposes, see below.
-2. Reschedule: ***shifuController*** will reschedule ***deviceShifu*** on the following events:
+2. Reschedule: ***shifuController*** will reschedule ***deviceShifu*** on following events:
    1. ***shifuController*** finds a better place for a given ***deviceShifu*** according to the scheduling algorithm stated above.
    2. ***edgeNode*** becomes unavailable. Whenever an ***edgeNode*** becomes unavailable, ***shifuController*** will try to reschedule all the ***deviceShifu*** instances on that ***edgeNode*** to other ***edgeNodes*** in a best-effort manner.
 
+### ***deviceShifu*** object
 
-[edgeNode1] --> [camera1] --> [camera2]
-[camera1] --> [edgeNode1]
-[camera2] --> [edgeNode1]
+***deviceShifu*** object is a bundle of a Kubernetes deployment and a Kubernetes service for an ***edgeDevice*** managed by ***shifuController***. Users should **NOT** manage ***deviceShifu*** by themselves.
+
+#### IP camera sample
+
+##### IP camera sample deployment
+Below is a sample ***deviceShifu*** deployment yaml for an IP camera called *testcam*:
+
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testcam-deviceshifu
+  labels:
+    app: testcam
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testcam
+  template:
+    metadata:
+      labels:
+        app: testcam
+    spec:
+      containers:
+      - name: testcam-frontend
+        image: edgenesis/edgedevice-frontend:0.0.1
+        ports:
+        - containerPort: 9376
+        volumeMounts:
+        - name: edgedevice-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: testcam-cm # This config map contains all the device SKU related info
+```
+##### - IP camera sample service
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: testcam-service
+spec:
+  selector:
+    app: testcam
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+```
+
+#### robot sample
+
+##### robot sample deployment
+
+Below is a sample ***deviceShifu*** deployment yaml for a robot called *testrobot*, which needs its own proprietary driver:
+```
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: testrobot-deviceshifu
+  labels:
+    app: testrobot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: testrobot
+  template:
+    metadata:
+      labels:
+        app: testcam
+    spec:
+      containers:
+      - name: testrobot-frontend
+        image: edgenesis/edgedevice-frontend:0.0.1
+        ports:
+        - containerPort: 9376
+        volumeMounts:
+        - name: edgedevice-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+      - name: testrobot-driver
+        image: yourcompany/testrobot-driver:0.0.1
+        ports:
+        - containerPort: 8080 # If your driver listens on port 8080
+        volumeMounts:
+        - name: edgedevice-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: testrobot-cm # This config map contains all the device SKU related info        
+```
+
+##### robot sample service
+```
+apiVersion: v1
+kind: Service
+metadata:
+  name: testrobot-service
+spec:
+  selector:
+    app: testrobot
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 9376
+```
+
+### ***edgeMap*** design
+
+[Architectural diagram here]
+
+#### ***edgeMap*** data structure
+
+***edgeMap*** is implemented as an adjacency list. Below are the definitions within the adjacency list:
+
+```edgeVertex```: an ***edgeNode*** or an ***edgeDevice***
+
+```edgeLink```： type of connection between two ```edgeVertex```. For example, Ethernet or USB.
+
+#### ***edgeVertex*** data structure
+
+***edgeVertex*** is a node in a linked list. Below are the fields within the the node:
+
+```vertexType```: ***edgeNode*** or ***edgeDevice***
+
+```neighborVertex```: the immediate neighbor of the current vertex
+
+```neighborLinkType```: the connection type between the current ***edgeVertex*** and ```neighborVertex```
