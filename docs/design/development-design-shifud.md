@@ -8,20 +8,19 @@ This is a development design document for ***shifud*** component of the ***Shifu
 ### Goal:
 The goal of ***shifud*** is to achieve the following:
 - ***deviceDiscoverer***:
-    1. Automatically detect USB devices local to the edgeNode.
-    2. Automatically detect ONVIF devices in the network subnet.
-    3. Given the connection type and address, detect if the device is live.
-    4. Given the server url, discover devices registered in the OPC UA server.
+    1. Automatically detect ONVIF devices in the network subnet.
+    2. Given the connection type and address, detect if the device is live.
+    3. Given the server url, discover devices registered in the OPC UA server.
 - ***deviceVerifier***:
     1. Verify USB connected devices' metadata through udev.
     2. Verify network connected devices' metadata using SNMP/ONVIF/OPC UA.
-- ***deviceShifuGenerator***:
-    1. Generate the device resource to Kubernetes API server.
+- ***deviceUpdater***:
+    1. Update the status field of ***edgeDevice*** resource to Kubernetes API server.
 
 ### Input & Output:
 
 #### ***deviceDiscoverer*** (per Node):
-- Input: ConfigMap from Kubernetes cluster, mounted to a particular path.
+- Input: ***edgeDevice*** resource from Kubernetes' ***edgeDevice*** resource.
 - Output: List of discovered devices in the following JSON format:    
     ```
     [
@@ -41,10 +40,10 @@ The goal of ***shifud*** is to achieve the following:
 - Output: List of discovered ONVIF cameras in JSON format (same as above).
 
 #### ***deviceVerifier***
-- Input: ConfigMap from Kubernetes cluster, deviceList from ***deviceDiscoverer***.
-- Output: List of discovered devices that are verified matching ConfigMap.
+- Input: ***edgeDevice*** resource from Kubernetes cluster, deviceList from ***deviceDiscoverer***.
+- Output: List of discovered devices that are verified matching ***edgeDevice*** resource.
 
-#### ***deviceShifuGenerator***
+#### ***deviceUpdater***
 - Input: List of devices from ***deviceVerifier***.
 
 ## Implementation
@@ -54,7 +53,7 @@ The goal of ***shifud*** is to achieve the following:
 #### ***deviceDiscoverer***
 1. A continuous loop that scans for ONVIF (per cluster/subnet).    
     - *discoverONVIF()*
-2. A continuous loop that scans udev (per ***edgeNode***).
+2. On demand loop that scans udev event (per ***edgeNode***).
     - *discoverUDEV()*
 3. On demand loop that scans OPC UA servers (per cluster/subnet).
     - *discoverOPCUA(str url)*
@@ -65,15 +64,15 @@ The goal of ***shifud*** is to achieve the following:
 1. Listens for the device list sent from ***deviceDiscoverer***.
 2. Upon receiving, query for metadata of the device.
     - *queryMetadata(device discoveredDevice)*
-3. Compare the metadata of the device to ConfigMap.
-    - *verifyDeviceMetadata(device configDevice, device discoveredDevice)*
-4. If matches, output to ***deviceShifuGenerator***.
+3. Compare the metadata of the device to ***edgeDevice*** resource.
+    - *verifyDeviceMetadata(device edgeDevice, device discoveredDevice)*
+4. If matches, output to ***deviceUpdater***.
 
 
-#### ***deviceShifuGenerator***
+#### ***deviceUpdater***
 1. Listens for the device list sent from ***deviceVerifier***
-2. Upon receiving, create Kubernetes resources.
-    - *generateDeviceShifuResource(device discoveredDevice)*
+2. Upon receiving, update Kubernetes resources.
+    - *updateEdgeDeviceResource(device discoveredDevice)*
 
 ### Data Types:
 
@@ -105,5 +104,5 @@ The goal of ***shifud*** is to achieve the following:
 #### ***deviceVerifier*** (per ***edgeNode***)
 [![shifud deviceVerifier call stack](/img/shifud-deviceVerifier-edgeNode-call-stack.svg)](/img/shifud-deviceVerifier-edgeNode-call-stack.svg)    
 
-#### ***deviceShifuGenerator***
-[![shifud deviceShifuGenerator call stack](/img/shifud-deviceShifuGenerator-call-stack.svg)](/img/shifud-deviceShifuGenerator-call-stack.svg)    
+#### ***deviceUpdater***
+[![shifud deviceUpdater call stack](/img/shifud-deviceUpdater-call-stack.svg)](/img/shifud-deviceUpdater-call-stack.svg)    

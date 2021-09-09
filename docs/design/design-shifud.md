@@ -1,12 +1,30 @@
 # ***shifud*** High-level design
 
 ## Introduction:
-This is a high-level design document for ***shifud*** component of the ***Shifu*** system for edge devices. ***shifud*** is a daemonset that runs on every ***edgeNode***. It discovers devices from a list of devices sent by ***shifuController*** and spawn relative resouces to kube-apiserver.    
+This is a high-level design document for ***shifud*** component of the ***Shifu*** framework. ***shifud*** is a daemonset that runs on every ***edgeNode***. It discovers devices from a list of devices configured in Kubernetes' ***edgeDevice*** resource and update relative resources to kube-apiserver.    
 
 ## Design principles
-[TODO]
+### Automatic & Autonomous
+***shifud***'s foremost job is to make ***edgeDevice*** discovery and verification as easy as possible. Developers should't need much configuration to make their ***edgeDevice*** available in ***Shifu***. Here are a few design requirements:
+
+#### 1. Automatic discovery for discoverable ***edgeDevices***:
+***shifud*** should be able to discover ***edgeDevices*** with ONVIF or similar protocols automatically, without much user/developer intervention.
+
+#### 2. Minimal information needed for non-automatic ***edgeDevice*** device discovery:
+Developer should only need to provide necessary information in order for ***shifud*** to discover a specific devices.
 
 ## Design goals and non-goals
+### Design goals
+#### Autonomous
+***shifud*** should be able to run on its own without as soon as ***Shifu*** framework is up.
+
+#### Lightweight
+***shifud*** should consume minimum amount of resource on each ***edgeNode*** and across the cluster.
+
+#### Flexible
+***shifud*** should be able to handle the majority of IoT protocols.
+
+### Design non-goals
 [TODO]
 
 ## Design overview
@@ -20,35 +38,54 @@ This is a high-level design document for ***shifud*** component of the ***Shifu*
 ***deviceDiscoverer*** is a process that continuously scans for device events on ***edgeNode***, including but not limited to network reachability, USB event.
 
 ##### 2. ***deviceVerifier***
-***deviceVerifier*** is a process that interacts with ***edgeDevice*** and try to populate and verify their metadata to match ***shifuController***'s list
+***deviceVerifier*** is a process that interacts with ***edgeDevice*** and try to populate and verify their metadata to match Kubernetes' ***edgeDevice*** resources
 
-##### 3. ***deviceShifuGenerator***
-***deviceShifuGenerator*** generates and creates a ***deviceShifu*** resource to ***kube-apiserver*** based on the ***edgeDevice***
+##### 3. ***deviceUpdater***
+***deviceUpdater*** updates ***edgeDevice*** resource to ***kube-apiserver*** based on the ***edgeDevice***'s verification status
 
 ### ***shifud*** input & output
 The overall input and output of ***shifud*** can be summarized in the following graph:
 [![shifud input and output overview](/img/shifud-input-output.svg)](/img/shifud-input-output.svg)    
-The input to ***shifud*** from shifuController should be a list of edge devices in the following format:    
+The input to ***shifud*** from Kubernetes ***edgeDevice*** resource should be a list of ***edgeDevices***:    
 ```
-#deviceName, connection, address, type, brand, protocol
-deviceA, USB, /tty/USB1, t_sensor, Xiaomi, MQTT
-deviceB, IP, 10.0.0.1, IP_camera, Yunmi, ONVIF
+apiVersion: v1
+kind: edgeDevice
+metadata:
+  name: franka-emika-1
+spec:
+- sku: "Franka Emika"
+  connection: Ethernet
+  status: offline
+  address: 10.0.0.1:80
+  protocol: HTTP
+  disconnectTimeoutInSeconds:600 # optional
+  group:["room1", "robot"] # optional
+  driverSpec: # optional when no driver is required
+  - instructionMap:  # optional
+      move_to:
+      - api: absolute_move # API of the driver
 ......
 ```
 
 ### Architecture diagrams
 [![shifud design overview](/img/shifud-design-overview.svg)](/img/shifud-design-overview.svg)    
 
-#### ***shifud***'s execution flow:
-1. Upon receiving the list of devices, ***deviceDiscoverer*** starts local scanning using different protocols. The following protocols should be supported:
+
+#### ***shifud***'s execution flow(cluter):
+1. Upon querying the list of devices, ***deviceDiscoverer*** starts local scanning using ethernet protocols. The following protocols should be supported:
    ```
-   udev
    ONVIF
    SNMP
    MQTT
-   MODBUS
    OPC UA
    PROFINET
+   ```
+
+#### ***shifud***'s execution flow(edgeNode):
+1. Upon receiving the list of devices, ***deviceDiscoverer*** starts local scanning using different protocols. The following protocols should be supported:
+   ```
+   udev
+   MODBUS
    ```
 2. The discovery process depends on the protocol:
     1. For TCP/IP type of edge devices, Ping/TCP connect can be use directly
@@ -60,19 +97,23 @@ deviceB, IP, 10.0.0.1, IP_camera, Yunmi, ONVIF
     E: SUBSYSTEM=video4linux
     E: ID_SERIAL=Sonix_Technology_Co.__Ltd._USB_2.0_Camera_SN0001
     ```
-4. Once the verification is done, ***deviceShifuGenerator*** will send out the deviceShifu's deployment YAML file to the Kubernetes
+4. Once the verification is done, ***deviceUpdater*** will update the ***edgeDevice***'s resource to Kubernetes API server.
     ```
-    apiVersion: v1
-    kind: edgeDevice
-    metadata:
-      name: shifu-deviceA
-      labels:
-        connection: USB
-        location: /tty/USB1
-        protocol: MQTT
-    spec:
-      containers:
-        - name: shifu-deviceA
-          image: shifu-t-sensor
-    ......
+   apiVersion: v1
+   kind: edgeDevice
+   metadata:
+     name: franka-emika-1
+   spec:
+   - sku: "Franka Emika"
+     connection: Ethernet
+     status: online
+     address: 10.0.0.1:80
+     protocol: HTTP
+     disconnectTimeoutInSeconds:600 # optional
+     group:["room1", "robot"] # optional
+     driverSpec: # optional when no driver is required
+     - instructionMap:  # optional
+         move_to:
+         - api: absolute_move # API of the driver
+   ......
     ```
