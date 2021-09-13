@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: edgeDevice
+metadata:
+  name: mock-device-1
+spec:
+- sku: "Edgenesis Mock Device" 
+  connection: TCP/IP
+  address: localhost:1234
+  protocol: HTTP
+  disconnectTimeoutInSeconds: 600 # optional
