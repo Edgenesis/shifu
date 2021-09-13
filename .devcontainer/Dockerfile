@@ -12,7 +12,9 @@ ENV GO111MODULE=on
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
 
 # [Optional] Uncomment the next line to use go get to install anything else you need
-RUN go get -u github.com/ramya-rao-a/go-outline golang.org/x/tools/gopls
+RUN go get -u github.com/ramya-rao-a/go-outline \ 
+    golang.org/x/tools/gopls \
+    k8s.io/apimachinery/pkg/util/wait
 
 # [Optional] Uncomment this line to install global node packages.
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
