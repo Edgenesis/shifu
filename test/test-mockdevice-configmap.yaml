@@ -11,3 +11,8 @@ data:
   - name: get_status
   - name: start
   - name: stop
+  telemetries:
+    device_health:
+    - instruction: get_status
+      initialDelayMs: 1000
+      intervalMs: 1000
