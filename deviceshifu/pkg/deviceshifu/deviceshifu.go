@@ -12,7 +12,7 @@ type DeviceShifu struct {
 }
 
 const (
-	DEVICEISHEALTHYSTR string = "Device is healthy"
+	DEVICE_IS_HEALTHY_STR string = "Device is healthy"
 )
 
 func New(name string) *DeviceShifu {
@@ -38,7 +38,7 @@ func New(name string) *DeviceShifu {
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DEVICEISHEALTHYSTR)
+	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
 }
 
 func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {

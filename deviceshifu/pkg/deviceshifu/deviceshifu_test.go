@@ -31,7 +31,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
-	if string(body) != DEVICEISHEALTHYSTR {
+	if string(body) != DEVICE_IS_HEALTHY_STR {
 		t.Errorf("%+v", body)
 	}
 }
