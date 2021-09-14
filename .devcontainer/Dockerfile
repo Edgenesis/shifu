@@ -12,7 +12,8 @@ ENV GO111MODULE=on
 #     && apt-get -y install --no-install-recommends <your-package-list-here>
 
 # [Optional] Uncomment the next line to use go get to install anything else you need
-RUN go get -u github.com/ramya-rao-a/go-outline
+RUN go get -u github.com/ramya-rao-a/go-outline \ 
+    k8s.io/apimachinery/pkg/util/wait
 RUN GO111MODULE=on go get golang.org/x/tools/gopls@latest
 
 # [Optional] Uncomment this line to install global node packages.
