@@ -34,4 +34,4 @@ spec:
       volumes:
       - name: config-volume
         configMap:
-          name: mockdevice-configmap-0.0.1 # This config map contains all the device SKU related info        
+          name: mockdevice-configmap-0.0.1 # This config map contains all the device SKU related info

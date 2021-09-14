@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: mockdevice-configmap-0.0.1
+data:
+  driverProperties.driverSku: Edgenesis Mock Device
+  driverProperties.driverImage: edgenesis/mockdevice-0.0.1
+  instructions: |
+    instruction.1.name=get_reading
+    instruction.2.name=get_status
+    instruction.3.name=set_reading
+    instruction.3.property.1.valueType="Int32"
+    instruction.3.property.1.readWrite="W"
+    instruction.3.property.1.defaultValue=null
+    instruction.4.name=start
+    instruction.5.name=stop
+  telemetries: |
+    telemetry.1.name=device_health
+    telemetry.1.instruction=get_status
+    telemetry.1.initialDelayMs=1000
+    telemetry.1.intervalMs=1000
