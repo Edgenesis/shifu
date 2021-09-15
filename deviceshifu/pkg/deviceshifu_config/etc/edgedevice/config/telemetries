@@ -1,0 +1,10 @@
+- name: device_health
+  properties:
+  - instruction: get_status
+    initialDelayMs: 1000
+    intervalMs: 1000
+- name: device_random
+  properties:
+  - instruction: get_reading
+    initialDelayMs: 1000
+    intervalMs: 1000

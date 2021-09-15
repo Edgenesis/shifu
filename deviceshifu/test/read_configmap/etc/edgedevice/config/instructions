@@ -1,8 +1,0 @@
-instruction.1.name=get_reading
-instruction.2.name=get_status
-instruction.3.name=set_reading
-instruction.3.property.1.valueType="Int32"
-instruction.3.property.1.readWrite="W"
-instruction.3.property.1.defaultValue=null
-instruction.4.name=start
-instruction.5.name=stop

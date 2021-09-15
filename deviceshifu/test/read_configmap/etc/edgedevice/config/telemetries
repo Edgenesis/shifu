@@ -1,4 +1,0 @@
-telemetry.1.name=device_health
-telemetry.1.instruction=get_status
-telemetry.1.initialDelayMs=1000
-telemetry.1.intervalMs=1000

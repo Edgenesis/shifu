@@ -1,0 +1,9 @@
+- name: get_reading
+- name: get_status
+- name: set_reading
+  properties:
+  - valueType: "Int32"
+    readWrite: "W"
+    defaultValue: null
+- name: start
+- name: stop
