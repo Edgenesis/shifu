@@ -37,7 +37,7 @@ func TestStart(t *testing.T) {
 	}
 
 	if len(mockdsc.Telemetry) != len(telemetries) {
-		t.Errorf("instruction length mismatch!")
+		t.Errorf("telemetry length mismatch!")
 	}
 
 	for _, v := range mockdsc.Instruction {
