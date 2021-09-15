@@ -8,8 +8,8 @@ ENV GOPROXY=https://goproxy.io,direct
 ENV GO111MODULE=on
 
 # [Optional] Uncomment this section to install additional OS packages.
-# RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
-#     && apt-get -y install --no-install-recommends <your-package-list-here>
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
+     && apt-get -y install --no-install-recommends lsof
 
 # [Optional] Uncomment the next line to use go get to install anything else you need
 RUN go get -u github.com/ramya-rao-a/go-outline \ 
