@@ -2,99 +2,83 @@ package deviceshifuconfig
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 )
 
 const (
-	CM_NAME                                = "etc/edgedevice/config"
-	SKU_STR                                = "Edgenesis Mock Device"
-	DRIVER_STR                             = "edgenesis/mockdevice-0.0.1"
-	INSTRUCTION_SET_READING_NAME           = "set_reading"
-	INSTRUCTION_SET_READING_VALUETYPE      = "Int32"
-	INSTRUCTION_SET_READING_READWRITE      = "W"
-	TELEMETRY_DEVICE_HEALTH_NAME           = "device_health"
-	TELEMETRY_DEVICE_HEALTH_INSTRUCTION    = "get_status"
-	TELEMETRY_DEVICE_HEALTH_INITIALDELAYMS = 1000
-	TELEMETRY_DEVICE_HEALTH_INTERVALMS     = 1000
+	MOCK_DEVICE_CM_STR     = "/workspaces/shifu/deviceshifu/examples/mockdevice/mockdeviceshifu_config/etc/edgedevice/config"
+	MOCK_DEVICE_SKU_STR    = "Edgenesis Mock Device"
+	MOCK_DEVICE_DRIVER_STR = "edgenesis/mockdevice-0.0.1"
 )
 
-var functions = []string{"get_reading", "get_status", "set_reading", "start", "stop"}
-var telemetries = []string{"device_health", "device_random"}
+var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
+	"get_reading": nil,
+	"get_status":  nil,
+	"set_reading": {
+		[]DeviceShifuInstructionProperty{
+			{
+				"Int32",
+				"W",
+				nil,
+			},
+		},
+	},
+	"start": nil,
+	"stop":  nil,
+}
+
+var mockDeviceTelemetries = map[string]*DeviceShifuTelemetry{
+	"device_health": {
+		[]DeviceShifuTelemetryProperty{
+			{
+				"get_status",
+				1000,
+				1000,
+			},
+		},
+	},
+	"device_random": {
+		[]DeviceShifuTelemetryProperty{
+			{
+				"get_reading",
+				1000,
+				1000,
+			},
+		},
+	},
+}
 
 func TestStart(t *testing.T) {
-	mockdsc := New(CM_NAME)
-	fmt.Println(mockdsc.DriverImage, mockdsc.DriverSKU)
-	if mockdsc.DriverSKU != SKU_STR {
-		t.Errorf("%+v", mockdsc.DriverSKU)
+	mockdsc, err := New(MOCK_DEVICE_CM_STR)
+	if err != nil {
+		t.Errorf(err.Error())
 	}
 
-	if mockdsc.DriverImage != DRIVER_STR {
-		t.Errorf("%+v", mockdsc.DriverImage)
+	fmt.Printf("Drive image is '%v', SKU is `%v`\n", mockdsc.driverImage, mockdsc.driverSKU)
+	if mockdsc.driverSKU != MOCK_DEVICE_SKU_STR {
+		t.Errorf("%+v", mockdsc.driverSKU)
 	}
 
-	if len(mockdsc.Instruction) != len(functions) {
+	if mockdsc.driverImage != MOCK_DEVICE_DRIVER_STR {
+		t.Errorf("%+v", mockdsc.driverImage)
+	}
+
+	if len(mockdsc.Instructions) != len(mockDeviceInstructions) {
 		t.Errorf("instruction length mismatch!")
 	}
 
-	if len(mockdsc.Telemetry) != len(telemetries) {
+	if len(mockdsc.Telemetries) != len(mockDeviceTelemetries) {
 		t.Errorf("telemetry length mismatch!")
 	}
 
-	for _, v := range mockdsc.Instruction {
-		inArray := false
-		for _, i := range functions {
-			if v.Name == i {
-				if v.Name == INSTRUCTION_SET_READING_NAME {
-					for _, j := range v.Properties {
-						if j.ValueType != INSTRUCTION_SET_READING_VALUETYPE {
-							t.Errorf("Instruction %v valuetype incorrect: %v", INSTRUCTION_SET_READING_NAME, j.ValueType)
-						}
-
-						if j.ReadWrite != INSTRUCTION_SET_READING_READWRITE {
-							t.Errorf("Instruction %v readwrite incorrect: %v", INSTRUCTION_SET_READING_NAME, j.ReadWrite)
-						}
-
-						if j.DefaultValue != nil {
-							t.Errorf("Instruction %v readwrite incorrect: %v", INSTRUCTION_SET_READING_NAME, j.DefaultValue)
-						}
-					}
-				}
-				inArray = true
-				break
-			}
-		}
-
-		if inArray != true {
-			t.Errorf("Key %v not in instruction", v.Name)
-		}
+	eq := reflect.DeepEqual(mockDeviceInstructions, mockdsc.Instructions)
+	if !eq {
+		t.Errorf("Instruction mismatch")
 	}
 
-	for _, v := range mockdsc.Telemetry {
-		inArray := false
-		for _, i := range telemetries {
-			if v.Name == i {
-				if v.Name == TELEMETRY_DEVICE_HEALTH_NAME {
-					for _, j := range v.Properties {
-						if j.Instruction != TELEMETRY_DEVICE_HEALTH_INSTRUCTION {
-							t.Errorf("Instruction %v valuetype incorrect: %v", INSTRUCTION_SET_READING_NAME, j.Instruction)
-						}
-
-						if j.InitialDelayMs != TELEMETRY_DEVICE_HEALTH_INITIALDELAYMS {
-							t.Errorf("Instruction %v readwrite incorrect: %v", INSTRUCTION_SET_READING_NAME, j.InitialDelayMs)
-						}
-
-						if j.IntervalMs != TELEMETRY_DEVICE_HEALTH_INTERVALMS {
-							t.Errorf("Instruction %v readwrite incorrect: %v", INSTRUCTION_SET_READING_NAME, j.IntervalMs)
-						}
-					}
-				}
-				inArray = true
-				break
-			}
-		}
-
-		if inArray != true {
-			t.Errorf("Key %v not in telemetris", v.Name)
-		}
+	eq = reflect.DeepEqual(mockDeviceTelemetries, mockdsc.Telemetries)
+	if !eq {
+		t.Errorf("Telemetries mismatch")
 	}
 }

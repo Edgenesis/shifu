@@ -1,7 +1,7 @@
 package deviceshifuconfig
 
 import (
-	"fmt"
+	"errors"
 	"log"
 	"strings"
 
@@ -10,64 +10,73 @@ import (
 )
 
 type DeviceShifuConfig struct {
-	DriverImage string
-	DriverSKU   string
-	Instruction []DeviceShifuInstruction
-	Telemetry   []DeviceShifuTelemetry
+	driverImage  string
+	driverSKU    string
+	Instructions map[string]*DeviceShifuInstruction
+	Telemetries  map[string]*DeviceShifuTelemetry
 }
 
 type DeviceShifuInstruction struct {
-	Name       string `yaml:"name"`
-	Properties []struct {
-		ValueType    string      `yaml:"valueType"`
-		ReadWrite    string      `yaml:"readWrite"`
-		DefaultValue interface{} `yaml:"defaultValue"`
-	} `yaml:"properties,omitempty"`
+	Properties []DeviceShifuInstructionProperty `yaml:"properties,omitempty"`
+}
+
+type DeviceShifuInstructionProperty struct {
+	ValueType    string      `yaml:"valueType"`
+	ReadWrite    string      `yaml:"readWrite"`
+	DefaultValue interface{} `yaml:"defaultValue"`
 }
 
 type DeviceShifuTelemetry struct {
-	Name       string `yaml:"name"`
-	Properties []struct {
-		Instruction    string `yaml:"instruction"`
-		InitialDelayMs int    `yaml:"initialDelayMs"`
-		IntervalMs     int    `yaml:"intervalMs"`
-	} `yaml:"properties"`
+	Properties []DeviceShifuTelemetryProperty `yaml:"properties"`
+}
+
+type DeviceShifuTelemetryProperty struct {
+	Instruction    string `yaml:"instruction"`
+	InitialDelayMs int    `yaml:"initialDelayMs"`
+	IntervalMs     int    `yaml:"intervalMs"`
 }
 
 const (
-	CM_DRIVERIMAGE_NAME = "driverProperties.driverImage"
-	CM_DRIVERSKU_NAME   = "driverProperties.driverSku"
-	CM_INSTRUCTION_NAME = "instructions"
-	CM_TELEMETRY_NAME   = "telemetries"
+	CM_DRIVERIMAGE_STR  = "driverProperties.driverImage"
+	CM_DRIVERSKU_STR    = "driverProperties.driverSku"
+	CM_INSTRUCTIONS_STR = "instructions"
+	CM_TELEMETRIES_STR  = "telemetries"
 )
 
-func New(path string) *DeviceShifuConfig {
+func New(path string) (*DeviceShifuConfig, error) {
 	if path == "" {
-		fmt.Println("DeviceShifuConfig path can't be empty")
-		return nil
+		return nil, errors.New("DeviceShifuConfig path can't be empty")
 	}
 
 	cfg, err := configmap.Load(path)
-	fmt.Println("Path is:", path)
-
 	if err != nil {
-		log.Fatalf("Unable to load configmap, error: %v", err)
-		return nil
+		return nil, err
 	} else {
-		dsc := DeviceShifuConfig{}
-		dsc.DriverImage = strings.TrimSpace(cfg[CM_DRIVERIMAGE_NAME])
-		dsc.DriverSKU = strings.TrimSpace(cfg[CM_DRIVERSKU_NAME])
-
-		err := yaml.Unmarshal([]byte(cfg[CM_INSTRUCTION_NAME]), &dsc.Instruction)
-		if err != nil {
-			log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_INSTRUCTION_NAME, err)
+		dsc := &DeviceShifuConfig{}
+		if val, ok := cfg[CM_DRIVERIMAGE_STR]; ok {
+			dsc.driverImage = strings.TrimSpace(val)
 		}
 
-		err = yaml.Unmarshal([]byte(cfg[CM_TELEMETRY_NAME]), &dsc.Telemetry)
-		if err != nil {
-			log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_TELEMETRY_NAME, err)
+		if val, ok := cfg[CM_DRIVERSKU_STR]; ok {
+			dsc.driverSKU = strings.TrimSpace(val)
 		}
 
-		return &dsc
+		if val, ok := cfg[CM_INSTRUCTIONS_STR]; ok {
+			err := yaml.Unmarshal([]byte(val), &dsc.Instructions)
+			if err != nil {
+				log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_INSTRUCTIONS_STR, err)
+				return nil, err
+			}
+		}
+
+		if val, ok := cfg[CM_TELEMETRIES_STR]; ok {
+			err = yaml.Unmarshal([]byte(val), &dsc.Telemetries)
+			if err != nil {
+				log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_TELEMETRIES_STR, err)
+				return nil, err
+			}
+		}
+
+		return dsc, nil
 	}
 }

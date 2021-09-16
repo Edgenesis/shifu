@@ -1,7 +1,7 @@
 apiVersion: v1
 kind: edgeDevice
 metadata:
-  name: mock-device-1
+  name: mock-device
 spec:
 - sku: "Edgenesis Mock Device"
   connection: TCP/IP

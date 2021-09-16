@@ -1,36 +1,28 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: mockdevice-deviceshifu
+  name: deviceshifu-mockdevice
   labels:
-    app: mockdevice
+    app: deviceshifu-mockdevice
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: mockdevice
+      app: deviceshifu-mockdevice
   template:
     metadata:
       labels:
-        app: mockdevice
+        app: deviceshifu-mockdevice
     spec:
       containers:
-      - name: mockdevice-frontend
-        image: edgenesis/edgedevice-frontend:0.0.1
+      - name: deviceshifu-frontend
+        image: edgenesis/deviceshifu-frontend:0.0.1
         ports:
         - containerPort: 9376
         volumeMounts:
         - name: edgedevice-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
-      # - name: mockdevice-driver
-      #   image: edgenesis/mockdevice-0.0.1
-      #   ports:
-      #   - containerPort: 8080 # If your driver listens on port 8080
-      #   volumeMounts:
-      #   - name: edgedevice-config
-      #     mountPath: "/etc/edgedevice/config"
-      #     readOnly: true
       volumes:
       - name: config-volume
         configMap:
