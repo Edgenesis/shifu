@@ -28,7 +28,7 @@ var MOCK_DEVICE_CONFIG_FOLDER = path.Join("etc", "edgedevice", "config")
 
 var mockDeviceDriverProperties = DeviceShifuDriverProperties{
 	"Edgenesis Mock Device",
-	"edgenesis/mockdevice-0.0.1",
+	"edgenesis/mockdevice:0.0.1",
 }
 
 var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
@@ -37,9 +37,9 @@ var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
 	"set_reading": {
 		[]DeviceShifuInstructionProperty{
 			{
-				"Int32",
-				"W",
-				nil,
+				ValueType:    StrPtr("Int32"),
+				ReadWrite:    StrPtr("W"),
+				DefaultValue: nil,
 			},
 		},
 	},
@@ -51,24 +51,24 @@ var mockDeviceTelemetries = map[string]*DeviceShifuTelemetry{
 	"device_health": {
 		[]DeviceShifuTelemetryProperty{
 			{
-				"get_status",
-				1000,
-				1000,
+				InstructionName: StrPtr("get_status"),
+				InitialDelayMs:  IntPtr(1000),
+				IntervalMs:      IntPtr(1000),
 			},
 		},
 	},
 	"device_random": {
 		[]DeviceShifuTelemetryProperty{
 			{
-				"get_reading",
-				1000,
-				1000,
+				InstructionName: StrPtr("get_reading"),
+				InitialDelayMs:  IntPtr(1000),
+				IntervalMs:      IntPtr(1000),
 			},
 		},
 	},
 }
 
-func TestStart(t *testing.T) {
+func TestNew(t *testing.T) {
 	err := GenerateConfigMapFromSnippet(MOCK_DEVICE_CM_STR, MOCK_DEVICE_CONFIG_FOLDER)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -79,23 +79,12 @@ func TestStart(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	if mockdsc.driverProperties.DriverSku != mockDeviceDriverProperties.DriverSku {
-		t.Errorf("Driver SKU does not match, config: %+v, testdata: %+v", mockdsc.driverProperties.DriverSku, mockDeviceDriverProperties.DriverSku)
+	eq := reflect.DeepEqual(mockDeviceDriverProperties, mockdsc.driverProperties)
+	if !eq {
+		t.Errorf("DriverProperties mismatch")
 	}
 
-	if mockdsc.driverProperties.DriverImage != mockDeviceDriverProperties.DriverImage {
-		t.Errorf("Driver Image does not match, config: %+v, testdata: %+v", mockdsc.driverProperties.DriverImage, mockDeviceDriverProperties.DriverImage)
-	}
-
-	if len(mockdsc.Instructions) != len(mockDeviceInstructions) {
-		t.Errorf("instruction length mismatch!")
-	}
-
-	if len(mockdsc.Telemetries) != len(mockDeviceTelemetries) {
-		t.Errorf("telemetry length mismatch!")
-	}
-
-	eq := reflect.DeepEqual(mockDeviceInstructions, mockdsc.Instructions)
+	eq = reflect.DeepEqual(mockDeviceInstructions, mockdsc.Instructions)
 	if !eq {
 		t.Errorf("Instruction mismatch")
 	}
@@ -140,4 +129,14 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 	}
 
 	return nil
+}
+
+func StrPtr(value string) *string {
+	str := value
+	return &str
+}
+
+func IntPtr(value int) *int {
+	integer := value
+	return &integer
 }

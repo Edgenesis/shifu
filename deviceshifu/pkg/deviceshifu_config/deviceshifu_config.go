@@ -24,9 +24,9 @@ type DeviceShifuInstruction struct {
 }
 
 type DeviceShifuInstructionProperty struct {
-	ValueType    string      `yaml:"valueType"`
-	ReadWrite    string      `yaml:"readWrite"`
-	DefaultValue interface{} `yaml:"defaultValue"`
+	ValueType    *string      `yaml:"valueType"`
+	ReadWrite    *string      `yaml:"readWrite"`
+	DefaultValue *interface{} `yaml:"defaultValue"`
 }
 
 type DeviceShifuTelemetry struct {
@@ -34,9 +34,9 @@ type DeviceShifuTelemetry struct {
 }
 
 type DeviceShifuTelemetryProperty struct {
-	InstructionName string `yaml:"instruction"`
-	InitialDelayMs  int    `yaml:"initialDelayMs,omitempty"`
-	IntervalMs      int    `yaml:"intervalMs,omitempty"`
+	InstructionName *string `yaml:"instruction"`
+	InitialDelayMs  *int    `yaml:"initialDelayMs,omitempty"`
+	IntervalMs      *int    `yaml:"intervalMs,omitempty"`
 }
 
 const (
@@ -81,5 +81,4 @@ func New(path string) (*DeviceShifuConfig, error) {
 	}
 
 	return dsc, nil
-
 }
