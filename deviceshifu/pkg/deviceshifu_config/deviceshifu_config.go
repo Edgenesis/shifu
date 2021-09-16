@@ -30,7 +30,7 @@ type DeviceShifuInstructionProperty struct {
 }
 
 type DeviceShifuTelemetry struct {
-	Properties []DeviceShifuTelemetryProperty `yaml:"properties,omitempty"`
+	TelemetryName []DeviceShifuTelemetryProperty `yaml:"properties,omitempty"`
 }
 
 type DeviceShifuTelemetryProperty struct {

@@ -16,6 +16,10 @@ data:
         defaultValue: null
     start:
     stop:
+# Telemetries are configurable health checks of the EdgeDevice
+# Developer/user can configure certain instructions to be used as health check
+# of the device. In this example, the device_health telemetry is mapped to
+# "get_status" instruction, executed every 1000 ms
   telemetries: |
     device_health:
       properties:
