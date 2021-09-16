@@ -1,9 +1,0 @@
-get_reading:
-get_status:
-set_reading:
-  properties:
-  - valueType: "Int32"
-    readWrite: "W"
-    defaultValue: null
-start:
-stop:

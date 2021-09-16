@@ -5,7 +5,7 @@ metadata:
 spec:
   containers:
   - name: mypod
-    image: nginx
+    image: alpine
     volumeMounts:
     - name: foo
       mountPath: "/etc/edgedevice/config"

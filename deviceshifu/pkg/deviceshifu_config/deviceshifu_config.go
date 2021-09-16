@@ -3,17 +3,20 @@ package deviceshifuconfig
 import (
 	"errors"
 	"log"
-	"strings"
 
 	"gopkg.in/yaml.v2"
 	"knative.dev/pkg/configmap"
 )
 
 type DeviceShifuConfig struct {
-	driverImage  string
-	driverSKU    string
-	Instructions map[string]*DeviceShifuInstruction
-	Telemetries  map[string]*DeviceShifuTelemetry
+	driverProperties DeviceShifuDriverProperties
+	Instructions     map[string]*DeviceShifuInstruction
+	Telemetries      map[string]*DeviceShifuTelemetry
+}
+
+type DeviceShifuDriverProperties struct {
+	DriverSku   string `yaml:"driverSku"`
+	DriverImage string `yaml:"driverImage"`
 }
 
 type DeviceShifuInstruction struct {
@@ -27,20 +30,19 @@ type DeviceShifuInstructionProperty struct {
 }
 
 type DeviceShifuTelemetry struct {
-	Properties []DeviceShifuTelemetryProperty `yaml:"properties"`
+	Properties []DeviceShifuTelemetryProperty `yaml:"properties,omitempty"`
 }
 
 type DeviceShifuTelemetryProperty struct {
-	Instruction    string `yaml:"instruction"`
-	InitialDelayMs int    `yaml:"initialDelayMs"`
-	IntervalMs     int    `yaml:"intervalMs"`
+	InstructionName string `yaml:"instruction"`
+	InitialDelayMs  int    `yaml:"initialDelayMs,omitempty"`
+	IntervalMs      int    `yaml:"intervalMs,omitempty"`
 }
 
 const (
-	CM_DRIVERIMAGE_STR  = "driverProperties.driverImage"
-	CM_DRIVERSKU_STR    = "driverProperties.driverSku"
-	CM_INSTRUCTIONS_STR = "instructions"
-	CM_TELEMETRIES_STR  = "telemetries"
+	CM_DRIVERPROPERTIES_STR = "driverProperties"
+	CM_INSTRUCTIONS_STR     = "instructions"
+	CM_TELEMETRIES_STR      = "telemetries"
 )
 
 func New(path string) (*DeviceShifuConfig, error) {
@@ -53,24 +55,24 @@ func New(path string) (*DeviceShifuConfig, error) {
 		return nil, err
 	} else {
 		dsc := &DeviceShifuConfig{}
-		if val, ok := cfg[CM_DRIVERIMAGE_STR]; ok {
-			dsc.driverImage = strings.TrimSpace(val)
+		if driverProperties, ok := cfg[CM_DRIVERPROPERTIES_STR]; ok {
+			err := yaml.Unmarshal([]byte(driverProperties), &dsc.driverProperties)
+			if err != nil {
+				log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_DRIVERPROPERTIES_STR, err)
+				return nil, err
+			}
 		}
 
-		if val, ok := cfg[CM_DRIVERSKU_STR]; ok {
-			dsc.driverSKU = strings.TrimSpace(val)
-		}
-
-		if val, ok := cfg[CM_INSTRUCTIONS_STR]; ok {
-			err := yaml.Unmarshal([]byte(val), &dsc.Instructions)
+		if instructions, ok := cfg[CM_INSTRUCTIONS_STR]; ok {
+			err := yaml.Unmarshal([]byte(instructions), &dsc.Instructions)
 			if err != nil {
 				log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_INSTRUCTIONS_STR, err)
 				return nil, err
 			}
 		}
 
-		if val, ok := cfg[CM_TELEMETRIES_STR]; ok {
-			err = yaml.Unmarshal([]byte(val), &dsc.Telemetries)
+		if telemetries, ok := cfg[CM_TELEMETRIES_STR]; ok {
+			err = yaml.Unmarshal([]byte(telemetries), &dsc.Telemetries)
 			if err != nil {
 				log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_TELEMETRIES_STR, err)
 				return nil, err

@@ -4,7 +4,7 @@ metadata:
   name: mock-device
 spec:
 - sku: "Edgenesis Mock Device"
-  connection: TCP/IP
+  connection: Ethernet
   address: localhost:1234
   protocol: HTTP
   disconnectTimeoutInSeconds: 600 # optional
