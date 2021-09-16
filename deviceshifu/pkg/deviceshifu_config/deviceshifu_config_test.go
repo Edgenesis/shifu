@@ -24,6 +24,12 @@ type ConfigMapData struct {
 	} `yaml:"data"`
 }
 
+var InstructionValueTypeInt32 InstructionValueType = "Int32"
+var InstructionReadWriteW InstructionReadWrite = "W"
+var TelemetryInstructionNameGetStatus TelemetryInstructionName = "get_status"
+var TelemetryInstructionNameGetReading TelemetryInstructionName = "get_reading"
+var TelemetryInitialDelayMs1000 TelemetryInitialDelayMs = 1000
+var TelemetryIntervalMs1000 TelemetryIntervalMs = 1000
 var MOCK_DEVICE_CONFIG_FOLDER = path.Join("etc", "edgedevice", "config")
 
 var mockDeviceDriverProperties = DeviceShifuDriverProperties{
@@ -37,8 +43,8 @@ var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
 	"set_reading": {
 		[]DeviceShifuInstructionProperty{
 			{
-				ValueType:    StrPtr("Int32"),
-				ReadWrite:    StrPtr("W"),
+				ValueType:    &InstructionValueTypeInt32,
+				ReadWrite:    &InstructionReadWriteW,
 				DefaultValue: nil,
 			},
 		},
@@ -51,18 +57,18 @@ var mockDeviceTelemetries = map[string]*DeviceShifuTelemetry{
 	"device_health": {
 		[]DeviceShifuTelemetryProperty{
 			{
-				InstructionName: StrPtr("get_status"),
-				InitialDelayMs:  IntPtr(1000),
-				IntervalMs:      IntPtr(1000),
+				InstructionName: &TelemetryInstructionNameGetStatus,
+				InitialDelayMs:  &TelemetryInitialDelayMs1000,
+				IntervalMs:      &TelemetryIntervalMs1000,
 			},
 		},
 	},
 	"device_random": {
 		[]DeviceShifuTelemetryProperty{
 			{
-				InstructionName: StrPtr("get_reading"),
-				InitialDelayMs:  IntPtr(1000),
-				IntervalMs:      IntPtr(1000),
+				InstructionName: &TelemetryInstructionNameGetReading,
+				InitialDelayMs:  &TelemetryInitialDelayMs1000,
+				IntervalMs:      &TelemetryIntervalMs1000,
 			},
 		},
 	},
@@ -129,14 +135,4 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 	}
 
 	return nil
-}
-
-func StrPtr(value string) *string {
-	str := value
-	return &str
-}
-
-func IntPtr(value int) *int {
-	integer := value
-	return &integer
 }
