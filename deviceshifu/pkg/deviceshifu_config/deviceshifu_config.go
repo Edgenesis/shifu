@@ -20,7 +20,7 @@ type DeviceShifuDriverProperties struct {
 }
 
 type DeviceShifuInstruction struct {
-	Properties []DeviceShifuInstructionProperty `yaml:"properties,omitempty"`
+	InstructionName []DeviceShifuInstructionProperty `yaml:"properties,omitempty"`
 }
 
 type DeviceShifuInstructionProperty struct {
