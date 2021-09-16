@@ -53,32 +53,33 @@ func New(path string) (*DeviceShifuConfig, error) {
 	cfg, err := configmap.Load(path)
 	if err != nil {
 		return nil, err
-	} else {
-		dsc := &DeviceShifuConfig{}
-		if driverProperties, ok := cfg[CM_DRIVERPROPERTIES_STR]; ok {
-			err := yaml.Unmarshal([]byte(driverProperties), &dsc.driverProperties)
-			if err != nil {
-				log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_DRIVERPROPERTIES_STR, err)
-				return nil, err
-			}
-		}
-
-		if instructions, ok := cfg[CM_INSTRUCTIONS_STR]; ok {
-			err := yaml.Unmarshal([]byte(instructions), &dsc.Instructions)
-			if err != nil {
-				log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_INSTRUCTIONS_STR, err)
-				return nil, err
-			}
-		}
-
-		if telemetries, ok := cfg[CM_TELEMETRIES_STR]; ok {
-			err = yaml.Unmarshal([]byte(telemetries), &dsc.Telemetries)
-			if err != nil {
-				log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_TELEMETRIES_STR, err)
-				return nil, err
-			}
-		}
-
-		return dsc, nil
 	}
+
+	dsc := &DeviceShifuConfig{}
+	if driverProperties, ok := cfg[CM_DRIVERPROPERTIES_STR]; ok {
+		err := yaml.Unmarshal([]byte(driverProperties), &dsc.driverProperties)
+		if err != nil {
+			log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_DRIVERPROPERTIES_STR, err)
+			return nil, err
+		}
+	}
+
+	if instructions, ok := cfg[CM_INSTRUCTIONS_STR]; ok {
+		err := yaml.Unmarshal([]byte(instructions), &dsc.Instructions)
+		if err != nil {
+			log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_INSTRUCTIONS_STR, err)
+			return nil, err
+		}
+	}
+
+	if telemetries, ok := cfg[CM_TELEMETRIES_STR]; ok {
+		err = yaml.Unmarshal([]byte(telemetries), &dsc.Telemetries)
+		if err != nil {
+			log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_TELEMETRIES_STR, err)
+			return nil, err
+		}
+	}
+
+	return dsc, nil
+
 }
