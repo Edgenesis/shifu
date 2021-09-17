@@ -1,4 +1,4 @@
-package deviceshifuconfig
+package deviceshifu
 
 import (
 	"errors"
@@ -45,7 +45,7 @@ const (
 	CM_TELEMETRIES_STR      = "telemetries"
 )
 
-func New(path string) (*DeviceShifuConfig, error) {
+func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if path == "" {
 		return nil, errors.New("DeviceShifuConfig path can't be empty")
 	}
