@@ -26,7 +26,7 @@ type ConfigMapData struct {
 	} `yaml:"data"`
 }
 
-func TestNewDeviceShifuConfigNew(t *testing.T) {
+func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
 		TelemetryInstructionNameGetStatus  string = "get_status"
 		TelemetryInstructionNameGetReading string = "get_reading"
