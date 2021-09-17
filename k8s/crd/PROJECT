@@ -9,7 +9,7 @@ resources:
     namespaced: true
   controller: true
   domain: edgenesis.io
-  group: iot.edgenesis.io
+  group: shifu
   kind: EdgeDevice
   path: edgenesis.io/shifu/api/v1alpha1
   version: v1alpha1

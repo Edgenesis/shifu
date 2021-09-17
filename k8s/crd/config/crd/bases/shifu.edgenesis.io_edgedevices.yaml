@@ -6,9 +6,9 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.4.1
   creationTimestamp: null
-  name: edgedevices.iot.edgenesis.io.edgenesis.io
+  name: edgedevices.shifu.edgenesis.io
 spec:
-  group: iot.edgenesis.io.edgenesis.io
+  group: shifu.edgenesis.io
   names:
     kind: EdgeDevice
     listKind: EdgeDeviceList
@@ -36,19 +36,30 @@ spec:
           spec:
             description: EdgeDeviceSpec defines the desired state of EdgeDevice
             properties:
-              foo:
-                description: Foo is an example field of EdgeDevice. Edit edgedevice_types.go
-                  to remove/update
+              address:
+                type: string
+              connection:
+                description: Connection specifies the EdgeDevice-EdgeNode connection
+                  type.
+                type: string
+              protocol:
+                description: Protocol specifies the EdgeDevice's communication protocol.
+                type: string
+              sku:
+                description: Sku specifies the EdgeDevice's SKU.
                 type: string
             type: object
           status:
             description: EdgeDeviceStatus defines the observed state of EdgeDevice
+            properties:
+              edgedevicephase:
+                description: EdgeDevicePhase is a simple, high-level summary of where
+                  the EdgeDevice is in its lifecycle.
+                type: string
             type: object
         type: object
     served: true
     storage: true
-    subresources:
-      status: {}
 status:
   acceptedNames:
     kind: ""

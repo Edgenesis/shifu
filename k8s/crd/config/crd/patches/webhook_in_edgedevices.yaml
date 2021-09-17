@@ -2,7 +2,7 @@
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
-  name: edgedevices.iot.edgenesis.io.edgenesis.io
+  name: edgedevices.shifu.edgenesis.io
 spec:
   conversion:
     strategy: Webhook

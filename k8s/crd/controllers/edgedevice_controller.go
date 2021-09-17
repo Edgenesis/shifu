@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	iotedgenesisiov1alpha1 "edgenesis.io/shifu/api/v1alpha1"
+	v1alpha1 "edgenesis.io/shifu/api/v1alpha1"
 )
 
 // EdgeDeviceReconciler reconciles a EdgeDevice object
@@ -33,9 +33,9 @@ type EdgeDeviceReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=iot.edgenesis.io.edgenesis.io,resources=edgedevices,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=iot.edgenesis.io.edgenesis.io,resources=edgedevices/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=iot.edgenesis.io.edgenesis.io,resources=edgedevices/finalizers,verbs=update
+//+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=edgedevices,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=edgedevices/status,verbs=get;update;patch
+//+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=edgedevices/finalizers,verbs=update
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -47,9 +47,19 @@ type EdgeDeviceReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.8.3/pkg/reconcile
 func (r *EdgeDeviceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	rlog := log.FromContext(ctx)
 
-	// your logic here
+	ed := &v1alpha1.EdgeDevice{}
+	if err := r.Get(ctx, req.NamespacedName, ed); err != nil {
+		rlog.Error(err, "Unable to fetch EdgeDevice")
+		// we'll ignore not-found errors, since they can't be fixed by an immediate
+		// requeue (we'll need to wait for a new notification), and we can get them
+		// on deleted requests.
+		return ctrl.Result{}, client.IgnoreNotFound(err)
+	}
+
+	// TODO: reconcile EdgeDevice-deviceShifu states
+	rlog.Info("Hello World! This is edgedevice_controller reconciling")
 
 	return ctrl.Result{}, nil
 }
@@ -57,6 +67,6 @@ func (r *EdgeDeviceReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 // SetupWithManager sets up the controller with the Manager.
 func (r *EdgeDeviceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&iotedgenesisiov1alpha1.EdgeDevice{}).
+		For(&v1alpha1.EdgeDevice{}).
 		Complete(r)
 }

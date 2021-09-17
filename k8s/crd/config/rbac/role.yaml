@@ -7,7 +7,7 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
-  - iot.edgenesis.io.edgenesis.io
+  - shifu.edgenesis.io
   resources:
   - edgedevices
   verbs:
@@ -19,13 +19,13 @@ rules:
   - update
   - watch
 - apiGroups:
-  - iot.edgenesis.io.edgenesis.io
+  - shifu.edgenesis.io
   resources:
   - edgedevices/finalizers
   verbs:
   - update
 - apiGroups:
-  - iot.edgenesis.io.edgenesis.io
+  - shifu.edgenesis.io
   resources:
   - edgedevices/status
   verbs:

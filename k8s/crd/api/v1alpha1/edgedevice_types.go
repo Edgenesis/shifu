@@ -25,21 +25,65 @@ import (
 
 // EdgeDeviceSpec defines the desired state of EdgeDevice
 type EdgeDeviceSpec struct {
-	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
+	// INSERT ADDITIONAL SPEC FIELDS - desired state of EdgeDevice
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of EdgeDevice. Edit edgedevice_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	// Sku specifies the EdgeDevice's SKU.
+	Sku        *string     `json:"sku,omitempty"`
+	Connection *Connection `json:"connection,omitempty"`
+	Address    *string     `json:"address,omitempty"`
+	Protocol   *Protocol   `json:"protocol,omitempty"`
+
+	// TODO: add other fields like disconnectTimemoutInSeconds
 }
 
 // EdgeDeviceStatus defines the observed state of EdgeDevice
 type EdgeDeviceStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+	// INSERT ADDITIONAL STATUS FIELD - define observed state of EdgeDevice
 	// Important: Run "make" to regenerate code after modifying this file
+
+	// TODO: EdgeDeiveIP
+	// EdgeDeviceIP is the IP address of the EdgeDevice, if it has native IP support.
+	// For non-IP connections, EdgeDeviceIP is the connected EdgeNode's IP address.
+	// EdgeDeviceIP *string `json:"edgedeviceip"`
+
+	EdgeDevicePhase *EdgeDevicePhase `json:"edgedevicephase,omitempty"`
 }
 
 //+kubebuilder:object:root=true
 //+kubebuilder:subresource:status
+
+// Connection specifies the EdgeDevice-EdgeNode connection type.
+type Connection string
+
+const (
+	ConnectionEthernet Connection = "Ethernet"
+)
+
+// Protocol specifies the EdgeDevice's communication protocol.
+type Protocol string
+
+const (
+	ProtocolHTTP Protocol = "HTTP"
+	ProtocolUSB  Protocol = "USB"
+)
+
+// EdgeDevicePhase is a simple, high-level summary of where the EdgeDevice is in its lifecycle.
+type EdgeDevicePhase string
+
+const (
+	// EdgeDevicePending means the EdgeDevice has been accepted by the system but not ready yet.
+	EdgeDevicePending EdgeDevicePhase = "Pending"
+	// EdgeDeviceRunning means the EdgeDevice is able to interact with the system and user applications.
+	EdgeDeviceRunning EdgeDevicePhase = "Running"
+	// EdgeDeviceFailed means the EdgeDevice is failed state.
+	EdgeDeviceFailed EdgeDevicePhase = "Failed"
+	// EdgeDeviceUnknown means the EdgeDevice's info could not be obtained.
+	// This is typically due to communication failures.
+	EdgeDeviceUnknown EdgeDevicePhase = "Unknown"
+)
+
+//+kubebuilder:object:root=true
 
 // EdgeDevice is the Schema for the edgedevices API
 type EdgeDevice struct {
