@@ -1,4 +1,4 @@
-package deviceshifuconfig
+package deviceshifu
 
 import (
 	"io/ioutil"
@@ -26,7 +26,7 @@ type ConfigMapData struct {
 	} `yaml:"data"`
 }
 
-func TestNew(t *testing.T) {
+func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
 		TelemetryInstructionNameGetStatus  string = "get_status"
 		TelemetryInstructionNameGetReading string = "get_reading"
@@ -82,7 +82,7 @@ func TestNew(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	mockdsc, err := New(MOCK_DEVICE_CONFIG_FOLDER)
+	mockdsc, err := NewDeviceShifuConfig(MOCK_DEVICE_CONFIG_FOLDER)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
