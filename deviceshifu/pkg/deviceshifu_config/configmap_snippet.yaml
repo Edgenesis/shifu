@@ -1,7 +1,7 @@
 data:
   driverProperties: |
     driverSku: Edgenesis Mock Device
-    driverImage: edgenesis/mockdevice:0.0.1
+    driverImage: edgenesis/mockdevice:v0.0.1
   instructions: |
     get_reading:
     get_status:

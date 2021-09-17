@@ -16,6 +16,8 @@ const (
 	MOCK_DEVICE_WRITEFILE_PERMISSION = 0644
 )
 
+var MOCK_DEVICE_CONFIG_FOLDER = path.Join("etc", "edgedevice", "config")
+
 type ConfigMapData struct {
 	Data struct {
 		DriverProperties string `yaml:"driverProperties"`
@@ -24,57 +26,57 @@ type ConfigMapData struct {
 	} `yaml:"data"`
 }
 
-var InstructionValueTypeInt32 InstructionValueType = "Int32"
-var InstructionReadWriteW InstructionReadWrite = "W"
-var TelemetryInstructionNameGetStatus TelemetryInstructionName = "get_status"
-var TelemetryInstructionNameGetReading TelemetryInstructionName = "get_reading"
-var TelemetryInitialDelayMs1000 TelemetryInitialDelayMs = 1000
-var TelemetryIntervalMs1000 TelemetryIntervalMs = 1000
-var MOCK_DEVICE_CONFIG_FOLDER = path.Join("etc", "edgedevice", "config")
-
-var mockDeviceDriverProperties = DeviceShifuDriverProperties{
-	"Edgenesis Mock Device",
-	"edgenesis/mockdevice:0.0.1",
-}
-
-var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
-	"get_reading": nil,
-	"get_status":  nil,
-	"set_reading": {
-		[]DeviceShifuInstructionProperty{
-			{
-				ValueType:    &InstructionValueTypeInt32,
-				ReadWrite:    &InstructionReadWriteW,
-				DefaultValue: nil,
-			},
-		},
-	},
-	"start": nil,
-	"stop":  nil,
-}
-
-var mockDeviceTelemetries = map[string]*DeviceShifuTelemetry{
-	"device_health": {
-		[]DeviceShifuTelemetryProperty{
-			{
-				InstructionName: &TelemetryInstructionNameGetStatus,
-				InitialDelayMs:  &TelemetryInitialDelayMs1000,
-				IntervalMs:      &TelemetryIntervalMs1000,
-			},
-		},
-	},
-	"device_random": {
-		[]DeviceShifuTelemetryProperty{
-			{
-				InstructionName: &TelemetryInstructionNameGetReading,
-				InitialDelayMs:  &TelemetryInitialDelayMs1000,
-				IntervalMs:      &TelemetryIntervalMs1000,
-			},
-		},
-	},
-}
-
 func TestNew(t *testing.T) {
+	var (
+		TelemetryInstructionNameGetStatus  string = "get_status"
+		TelemetryInstructionNameGetReading string = "get_reading"
+		InstructionValueTypeInt32          string = "Int32"
+		InstructionReadWriteW              string = "W"
+		TelemetryMs1000                    int    = 1000
+	)
+
+	var mockDeviceDriverProperties = DeviceShifuDriverProperties{
+		"Edgenesis Mock Device",
+		"edgenesis/mockdevice:v0.0.1",
+	}
+
+	var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
+		"get_reading": nil,
+		"get_status":  nil,
+		"set_reading": {
+			[]DeviceShifuInstructionProperty{
+				{
+					ValueType:    InstructionValueTypeInt32,
+					ReadWrite:    InstructionReadWriteW,
+					DefaultValue: nil,
+				},
+			},
+		},
+		"start": nil,
+		"stop":  nil,
+	}
+
+	var mockDeviceTelemetries = map[string]*DeviceShifuTelemetry{
+		"device_health": {
+			[]DeviceShifuTelemetryProperty{
+				{
+					InstructionName: &TelemetryInstructionNameGetStatus,
+					InitialDelayMs:  &TelemetryMs1000,
+					IntervalMs:      &TelemetryMs1000,
+				},
+			},
+		},
+		"device_random": {
+			[]DeviceShifuTelemetryProperty{
+				{
+					InstructionName: &TelemetryInstructionNameGetReading,
+					InitialDelayMs:  &TelemetryMs1000,
+					IntervalMs:      &TelemetryMs1000,
+				},
+			},
+		},
+	}
+
 	err := GenerateConfigMapFromSnippet(MOCK_DEVICE_CM_STR, MOCK_DEVICE_CONFIG_FOLDER)
 	if err != nil {
 		t.Errorf(err.Error())
@@ -133,6 +135,5 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 			return err
 		}
 	}
-
 	return nil
 }

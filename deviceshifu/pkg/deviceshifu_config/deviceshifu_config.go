@@ -8,15 +8,6 @@ import (
 	"knative.dev/pkg/configmap"
 )
 
-type (
-	InstructionValueType     string
-	InstructionReadWrite     string
-	InstructionDefaultValue  interface{}
-	TelemetryInstructionName string
-	TelemetryInitialDelayMs  int
-	TelemetryIntervalMs      int
-)
-
 type DeviceShifuConfig struct {
 	driverProperties DeviceShifuDriverProperties
 	Instructions     map[string]*DeviceShifuInstruction
@@ -33,9 +24,9 @@ type DeviceShifuInstruction struct {
 }
 
 type DeviceShifuInstructionProperty struct {
-	ValueType    *InstructionValueType    `yaml:"valueType"`
-	ReadWrite    *InstructionReadWrite    `yaml:"readWrite"`
-	DefaultValue *InstructionDefaultValue `yaml:"defaultValue"`
+	ValueType    string      `yaml:"valueType"`
+	ReadWrite    string      `yaml:"readWrite"`
+	DefaultValue interface{} `yaml:"defaultValue"`
 }
 
 type DeviceShifuTelemetry struct {
@@ -43,9 +34,9 @@ type DeviceShifuTelemetry struct {
 }
 
 type DeviceShifuTelemetryProperty struct {
-	InstructionName *TelemetryInstructionName `yaml:"instruction"`
-	InitialDelayMs  *TelemetryInitialDelayMs  `yaml:"initialDelayMs,omitempty"`
-	IntervalMs      *TelemetryIntervalMs      `yaml:"intervalMs,omitempty"`
+	InstructionName *string `yaml:"instruction"`
+	InitialDelayMs  *int    `yaml:"initialDelayMs,omitempty"`
+	IntervalMs      *int    `yaml:"intervalMs,omitempty"`
 }
 
 const (
@@ -73,6 +64,7 @@ func New(path string) (*DeviceShifuConfig, error) {
 		}
 	}
 
+	// TODO: add validation to types and readwrite mode
 	if instructions, ok := cfg[CM_INSTRUCTIONS_STR]; ok {
 		err := yaml.Unmarshal([]byte(instructions), &dsc.Instructions)
 		if err != nil {
@@ -88,6 +80,5 @@ func New(path string) (*DeviceShifuConfig, error) {
 			return nil, err
 		}
 	}
-
 	return dsc, nil
 }
