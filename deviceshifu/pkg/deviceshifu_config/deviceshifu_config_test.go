@@ -60,18 +60,18 @@ func TestNew(t *testing.T) {
 		"device_health": {
 			[]DeviceShifuTelemetryProperty{
 				{
-					InstructionName: &TelemetryInstructionNameGetStatus,
-					InitialDelayMs:  &TelemetryMs1000,
-					IntervalMs:      &TelemetryMs1000,
+					DeviceInstructionName: &TelemetryInstructionNameGetStatus,
+					InitialDelayMs:        &TelemetryMs1000,
+					IntervalMs:            &TelemetryMs1000,
 				},
 			},
 		},
 		"device_random": {
 			[]DeviceShifuTelemetryProperty{
 				{
-					InstructionName: &TelemetryInstructionNameGetReading,
-					InitialDelayMs:  &TelemetryMs1000,
-					IntervalMs:      &TelemetryMs1000,
+					DeviceInstructionName: &TelemetryInstructionNameGetReading,
+					InitialDelayMs:        &TelemetryMs1000,
+					IntervalMs:            &TelemetryMs1000,
 				},
 			},
 		},
