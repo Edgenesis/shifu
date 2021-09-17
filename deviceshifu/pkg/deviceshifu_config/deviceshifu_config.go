@@ -20,7 +20,7 @@ type DeviceShifuDriverProperties struct {
 }
 
 type DeviceShifuInstruction struct {
-	DeviceInstructionName []DeviceShifuInstructionProperty `yaml:"properties,omitempty"`
+	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"properties,omitempty"`
 }
 
 type DeviceShifuInstructionProperty struct {
@@ -30,13 +30,13 @@ type DeviceShifuInstructionProperty struct {
 }
 
 type DeviceShifuTelemetry struct {
-	DeviceShifuTelemetryName []DeviceShifuTelemetryProperty `yaml:"properties,omitempty"`
+	DeviceShifuTelemetryProperties []DeviceShifuTelemetryProperty `yaml:"properties,omitempty"`
 }
 
 type DeviceShifuTelemetryProperty struct {
 	DeviceInstructionName *string `yaml:"instruction"`
-	InitialDelayMs  *int    `yaml:"initialDelayMs,omitempty"`
-	IntervalMs      *int    `yaml:"intervalMs,omitempty"`
+	InitialDelayMs        *int    `yaml:"initialDelayMs,omitempty"`
+	IntervalMs            *int    `yaml:"intervalMs,omitempty"`
 }
 
 const (
