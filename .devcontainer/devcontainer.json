@@ -11,7 +11,15 @@
 			"NODE_VERSION": "lts/*"
 		}
 	},
-	"runArgs": [ "--cap-add=SYS_PTRACE", "--security-opt", "seccomp=unconfined" ],
+	"runArgs": [ 
+		"--cap-add=SYS_PTRACE",
+		"--security-opt",
+		"seccomp=unconfined",
+		"--init",
+		"--network=host" // host networking
+	],
+	// Enable docker-in-docker
+	"mounts": [ "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind" ],
 
 	// Set *default* container specific settings.json values on container create.
 	"settings": {
@@ -25,7 +33,8 @@
 	"extensions": [
 		"golang.Go",
 		// "lfs.vscode-emacs-friendly," Emacs Friendly Keymap
-		"eamodio.gitlens"
+		"eamodio.gitlens",
+		"ms-kubernetes-tools.vscode-kubernetes-tools"
 	],
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.

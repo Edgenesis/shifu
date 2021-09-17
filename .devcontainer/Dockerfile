@@ -15,17 +15,9 @@ RUN apt-get update && export DEBIAN_FRONTEND=noninteractive \
      && apt-get update \
      && apt-get install -y docker-ce-cli
 
-# Bootstrap a kind cluster
 RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64 \
      && chmod +x ./kind \
-     && mv ./kind /usr/local/bin/kind \
-     && kind create cluster
-
-# Load necessary images into kind
-COPY kind-load-image.sh kind-load-image.sh
-
-RUN chmod +x ./kind-load-image.sh \
-     && ./kind-load-image.sh
+     && mv ./kind /usr/local/bin/kind
 
 RUN curl -Lo ./kubebuilder https://go.kubebuilder.io/dl/master/$(go env GOOS)/$(go env GOARCH) \
      && chmod +x ./kubebuilder \ 
