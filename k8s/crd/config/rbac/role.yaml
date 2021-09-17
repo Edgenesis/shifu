@@ -1,0 +1,34 @@
+
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  creationTimestamp: null
+  name: manager-role
+rules:
+- apiGroups:
+  - iot.edgenesis.io.edgenesis.io
+  resources:
+  - edgedevices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - iot.edgenesis.io.edgenesis.io
+  resources:
+  - edgedevices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - iot.edgenesis.io.edgenesis.io
+  resources:
+  - edgedevices/status
+  verbs:
+  - get
+  - patch
+  - update

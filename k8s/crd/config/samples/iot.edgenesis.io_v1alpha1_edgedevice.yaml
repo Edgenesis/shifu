@@ -1,0 +1,7 @@
+apiVersion: iot.edgenesis.io.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-sample
+spec:
+  # Add fields here
+  foo: bar
