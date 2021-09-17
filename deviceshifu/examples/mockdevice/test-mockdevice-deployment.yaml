@@ -1,0 +1,29 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deviceshifu-mockdevice
+  labels:
+    app: deviceshifu-mockdevice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deviceshifu-mockdevice
+  template:
+    metadata:
+      labels:
+        app: deviceshifu-mockdevice
+    spec:
+      containers:
+      - name: deviceshifu-frontend
+        image: edgenesis/deviceshifu-frontend:0.0.1
+        ports:
+        - containerPort: 9376
+        volumeMounts:
+        - name: edgedevice-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+      volumes:
+      - name: config-volume
+        configMap:
+          name: mockdevice-configmap-0.0.1 # This config map contains all the device SKU related info

@@ -1,0 +1,25 @@
+data:
+  driverProperties: |
+    driverSku: Edgenesis Mock Device
+    driverImage: edgenesis/mockdevice:v0.0.1
+  instructions: |
+    get_reading:
+    get_status:
+    set_reading:
+      properties:
+      - valueType: "Int32"
+        readWrite: "W"
+        defaultValue: null
+    start:
+    stop:
+  telemetries: |
+    device_health:
+      properties:
+      - instruction: get_status
+        initialDelayMs: 1000
+        intervalMs: 1000
+    device_random:
+      properties:
+      - instruction: get_reading
+        initialDelayMs: 1000
+        intervalMs: 1000
