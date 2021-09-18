@@ -53,7 +53,7 @@ func New(name string, config_file_dir string, kube_config_location string, names
 		if edgeDeviceConfig != nil {
 			switch protocol := *edgeDeviceConfig.Spec.Protocol; protocol {
 			case v1alpha1.ProtocolHTTP:
-				httpClient := &http.Client{}
+				httpClient := &http.Client{Timeout: 3 * time.Second} // TODO: read timeout from EdgeDeviceConfig
 				for instruction, properties := range deviceShifuConfig.Instructions {
 					mux.HandleFunc("/"+instruction, deviceCommandHandlerHTTP(httpClient, edgeDeviceConfig.Spec, instruction, properties))
 				}
@@ -92,14 +92,25 @@ func deviceCommandHandlerHTTP(httpClient *http.Client, edgeDeviceConfig v1alpha1
 				fmt.Printf("Properties of command: %v %v\n", instruction, property)
 			}
 		}
-		w.Write([]byte(instruction))
-		resp, err := httpClient.Get(*edgeDeviceConfig.Address + "/" + instruction)
+		// w.Write([]byte(instruction))
+		fmt.Printf("Proxy command : %v\n", *edgeDeviceConfig.Address+"/"+instruction)
+		// request =
+		resp, err := httpClient.Get("http://" + *edgeDeviceConfig.Address + "/" + instruction)
+		fmt.Println("Finished proxy command")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		}
-		copyHeader(w.Header(), resp.Header)
-		w.WriteHeader(resp.StatusCode)
-		io.Copy(w, resp.Body)
+
+		if resp != nil {
+			fmt.Println("http get no error")
+			copyHeader(w.Header(), resp.Header)
+			w.WriteHeader(resp.StatusCode)
+			io.Copy(w, resp.Body)
+		} else {
+			fmt.Println("resp is nil")
+			// w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte(instruction))
+		}
 	}
 }
 

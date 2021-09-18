@@ -124,7 +124,7 @@ func NewEdgeDeviceConfig(nameSpace string, deviceName string, kubeconfigPath str
 func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	v1alpha1.AddToScheme(scheme.Scheme)
 	crdConfig := *config
-	crdConfig.ContentConfig.GroupVersion = &schema.GroupVersion{Group: "shifu.edgenesis.io", Version: "v1alpha1"}
+	crdConfig.ContentConfig.GroupVersion = &schema.GroupVersion{Group: v1alpha1.GroupVersion.Group, Version: v1alpha1.GroupVersion.Version}
 	crdConfig.APIPath = "/apis"
 	crdConfig.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()

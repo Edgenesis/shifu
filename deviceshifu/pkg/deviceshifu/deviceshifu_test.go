@@ -23,6 +23,7 @@ func TestStart(t *testing.T) {
 	}
 
 	go mockds.Stop()
+	time.Sleep(1 * time.Second)
 }
 
 func TestDeviceHealthHandler(t *testing.T) {
@@ -49,6 +50,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 	}
 
 	go mockds.Stop()
+	time.Sleep(1 * time.Second)
 }
 
 func TestDeviceInstructionHandler(t *testing.T) {
@@ -95,7 +97,7 @@ func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint 
 	body, err := io.ReadAll(resp.Body)
 
 	if string(body) != instruction {
-		fmt.Printf("Body: %+v does not match instruction: %v\n", string(body), instruction)
+		fmt.Printf("Body: '%+v' does not match instruction: '%v'\n", string(body), instruction)
 		return false
 	}
 
