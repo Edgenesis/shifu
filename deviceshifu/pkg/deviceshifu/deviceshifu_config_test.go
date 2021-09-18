@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1"
 	"gopkg.in/yaml.v2"
 )
 
@@ -100,6 +101,39 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	eq = reflect.DeepEqual(mockDeviceTelemetries, mockdsc.Telemetries)
 	if !eq {
 		t.Errorf("Telemetries mismatch")
+	}
+}
+
+func TestNewEdgeDeviceConfig(t *testing.T) {
+	var (
+		kubeconfigPath                                        = "/root/.kube/config"
+		deviceName                                            = "edgedevice-sample"
+		nameSpace                                             = "crd-system"
+		EDGEDEVICE_SIMPLE_SPEC_SKU                            = "AGV"
+		EDGEDEVICE_SIMPLE_SPEC_CONNECTION v1alpha1.Connection = "Ethernet"
+		EDGEDEVICE_SIMPLE_SPEC_ADDRESS                        = "10.0.0.2:80"
+		EDGEDEVICE_SIMPLE_SPEC_PROTOCOL   v1alpha1.Protocol   = "HTTP"
+	)
+
+	edgeDeviceConfig, err := NewEdgeDeviceConfig(nameSpace, deviceName, kubeconfigPath)
+	if err != nil {
+		t.Errorf(err.Error())
+	}
+
+	if *edgeDeviceConfig.Spec.Sku != EDGEDEVICE_SIMPLE_SPEC_SKU {
+		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_SIMPLE_SPEC_SKU, *edgeDeviceConfig.Spec.Sku)
+	}
+
+	if *edgeDeviceConfig.Spec.Connection != EDGEDEVICE_SIMPLE_SPEC_CONNECTION {
+		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_SIMPLE_SPEC_SKU, *edgeDeviceConfig.Spec.Sku)
+	}
+
+	if *edgeDeviceConfig.Spec.Address != EDGEDEVICE_SIMPLE_SPEC_ADDRESS {
+		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_SIMPLE_SPEC_SKU, *edgeDeviceConfig.Spec.Sku)
+	}
+
+	if *edgeDeviceConfig.Spec.Protocol != EDGEDEVICE_SIMPLE_SPEC_PROTOCOL {
+		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_SIMPLE_SPEC_SKU, *edgeDeviceConfig.Spec.Sku)
 	}
 }
 

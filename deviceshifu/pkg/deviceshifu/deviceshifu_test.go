@@ -1,7 +1,9 @@
 package deviceshifu
 
 import (
+	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"testing"
 	"time"
@@ -10,14 +12,25 @@ import (
 )
 
 func TestStart(t *testing.T) {
-	mockds := New("TestStart")
+	var config_folder = "etc/edgedevice/config"
+	mockds := New("TestStart", config_folder, DEVICE_KUBECONFIG_DO_NOT_LOAD_STR, "")
+	if mockds == nil {
+		t.Errorf("Failed creating new deviceShifu")
+	}
 
 	if err := mockds.Start(wait.NeverStop); err != nil {
 		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
 	}
+
+	go mockds.Stop()
 }
+
 func TestDeviceHealthHandler(t *testing.T) {
-	mockds := New("TestStartHttpServer")
+	var config_folder = "etc/edgedevice/config"
+	mockds := New("TestStartHttpServer", config_folder, DEVICE_KUBECONFIG_DO_NOT_LOAD_STR, "")
+	if mockds == nil {
+		t.Errorf("Failed creating new deviceShifu")
+	}
 
 	go mockds.startHttpServer(wait.NeverStop)
 
@@ -34,4 +47,57 @@ func TestDeviceHealthHandler(t *testing.T) {
 	if string(body) != DEVICE_IS_HEALTHY_STR {
 		t.Errorf("%+v", body)
 	}
+
+	go mockds.Stop()
+}
+
+func TestDeviceInstructionHandler(t *testing.T) {
+	var (
+		config_folder     = "etc/edgedevice/config"
+		httpEndpoint      = "http://127.0.0.1:8080"
+		deviceName        = "edgedevice-sample"
+		kubeconfigPath    = "/root/.kube/config"
+		namespace         = "crd-system"
+		instruction_array = []string{
+			"get_reading",
+			"get_status",
+			"set_reading",
+			"start",
+			"stop",
+		}
+	)
+
+	mockds := New(deviceName, config_folder, kubeconfigPath, namespace)
+	if mockds == nil {
+		t.Errorf("Failed creating new deviceShifu")
+	}
+
+	go mockds.startHttpServer(wait.NeverStop)
+
+	time.Sleep(1 * time.Second)
+	for _, instruction := range instruction_array {
+		if !CheckSimpleInstructionHandlerHttpResponse(instruction, httpEndpoint) {
+			t.Errorf("Error getting instruction response from instruction: %v", instruction)
+		}
+	}
+
+	go mockds.Stop()
+}
+
+func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint string) bool {
+	resp, err := http.Get(httpEndpoint + "/" + instruction)
+	if err != nil {
+		log.Fatalf("HTTP GET returns an error %v", err.Error())
+		return false
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+
+	if string(body) != instruction {
+		fmt.Printf("Body: %+v does not match instruction: %v\n", string(body), instruction)
+		return false
+	}
+
+	return true
 }

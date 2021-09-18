@@ -1,10 +1,17 @@
 package deviceshifu
 
 import (
+	"context"
 	"errors"
 	"log"
 
+	v1alpha1 "github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1"
 	"gopkg.in/yaml.v2"
+	"k8s.io/apimachinery/pkg/runtime/schema"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
 	"knative.dev/pkg/configmap"
 )
 
@@ -81,4 +88,50 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 		}
 	}
 	return dsc, nil
+}
+
+func NewEdgeDeviceConfig(nameSpace string, deviceName string, kubeconfigPath string) (*v1alpha1.EdgeDevice, error) {
+	var config *rest.Config
+	var err error
+
+	if kubeconfigPath != "" {
+		config, err = clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	} else {
+		config, err = rest.InClusterConfig()
+	}
+
+	if err != nil {
+		log.Fatalf("Error parsing incluster/kubeconfig, error: %v", err.Error())
+		return nil, err
+	}
+
+	client, err := NewEdgeDeviceRestClient(config)
+	if err != nil {
+		log.Fatalf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
+		return nil, err
+	}
+
+	result := &v1alpha1.EdgeDevice{}
+	err = client.Get().Namespace(nameSpace).Resource("edgedevices").Name(deviceName).Do(context.TODO()).Into(result)
+	if err != nil {
+		log.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
+	v1alpha1.AddToScheme(scheme.Scheme)
+	crdConfig := *config
+	crdConfig.ContentConfig.GroupVersion = &schema.GroupVersion{Group: "shifu.edgenesis.io", Version: "v1alpha1"}
+	crdConfig.APIPath = "/apis"
+	crdConfig.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
+	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
+	exampleRestClient, err := rest.UnversionedRESTClientFor(&crdConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return exampleRestClient, nil
 }
