@@ -8,6 +8,7 @@ import (
 	"time"
 
 	v1alpha1 "github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 type DeviceShifu struct {
@@ -21,6 +22,8 @@ const (
 	DEVICE_IS_HEALTHY_STR             string = "Device is healthy"
 	DEVICE_CONFIGMAP_FOLDER_STR       string = "/etc/edgedevice/config"
 	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR string = "NULL"
+	DEVICE_NAMESPACE_DEFAULT          string = "default"
+	KUBERNETES_CONFIG_DEFAULT         string = ""
 )
 
 func New(name string, config_file_dir string, kube_config_location string, namespace string) *DeviceShifu {
@@ -47,20 +50,18 @@ func New(name string, config_file_dir string, kube_config_location string, names
 	if kube_config_location != DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
 		edgeDeviceConfig, err = NewEdgeDeviceConfig(namespace, name, kube_config_location)
 		if err != nil {
-			fmt.Errorf("Error parsing ConfigMap at %v", config_file_dir)
+			fmt.Errorf("Error parsing EdgeDeviceResource")
 		}
 
-		if edgeDeviceConfig != nil {
-			switch protocol := *edgeDeviceConfig.Spec.Protocol; protocol {
-			case v1alpha1.ProtocolHTTP:
-				httpClient := &http.Client{Timeout: 3 * time.Second} // TODO: read timeout from EdgeDeviceConfig
-				for instruction, properties := range deviceShifuConfig.Instructions {
-					mux.HandleFunc("/"+instruction, deviceCommandHandlerHTTP(httpClient, edgeDeviceConfig.Spec, instruction, properties))
-				}
-			case v1alpha1.ProtocolUSB:
-				for instruction, properties := range deviceShifuConfig.Instructions {
-					mux.HandleFunc("/"+instruction, deviceCommandHandlerUSB(edgeDeviceConfig.Spec, instruction, properties))
-				}
+		switch protocol := *edgeDeviceConfig.Spec.Protocol; protocol {
+		case v1alpha1.ProtocolHTTP:
+			httpClient := &http.Client{Timeout: 3 * time.Second} // TODO: read timeout from EdgeDeviceConfig
+			for instruction, properties := range deviceShifuConfig.Instructions {
+				mux.HandleFunc("/"+instruction, deviceCommandHandlerHTTP(httpClient, edgeDeviceConfig.Spec, instruction, properties))
+			}
+		case v1alpha1.ProtocolUSB:
+			for instruction, properties := range deviceShifuConfig.Instructions {
+				mux.HandleFunc("/"+instruction, deviceCommandHandlerUSB(edgeDeviceConfig.Spec, instruction, properties))
 			}
 		}
 	}
@@ -92,23 +93,17 @@ func deviceCommandHandlerHTTP(httpClient *http.Client, edgeDeviceConfig v1alpha1
 				fmt.Printf("Properties of command: %v %v\n", instruction, property)
 			}
 		}
-		// w.Write([]byte(instruction))
-		fmt.Printf("Proxy command : %v\n", *edgeDeviceConfig.Address+"/"+instruction)
-		// request =
 		resp, err := httpClient.Get("http://" + *edgeDeviceConfig.Address + "/" + instruction)
-		fmt.Println("Finished proxy command")
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		}
 
 		if resp != nil {
-			fmt.Println("http get no error")
 			copyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 			io.Copy(w, resp.Body)
 		} else {
-			fmt.Println("resp is nil")
-			// w.WriteHeader(http.StatusServiceUnavailable)
+			// TODO: For now, just write tht instruction to the response
 			w.Write([]byte(instruction))
 		}
 	}
@@ -149,4 +144,14 @@ func (ds *DeviceShifu) Stop() error {
 
 	fmt.Printf("deviceShifu %s's http server stopped\n", ds.Name)
 	return nil
+}
+
+func main(deviceName string) {
+	ds := New(deviceName, DEVICE_CONFIGMAP_FOLDER_STR, KUBERNETES_CONFIG_DEFAULT, DEVICE_NAMESPACE_DEFAULT)
+	ds.startHttpServer(wait.NeverStop)
+	for {
+		// TODO: update configs
+		// TODO: update status based on telemetry
+		time.Sleep(10 * time.Second)
+	}
 }

@@ -1,4 +1,4 @@
-module edgenesis.io/shifu
+module github.com/Edgenesis/shifu/k8s/crd
 
 go 1.16
 
