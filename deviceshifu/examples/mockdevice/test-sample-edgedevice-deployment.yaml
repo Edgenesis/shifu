@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: edgedevice-sample-deployment
+  name: edgedevice-sample-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edgedevice-sample-deployment
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: edgedevice-sample-deployment
+    spec:
+      containers:
+      - image: edgehub/deviceshifu-http:v0.0.1
+        name: deviceshifu-http
+        resources: {} 
+        volumeMounts:
+        - name: edgedevice-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+      volumes:
+      - name: edgedevice-config
+        configMap:
+          name: mockdevice-configmap-0.0.1
+status: {}

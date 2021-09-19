@@ -1,0 +1,44 @@
+# Build the manager binary
+FROM golang:1.17.1 as builder
+
+WORKDIR /workspace/shifu/deviceshifu
+
+RUN apt-get update && apt-get install -y ca-certificates git-core ssh
+
+ADD keys/repo-key /root/.ssh/id_rsa
+RUN chmod 700 /root/.ssh/id_rsa
+RUN echo "Host github.com\n\tStrictHostKeyChecking no\n" >> /root/.ssh/config
+RUN git config --global url.ssh://git@github.com/.insteadOf https://github.com/
+
+# ENV GOPROXY=https://goproxy.io,direct
+ENV GO111MODULE=on
+ENV GOPRIVATE=github.com/Edgenesis
+
+# RUN go get golang.org/x/tools/gopls@latest \
+#     k8s.io/client-go@latest \
+#     github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1@delete_zone_files
+
+# RUN go get -u github.com/ramya-rao-a/go-outline \ 
+#     k8s.io/apimachinery/pkg/util/wait
+
+COPY go.mod ./
+COPY go.sum ./
+
+RUN go mod download
+
+# COPY *.go ./
+
+
+# Copy the go source
+# COPY deviceshifu/ deviceshifu/
+# COPY deviceshifu/pkg/ pkg/
+COPY . .
+
+# Build the Go app
+RUN go build -o main deviceshifu/cmd/main.go
+
+# Expose port 8080 to the outside world
+EXPOSE 8080
+
+# Command to run the executable
+CMD ["./main"]

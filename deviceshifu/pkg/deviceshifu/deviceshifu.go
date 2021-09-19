@@ -8,7 +8,6 @@ import (
 	"time"
 
 	v1alpha1 "github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1"
-	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 type DeviceShifu struct {
@@ -144,14 +143,4 @@ func (ds *DeviceShifu) Stop() error {
 
 	fmt.Printf("deviceShifu %s's http server stopped\n", ds.Name)
 	return nil
-}
-
-func main(deviceName string) {
-	ds := New(deviceName, DEVICE_CONFIGMAP_FOLDER_STR, KUBERNETES_CONFIG_DEFAULT, DEVICE_NAMESPACE_DEFAULT)
-	ds.startHttpServer(wait.NeverStop)
-	for {
-		// TODO: update configs
-		// TODO: update status based on telemetry
-		time.Sleep(10 * time.Second)
-	}
 }

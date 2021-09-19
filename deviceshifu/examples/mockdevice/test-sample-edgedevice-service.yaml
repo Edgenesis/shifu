@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Service
+metadata:
+  creationTimestamp: null
+  labels:
+    app: edgedevice-sample-deployment
+  name: edgedevice-sample-deployment
+spec:
+  ports:
+  - port: 1234
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: edgedevice-sample-deployment
+  type: NodePort
+status:
+  loadBalancer: {}
