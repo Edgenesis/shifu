@@ -5,6 +5,21 @@
 make kube-builder-init
 ```
 
+### Create a new kind cluster
+```
+kind delete cluster && kind create cluster
+```
+
+### Install CRD
+```
+make install
+```
+
+### Uninstall CRD
+```
+make uninstall
+```
+
 ### Create EdgeDevice API
 ```
 make kube-builder-create-api-edgedevice
