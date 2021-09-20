@@ -1,0 +1,9 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-sample
+spec:
+  sku: "AGV" 
+  connection: Ethernet
+  address: 10.0.0.2:80
+  protocol: HTTP
