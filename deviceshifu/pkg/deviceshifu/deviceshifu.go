@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"time"
 
@@ -42,14 +43,15 @@ func New(name string, config_file_dir string, kube_config_location string, names
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", deviceHealthHandler)
+	mux.HandleFunc("/health", deviceHealthHandler)
 
 	edgeDeviceConfig := &v1alpha1.EdgeDevice{}
 
 	if kube_config_location != DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
 		edgeDeviceConfig, err = NewEdgeDeviceConfig(namespace, name, kube_config_location)
 		if err != nil {
-			fmt.Errorf("Error parsing EdgeDeviceResource")
+			log.Fatalf("Error parsing EdgeDevice Resource")
+			return nil
 		}
 
 		switch protocol := *edgeDeviceConfig.Spec.Protocol; protocol {
@@ -89,9 +91,11 @@ func deviceCommandHandlerHTTP(httpClient *http.Client, edgeDeviceConfig v1alpha1
 		if properties != nil {
 			// TODO: handle validation compile
 			for _, property := range properties.DeviceShifuInstructionProperties {
-				fmt.Printf("Properties of command: %v %v\n", instruction, property)
+				log.Printf("Properties of command: %v %v\n", instruction, property)
 			}
 		}
+
+		log.Printf("handling instruction '%v' to '%v'", instruction, *edgeDeviceConfig.Address)
 		resp, err := httpClient.Get("http://" + *edgeDeviceConfig.Address + "/" + instruction)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
@@ -103,6 +107,7 @@ func deviceCommandHandlerHTTP(httpClient *http.Client, edgeDeviceConfig v1alpha1
 			io.Copy(w, resp.Body)
 		} else {
 			// TODO: For now, just write tht instruction to the response
+			log.Println("resp is nil")
 			w.Write([]byte(instruction))
 		}
 	}

@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     app: edgedevice-sample-deployment
-  name: edgedevice-sample-deployment
+  name: edgedevice-sample
 spec:
   ports:
   - port: 1234

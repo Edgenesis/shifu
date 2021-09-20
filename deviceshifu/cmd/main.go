@@ -14,7 +14,7 @@ func main() {
 	ds := deviceshifu.New(
 		deviceName,
 		deviceshifu.DEVICE_CONFIGMAP_FOLDER_STR,
-		deviceshifu.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		deviceshifu.KUBERNETES_CONFIG_DEFAULT,
 		namespace,
 	)
 

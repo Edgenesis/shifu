@@ -22,7 +22,7 @@ func TestStart(t *testing.T) {
 		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
 	}
 
-	go mockds.Stop()
+	mockds.Stop()
 	time.Sleep(1 * time.Second)
 }
 
@@ -49,7 +49,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("%+v", body)
 	}
 
-	go mockds.Stop()
+	mockds.Stop()
 	time.Sleep(1 * time.Second)
 }
 
@@ -61,6 +61,7 @@ func TestDeviceInstructionHandler(t *testing.T) {
 		kubeconfigPath    = "/root/.kube/config"
 		namespace         = "crd-system"
 		instruction_array = []string{
+			"health",
 			"get_reading",
 			"get_status",
 			"set_reading",
@@ -74,7 +75,7 @@ func TestDeviceInstructionHandler(t *testing.T) {
 		t.Errorf("Failed creating new deviceShifu")
 	}
 
-	go mockds.startHttpServer(wait.NeverStop)
+	go mockds.Start(wait.NeverStop)
 
 	time.Sleep(1 * time.Second)
 	for _, instruction := range instruction_array {
@@ -83,7 +84,7 @@ func TestDeviceInstructionHandler(t *testing.T) {
 		}
 	}
 
-	go mockds.Stop()
+	mockds.Stop()
 }
 
 func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint string) bool {
