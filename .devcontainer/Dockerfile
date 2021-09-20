@@ -30,7 +30,7 @@ RUN go get -u github.com/ramya-rao-a/go-outline \
 
 RUN go get golang.org/x/tools/gopls@latest \
     k8s.io/client-go@latest \
-    github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1@delete_zone_files
+    github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1@test_github_gomod
 
 # [Optional] Uncomment this line to install global node packages.
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1

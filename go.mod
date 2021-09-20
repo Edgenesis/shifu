@@ -3,7 +3,7 @@ module github.com/edgenesis/shifu
 go 1.17
 
 require (
-	github.com/Edgenesis/shifu/k8s/crd v0.0.0-20210918061043-a59c487971b2
+	github.com/Edgenesis/shifu/k8s/crd v0.0.0-20210920094059-497d4fcc9b6f
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.22.2
