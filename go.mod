@@ -10,6 +10,8 @@ require (
 	knative.dev/pkg v0.0.0-20210915055909-d8349b0909c4
 )
 
+replace github.com/Edgenesis/shifu/k8s/crd => ./k8s/crd
+
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/go-logr/logr v1.1.0 // indirect

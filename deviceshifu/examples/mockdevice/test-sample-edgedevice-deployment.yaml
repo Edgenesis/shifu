@@ -1,7 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  creationTimestamp: null
   labels:
     app: edgedevice-sample-deployment
   name: edgedevice-sample-deployment
@@ -10,10 +9,8 @@ spec:
   selector:
     matchLabels:
       app: edgedevice-sample-deployment
-  strategy: {}
   template:
     metadata:
-      creationTimestamp: null
       labels:
         app: edgedevice-sample-deployment
     spec:
@@ -22,7 +19,6 @@ spec:
         name: deviceshifu-http
         ports:
         - containerPort: 8080
-        resources: {} 
         volumeMounts:
         - name: edgedevice-config
           mountPath: "/etc/edgedevice/config"
@@ -32,4 +28,3 @@ spec:
         configMap:
           name: mockdevice-configmap-0.0.1
       serviceAccountName: edgedevice-reader-sa
-status: {}

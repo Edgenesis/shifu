@@ -34,3 +34,8 @@ make docker-build docker-push IMG=edgehub/edgedevice-controller:v0.0.1
 ```
 make deploy IMG=edgehub/edgedevice-controller:v0.0.1
 ```
+
+### Deploy sample edgedevice
+```
+kubectl apply -f config/samples/shifu_v1alpha1_edgedevice.yaml
+```

@@ -132,6 +132,9 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 	return ds.server.ListenAndServe()
 }
 
+// TODO: update configs
+// TODO: update status based on telemetry
+
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	fmt.Printf("deviceShifu %s started\n", ds.Name)
 

@@ -22,7 +22,5 @@ func main() {
 		panic(err.Error())
 	}
 
-	// TODO: update configs
-	// TODO: update status based on telemetry
 	select {}
 }
