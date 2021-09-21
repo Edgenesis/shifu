@@ -7,6 +7,7 @@ usage ()
 }
 
 if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
+        kubectl "$1" -f k8s/crd/config/samples/shifu_v1alpha1_edgedevice.yaml
         kubectl "$1" -f deviceshifu/examples/mockdevice/test-sample-edgedevice-serviceaccount.yaml
         kubectl "$1" -f deviceshifu/examples/mockdevice/test-sample-edgedevice-clusterrole.yaml
         kubectl "$1" -f deviceshifu/examples/mockdevice/test-sample-edgedevice-crb.yaml

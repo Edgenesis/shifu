@@ -46,6 +46,12 @@ type DeviceShifuTelemetryProperty struct {
 	IntervalMs            *int    `yaml:"intervalMs,omitempty"`
 }
 
+type EdgeDeviceConfigMetaData struct {
+	nameSpace      string
+	deviceName     string
+	kubeconfigPath string
+}
+
 const (
 	CM_DRIVERPROPERTIES_STR = "driverProperties"
 	CM_INSTRUCTIONS_STR     = "instructions"
@@ -90,12 +96,12 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	return dsc, nil
 }
 
-func NewEdgeDeviceConfig(nameSpace string, deviceName string, kubeconfigPath string) (*v1alpha1.EdgeDevice, error) {
+func NewEdgeDeviceConfig(edgeDeviceConfigMetaData * EdgeDeviceConfigMetaData) (*v1alpha1.EdgeDevice, error) {
 	var config *rest.Config
 	var err error
 
-	if kubeconfigPath != "" {
-		config, err = clientcmd.BuildConfigFromFlags("", kubeconfigPath)
+	if edgeDeviceConfigMetaData.kubeconfigPath != "" {
+		config, err = clientcmd.BuildConfigFromFlags("", edgeDeviceConfigMetaData.kubeconfigPath)
 	} else {
 		config, err = rest.InClusterConfig()
 	}
@@ -111,24 +117,24 @@ func NewEdgeDeviceConfig(nameSpace string, deviceName string, kubeconfigPath str
 		return nil, err
 	}
 
-	result := &v1alpha1.EdgeDevice{}
-	err = client.Get().Namespace(nameSpace).Resource("edgedevices").Name(deviceName).Do(context.TODO()).Into(result)
+	ed := &v1alpha1.EdgeDevice{}
+	err = client.Get().Namespace(edgeDeviceConfigMetaData.nameSpace).Resource("edgedevices").Name(edgeDeviceConfigMetaData.deviceName).Do(context.TODO()).Into(ed)
 	if err != nil {
 		log.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
 		return nil, err
 	}
 
-	return result, nil
+	return ed, nil
 }
 
 func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	v1alpha1.AddToScheme(scheme.Scheme)
-	crdConfig := *config
+	crdConfig := config
 	crdConfig.ContentConfig.GroupVersion = &schema.GroupVersion{Group: v1alpha1.GroupVersion.Group, Version: v1alpha1.GroupVersion.Version}
 	crdConfig.APIPath = "/apis"
 	crdConfig.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
-	exampleRestClient, err := rest.UnversionedRESTClientFor(&crdConfig)
+	exampleRestClient, err := rest.UnversionedRESTClientFor(crdConfig)
 	if err != nil {
 		return nil, err
 	}

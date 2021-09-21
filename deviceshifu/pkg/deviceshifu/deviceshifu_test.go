@@ -12,9 +12,15 @@ import (
 )
 
 func TestStart(t *testing.T) {
-	var config_folder = "etc/edgedevice/config"
-	mockds := New("TestStart", config_folder, DEVICE_KUBECONFIG_DO_NOT_LOAD_STR, "")
-	if mockds == nil {
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		"TestStart",
+		"etc/edgedevice/config",
+		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		"",
+	}
+
+	mockds, err := New(deviceShifuMetadata)
+	if err != nil {
 		t.Errorf("Failed creating new deviceShifu")
 	}
 
@@ -27,9 +33,15 @@ func TestStart(t *testing.T) {
 }
 
 func TestDeviceHealthHandler(t *testing.T) {
-	var config_folder = "etc/edgedevice/config"
-	mockds := New("TestStartHttpServer", config_folder, DEVICE_KUBECONFIG_DO_NOT_LOAD_STR, "")
-	if mockds == nil {
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		"TestStartHttpServer",
+		"etc/edgedevice/config",
+		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		"",
+	}
+
+	mockds, err := New(deviceShifuMetadata)
+	if err != nil {
 		t.Errorf("Failed creating new deviceShifu")
 	}
 
@@ -37,7 +49,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	resp, err := http.Get("http://127.0.0.1:8080")
+	resp, err := http.Get("http://127.0.0.1:8080/health")
 	if err != nil {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
@@ -70,8 +82,15 @@ func TestDeviceInstructionHandler(t *testing.T) {
 		}
 	)
 
-	mockds := New(deviceName, config_folder, kubeconfigPath, namespace)
-	if mockds == nil {
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		deviceName,
+		config_folder,
+		kubeconfigPath,
+		namespace,
+	}
+
+	mockds, err := New(deviceShifuMetadata)
+	if err != nil {
 		t.Errorf("Failed creating new deviceShifu")
 	}
 
