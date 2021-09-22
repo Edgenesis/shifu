@@ -126,10 +126,6 @@ func TestNewEdgeDeviceConfig(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	if &edgeDevice.Spec == nil {
-		t.Errorf("edgeDevice.Spec is nil")
-	}
-
 	if edgeDevice.Spec.Sku != nil && *edgeDevice.Spec.Sku != EDGEDEVICE_MOCK_AGV_SPEC_SKU {
 		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_MOCK_AGV_SPEC_SKU, *edgeDevice.Spec.Sku)
 	}
