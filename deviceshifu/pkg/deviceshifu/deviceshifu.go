@@ -144,7 +144,7 @@ func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHan
 			}
 		}
 
-		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, handlerEdgeDevice.Address)
+		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDevice.Address)
 		resp, err := handlerHTTPClient.Get("http://" + *handlerEdgeDevice.Address + "/" + handlerInstruction)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
