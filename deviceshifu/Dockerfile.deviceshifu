@@ -16,13 +16,13 @@ RUN go mod download
 COPY deviceshifu deviceshifu
 
 # Build the Go app
-RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o main deviceshifu/cmd/main.go
+RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o /output/deviceshifu deviceshifu/cmd/main.go
 
 FROM gcr.io/distroless/static
 
 WORKDIR /root/
 
-COPY --from=builder /shifu/main deviceshifu
+COPY --from=builder /output/deviceshifu deviceshifu
 
 # Command to run the executable
-CMD ["./deviceshifu"]
+ENTRYPOINT ["./deviceshifu"]

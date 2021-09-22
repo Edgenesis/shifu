@@ -2,17 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-sample-deployment
-  name: edgedevice-sample-deployment
+    app: edgedevice-mockdevice-deployment
+  name: edgedevice-mockdevice-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-sample-deployment
+      app: edgedevice-mockdevice-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-sample-deployment
+        app: edgedevice-mockdevice-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http:v0.0.1

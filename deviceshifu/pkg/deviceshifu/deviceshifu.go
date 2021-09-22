@@ -2,7 +2,6 @@ package deviceshifu
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -16,7 +15,7 @@ type DeviceShifu struct {
 	Name              string
 	server            *http.Server
 	deviceShifuConfig *DeviceShifuConfig
-	edgeDeviceConfig  *v1alpha1.EdgeDevice
+	edgeDevice        *v1alpha1.EdgeDevice
 }
 
 type DeviceShifuMetaData struct {
@@ -27,16 +26,16 @@ type DeviceShifuMetaData struct {
 }
 
 type DeviceShifuHTTPHandlerMetaData struct {
-	httpClient       *http.Client
-	edgeDeviceConfig v1alpha1.EdgeDeviceSpec
-	instruction      string
-	properties       *DeviceShifuInstruction
+	httpClient     *http.Client
+	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
+	instruction    string
+	properties     *DeviceShifuInstruction
 }
 
 type DeviceShifuUSBHandlerMetaData struct {
-	edgeDeviceConfig v1alpha1.EdgeDeviceSpec
-	instruction      string
-	properties       *DeviceShifuInstruction
+	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
+	instruction    string
+	properties     *DeviceShifuInstruction
 }
 
 const (
@@ -44,13 +43,14 @@ const (
 	DEVICE_CONFIGMAP_FOLDER_PATH      string = "/etc/edgedevice/config"
 	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR string = "NULL"
 	DEVICE_NAMESPACE_DEFAULT          string = "default"
+	DEVICE_DEFAULT_HTTP_PORT_STR      string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 )
 
 // func New(name string, config_file_dir string, kube_config_location string, namespace string) *DeviceShifu {
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	if deviceShifuMetadata.Name == "" {
-		return nil, errors.New("DeviceShifu's name can't be empty\n")
+		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
 	}
 
 	if deviceShifuMetadata.ConfigFilePath == "" {
@@ -59,8 +59,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
 	if err != nil {
-		fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
-		return nil, err
+		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
 	}
 
 	mux := http.NewServeMux()
@@ -69,13 +68,13 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	edgeDevice := &v1alpha1.EdgeDevice{}
 
 	if deviceShifuMetadata.KubeConfigPath != DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
-		edgeDeviceConfigMetaData := &EdgeDeviceConfigMetaData{
+		edgeDeviceConfig := &EdgeDeviceConfig{
 			deviceShifuMetadata.Namespace,
 			deviceShifuMetadata.Name,
 			deviceShifuMetadata.KubeConfigPath,
 		}
 
-		edgeDevice, err = NewEdgeDeviceConfig(edgeDeviceConfigMetaData)
+		edgeDevice, err = NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
 			log.Fatalf("Error parsing EdgeDevice Resource")
 			return nil, err
@@ -115,13 +114,13 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	ds := &DeviceShifu{
 		Name: deviceShifuMetadata.Name,
 		server: &http.Server{
-			Addr:         ":8080",
+			Addr:         DEVICE_DEFAULT_HTTP_PORT_STR,
 			Handler:      mux,
 			ReadTimeout:  60 * time.Second,
 			WriteTimeout: 60 * time.Second,
 		},
 		deviceShifuConfig: deviceShifuConfig,
-		edgeDeviceConfig:  edgeDevice,
+		edgeDevice:        edgeDevice,
 	}
 
 	return ds, nil
@@ -131,23 +130,22 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
 }
 
-// func deviceCommandHandlerHTTP(httpClient *http.Client, edgeDeviceConfig v1alpha1.EdgeDeviceSpec, instruction string, properties *DeviceShifuInstruction) http.HandlerFunc {
 func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		properties := deviceShifuHTTPHandlerMetaData.properties
-		instruction := deviceShifuHTTPHandlerMetaData.instruction
-		httpClient := deviceShifuHTTPHandlerMetaData.httpClient
-		edgeDeviceConfig := deviceShifuHTTPHandlerMetaData.edgeDeviceConfig
+		handlerProperties := deviceShifuHTTPHandlerMetaData.properties
+		handlerInstruction := deviceShifuHTTPHandlerMetaData.instruction
+		handlerHTTPClient := deviceShifuHTTPHandlerMetaData.httpClient
+		handlerEdgeDevice := deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
 
-		if properties != nil {
+		if handlerProperties != nil {
 			// TODO: handle validation compile
-			for _, property := range properties.DeviceShifuInstructionProperties {
-				log.Printf("Properties of command: %v %v\n", instruction, property)
+			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
+				log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
 			}
 		}
 
-		log.Printf("handling instruction '%v' to '%v'", instruction, edgeDeviceConfig.Address)
-		resp, err := httpClient.Get("http://" + *edgeDeviceConfig.Address + "/" + instruction)
+		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, handlerEdgeDevice.Address)
+		resp, err := handlerHTTPClient.Get("http://" + *handlerEdgeDevice.Address + "/" + handlerInstruction)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		}
@@ -159,7 +157,7 @@ func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHan
 		} else {
 			// TODO: For now, just write tht instruction to the response
 			log.Println("resp is nil")
-			w.Write([]byte(instruction))
+			w.Write([]byte(handlerInstruction))
 		}
 	}
 }

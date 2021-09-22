@@ -115,35 +115,35 @@ func TestNewEdgeDeviceConfig(t *testing.T) {
 		EDGEDEVICE_MOCK_AGV_SPEC_PROTOCOL   v1alpha1.Protocol   = "HTTP"
 	)
 
-	edgeDeviceConfigMetaData := &EdgeDeviceConfigMetaData{
+	edgeDeviceConfig := &EdgeDeviceConfig{
 		nameSpace,
 		deviceName,
 		kubeconfigPath,
 	}
 
-	edgeDeviceConfig, err := NewEdgeDeviceConfig(edgeDeviceConfigMetaData)
+	edgeDevice, err := NewEdgeDevice(edgeDeviceConfig)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 
-	if &edgeDeviceConfig.Spec == nil {
-		t.Errorf("edgeDeviceConfig.Spec is nil")
+	if &edgeDevice.Spec == nil {
+		t.Errorf("edgeDevice.Spec is nil")
 	}
 
-	if edgeDeviceConfig.Spec.Sku != nil && *edgeDeviceConfig.Spec.Sku != EDGEDEVICE_MOCK_AGV_SPEC_SKU {
-		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_MOCK_AGV_SPEC_SKU, *edgeDeviceConfig.Spec.Sku)
+	if edgeDevice.Spec.Sku != nil && *edgeDevice.Spec.Sku != EDGEDEVICE_MOCK_AGV_SPEC_SKU {
+		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_MOCK_AGV_SPEC_SKU, *edgeDevice.Spec.Sku)
 	}
 
-	if edgeDeviceConfig.Spec.Connection != nil && *edgeDeviceConfig.Spec.Connection != EDGEDEVICE_MOCK_AGV_SPEC_CONNECTION {
-		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_MOCK_AGV_SPEC_CONNECTION, *edgeDeviceConfig.Spec.Sku)
+	if edgeDevice.Spec.Connection != nil && *edgeDevice.Spec.Connection != EDGEDEVICE_MOCK_AGV_SPEC_CONNECTION {
+		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_MOCK_AGV_SPEC_CONNECTION, *edgeDevice.Spec.Sku)
 	}
 
-	if edgeDeviceConfig.Spec.Address != nil && *edgeDeviceConfig.Spec.Address != EDGEDEVICE_MOCK_AGV_SPEC_ADDRESS {
-		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_MOCK_AGV_SPEC_ADDRESS, *edgeDeviceConfig.Spec.Sku)
+	if edgeDevice.Spec.Address != nil && *edgeDevice.Spec.Address != EDGEDEVICE_MOCK_AGV_SPEC_ADDRESS {
+		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_MOCK_AGV_SPEC_ADDRESS, *edgeDevice.Spec.Sku)
 	}
 
-	if edgeDeviceConfig.Spec.Protocol != nil && *edgeDeviceConfig.Spec.Protocol != EDGEDEVICE_MOCK_AGV_SPEC_PROTOCOL {
-		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_MOCK_AGV_SPEC_PROTOCOL, *edgeDeviceConfig.Spec.Sku)
+	if edgeDevice.Spec.Protocol != nil && *edgeDevice.Spec.Protocol != EDGEDEVICE_MOCK_AGV_SPEC_PROTOCOL {
+		t.Errorf("Wrong SKU for edgedevice-simple, should be: %v, actual: %v", EDGEDEVICE_MOCK_AGV_SPEC_PROTOCOL, *edgeDevice.Spec.Sku)
 	}
 }
 

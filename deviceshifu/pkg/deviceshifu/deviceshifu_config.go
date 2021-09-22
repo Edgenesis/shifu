@@ -46,7 +46,7 @@ type DeviceShifuTelemetryProperty struct {
 	IntervalMs            *int    `yaml:"intervalMs,omitempty"`
 }
 
-type EdgeDeviceConfigMetaData struct {
+type EdgeDeviceConfig struct {
 	nameSpace      string
 	deviceName     string
 	kubeconfigPath string
@@ -56,6 +56,7 @@ const (
 	CM_DRIVERPROPERTIES_STR = "driverProperties"
 	CM_INSTRUCTIONS_STR     = "instructions"
 	CM_TELEMETRIES_STR      = "telemetries"
+	EDGEDEVICE_RESOURCE_STR = "edgedevices"
 )
 
 func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
@@ -96,12 +97,12 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	return dsc, nil
 }
 
-func NewEdgeDeviceConfig(edgeDeviceConfigMetaData * EdgeDeviceConfigMetaData) (*v1alpha1.EdgeDevice, error) {
+func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, error) {
 	var config *rest.Config
 	var err error
 
-	if edgeDeviceConfigMetaData.kubeconfigPath != "" {
-		config, err = clientcmd.BuildConfigFromFlags("", edgeDeviceConfigMetaData.kubeconfigPath)
+	if edgeDeviceConfig.kubeconfigPath != "" {
+		config, err = clientcmd.BuildConfigFromFlags("", edgeDeviceConfig.kubeconfigPath)
 	} else {
 		config, err = rest.InClusterConfig()
 	}
@@ -118,12 +119,16 @@ func NewEdgeDeviceConfig(edgeDeviceConfigMetaData * EdgeDeviceConfigMetaData) (*
 	}
 
 	ed := &v1alpha1.EdgeDevice{}
-	err = client.Get().Namespace(edgeDeviceConfigMetaData.nameSpace).Resource("edgedevices").Name(edgeDeviceConfigMetaData.deviceName).Do(context.TODO()).Into(ed)
+	err = client.Get().
+		Namespace(edgeDeviceConfig.nameSpace).
+		Resource(EDGEDEVICE_RESOURCE_STR).
+		Name(edgeDeviceConfig.deviceName).
+		Do(context.TODO()).
+		Into(ed)
 	if err != nil {
 		log.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
 		return nil, err
 	}
-
 	return ed, nil
 }
 
