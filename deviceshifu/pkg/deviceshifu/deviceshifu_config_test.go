@@ -117,7 +117,7 @@ func TestNewEdgeDeviceConfig(t *testing.T) {
 		kubeconfigPath,
 	}
 
-	edgeDevice, err := NewEdgeDevice(edgeDeviceConfig)
+	edgeDevice, _, err := NewEdgeDevice(edgeDeviceConfig)
 	if err != nil {
 		t.Errorf(err.Error())
 	}

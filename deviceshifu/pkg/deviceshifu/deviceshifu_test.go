@@ -1,6 +1,7 @@
 package deviceshifu
 
 import (
+	"context"
 	"fmt"
 	"io"
 	"log"
@@ -8,6 +9,7 @@ import (
 	"testing"
 	"time"
 
+	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -101,6 +103,22 @@ func TestDeviceInstructionHandler(t *testing.T) {
 		if !CheckSimpleInstructionHandlerHttpResponse(instruction, httpEndpoint) {
 			t.Errorf("Error getting instruction response from instruction: %v", instruction)
 		}
+	}
+
+	getResult := &v1alpha1.EdgeDevice{}
+	err = mockds.restClient.Get().
+		Namespace(mockds.edgeDevice.Namespace).
+		Resource(EDGEDEVICE_RESOURCE_STR).
+		Name(mockds.Name).
+		Do(context.TODO()).
+		Into(getResult)
+
+	if err != nil {
+		t.Errorf("Unable to get status, error: %v", err.Error())
+	}
+
+	if *getResult.Status.EdgeDevicePhase != v1alpha1.EdgeDeviceFailed {
+		t.Errorf("Edgedevice status incorrect")
 	}
 
 	mockds.Stop()

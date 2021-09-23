@@ -27,4 +27,4 @@ spec:
       - name: edgedevice-config
         configMap:
           name: mockdevice-configmap-0.0.1
-      serviceAccountName: edgedevice-reader-sa
+      serviceAccountName: edgedevice-readwrite-sa
