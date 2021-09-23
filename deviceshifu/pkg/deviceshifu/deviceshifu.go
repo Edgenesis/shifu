@@ -186,6 +186,23 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 // TODO: update configs
 // TODO: update status based on telemetry
 
+// func collectTelemetry(telemetry string, telemetryProperty DeviceShifuTelemetryProperty) error {
+// 	return nil
+// }
+
+func (ds *DeviceShifu) startTelemetryCollection() error {
+	// log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
+	// telemetries := ds.deviceShifuConfig.Telemetries
+	// for telemetry, telemetryProperties := telemetries {
+	// 	for telemetryProperty := telemetryProperties {
+	// 		*telemetryProperty.DeviceInstructionName
+	// 	}
+
+	// }
+
+	return nil
+}
+
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	fmt.Printf("deviceShifu %s started\n", ds.Name)
 

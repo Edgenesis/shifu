@@ -59,21 +59,17 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 
 	var mockDeviceTelemetries = map[string]*DeviceShifuTelemetry{
 		"device_health": {
-			[]DeviceShifuTelemetryProperty{
-				{
-					DeviceInstructionName: &TelemetryInstructionNameGetStatus,
-					InitialDelayMs:        &TelemetryMs1000,
-					IntervalMs:            &TelemetryMs1000,
-				},
+			DeviceShifuTelemetryProperties{
+				DeviceInstructionName: &TelemetryInstructionNameGetStatus,
+				InitialDelayMs:        &TelemetryMs1000,
+				IntervalMs:            &TelemetryMs1000,
 			},
 		},
-		"device_random": {
-			[]DeviceShifuTelemetryProperty{
-				{
-					DeviceInstructionName: &TelemetryInstructionNameGetReading,
-					InitialDelayMs:        &TelemetryMs1000,
-					IntervalMs:            &TelemetryMs1000,
-				},
+		"get_reading": {
+			DeviceShifuTelemetryProperties{
+				DeviceInstructionName: &TelemetryInstructionNameGetReading,
+				InitialDelayMs:        &TelemetryMs1000,
+				IntervalMs:            &TelemetryMs1000,
 			},
 		},
 	}

@@ -23,11 +23,11 @@ data:
   telemetries: |
     device_health:
       properties:
-      - instruction: get_status
+        instruction: get_status
         initialDelayMs: 1000
         intervalMs: 1000
-    device_random:
+    get_reading:
       properties:
-      - instruction: get_reading
+        instruction: get_reading
         initialDelayMs: 1000
         intervalMs: 1000
