@@ -8,7 +8,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1"
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"gopkg.in/yaml.v2"
 )
 

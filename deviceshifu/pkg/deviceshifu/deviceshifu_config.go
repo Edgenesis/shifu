@@ -5,7 +5,7 @@ import (
 	"errors"
 	"log"
 
-	v1alpha1 "github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1"
+	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"gopkg.in/yaml.v2"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"

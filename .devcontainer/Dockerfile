@@ -5,7 +5,7 @@ ARG VARIANT="latest"
 FROM deis/go-dev:${VARIANT}
 
 ENV GOPROXY=https://goproxy.io,direct
-ENV GOPRIVATE=github.com/Edgenesis
+ENV GOPRIVATE=github.com/Edgenesis,edgenesis.io/shifu
 ENV GO111MODULE=on
 
 # [Optional] Uncomment this section to install additional OS packages.

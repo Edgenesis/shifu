@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"time"
 
-	v1alpha1 "github.com/Edgenesis/shifu/k8s/crd/api/v1alpha1"
+	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 )
 
 type DeviceShifu struct {

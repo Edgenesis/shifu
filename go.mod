@@ -3,14 +3,14 @@ module github.com/edgenesis/shifu
 go 1.17
 
 require (
-	github.com/Edgenesis/shifu/k8s/crd v0.0.0-20210920094059-497d4fcc9b6f
+	edgenesis.io/shifu/k8s/crd v0.0.0-20210920094059-497d4fcc9b6f
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.22.2
 	knative.dev/pkg v0.0.0-20210915055909-d8349b0909c4
 )
 
-replace github.com/Edgenesis/shifu/k8s/crd => ./k8s/crd
+replace edgenesis.io/shifu/k8s/crd => ./k8s/crd
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
