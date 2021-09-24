@@ -4,10 +4,6 @@ trigger:
      - master
      - releases/*
 
-pr:
-- master
-- releases/*
-
 pool:
    vmImage: 'ubuntu-latest'
 
@@ -25,7 +21,7 @@ steps:
   displayName: "go build deviceshifu"
   inputs:
     command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd'
 - task: Go@0
   displayName: "go test deviceshifu"
   inputs:
