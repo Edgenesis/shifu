@@ -4,6 +4,12 @@ trigger:
      - master
      - releases/*
 
+pr:
+  branches:
+    include:
+    - master
+    - releases/*
+
 pool:
    vmImage: 'ubuntu-latest'
 
