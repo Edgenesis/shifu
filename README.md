@@ -1,3 +1,5 @@
+[![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/Edgenesis.shifu?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=1&branchName=main)
+
 - [Shifu](#shifu)
   - [What is Shifu?](#what-is-shifu)
   - [Why use Shifu?](#why-use-shifu)
