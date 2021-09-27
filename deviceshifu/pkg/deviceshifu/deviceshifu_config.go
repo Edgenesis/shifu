@@ -129,6 +129,7 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, er
 		log.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
 		return nil, err
 	}
+
 	return ed, nil
 }
 
