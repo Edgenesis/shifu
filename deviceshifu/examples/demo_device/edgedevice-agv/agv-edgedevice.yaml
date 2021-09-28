@@ -1,0 +1,12 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-agv
+  namespace: devices
+spec:
+  sku: "AGV" 
+  connection: Ethernet
+  address: agv.devices.svc.cluster.local:11111
+  protocol: HTTP
+status:
+  edgedevicephase: "Pending"

@@ -2,17 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-robot-deployment
-  name: edgedevice-robot-deployment
+    app: edgedevice-agv-deployment
+  name: edgedevice-agv-deployment
+  namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-robot-deployment
+      app: edgedevice-agv-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-robot-deployment
+        app: edgedevice-agv-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http:v0.0.1
@@ -25,9 +26,11 @@ spec:
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "edgedevice-robot"
+          value: "edgedevice-agv"
+        - name: EDGEDEVICE_NAMESPACE
+          value: "devices"
       volumes:
       - name: edgedevice-config
         configMap:
-          name: robot-configmap-0.0.1
+          name: agv-configmap-0.0.1
       serviceAccountName: edgedevice-readwrite-sa

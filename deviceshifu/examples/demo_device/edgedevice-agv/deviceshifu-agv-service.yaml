@@ -2,13 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-robot-deployment
-  name: edgedevice-robot
+    app: edgedevice-agv-deployment
+  name: edgedevice-agv
+  namespace: default
 spec:
   ports:
-  - port: 1234
+  - port: 80
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-robot-deployment
+    app: edgedevice-agv-deployment
   type: LoadBalancer

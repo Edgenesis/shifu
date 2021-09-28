@@ -2,32 +2,27 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-tecan-deployment
-  name: edgedevice-tecan-deployment
+    app: tecan
+  name: tecan
+  namespace: devices
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-tecan-deployment
+      app: tecan
+  strategy: {}
   template:
     metadata:
       labels:
-        app: edgedevice-tecan-deployment
+        app: tecan
     spec:
       containers:
-      - image: edgehub/deviceshifu-http:v0.0.1
-        name: deviceshifu-http
+      - image: edgehub/mockdevice_tecan:v0.0.1
+        name: tecan
         ports:
-        - containerPort: 8080
-        volumeMounts:
-        - name: edgedevice-config
-          mountPath: "/etc/edgedevice/config"
-          readOnly: true
+        - containerPort: 11111
         env:
-        - name: EDGEDEVICE_NAME
-          value: "edgedevice-tecan"
-      volumes:
-      - name: edgedevice-config
-        configMap:
-          name: tecan-configmap-0.0.1
-      serviceAccountName: edgedevice-readwrite-sa
+        - name: MOCKDEVICE_NAME
+          value: tecan
+        - name: MOCKDEVICE_PORT
+          value: "11111"

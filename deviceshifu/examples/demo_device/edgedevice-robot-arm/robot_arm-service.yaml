@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: agv
-  name: agv
+    app: robotarm
+  name: robotarm
   namespace: devices
 spec:
   ports:
@@ -11,5 +11,5 @@ spec:
     protocol: TCP
     targetPort: 11111
   selector:
-    app: agv
+    app: robotarm
   type: LoadBalancer

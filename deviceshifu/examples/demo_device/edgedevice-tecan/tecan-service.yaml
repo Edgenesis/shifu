@@ -2,13 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-tecan-deployment
-  name: edgedevice-tecan
+    app: tecan
+  name: tecan
+  namespace: devices
 spec:
   ports:
-  - port: 1234
+  - port: 11111
     protocol: TCP
-    targetPort: 8080
+    targetPort: 11111
   selector:
-    app: edgedevice-tecan-deployment
+    app: tecan
   type: LoadBalancer

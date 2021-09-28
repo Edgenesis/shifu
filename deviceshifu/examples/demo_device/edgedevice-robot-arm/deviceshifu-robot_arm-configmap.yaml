@@ -1,21 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: robot-configmap-0.0.1
+  name: robotarm-configmap-0.0.1
+  namespace: default
 data:
   driverProperties: |
     driverSku: Franka Emika
     driverImage: edgenesis/franka-emika:v0.0.1
   instructions: |
-    get_reading:
+    get_coordinate:
     get_status:
-    set_reading:
-      properties:
-      - valueType: "Int32"
-        readWrite: "W"
-        defaultValue: null
-    start:
-    stop:
 # Telemetries are configurable health checks of the EdgeDevice
 # Developer/user can configure certain instructions to be used as health check
 # of the device. In this example, the device_health telemetry is mapped to
@@ -26,8 +20,4 @@ data:
         instruction: get_status
         initialDelayMs: 1000
         intervalMs: 1000
-    get_reading:
-      properties:
-        instruction: get_reading
-        initialDelayMs: 1000
-        intervalMs: 1000
+
