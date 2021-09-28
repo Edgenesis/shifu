@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: edgedevice-agv-deployment
+  name: edgedevice-agv
+spec:
+  ports:
+  - port: 1234
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: edgedevice-agv-deployment
+  type: LoadBalancer

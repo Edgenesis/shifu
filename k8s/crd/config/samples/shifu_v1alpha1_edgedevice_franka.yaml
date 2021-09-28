@@ -1,11 +1,11 @@
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: edgedevice-tecan
+  name: edgedevice-robot
 spec:
-  sku: "Tecan SPark" 
+  sku: "Franka Emika" 
   connection: Ethernet
-  address: 10.0.0.4:80
+  address: 10.0.0.3:80
   protocol: HTTP
 status:
   edgedevicephase: "Pending"

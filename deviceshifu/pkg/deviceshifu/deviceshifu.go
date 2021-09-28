@@ -275,8 +275,8 @@ func (ds *DeviceShifu) updateEdgeDeviceResourceStatus(status v1alpha1.EdgeDevice
 }
 
 func (ds *DeviceShifu) StartTelemetryCollection() error {
-	log.Println("Wait 20 seconds before updating status")
-	time.Sleep(20 * time.Second)
+	log.Println("Wait 5 seconds before updating status")
+	time.Sleep(5 * time.Second)
 	for {
 		ds.telemetryCollection()
 		time.Sleep(5 * time.Second)
