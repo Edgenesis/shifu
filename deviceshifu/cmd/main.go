@@ -10,7 +10,7 @@ import (
 func main() {
 	// deviceName := "edgedevice-sample"
 	deviceName := os.Getenv("EDGEDEVICE_NAME")
-	namespace := "crd-system"
+	namespace := os.Getenv("EDGEDEVICE_NAMESPACE")
 	// kubeconfigPath := "/root/.kube/config"
 	// config_folder := "etc/edgedevice/config"
 

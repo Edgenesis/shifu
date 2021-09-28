@@ -8,7 +8,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifu/mockdevice/mockdevice@demo_mockdevice"
+	"edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice"
 )
 
 func main() {

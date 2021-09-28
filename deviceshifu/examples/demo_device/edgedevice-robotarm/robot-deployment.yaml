@@ -1,0 +1,33 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: edgedevice-robot-deployment
+  name: edgedevice-robot-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edgedevice-robot-deployment
+  template:
+    metadata:
+      labels:
+        app: edgedevice-robot-deployment
+    spec:
+      containers:
+      - image: edgehub/deviceshifu-http:v0.0.1
+        name: deviceshifu-http
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: edgedevice-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+        env:
+        - name: EDGEDEVICE_NAME
+          value: "edgedevice-robot"
+      volumes:
+      - name: edgedevice-config
+        configMap:
+          name: robot-configmap-0.0.1
+      serviceAccountName: edgedevice-readwrite-sa
