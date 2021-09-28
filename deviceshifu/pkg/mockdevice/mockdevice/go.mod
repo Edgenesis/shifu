@@ -1,4 +1,4 @@
-module edgenesis.io/shifu/deviceshifu/pkg/deviceshifu/mockdevice/mockdevice
+module github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifu/mockdevice/mockdevice
 
 go 1.17
 
