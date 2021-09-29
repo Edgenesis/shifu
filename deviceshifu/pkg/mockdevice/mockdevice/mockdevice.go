@@ -68,7 +68,6 @@ func New(deviceName string, devicePort string, available_funcs []string, instruc
 func StartMockDevice(available_funcs []string, instructionHandler instructionHandlerFunc) {
 	deviceName := os.Getenv("MOCKDEVICE_NAME")
 	devicePort := os.Getenv("MOCKDEVICE_PORT")
-	// available_funcs := []string{"read_value", "get_status"}
 	md, err := New(deviceName, devicePort, available_funcs, instructionHandler)
 	if err != nil {
 		log.Printf("Error starting device %v", deviceName)
