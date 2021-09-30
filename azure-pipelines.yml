@@ -9,6 +9,14 @@ pr:
     include:
     - main
     - releases/*
+  paths:
+    exclude:
+    - docs/
+    - img/
+    - README.md
+    - LICENSE
+    - .devcontainer/
+    - .github/
 
 pool:
    vmImage: 'ubuntu-latest'
