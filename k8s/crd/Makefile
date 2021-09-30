@@ -43,6 +43,8 @@ kube-builder-init:
 kube-builder-create-api-edgedevice: 
 	kubebuilder create api --group shifu --version v1alpha1 --kind EdgeDevice
 
+download: controller-gen kustomize
+
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 usage ()
 {
@@ -8,14 +8,31 @@ usage ()
 
 if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
         if [ "$1" == "apply" ]; then
-                (cd k8s/crd && make install)
-                (cd k8s/crd && make deploy IMG=edgehub/edgedevice-controller:v0.0.1)
+                (cd /build_dir && for f in *.tar; do cat $f | docker load; done)
+                kind delete cluster && kind create cluster
+                kind load docker-image nginx:1.21
+                kind load docker-image gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+                kind load docker-image edgehub/mockdevice_agv:v0.0.1
+                kind load docker-image edgehub/mockdevice_tecan:v0.0.1
+                kind load docker-image edgehub/mockdevice_robot_arm:v0.0.1
+                kind load docker-image edgehub/mockdevice_thermometer:v0.0.1
+                kind load docker-image edgehub/deviceshifu-http:v0.0.1
+                kind load docker-image edgehub/edgedevice-controller:v0.0.1
+                kubectl apply -f k8s/crd
                 kubectl create ns devices
                 kubectl config set-context --current --namespace=default
+                kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-serviceaccount.yaml
+                kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-clusterrole.yaml
+                kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-crb.yaml
+        else
+                kind delete cluster
+                docker rmi $(docker images | grep 'edgehub/mockdevice')
+                docker rmi $(docker images | grep 'edgehub/deviceshifu-http')
+                docker rmi $(docker images | grep 'edgehub/edgedevice-controller')
+                docker rmi gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+                docker rmi kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
+                docker rmi nginx:1.21
         fi
-        kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-serviceaccount.yaml
-        kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-clusterrole.yaml
-        kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-crb.yaml
 else
         echo "not a valid argument, need to be apply/delete"
         exit 0
