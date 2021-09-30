@@ -11,12 +11,12 @@ pr:
     - releases/*
   paths:
     exclude:
-    - docs/
-    - img/
+    - docs
+    - img
     - README.md
     - LICENSE
-    - .devcontainer/
-    - .github/
+    - .devcontainer
+    - .github
 
 pool:
    vmImage: 'ubuntu-latest'
