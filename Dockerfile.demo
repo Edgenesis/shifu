@@ -13,6 +13,6 @@ COPY k8s/crd/config_crd.yaml /shifu/k8s/crd/config_crd.yaml
 COPY k8s/crd/config_default.yaml /shifu/k8s/crd/config_default.yaml
 COPY deviceshifu/examples /shifu/deviceshifu/examples
 COPY build_dir /build_dir
-COPY test/scripts /shifu/test/scripts/
+COPY test/scripts/deviceshifu-demo.sh /shifu/test/scripts/
+COPY test/scripts/deviceshifu-setup.sh /shifu/test/scripts/
 WORKDIR /shifu/
-# RUN (cd k8s/crd && make download)

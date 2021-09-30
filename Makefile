@@ -26,6 +26,7 @@ download-demo-files:
 	docker save edgehub/edgedevice-controller:${IMAGE_VERSION} > build_dir/edgedevice-controller.tar
 	docker save kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6 > build_dir/kind-image.tar
 	docker save nginx:1.21 > build_dir/nginx.tar
+	(cd k8s/crd && make generate-controller-yaml IMG=edgehub/edgedevice-controller:v0.0.1)
 
 .PHONY: build-deviceshifu-demo-image
 build-deviceshifu-demo-image:

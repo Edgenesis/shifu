@@ -26,11 +26,11 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
                 kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-crb.yaml
         else
                 kind delete cluster
-                docker rmi $(docker images | grep 'edgehub/mockdevice')
-                docker rmi $(docker images | grep 'edgehub/deviceshifu-http')
-                docker rmi $(docker images | grep 'edgehub/edgedevice-controller')
+                docker rmi $(docker images | grep 'edgehub/mockdevice' | awk '{print $3}')
+                docker rmi $(docker images | grep 'edgehub/deviceshifu-http' | awk '{print $3}')
+                docker rmi $(docker images | grep 'edgehub/edgedevice-controller' | awk '{print $3}')
                 docker rmi gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
-                docker rmi kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
+                docker rmi $(docker images | grep 'kindest/node' | awk '{print $3}')
                 docker rmi nginx:1.21
         fi
 else
