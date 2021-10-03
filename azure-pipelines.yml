@@ -1,0 +1,44 @@
+trigger: 
+ branches:
+   include:
+     - main
+     - releases/*
+
+pr:
+  branches:
+    include:
+    - main
+    - releases/*
+  paths:
+    exclude:
+    - docs
+    - img
+    - README.md
+    - LICENSE
+    - .devcontainer
+    - .github
+
+pool:
+   vmImage: 'ubuntu-latest'
+
+steps: 
+- task: GoTool@0
+  inputs:
+    version: '1.17.1'
+- task: Go@0
+  displayName: "go get"
+  inputs:
+    command: 'get'
+    arguments: '-d'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
+- task: Go@0
+  displayName: "go build deviceshifu"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd'
+- task: Go@0
+  displayName: "go test deviceshifu"
+  inputs:
+    command: 'test'
+    arguments: '-v'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
