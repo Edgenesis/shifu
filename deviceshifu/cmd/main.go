@@ -6,8 +6,21 @@ import (
 )
 
 func main() {
-	ds := &deviceshifu.DeviceShifu{
-		Name: "mock-device",
+	deviceName := "edgedevice-sample"
+	namespace := "crd-system"
+	// kubeconfigPath := "/root/.kube/config"
+	// config_folder := "etc/edgedevice/config"
+
+	deviceShifuMetadata := &deviceshifu.DeviceShifuMetaData{
+		deviceName,
+		deviceshifu.DEVICE_CONFIGMAP_FOLDER_PATH,
+		deviceshifu.KUBERNETES_CONFIG_DEFAULT,
+		namespace,
+	}
+
+	ds, err := deviceshifu.New(deviceShifuMetadata)
+	if err != nil {
+		panic(err.Error())
 	}
 
 	if err := ds.Start(wait.NeverStop); err != nil {

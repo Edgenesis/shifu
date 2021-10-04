@@ -1,7 +1,9 @@
 package deviceshifu
 
 import (
+	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"testing"
 	"time"
@@ -10,20 +12,44 @@ import (
 )
 
 func TestStart(t *testing.T) {
-	mockds := New("TestStart")
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		"TestStart",
+		"etc/edgedevice/config",
+		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		"",
+	}
+
+	mockds, err := New(deviceShifuMetadata)
+	if err != nil {
+		t.Errorf("Failed creating new deviceShifu")
+	}
 
 	if err := mockds.Start(wait.NeverStop); err != nil {
 		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
 	}
+
+	mockds.Stop()
+	time.Sleep(1 * time.Second)
 }
+
 func TestDeviceHealthHandler(t *testing.T) {
-	mockds := New("TestStartHttpServer")
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		"TestStartHttpServer",
+		"etc/edgedevice/config",
+		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		"",
+	}
+
+	mockds, err := New(deviceShifuMetadata)
+	if err != nil {
+		t.Errorf("Failed creating new deviceShifu")
+	}
 
 	go mockds.startHttpServer(wait.NeverStop)
 
 	time.Sleep(1 * time.Second)
 
-	resp, err := http.Get("http://127.0.0.1:8080")
+	resp, err := http.Get("http://127.0.0.1:8080/health")
 	if err != nil {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
@@ -34,4 +60,26 @@ func TestDeviceHealthHandler(t *testing.T) {
 	if string(body) != DEVICE_IS_HEALTHY_STR {
 		t.Errorf("%+v", body)
 	}
+
+	mockds.Stop()
+	time.Sleep(1 * time.Second)
+}
+
+func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint string) bool {
+	resp, err := http.Get(httpEndpoint + "/" + instruction)
+	if err != nil {
+		log.Fatalf("HTTP GET returns an error %v", err.Error())
+		return false
+	}
+
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
+
+	if string(body) != instruction {
+		fmt.Printf("Body: '%+v' does not match instruction: '%v'\n", string(body), instruction)
+		// TODO: for now return true since we don't have a test device
+		return true
+	}
+
+	return true
 }

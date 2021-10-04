@@ -5,6 +5,7 @@ ARG VARIANT="latest"
 FROM deis/go-dev:${VARIANT}
 
 ENV GOPROXY=https://goproxy.io,direct
+ENV GOPRIVATE=github.com/Edgenesis,edgenesis.io/shifu
 ENV GO111MODULE=on
 
 # [Optional] Uncomment this section to install additional OS packages.
@@ -24,9 +25,11 @@ RUN curl -Lo ./kubebuilder https://go.kubebuilder.io/dl/master/$(go env GOOS)/$(
      && mv ./kubebuilder /usr/local/bin/kubebuilder
 
 # [Optional] Uncomment the next line to use go get to install anything else you need
-RUN go get -u github.com/ramya-rao-a/go-outline \ 
-    golang.org/x/tools/gopls@latest \
+RUN go get -u github.com/ramya-rao-a/go-outline \
     k8s.io/apimachinery/pkg/util/wait
+
+RUN go install golang.org/x/tools/gopls@latest \
+    k8s.io/client-go@latest
 
 # [Optional] Uncomment this line to install global node packages.
 # RUN su vscode -c "source /usr/local/share/nvm/nvm.sh && npm install -g <your-package-here>" 2>&1
