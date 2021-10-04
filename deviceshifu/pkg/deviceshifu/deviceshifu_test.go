@@ -65,48 +65,6 @@ func TestDeviceHealthHandler(t *testing.T) {
 	time.Sleep(1 * time.Second)
 }
 
-// TODO: run this test in E2E testing
-// func TestDeviceInstructionHandler(t *testing.T) {
-// 	var (
-// 		config_folder     = "etc/edgedevice/config"
-// 		httpEndpoint      = "http://127.0.0.1:8080"
-// 		deviceName        = "edgedevice-sample"
-// 		kubeconfigPath    = "/root/.kube/config"
-// 		namespace         = "crd-system"
-// 		instruction_array = []string{
-// 			"health",
-// 			"get_reading",
-// 			"get_status",
-// 			"set_reading",
-// 			"start",
-// 			"stop",
-// 		}
-// 	)
-
-// 	deviceShifuMetadata := &DeviceShifuMetaData{
-// 		deviceName,
-// 		config_folder,
-// 		kubeconfigPath,
-// 		namespace,
-// 	}
-
-// 	mockds, err := New(deviceShifuMetadata)
-// 	if err != nil {
-// 		t.Errorf("Failed creating new deviceShifu")
-// 	}
-
-// 	go mockds.Start(wait.NeverStop)
-
-// 	time.Sleep(1 * time.Second)
-// 	for _, instruction := range instruction_array {
-// 		if !CheckSimpleInstructionHandlerHttpResponse(instruction, httpEndpoint) {
-// 			t.Errorf("Error getting instruction response from instruction: %v", instruction)
-// 		}
-// 	}
-
-// 	mockds.Stop()
-// }
-
 func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint string) bool {
 	resp, err := http.Get(httpEndpoint + "/" + instruction)
 	if err != nil {

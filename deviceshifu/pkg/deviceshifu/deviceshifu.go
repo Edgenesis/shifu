@@ -166,9 +166,9 @@ func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHan
 // HTTP header type:
 // type Header map[string][]string
 func copyHeader(dst, src http.Header) {
-	for k, vv := range src {
-		for _, v := range vv {
-			dst.Add(k, v)
+	for header, headerValueList := range src {
+		for _, value := range headerValueList {
+			dst.Add(header, value)
 		}
 	}
 }
