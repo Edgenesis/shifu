@@ -26,10 +26,7 @@ RUN curl -Lo ./kubebuilder https://go.kubebuilder.io/dl/master/$(go env GOOS)/$(
 
 # [Optional] Uncomment the next line to use go get to install anything else you need
 RUN go get -u github.com/ramya-rao-a/go-outline \
-    k8s.io/apimachinery/pkg/util/wait \
-    k8s.io/client-go
-
-RUN go install golang.org/x/tools/gopls@latest
+    k8s.io/apimachinery/pkg/util/wait
 
 RUN go install golang.org/x/tools/gopls@latest \
     k8s.io/client-go@latest
