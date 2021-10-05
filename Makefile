@@ -17,15 +17,15 @@ download-demo-files:
 	docker pull gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
 	docker pull kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6
 	docker pull nginx:1.21
-	docker save gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0 > build_dir/kube-rbac-proxy.tar
-	docker save edgehub/mockdevice_agv:${IMAGE_VERSION} > build_dir/mockdevice_agv.tar
-	docker save edgehub/mockdevice_tecan:${IMAGE_VERSION} > build_dir/mockdevice_tecan.tar
-	docker save edgehub/mockdevice_robot_arm:${IMAGE_VERSION} > build_dir/mockdevice_robot_arm.tar
-	docker save edgehub/mockdevice_thermometer:${IMAGE_VERSION} > build_dir/mockdevice_thermometer.tar
-	docker save edgehub/deviceshifu-http:${IMAGE_VERSION} > build_dir/deviceshifu-http.tar
-	docker save edgehub/edgedevice-controller:${IMAGE_VERSION} > build_dir/edgedevice-controller.tar
-	docker save kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6 > build_dir/kind-image.tar
-	docker save nginx:1.21 > build_dir/nginx.tar
+	docker save gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0 | gzip > build_dir/kube-rbac-proxy.tar.gz
+	docker save edgehub/mockdevice_agv:${IMAGE_VERSION} | gzip > build_dir/mockdevice_agv.tar.gz
+	docker save edgehub/mockdevice_tecan:${IMAGE_VERSION} | gzip > build_dir/mockdevice_tecan.tar.gz
+	docker save edgehub/mockdevice_robot_arm:${IMAGE_VERSION} | gzip > build_dir/mockdevice_robot_arm.tar.gz
+	docker save edgehub/mockdevice_thermometer:${IMAGE_VERSION} | gzip > build_dir/mockdevice_thermometer.tar.gz
+	docker save edgehub/deviceshifu-http:${IMAGE_VERSION} | gzip > build_dir/deviceshifu-http.tar.gz
+	docker save edgehub/edgedevice-controller:${IMAGE_VERSION} | gzip > build_dir/edgedevice-controller.tar.gz
+	docker save kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6 | gzip > build_dir/kind-image.tar.gz
+	docker save nginx:1.21 | gzip > build_dir/nginx.tar.gz
 	(cd k8s/crd && make generate-controller-yaml IMG=edgehub/edgedevice-controller:v0.0.1)
 
 .PHONY: build-deviceshifu-demo-image

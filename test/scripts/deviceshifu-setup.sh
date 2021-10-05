@@ -8,7 +8,7 @@ usage ()
 
 if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
         if [ "$1" == "apply" ]; then
-                (cd /build_dir && for f in *.tar; do cat $f | docker load; done)
+                (cd /build_dir && for f in *.tar.gz; do docker load < $f; done)
                 kind delete cluster && kind create cluster
                 kind load docker-image nginx:1.21
                 kind load docker-image gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
