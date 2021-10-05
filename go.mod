@@ -3,6 +3,7 @@ module github.com/edgenesis/shifu
 go 1.17
 
 require (
+	edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice v0.0.0
 	edgenesis.io/shifu/k8s/crd v0.0.0-20210920094059-497d4fcc9b6f
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apimachinery v0.22.2
@@ -11,6 +12,8 @@ require (
 )
 
 replace edgenesis.io/shifu/k8s/crd => ./k8s/crd
+
+replace edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice => ./deviceshifu/pkg/mockdevice/mockdevice
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect

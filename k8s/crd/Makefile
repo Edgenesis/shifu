@@ -43,6 +43,13 @@ kube-builder-init:
 kube-builder-create-api-edgedevice: 
 	kubebuilder create api --group shifu --version v1alpha1 --kind EdgeDevice
 
+download: controller-gen kustomize
+
+generate-controller-yaml: kustomize manifests
+	$(KUSTOMIZE) build config/crd > config_crd.yaml
+	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
+	$(KUSTOMIZE) build config/default > config_default.yaml
+
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
 

@@ -1,15 +1,15 @@
 package main
 
 import (
+	"os"
+
 	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifu"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func main() {
-	deviceName := "edgedevice-sample"
-	namespace := "crd-system"
-	// kubeconfigPath := "/root/.kube/config"
-	// config_folder := "etc/edgedevice/config"
+	deviceName := os.Getenv("EDGEDEVICE_NAME")
+	namespace := os.Getenv("EDGEDEVICE_NAMESPACE")
 
 	deviceShifuMetadata := &deviceshifu.DeviceShifuMetaData{
 		deviceName,
