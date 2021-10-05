@@ -1,7 +1,6 @@
 package deviceshifu
 
 import (
-	"context"
 	"fmt"
 	"io"
 	"log"
@@ -9,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
@@ -65,63 +63,6 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 	mockds.Stop()
 	time.Sleep(1 * time.Second)
-}
-
-func TestDeviceInstructionHandler(t *testing.T) {
-	var (
-		config_folder     = "etc/edgedevice/config"
-		httpEndpoint      = "http://127.0.0.1:8080"
-		deviceName        = "edgedevice-sample"
-		kubeconfigPath    = "/root/.kube/config"
-		namespace         = "crd-system"
-		instruction_array = []string{
-			"health",
-			"get_reading",
-			"get_status",
-			"set_reading",
-			"start",
-			"stop",
-		}
-	)
-
-	deviceShifuMetadata := &DeviceShifuMetaData{
-		deviceName,
-		config_folder,
-		kubeconfigPath,
-		namespace,
-	}
-
-	mockds, err := New(deviceShifuMetadata)
-	if err != nil {
-		t.Errorf("Failed creating new deviceShifu")
-	}
-
-	go mockds.Start(wait.NeverStop)
-
-	time.Sleep(1 * time.Second)
-	for _, instruction := range instruction_array {
-		if !CheckSimpleInstructionHandlerHttpResponse(instruction, httpEndpoint) {
-			t.Errorf("Error getting instruction response from instruction: %v", instruction)
-		}
-	}
-
-	getResult := &v1alpha1.EdgeDevice{}
-	err = mockds.restClient.Get().
-		Namespace(mockds.edgeDevice.Namespace).
-		Resource(EDGEDEVICE_RESOURCE_STR).
-		Name(mockds.Name).
-		Do(context.TODO()).
-		Into(getResult)
-
-	if err != nil {
-		t.Errorf("Unable to get status, error: %v", err.Error())
-	}
-
-	if *getResult.Status.EdgeDevicePhase != v1alpha1.EdgeDeviceFailed {
-		t.Errorf("Edgedevice status incorrect")
-	}
-
-	mockds.Stop()
 }
 
 func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint string) bool {

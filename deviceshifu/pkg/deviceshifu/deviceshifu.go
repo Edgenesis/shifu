@@ -45,7 +45,7 @@ const (
 	DEVICE_CONFIGMAP_FOLDER_PATH      string = "/etc/edgedevice/config"
 	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR string = "NULL"
 	DEVICE_NAMESPACE_DEFAULT          string = "default"
-	DEVICE_DEFAULT_HTTP_PORT_STR      string = ":8080"
+	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 )
 
@@ -79,7 +79,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
-			log.Fatalf("Error parsing EdgeDevice Resource")
+			log.Fatalf("Error retrieving EdgeDevice")
 			return nil, err
 		}
 
@@ -117,7 +117,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	ds := &DeviceShifu{
 		Name: deviceShifuMetadata.Name,
 		server: &http.Server{
-			Addr:         DEVICE_DEFAULT_HTTP_PORT_STR,
+			Addr:         DEVICE_DEFAULT_PORT_STR,
 			Handler:      mux,
 			ReadTimeout:  60 * time.Second,
 			WriteTimeout: 60 * time.Second,
@@ -158,20 +158,21 @@ func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHan
 			copyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 			io.Copy(w, resp.Body)
-		} else {
-			// TODO: For now, just write tht instruction to the response
-			log.Println("resp is nil")
-			w.Write([]byte(handlerInstruction))
+			return
 		}
+
+		// TODO: For now, just write tht instruction to the response
+		log.Println("resp is nil")
+		w.Write([]byte(handlerInstruction))
 	}
 }
 
 // HTTP header type:
 // type Header map[string][]string
 func copyHeader(dst, src http.Header) {
-	for k, vv := range src {
-		for _, v := range vv {
-			dst.Add(k, v)
+	for header, headerValueList := range src {
+		for _, value := range headerValueList {
+			dst.Add(header, value)
 		}
 	}
 }
