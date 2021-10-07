@@ -90,10 +90,9 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
-			httpClient := &http.Client{Timeout: 3 * time.Second} // TODO: read timeout from EdgeDeviceConfig
 			for instruction, properties := range deviceShifuConfig.Instructions {
 				deviceShifuHTTPHandlerMetaData := &DeviceShifuHTTPHandlerMetaData{
-					httpClient,
+					client.Client,
 					edgeDevice.Spec,
 					instruction,
 					properties,
@@ -192,13 +191,17 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 // TODO: update status based on telemetry
 
 func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryProperties DeviceShifuTelemetryProperties) (bool, error) {
-	address := *ds.edgeDevice.Spec.Address
-	instruction := *telemetryProperties.DeviceInstructionName
-	httpClient := &http.Client{
-		Timeout: 3 * time.Second,
+	if ds.edgeDevice.Spec.Address == nil {
+		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
 	}
 
-	resp, err := httpClient.Get("http://" + address + "/" + instruction)
+	if telemetryProperties.DeviceInstructionName == nil {
+		return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.Name, telemetry)
+	}
+
+	address := *ds.edgeDevice.Spec.Address
+	instruction := *telemetryProperties.DeviceInstructionName
+	resp, err := ds.restClient.Client.Get("http://" + address + "/" + instruction)
 	if err != nil {
 		log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
 		return false, err
@@ -213,38 +216,50 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 	return false, nil
 }
 
-func (ds *DeviceShifu) telemetryCollection() error {
-	// TODO: handle interval for different telemetries
-	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
+func (ds *DeviceShifu) collectHTTPTelemetries() error {
 	telemetryOK := true
-	if ds.edgeDevice.Spec.Protocol != nil { // TODO: gracefully handle if nil
-		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolHTTP:
-			telemetries := ds.deviceShifuConfig.Telemetries
-			for telemetry, telemetryProperties := range telemetries {
-				status, err := ds.collectHTTPTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
-				if err != nil {
-					if !status && telemetryOK {
-						telemetryOK = false
-					}
-				}
+	telemetries := ds.deviceShifuConfig.Telemetries
+	for telemetry, telemetryProperties := range telemetries {
+		status, err := ds.collectHTTPTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
+		if err != nil {
+			if !status && telemetryOK {
+				telemetryOK = false
 			}
 		}
+	}
 
-		if telemetryOK {
-			ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDeviceRunning)
-		} else {
-			ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDeviceFailed)
-		}
+	if telemetryOK {
+		ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDeviceRunning)
+	} else {
+		ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDeviceFailed)
 	}
 
 	return nil
 }
 
+func (ds *DeviceShifu) telemetryCollection() error {
+	// TODO: handle interval for different telemetries
+	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
+
+	if ds.edgeDevice.Spec.Protocol != nil {
+		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
+		case v1alpha1.ProtocolHTTP:
+			ds.collectHTTPTelemetries()
+		default:
+			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
+			ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDeviceFailed)
+		}
+
+		return nil
+	}
+
+	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
+}
+
 func (ds *DeviceShifu) updateEdgeDeviceResourceStatus(status v1alpha1.EdgeDevicePhase) {
 	log.Printf("updating device %v status to: %v\n", ds.Name, status)
-	newEdgeDevice := ds.edgeDevice
-	*newEdgeDevice.Status.EdgeDevicePhase = status
+	currEdgeDevice := ds.edgeDevice
+	*currEdgeDevice.Status.EdgeDevicePhase = status
 
 	getResult := &v1alpha1.EdgeDevice{}
 	err := ds.restClient.Get().
