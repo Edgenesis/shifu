@@ -10,7 +10,6 @@ spec:
   selector:
     matchLabels:
       app: thermometer
-  strategy: {}
   template:
     metadata:
       labels:

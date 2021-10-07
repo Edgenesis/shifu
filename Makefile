@@ -9,7 +9,7 @@ build-image-deviceshifu:
 download-demo-files:
 	mkdir -p build_dir
 	docker pull edgehub/mockdevice_agv:${IMAGE_VERSION}
-	docker pull edgehub/mockdevice_tecan:${IMAGE_VERSION}
+	docker pull edgehub/mockdevice_plate-reader:${IMAGE_VERSION}
 	docker pull edgehub/mockdevice_robot_arm:${IMAGE_VERSION}
 	docker pull edgehub/mockdevice_thermometer:${IMAGE_VERSION}
 	docker pull edgehub/deviceshifu-http:${IMAGE_VERSION}
@@ -19,7 +19,20 @@ download-demo-files:
 	docker pull nginx:1.21
 	docker save gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0 | gzip > build_dir/kube-rbac-proxy.tar.gz
 	docker save edgehub/mockdevice_agv:${IMAGE_VERSION} | gzip > build_dir/mockdevice_agv.tar.gz
-	docker save edgehub/mockdevice_tecan:${IMAGE_VERSION} | gzip > build_dir/mockdevice_tecan.tar.gz
+	docker save edgehub/mockdevice_plate-reader:${IMAGE_VERSION} | gzip > build_dir/mockdevice_plate-reader.tar.gz
+	docker save edgehub/mockdevice_robot_arm:${IMAGE_VERSION} | gzip > build_dir/mockdevice_robot_arm.tar.gz
+	docker save edgehub/mockdevice_thermometer:${IMAGE_VERSION} | gzip > build_dir/mockdevice_thermometer.tar.gz
+	docker save edgehub/deviceshifu-http:${IMAGE_VERSION} | gzip > build_dir/deviceshifu-http.tar.gz
+	docker save edgehub/edgedevice-controller:${IMAGE_VERSION} | gzip > build_dir/edgedevice-controller.tar.gz
+	docker save kindest/node:v1.21.1@sha256:69860bda5563ac81e3c0057d654b5253219618a22ec3a346306239bba8cfa1a6 | gzip > build_dir/kind-image.tar.gz
+	docker save nginx:1.21 | gzip > build_dir/nginx.tar.gz
+	(cd k8s/crd && make generate-controller-yaml IMG=edgehub/edgedevice-controller:v0.0.1)
+
+compress-demo-files:
+	mkdir -p build_dir
+	docker save gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0 | gzip > build_dir/kube-rbac-proxy.tar.gz
+	docker save edgehub/mockdevice_agv:${IMAGE_VERSION} | gzip > build_dir/mockdevice_agv.tar.gz
+	docker save edgehub/mockdevice_plate-reader:${IMAGE_VERSION} | gzip > build_dir/mockdevice_plate-reader.tar.gz
 	docker save edgehub/mockdevice_robot_arm:${IMAGE_VERSION} | gzip > build_dir/mockdevice_robot_arm.tar.gz
 	docker save edgehub/mockdevice_thermometer:${IMAGE_VERSION} | gzip > build_dir/mockdevice_thermometer.tar.gz
 	docker save edgehub/deviceshifu-http:${IMAGE_VERSION} | gzip > build_dir/deviceshifu-http.tar.gz
@@ -34,10 +47,10 @@ build-deviceshifu-demo-image:
 
 .PHONY: build-image-mockdevices
 build-image-mockdevices:
-	docker build -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.mockdevice_thermometer --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice_thermometer:${IMAGE_VERSION}
-	docker build -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.mockdevice_robot_arm --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice_robot_arm:${IMAGE_VERSION}
-	docker build -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.mockdevice_tecan --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice_tecan:${IMAGE_VERSION}
-	docker build -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.mockdevice_agv --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice_agv:${IMAGE_VERSION}
+	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice_thermometer --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice_thermometer:${IMAGE_VERSION}
+	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/robot_arm/Dockerfile.mockdevice_robot_arm --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice_robot_arm:${IMAGE_VERSION}
+	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/plate-reader/Dockerfile.mockdevice_plate-reader --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice_plate-reader:${IMAGE_VERSION}
+	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/agv/Dockerfile.mockdevice_agv --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice_agv:${IMAGE_VERSION}
 
 docker-push-image-deviceshifu:
 	docker push edgehub/deviceshifu-http:${IMAGE_VERSION}

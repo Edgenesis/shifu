@@ -10,7 +10,6 @@ spec:
   selector:
     matchLabels:
       app: agv
-  strategy: {}
   template:
     metadata:
       labels:

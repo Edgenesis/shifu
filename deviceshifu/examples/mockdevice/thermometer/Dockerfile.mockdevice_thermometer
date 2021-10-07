@@ -1,0 +1,29 @@
+# Build the manager binary
+FROM golang:1.17.1 as builder
+
+WORKDIR /shifu
+
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GO111MODULE=on
+ENV GOPRIVATE=github.com/Edgenesis
+
+COPY go.mod go.mod
+COPY go.sum go.sum
+COPY k8s k8s
+COPY deviceshifu/pkg/mockdevice deviceshifu/pkg/mockdevice
+
+RUN go mod download
+
+# Build the Go app
+RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a \
+    -o /output/mockdevice_thermometer \
+    deviceshifu/pkg/mockdevice/mockdevice_thermometer/mockdevice_thermometer.go
+
+FROM gcr.io/distroless/static
+
+WORKDIR /root/
+
+COPY --from=builder /output/mockdevice_thermometer mockdevice_thermometer
+
+# Command to run the executable
+ENTRYPOINT ["./mockdevice_thermometer"]

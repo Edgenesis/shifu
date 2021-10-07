@@ -10,7 +10,6 @@ spec:
   selector:
     matchLabels:
       app: robotarm
-  strategy: {}
   template:
     metadata:
       labels:

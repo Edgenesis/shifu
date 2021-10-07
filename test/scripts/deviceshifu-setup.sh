@@ -13,7 +13,7 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
                 kind load docker-image nginx:1.21
                 kind load docker-image gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
                 kind load docker-image edgehub/mockdevice_agv:v0.0.1
-                kind load docker-image edgehub/mockdevice_tecan:v0.0.1
+                kind load docker-image edgehub/mockdevice_plate-reader:v0.0.1
                 kind load docker-image edgehub/mockdevice_robot_arm:v0.0.1
                 kind load docker-image edgehub/mockdevice_thermometer:v0.0.1
                 kind load docker-image edgehub/deviceshifu-http:v0.0.1

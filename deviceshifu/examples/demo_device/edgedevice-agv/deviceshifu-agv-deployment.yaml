@@ -33,4 +33,4 @@ spec:
       - name: edgedevice-config
         configMap:
           name: agv-configmap-0.0.1
-      serviceAccountName: edgedevice-readwrite-sa
+      serviceAccountName: edgedevice-mockdevice-sa
