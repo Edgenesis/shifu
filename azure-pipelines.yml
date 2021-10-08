@@ -56,7 +56,7 @@ steps:
   displayName: "go build mockdevice robot arm"
   inputs:
     command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice_robot_arm'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice_robot-arm'
 - task: Go@0
   displayName: "go build mockdevice thermometer"
   inputs:

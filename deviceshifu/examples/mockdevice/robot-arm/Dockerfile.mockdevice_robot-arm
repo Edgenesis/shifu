@@ -15,14 +15,14 @@ RUN go mod download
 
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a \
-    -o /output/mockdevice_robot_arm \
-    /shifu/deviceshifu/pkg/mockdevice/mockdevice_robot_arm/mockdevice_robot_arm.go
+    -o /output/mockdevice_robot-arm \
+    /shifu/deviceshifu/pkg/mockdevice/mockdevice_robot-arm/mockdevice_robot-arm.go
 
 FROM gcr.io/distroless/static
 
 WORKDIR /root/
 
-COPY --from=builder /output/mockdevice_robot_arm mockdevice_robot_arm
+COPY --from=builder /output/mockdevice_robot-arm mockdevice_robot-arm
 
 # Command to run the executable
-ENTRYPOINT ["./mockdevice_robot_arm"]
+ENTRYPOINT ["./mockdevice_robot-arm"]
