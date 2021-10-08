@@ -8,5 +8,3 @@ spec:
   connection: Ethernet
   address: plate-reader.devices.svc.cluster.local:11111
   protocol: HTTP
-status:
-  edgedevicephase: "Pending"

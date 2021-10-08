@@ -49,7 +49,6 @@ const (
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 )
 
-// func New(name string, config_file_dir string, kube_config_location string, namespace string) *DeviceShifu {
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	if deviceShifuMetadata.Name == "" {
 		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
@@ -126,6 +125,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		restClient:        client,
 	}
 
+	ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDevicePending)
 	return ds, nil
 }
 
@@ -258,30 +258,32 @@ func (ds *DeviceShifu) telemetryCollection() error {
 
 func (ds *DeviceShifu) updateEdgeDeviceResourceStatus(status v1alpha1.EdgeDevicePhase) {
 	log.Printf("updating device %v status to: %v\n", ds.Name, status)
-	currEdgeDevice := ds.edgeDevice
-	*currEdgeDevice.Status.EdgeDevicePhase = status
-
-	getResult := &v1alpha1.EdgeDevice{}
+	currEdgeDevice := &v1alpha1.EdgeDevice{}
 	err := ds.restClient.Get().
 		Namespace(ds.edgeDevice.Namespace).
 		Resource(EDGEDEVICE_RESOURCE_STR).
 		Name(ds.Name).
 		Do(context.TODO()).
-		Into(getResult)
+		Into(currEdgeDevice)
 
 	if err != nil {
 		log.Printf("Unable to update status, error: %v", err.Error())
 		return
 	}
 
-	*getResult.Status.EdgeDevicePhase = status
+	if currEdgeDevice.Status.EdgeDevicePhase == nil {
+		edgeDeviceStatus := v1alpha1.EdgeDevicePending
+		currEdgeDevice.Status.EdgeDevicePhase = &edgeDeviceStatus
+	}
+
+	*currEdgeDevice.Status.EdgeDevicePhase = status
 
 	putResult := &v1alpha1.EdgeDevice{}
 	err = ds.restClient.Put().
 		Namespace(ds.edgeDevice.Namespace).
 		Resource(EDGEDEVICE_RESOURCE_STR).
 		Name(ds.Name).
-		Body(getResult).
+		Body(currEdgeDevice).
 		Do(context.TODO()).
 		Into(putResult)
 

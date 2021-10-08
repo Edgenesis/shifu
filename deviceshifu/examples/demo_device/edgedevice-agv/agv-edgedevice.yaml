@@ -8,5 +8,3 @@ spec:
   connection: Ethernet
   address: agv.devices.svc.cluster.local:11111
   protocol: HTTP
-status:
-  edgedevicephase: "Pending"

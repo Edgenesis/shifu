@@ -41,6 +41,15 @@ compress-demo-files:
 	docker save nginx:1.21 | gzip > build_dir/nginx.tar.gz
 	(cd k8s/crd && make generate-controller-yaml IMG=edgehub/edgedevice-controller:v0.0.1)
 
+compress-edgenesis-files:
+	mkdir -p build_dir
+	docker save edgehub/mockdevice_agv:${IMAGE_VERSION} | gzip > build_dir/mockdevice_agv.tar.gz
+	docker save edgehub/mockdevice_plate-reader:${IMAGE_VERSION} | gzip > build_dir/mockdevice_plate-reader.tar.gz
+	docker save edgehub/mockdevice_robot-arm:${IMAGE_VERSION} | gzip > build_dir/mockdevice_robot-arm.tar.gz
+	docker save edgehub/mockdevice_thermometer:${IMAGE_VERSION} | gzip > build_dir/mockdevice_thermometer.tar.gz
+	docker save edgehub/deviceshifu-http:${IMAGE_VERSION} | gzip > build_dir/deviceshifu-http.tar.gz
+	docker save edgehub/edgedevice-controller:${IMAGE_VERSION} | gzip > build_dir/edgedevice-controller.tar.gz
+
 .PHONY: build-deviceshifu-demo-image
 build-deviceshifu-demo-image:
 	docker build -f ${PROJECT_ROOT}/Dockerfile.demo --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/demo_image-alpine:${IMAGE_VERSION}
