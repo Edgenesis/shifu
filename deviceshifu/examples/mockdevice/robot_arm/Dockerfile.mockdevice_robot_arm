@@ -7,17 +7,16 @@ ENV GOPROXY=https://goproxy.cn,direct
 ENV GO111MODULE=on
 ENV GOPRIVATE=github.com/Edgenesis
 
-COPY go.mod go.mod
-COPY go.sum go.sum
-COPY k8s k8s
 COPY deviceshifu/pkg/mockdevice deviceshifu/pkg/mockdevice
+
+WORKDIR /shifu/deviceshifu/pkg/mockdevice/mockdevice
 
 RUN go mod download
 
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a \
     -o /output/mockdevice_robot_arm \
-    deviceshifu/pkg/mockdevice/mockdevice_robot_arm/mockdevice_robot_arm.go
+    /shifu/deviceshifu/pkg/mockdevice/mockdevice_robot_arm/mockdevice_robot_arm.go
 
 FROM gcr.io/distroless/static
 
