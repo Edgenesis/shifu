@@ -16,7 +16,7 @@ spec:
         app: thermometer
     spec:
       containers:
-      - image: edgehub/mockdevice_thermometer:v0.0.1
+      - image: edgehub/mockdevice-thermometer:v0.0.1
         name: thermometer
         ports:
         - containerPort: 11111

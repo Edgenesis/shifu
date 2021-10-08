@@ -46,22 +46,22 @@ steps:
   displayName: "go build mockdevice agv"
   inputs:
     command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice_agv'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-agv'
 - task: Go@0
   displayName: "go build mockdevice plate reader"
   inputs:
     command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice_plate-reader'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plate-reader'
 - task: Go@0
   displayName: "go build mockdevice robot arm"
   inputs:
     command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice_robot-arm'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-robot-arm'
 - task: Go@0
   displayName: "go build mockdevice thermometer"
   inputs:
     command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice_thermometer'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-thermometer'
 - task: Go@0
   displayName: "go test mockdevice"
   inputs:

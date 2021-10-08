@@ -12,10 +12,10 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
                 kind delete cluster && kind create cluster
                 kind load docker-image nginx:1.21
                 kind load docker-image gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
-                kind load docker-image edgehub/mockdevice_agv:v0.0.1
-                kind load docker-image edgehub/mockdevice_plate-reader:v0.0.1
-                kind load docker-image edgehub/mockdevice_robot-arm:v0.0.1
-                kind load docker-image edgehub/mockdevice_thermometer:v0.0.1
+                kind load docker-image edgehub/mockdevice-agv:v0.0.1
+                kind load docker-image edgehub/mockdevice-plate-reader:v0.0.1
+                kind load docker-image edgehub/mockdevice-robot-arm:v0.0.1
+                kind load docker-image edgehub/mockdevice-thermometer:v0.0.1
                 kind load docker-image edgehub/deviceshifu-http:v0.0.1
                 kind load docker-image edgehub/edgedevice-controller:v0.0.1
                 kubectl apply -f k8s/crd

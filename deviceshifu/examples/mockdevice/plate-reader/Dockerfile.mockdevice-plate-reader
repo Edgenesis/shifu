@@ -15,14 +15,14 @@ RUN go mod download
 
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a \
-    -o /output/mockdevice_plate-reader \
-    /shifu/deviceshifu/pkg/mockdevice/mockdevice_plate-reader/mockdevice_plate-reader.go
+    -o /output/mockdevice-plate-reader \
+    /shifu/deviceshifu/pkg/mockdevice/mockdevice-plate-reader/mockdevice-plate-reader.go
 
 FROM gcr.io/distroless/static
 
 WORKDIR /root/
 
-COPY --from=builder /output/mockdevice_plate-reader mockdevice_plate-reader
+COPY --from=builder /output/mockdevice-plate-reader mockdevice-plate-reader
 
 # Command to run the executable
-ENTRYPOINT ["./mockdevice_plate-reader"]
+ENTRYPOINT ["./mockdevice-plate-reader"]

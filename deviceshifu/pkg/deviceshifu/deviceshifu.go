@@ -125,7 +125,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		restClient:        client,
 	}
 
-	ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDevicePending)
+	ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil
 }
 
@@ -229,9 +229,9 @@ func (ds *DeviceShifu) collectHTTPTelemetries() error {
 	}
 
 	if telemetryOK {
-		ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDeviceRunning)
+		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceRunning)
 	} else {
-		ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDeviceFailed)
+		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 	}
 
 	return nil
@@ -247,7 +247,7 @@ func (ds *DeviceShifu) telemetryCollection() error {
 			ds.collectHTTPTelemetries()
 		default:
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
-			ds.updateEdgeDeviceResourceStatus(v1alpha1.EdgeDeviceFailed)
+			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 		}
 
 		return nil
@@ -256,8 +256,8 @@ func (ds *DeviceShifu) telemetryCollection() error {
 	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
 }
 
-func (ds *DeviceShifu) updateEdgeDeviceResourceStatus(status v1alpha1.EdgeDevicePhase) {
-	log.Printf("updating device %v status to: %v\n", ds.Name, status)
+func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
+	log.Printf("updating device %v status to: %v\n", ds.Name, edPhase)
 	currEdgeDevice := &v1alpha1.EdgeDevice{}
 	err := ds.restClient.Get().
 		Namespace(ds.edgeDevice.Namespace).
@@ -274,9 +274,9 @@ func (ds *DeviceShifu) updateEdgeDeviceResourceStatus(status v1alpha1.EdgeDevice
 	if currEdgeDevice.Status.EdgeDevicePhase == nil {
 		edgeDeviceStatus := v1alpha1.EdgeDevicePending
 		currEdgeDevice.Status.EdgeDevicePhase = &edgeDeviceStatus
+	} else {
+		*currEdgeDevice.Status.EdgeDevicePhase = edPhase
 	}
-
-	*currEdgeDevice.Status.EdgeDevicePhase = status
 
 	putResult := &v1alpha1.EdgeDevice{}
 	err = ds.restClient.Put().
