@@ -1,8 +1,8 @@
 # Hello World Device
 This section will show you how *shifu* works by creating a simple edge device and connect to *shifu* with its *deviceShifu* (digital twin).\
-This edge device will only do one thing: response a message upon the HTTP endpoint `/hello`.
-### Prerequosite
-The following example requires [Docker](https://docs.docker.com/get-docker/), [kind](https://kubernetes.io/docs/tasks/tools/), [kubectl](https://kubernetes.io/docs/tasks/tools/) and [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) installed.
+An edge device can be anything that performs some certain tasks and can communicate via a driver. The edge device in this example will only do one thing: responds on HTTP endpoint `/hello`.
+### Prerequisite
+The following example requires [Go](https://golang.org/dl/), [Docker](https://docs.docker.com/get-docker/), [kind](https://kubernetes.io/docs/tasks/tools/), [kubectl](https://kubernetes.io/docs/tasks/tools/) and [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) installed.
 
 1. ### Prepare the edge device docker image
    The expected edge device is a http server that response "Hello_world from device via shifu!"\
@@ -51,11 +51,11 @@ The following example requires [Docker](https://docs.docker.com/get-docker/), [k
    
    Build the image
 
-    `docker build --tag helloworld:v0.0.1 .`
+    `docker build --tag helloworld-device:v0.0.1 .`
 
 2. ### Prepare the configuration for the edge device
    The basic information of the edge device.\
-   Assuming all configurations are saved in `<working_dir>/helloworlddevice/configuration`.
+   Assuming all configurations are saved in `<working_dir>/helloworld-device/configuration`.
 
    Deployment for the device:\
    **helloworld-deployment.yaml**
@@ -78,7 +78,7 @@ The following example requires [Docker](https://docs.docker.com/get-docker/), [k
             app: helloworld
         spec:
           containers:
-            - image: <your_docker_account>/helloworld:v0.0.1
+            - image: <your_docker_account>/helloworld-device:v0.0.1
               name: helloworld
               ports:
                 - containerPort: 11111
@@ -127,7 +127,7 @@ The following example requires [Docker](https://docs.docker.com/get-docker/), [k
    ```
 3. ### Prepare the configurations for *shifu* to create the *deviceShifu* (digital twin)
    With the following configurations, *shifu* is able to create a *deviceShifu* (digital twin) automatically for the device.\
-   Assuming all configurations are saved in `<working_dir>/helloworlddevice/configuration`.
+   Assuming all configurations are saved in `<working_dir>/helloworld-device/configuration`.
 
    ConfigMap for the deviceShifu:\
    **deviceshifu-helloworld-configmap.yaml**
@@ -202,7 +202,7 @@ The following example requires [Docker](https://docs.docker.com/get-docker/), [k
     metadata:
       labels:
         app: edgedevice-helloworld-deployment
-      name: edgedevice-helloworld
+      name: edgedevice-helloworld-service
       namespace: default
     spec:
       ports:
@@ -229,7 +229,7 @@ The following example requires [Docker](https://docs.docker.com/get-docker/), [k
        ```
    3. let *shifu* create the *deviceShifu* from the configurations
        ```
-       kubectl apply -f <working_dir>/helloworlddevice/configuration
+       kubectl apply -f <working_dir>/helloworld-device/configuration
        ```
    4. start a nginx server
        `kubectl run nginx --image=nginx:1.21`
@@ -251,71 +251,24 @@ The following example requires [Docker](https://docs.docker.com/get-docker/), [k
         kube-system          kube-scheduler-kind-control-plane                   1/1     Running   0          30m
         local-path-storage   local-path-provisioner-547f784dff-44xnv             1/1     Running   0          30m
        ```
-       And you can also check the info and status of edgedevice instance created:
+       You can also check the info and status of edgedevice instance created:
 
         ```
         kubectl get edgedevice --namespace devices
 
         NAME                    AGE
         edgedevice-helloworld   22m
-
+        ```
+       And you can get detailed edge device information by describing it: 
+        ```
         kubectl describe edgedevice --namespace devices
-
-        Name:         edgedevice-helloworld
-        Namespace:    devices
-        Labels:       <none>
-        Annotations:  <none>
-        API Version:  shifu.edgenesis.io/v1alpha1
-        Kind:         EdgeDevice
-        Metadata:
-          Creation Timestamp:  2021-10-10T07:06:10Z
-          Generation:          2
-          Managed Fields:
-            API Version:  shifu.edgenesis.io/v1alpha1
-            Fields Type:  FieldsV1
-            fieldsV1:
-              f:metadata:
-                f:annotations:
-                  .:
-                  f:kubectl.kubernetes.io/last-applied-configuration:
-              f:spec:
-                .:
-                f:address:
-                f:connection:
-                f:protocol:
-                f:sku:
-              f:status:
-                .:
-                f:edgedevicephase:
-            Manager:      kubectl-client-side-apply
-            Operation:    Update
-            Time:         2021-10-10T07:06:10Z
-            API Version:  shifu.edgenesis.io/v1alpha1
-            Fields Type:  FieldsV1
-            fieldsV1:
-              f:status:
-                f:edgedevicephase:
-            Manager:         deviceshifu
-            Operation:       Update
-            Time:            2021-10-10T07:12:27Z
-          Resource Version:  3002
-          UID:               a282e746-bbd3-408a-b63b-b185a0193664
-        Spec:
-          Address:     helloworld.devices.svc.cluster.local:11111
-          Connection:  Ethernet
-          Protocol:    HTTP
-          Sku:         Hello World
-        Status:
-          Edgedevicephase:  Running
-        Events:             <none>
-
-       ```
+        ```
 
    5. get into the nginx shell
        ```
        kubectl exec -it --namespace default nginx -- bash
        ```
-   6. try interact with the Hellow World Device
+   6. interact with the Hellow World Device
       ```
       /# curl http://edgedevice-helloworld:80/hello
       ```
