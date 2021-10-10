@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"testing"
+	"time"
 )
 
 func TestStartMockDevice(t *testing.T) {
@@ -29,6 +30,7 @@ func TestStartMockDevice(t *testing.T) {
 
 	go StartMockDevice(available_funcs, instructionHandler)
 
+	time.Sleep(1 * time.Second)
 	resp, err := http.Get("http://localhost:12345/get_status")
 	if err != nil {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
