@@ -23,8 +23,13 @@ spec:
         - name: edgedevice-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
+        env:
+        - name: EDGEDEVICE_NAME
+          value: "edgedevice-agv"
+        - name: EDGEDEVICE_NAMESPACE
+          value: "default"
       volumes:
       - name: edgedevice-config
         configMap:
           name: mockdevice-configmap-0.0.1
-      serviceAccountName: edgedevice-reader-sa
+      serviceAccountName: edgedevice-mockdevice-sa

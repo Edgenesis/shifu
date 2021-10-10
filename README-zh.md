@@ -37,7 +37,7 @@ Shifu让管理和控制IoT设备变得极其简单。当你连接设备的时候
 1. **启动Docker镜像：**
 
     ```
-    docker run --network host -it -v /var/run/docker.sock:/var/run/docker.sock edgehub/demo_image-alpine:v0.0.1
+    docker run --network host -it -v /var/run/docker.sock:/var/run/docker.sock edgehub/demo-image-alpine:v0.0.1
     ```
 
 2. **建立Kubernetes集群，开启Shifu服务：**
@@ -79,7 +79,7 @@ Shifu让管理和控制IoT设备变得极其简单。当你连接设备的时候
     * **thermometer**: 一个获取当前温度的温度计，命令`read_value`会返回当前温度计的读数
     * **agv**: 一个自动引导车，命令 `get_position`会返回以x, y轴为坐标的设备当前位置
     * **robotarm**: 一个实验室用的机械臂，命令`get_coordinate`会返回机械臂当前的x, y, z轴坐标
-    * **tecan**: 一个实验室用的酶标仪，命令`get_measurement`会返回每一个样本中光谱分析扫描的结果数值，样本为8*12个正方矩阵排列
+    * **plate-reader**: 一个实验室用的酶标仪，命令`get_measurement`会返回每一个样本中光谱分析扫描的结果数值，样本为8*12个正方矩阵排列
 
     运行4个设备的deviceShifu:
     ```
@@ -130,9 +130,9 @@ Shifu让管理和控制IoT设备变得极其简单。当你连接设备的时候
     Busy
     / # curl http://edgedevice-robotarm/get_coordinate
     xpos: 55, ypos: 140, zpos: 135
-    / # curl http://edgedevice-tecan/get_status
+    / # curl http://edgedevice-plate-reader/get_status
     Idle
-    / # curl http://edgedevice-tecan/get_measurement
+    / # curl http://edgedevice-plate-reader/get_measurement
     0.75 0.50 1.34 0.95 2.79 2.66 2.68 0.59 0.97 0.93 0.70 0.62 
     0.61 1.47 1.68 1.65 1.05 1.59 0.78 2.92 1.22 1.12 2.86 0.29 
     2.15 2.45 1.99 0.36 1.47 0.18 2.47 0.61 2.43 1.53 0.14 2.41 

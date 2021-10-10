@@ -33,7 +33,7 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
 1. **Pull and run the docker container:**
 
     ```
-    docker run --network host -it -v /var/run/docker.sock:/var/run/docker.sock edgehub/demo_image-alpine:v0.0.1
+    docker run --network host -it -v /var/run/docker.sock:/var/run/docker.sock edgehub/demo-image-alpine:v0.0.1
     ```
 
 2. **Create kubernetes cluster and start shifu services:**
@@ -73,14 +73,14 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
     * **thermometer**: a thermometer which reports a temperature, it has an instruction `read_value` which returns the temperature value read from the thermometer
     * **agv**: an automated guided vehicle, it has two instructions, it has an instruction `get_position` which returns the position of the vehicle in the x-y coordinate
     * **robotarm**: a robot arm used in a lab, it has an insturuction of `get_coordinate` which returns the position of the robot arm in the x-y-z coordinate
-    * **tecan**: a plate with a matrix of blocks where each block contains some liquid, it has an insturuction of `get_measurement` which returns a matrix of the measurement value of the liquid in each block
+    * **plate-reader**: a plate with a matrix of blocks where each block contains some liquid, it has an insturuction of `get_measurement` which returns a matrix of the measurement value of the liquid in each block
 
     Start the deviceShifu for all 4 devices:
     ```
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-agv
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-robot-arm
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-tecan
+    ./test/scripts/deviceshifu-demo.sh apply edgedevice-plate-reader
     ```
     We should have the following pods running in devices namespace:
     ```
@@ -125,9 +125,9 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
     Busy
     / # curl http://edgedevice-robotarm/get_coordinate
     xpos: 55, ypos: 140, zpos: 135
-    / # curl http://edgedevice-tecan/get_status
+    / # curl http://edgedevice-plate-reader/get_status
     Idle
-    / # curl http://edgedevice-tecan/get_measurement
+    / # curl http://edgedevice-plate-reader/get_measurement
     0.75 0.50 1.34 0.95 2.79 2.66 2.68 0.59 0.97 0.93 0.70 0.62 
     0.61 1.47 1.68 1.65 1.05 1.59 0.78 2.92 1.22 1.12 2.86 0.29 
     2.15 2.45 1.99 0.36 1.47 0.18 2.47 0.61 2.43 1.53 0.14 2.41 

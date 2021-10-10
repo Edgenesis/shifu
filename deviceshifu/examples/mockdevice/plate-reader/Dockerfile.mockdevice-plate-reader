@@ -1,0 +1,28 @@
+# Build the manager binary
+FROM golang:1.17.1 as builder
+
+WORKDIR /shifu
+
+ENV GOPROXY=https://goproxy.cn,direct
+ENV GO111MODULE=on
+ENV GOPRIVATE=github.com/Edgenesis
+
+COPY deviceshifu/pkg/mockdevice deviceshifu/pkg/mockdevice
+
+WORKDIR /shifu/deviceshifu/pkg/mockdevice/mockdevice
+
+RUN go mod download
+
+# Build the Go app
+RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a \
+    -o /output/mockdevice-plate-reader \
+    /shifu/deviceshifu/pkg/mockdevice/mockdevice-plate-reader/mockdevice-plate-reader.go
+
+FROM gcr.io/distroless/static
+
+WORKDIR /root/
+
+COPY --from=builder /output/mockdevice-plate-reader mockdevice-plate-reader
+
+# Command to run the executable
+ENTRYPOINT ["./mockdevice-plate-reader"]

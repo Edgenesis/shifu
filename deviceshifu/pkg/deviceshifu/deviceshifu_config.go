@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"log"
+	"time"
 
 	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"gopkg.in/yaml.v2"
@@ -27,7 +28,7 @@ type DeviceShifuDriverProperties struct {
 }
 
 type DeviceShifuInstruction struct {
-	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"properties,omitempty"`
+	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
 }
 
 type DeviceShifuInstructionProperty struct {
@@ -36,14 +37,14 @@ type DeviceShifuInstructionProperty struct {
 	DefaultValue interface{} `yaml:"defaultValue"`
 }
 
-type DeviceShifuTelemetry struct {
-	DeviceShifuTelemetryProperties []DeviceShifuTelemetryProperty `yaml:"properties,omitempty"`
-}
-
-type DeviceShifuTelemetryProperty struct {
+type DeviceShifuTelemetryProperties struct {
 	DeviceInstructionName *string `yaml:"instruction"`
 	InitialDelayMs        *int    `yaml:"initialDelayMs,omitempty"`
 	IntervalMs            *int    `yaml:"intervalMs,omitempty"`
+}
+
+type DeviceShifuTelemetry struct {
+	DeviceShifuTelemetryProperties DeviceShifuTelemetryProperties `yaml:"properties,omitempty"`
 }
 
 type EdgeDeviceConfig struct {
@@ -97,7 +98,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	return dsc, nil
 }
 
-func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, error) {
+func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *rest.RESTClient, error) {
 	var config *rest.Config
 	var err error
 
@@ -109,13 +110,13 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, er
 
 	if err != nil {
 		log.Fatalf("Error parsing incluster/kubeconfig, error: %v", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	client, err := NewEdgeDeviceRestClient(config)
 	if err != nil {
 		log.Fatalf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	ed := &v1alpha1.EdgeDevice{}
@@ -127,10 +128,9 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, er
 		Into(ed)
 	if err != nil {
 		log.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
-
-	return ed, nil
+	return ed, client, nil
 }
 
 func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
@@ -140,6 +140,7 @@ func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	crdConfig.APIPath = "/apis"
 	crdConfig.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
+	crdConfig.Timeout = 3 * time.Second
 	exampleRestClient, err := rest.UnversionedRESTClientFor(crdConfig)
 	if err != nil {
 		return nil, err

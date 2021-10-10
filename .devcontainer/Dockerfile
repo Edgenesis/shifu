@@ -4,7 +4,7 @@
 ARG VARIANT="latest"
 FROM deis/go-dev:${VARIANT}
 
-ENV GOPROXY=https://goproxy.io,direct
+ENV GOPROXY=https://goproxy.cn,direct
 ENV GOPRIVATE=github.com/Edgenesis,edgenesis.io/shifu
 ENV GO111MODULE=on
 
@@ -28,7 +28,7 @@ RUN curl -Lo ./kubebuilder https://go.kubebuilder.io/dl/master/$(go env GOOS)/$(
 RUN go get -u github.com/ramya-rao-a/go-outline \
     k8s.io/apimachinery/pkg/util/wait
 
-RUN go install golang.org/x/tools/gopls@latest \
+RUN go get golang.org/x/tools/gopls@latest \
     k8s.io/client-go@latest
 
 # [Optional] Uncomment this line to install global node packages.
