@@ -155,7 +155,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
             intervalMs: 1000
    ```
    Deployment for the deviceShifu:\
-   **deviceshifu-helloworld-deployment**
+   **deviceshifu-helloworld-deployment.yaml**
     ```
     apiVersion: apps/v1
     kind: Deployment
@@ -268,7 +268,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
        ```
        kubectl exec -it --namespace default nginx -- bash
        ```
-   6. interact with the Hellow World Device
+   6. interact with the Hellow World Device via its deviceShifu
       ```
       /# curl http://edgedevice-helloworld:80/hello
       ```
