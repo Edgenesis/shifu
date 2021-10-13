@@ -86,7 +86,7 @@ Shifu让管理和控制IoT设备变得极其简单。当你连接设备的时候
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-agv
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-robot-arm
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-tecan
+    ./test/scripts/deviceshifu-demo.sh apply edgedevice-plate-reader
     ```
     通过命令来获取devices域中所有的Pods：
     ```
@@ -98,7 +98,7 @@ Shifu让管理和控制IoT设备变得极其简单。当你连接设备的时候
     agv-5944698b79-qxdmk           1/1     Running   0          86s
     robotarm-5478f86fc8-s5kmg      1/1     Running   0          85s
     thermometer-6d6d8f759f-4hd6l   1/1     Running   0          28m
-    tecan-6859f67bc5-htxpp         1/1     Running   0          86s
+    plate-reader-6859f67bc5-htxpp         1/1     Running   0          86s
     ```
     我们可以通过`kubectl describe pods`查看每一个deviceShifu的信息，如：
     ```

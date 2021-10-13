@@ -3,6 +3,16 @@ trigger:
    include:
      - main
      - releases/*
+  paths:
+    exclude:
+    - docs
+    - img
+    - README.md
+    - README-zh.md
+    - README-en.md
+    - LICENSE
+    - .devcontainer
+    - .github
 
 pr:
   branches:
@@ -14,6 +24,8 @@ pr:
     - docs
     - img
     - README.md
+    - README-zh.md
+    - README-en.md
     - LICENSE
     - .devcontainer
     - .github

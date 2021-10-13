@@ -92,7 +92,7 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
     agv-5944698b79-qxdmk           1/1     Running   0          86s
     robotarm-5478f86fc8-s5kmg      1/1     Running   0          85s
     thermometer-6d6d8f759f-4hd6l   1/1     Running   0          28m
-    tecan-6859f67bc5-htxpp         1/1     Running   0          86s
+    plate-reader-6859f67bc5-htxpp         1/1     Running   0          86s
     ```
     We can view the info of a deviceShifu with `kubectl describe pods`. For example,
     ```

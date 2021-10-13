@@ -2,7 +2,7 @@
 
 usage ()
 {
-  echo "usage: $0 apply/delete edgedevice-[agv/robot-arm/tecan/thermometer]"
+  echo "usage: $0 apply/delete edgedevice-[agv/robot-arm/plate-reader/thermometer]"
   exit
 }
 
