@@ -1,12 +1,23 @@
-# Hello World Device
-This section will show you how *shifu* works by creating a simple edge device and connect to *shifu* with its *deviceShifu* (digital twin).\
-An edge device can be anything that performs some certain tasks and can communicate via a driver. The edge device in this example will only do one thing: responds on HTTP endpoint `/hello`.
-### Prerequisite
-The following example requires [Go](https://golang.org/dl/), [Docker](https://docs.docker.com/get-docker/), [kind](https://kubernetes.io/docs/tasks/tools/), [kubectl](https://kubernetes.io/docs/tasks/tools/) and [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) installed.
+# Hello World 设备
+本文会通过创建一个简单的***edgeDevice***并通过***deviceShifu*** (数字孪生)接入到***Shifu***来帮助开发者了解***Shifu***是如何运行的。\
+***edgeDevice***可以是任意可以通过驱动沟通并执行某些任务的设备。本文例子中的***edgeDevice***可以实现一件事情：回答HTTP路径`/hello`的请求。
+### 必要条件
+本文中的示例要求用户安装[Go](https://golang.org/dl/), [Docker](https://docs.docker.com/get-docker/), [kind](https://kubernetes.io/docs/tasks/tools/), [kubectl](https://kubernetes.io/docs/tasks/tools/)和[kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)
 
-1. ### Prepare the edge device docker image
-   The expected edge device is a http server that response "Hello_world from device via shifu!"\
-   In your working directory, for example, create a `helloworld.go` with following content:
+### 关键词解释
+***edgeDevice***:    
+ - ***edgeDevice*** 是一个由***Shifu***管理的物理IoT设备
+
+***deviceShifu***:
+- ***deviceShifu*** 是***edgeDevice***的数字孪生
+
+***Shifu***:
+- ***Shifu*** 是用来管理，调和***deviceShifu***以及所有相关组件的整个边无际OS框架
+
+### 步骤
+1. ### 准备 ***edgeDevice***:  Docker 镜像
+   ***edgeDevice*** 的功能: 一个以 "Hello_world from device via shifu!"为响应的HTTP服务器\
+   在开发路径中，创建一个`helloworld.go`文件包含如下内容:
    ```
     package main
     import (
@@ -33,7 +44,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
       http.ListenAndServe(":11111", nil)
     }
     ```
-   and its Dockerfile:
+   和它的 Dockerfile:
    ```
    package main
    # syntax=docker/dockerfile:1
@@ -47,17 +58,18 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
    EXPOSE 11111
    CMD [ "/helloworld" ]    
    ```
-   You can test it locally but it is not covered here.
+
+   可以测试一下，但是本文不包含测试部分的内容
    
-   Build the image
+   创建镜像
 
     `docker build --tag helloworld-device:v0.0.1 .`
 
-2. ### Prepare the configuration for the edge device
-   The basic information of the edge device.\
-   Assuming all configurations are saved in `<working_dir>/helloworld-device/configuration`.
+2. ### 准备***edgeDevice***的配置文件:
+   ***edgeDevice***的基本信息：\
+   假设所有配置文件保存在 `<working_dir>/helloworld-device/configuration`
 
-   Deployment for the device:\
+   ***edgeDevice***的Deployment:\
    **helloworld-deployment.yaml**
     ```
     apiVersion: apps/v1
@@ -78,18 +90,13 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
             app: helloworld
         spec:
           containers:
-            - image: <your_docker_account>/helloworld-device:v0.0.1
+            - image: helloworld-device:v0.0.1
               name: helloworld
               ports:
                 - containerPort: 11111
-              env:
-                - name: MOCKDEVICE_NAME
-                  value: helloworld
-                - name: MOCKDEVICE_PORT
-                  value: "11111"
       ```
    
-   Hardware and connection info for the device:\
+   ***edgeDevice***的硬件和连接信息：\
     **helloworld-edgedevice.yaml**
     ```
     apiVersion: shifu.edgenesis.io/v1alpha1
@@ -106,7 +113,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
       edgedevicephase: "Pending"
     ```
 
-    Service for the device:\
+    ***edgeDevice***的Service:\
     **helloworld-service.yaml**
    ```
    apiVersion: v1
@@ -125,11 +132,12 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
        app: helloworld
      type: LoadBalancer
    ```
-3. ### Prepare the configurations for *shifu* to create the *deviceShifu* (digital twin)
-   With the following configurations, *shifu* is able to create a *deviceShifu* (digital twin) automatically for the device.\
-   Assuming all configurations are saved in `<working_dir>/helloworld-device/configuration`.
+3. ### 为***Shifu***准备***deviceShifu***的配置文件
+   通过以下配置文件, ***Shifu***可以自动创建设备的***deviceShifu***
 
-   ConfigMap for the deviceShifu:\
+   假设所有配置文件保存在 `<working_dir>/helloworld-device/configuration`
+
+   ***deviceShifu***的ConfigMap:\
    **deviceshifu-helloworld-configmap.yaml**
     ```
     apiVersion: v1
@@ -154,7 +162,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
             initialDelayMs: 1000
             intervalMs: 1000
    ```
-   Deployment for the deviceShifu:\
+   ***deviceShifu***的Deployment:\
    **deviceshifu-helloworld-deployment.yaml**
     ```
     apiVersion: apps/v1
@@ -194,7 +202,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
                 name: helloworld-configmap-0.0.1
           serviceAccountName: edgedevice-readwrite-sa   
    ```
-    Service for the deviceShifu:\
+    ***deviceShifu***的Service:\
     **deviceshifu-helloworld-service.yaml**
     ```
     apiVersion: v1
@@ -214,26 +222,25 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
       type: LoadBalancer
    ```
 
-4. ### Start *Shifu* and create *deviceShifu*
-   Now we have everything ready, and it is the time to start *shifu* and connect the device.\
-   Assuming the source code of *shifu* is checked out in the working directory (`cd shifu` will go into the *shifu* project root directory).
-   1. create kind cluster
+4. ### 启动***Shifu***并建立***deviceShifu***
+   现在所有的准备已经就绪，是时候开始启动***Shifu***并连接设备\
+   请确保***Shifu***的源代码已经同步到本地并且为当前目录(`cd shifu` 进到 ***Shifu*** 项目的根目录)
+
+   1. 创建Kind集群
        ```
        kind create cluster
        ```
-   2. start Shifu service
+   2. 启动***Shifu***服务
        ```
-       # cd to shifu root directory
-       cd shifu
        ./test/scripts/deviceshifu-sample.sh apply
        ```
-   3. let *shifu* create the *deviceShifu* from the configurations
+   3. 让***Shifu***通过配置创建***deviceShifu***
        ```
        kubectl apply -f <working_dir>/helloworld-device/configuration
        ```
-   4. start a nginx server
-       `kubectl run nginx --image=nginx:1.21`
-      Now we should have the following pods:
+   4. 启动一个 nginx 服务器\
+       `kubectl run nginx --image=nginx:1.21`\
+      现在集群中应该有以下Pod：
         ```
         kubectl get pods --all-namespaces
         NAMESPACE            NAME                                                READY   STATUS    RESTARTS   AGE
@@ -251,31 +258,31 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
         kube-system          kube-scheduler-kind-control-plane                   1/1     Running   0          30m
         local-path-storage   local-path-provisioner-547f784dff-44xnv             1/1     Running   0          30m
        ```
-       You can also check the info and status of edgedevice instance created:
+       查看创建的***edgeDevice***：
 
         ```
-        kubectl get edgedevice --namespace devices
+        kubectl get edgedevice --namespace devices edgedevice-helloworld
 
         NAME                    AGE
         edgedevice-helloworld   22m
         ```
-       And you can get detailed edge device information by describing it: 
+       ***edgeDevice***的细节信息以及状态可以通过`describe`命令获取: 
         ```
-        kubectl describe edgedevice --namespace devices
+        kubectl describe edgedevice --namespace devices edgedevice-helloworld
         ```
 
-   5. get into the nginx shell
+   5. 使用nginx的shell：
        ```
        kubectl exec -it --namespace default nginx -- bash
        ```
-   6. interact with the Hellow World Device via its deviceShifu
+   6. 和 Hellow World ***edgeDevice***通过***deviceShifu***来进行交互：
       ```
       /# curl http://edgedevice-helloworld:80/hello
       ```
 
-      you should be able to see this:
+      应该得到以下输出:
       ```
       Hello_world from device via shifu!
       ```
 
-Now the Hello World Device is fully integrated in the *shifu* framework and we can interact with it via the *deviceShifu* as shown above.
+现在Hello World ***edgeDevice***已经完全整合到***Shifu***框架中，可以通过上述方式来通过***deviceShifu***与其交互
