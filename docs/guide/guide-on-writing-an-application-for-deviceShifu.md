@@ -24,7 +24,7 @@ Here is what this application looks like:
 package main
 
 import (
-	"fmt"
+	"log"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -39,11 +39,11 @@ func main() {
 		body, _ := ioutil.ReadAll(res.Body)
 		temperature, _ := strconv.Atoi(string(body))
 		if temperature > 20 {
-			fmt.Println("High temperature:", temperature)
+			log.Println("High temperature:", temperature)
 		} else if temperature > 15 {
-			fmt.Println("Normal temperature:", temperature)
+			log.Println("Normal temperature:", temperature)
 		} else {
-			fmt.Println("Low temperature:", temperature)
+			log.Println("Low temperature:", temperature)
 		}
 		res.Body.Close()
 		time.Sleep(2 * time.Second)
@@ -84,50 +84,28 @@ kind load docker-image high-temperature-detector:v0.0.1
 ```
 Then we can apply the manifest and start the application pod:
 ```
-kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.
+kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1
 ```
 
-### 5. Use the application
+### 5. Check the application output
 
 The high temperature detector application gets the value from the thermometer *deviceShifu* every 2 seconds.\
-With everything is ready, you can start the application now:
+With everything is ready, you can check the logged output now:
 ```
-kubect logs -n default high-temperature-detector -f
+kubectl logs -n default high-temperature-detector -f
 ```
 An example output will be like this:
 ```
-kubect logs -n default high-temperature-detector -f
+kubectl logs -n default high-temperature-detector -f
 
-High temperature: 25
-Low temperature: 15
-High temperature: 29
-Low temperature: 11
-High temperature: 30
-Normal temperature: 16
-High temperature: 27
-High temperature: 28
-Low temperature: 15
-Normal temperature: 17
-Normal temperature: 20
-High temperature: 25
-High temperature: 30
-High temperature: 25
-Normal temperature: 16
-Normal temperature: 17
-Normal temperature: 17
-Normal temperature: 18
-Low temperature: 10
-High temperature: 21
-High temperature: 22
-High temperature: 27
-Low temperature: 11
-Normal temperature: 19
-High temperature: 24
-High temperature: 26
-Low temperature: 13
-High temperature: 29
-High temperature: 21
-Normal temperature: 16
-High temperature: 27
-High temperature: 23
-```
+2021/10/18 10:35:35 High temperature: 24
+2021/10/18 10:35:37 High temperature: 23
+2021/10/18 10:35:39 Low temperature: 15
+2021/10/18 10:35:41 Low temperature: 11
+2021/10/18 10:35:43 Low temperature: 12
+2021/10/18 10:35:45 High temperature: 28
+2021/10/18 10:35:47 Low temperature: 15
+2021/10/18 10:35:49 High temperature: 30
+2021/10/18 10:35:51 High temperature: 30
+2021/10/18 10:35:53 Low temperature: 15
+
