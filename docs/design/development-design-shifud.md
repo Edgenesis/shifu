@@ -1,3 +1,27 @@
+- [***shifud*** development design](#shifud-development-design)
+  - [Introduction:](#introduction)
+  - [Context:](#context)
+    - [Goal:](#goal)
+    - [Input & Output:](#input--output)
+      - [***deviceDiscoverer*** (per Node):](#devicediscoverer-per-node)
+      - [***deviceDiscoverer*** (per Cluster/Subnet):](#devicediscoverer-per-clustersubnet)
+      - [***deviceVerifier***](#deviceverifier)
+      - [***deviceUpdater***](#deviceupdater)
+  - [Implementation](#implementation)
+    - [Functions:](#functions)
+      - [***deviceDiscoverer***](#devicediscoverer)
+      - [***deviceVerifier***](#deviceverifier-1)
+      - [***deviceUpdater***](#deviceupdater-1)
+    - [Data Types:](#data-types)
+      - [***device***](#device)
+    - [Call stack](#call-stack)
+      - [***overall***](#overall)
+      - [***deviceDiscoverer*** (per cluster)](#devicediscoverer-per-cluster)
+      - [***deviceDiscoverer*** (per ***edgeNode***)](#devicediscoverer-per-edgenode)
+      - [***deviceVerifier*** (per cluster)](#deviceverifier-per-cluster)
+      - [***deviceVerifier*** (per ***edgeNode***)](#deviceverifier-per-edgenode)
+      - [***deviceUpdater***](#deviceupdater-2)
+
 # ***shifud*** development design
 
 ## Introduction:
