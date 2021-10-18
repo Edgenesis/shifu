@@ -1,5 +1,13 @@
 # ***thingShifu*** Design Document
 - [thingShifu Design Document](#thingshifu-design-document)
+  - [Design Goals and Non-goals](#design-goals-and-non-goals)
+      - [Design Goals](#design-goals)
+        - [Digital Twin](#digital-twin)
+        - [Easy to Deploy and Use](#easy-to-deploy-and-use)
+        - [Easy to Extend](#easy-to-extend)
+      - [Design Non-Goals](#design-non-goals)
+        - [Absolute Accurate Representation](#absolute-accurate-representation)
+        - [Automatically Fix Hardware Issues](#automatically-fix-hardware-issues)
   - [What is thingShifu?](#what-is-thingshifu)
   - [What is "thing"?](#what-is-thing)
   - [thingShifu Components](#thingshifu-components)
@@ -22,24 +30,26 @@
     - [Hierarchy of Instructions](#hierarchy-of-instructions)
     - [Hierarchy of Telemetries](#hierarchy-of-telemetries)
   - [Grouping of thingShifu](#grouping-of-thingshifu)
-  - [Sample YAML of the Group A](#sample-yaml-of-the-group-a)
+  - [Race Condition](#race-condition)
+    - [Priorities of Instructions](#priorities-of-instructions)
   - [Limitations and External Components Can Be Added](#limitations-and-external-components-can-be-added)
     - [Message Queue](#message-queue)
     - [Database](#database)
 
-##Design Goals and Non-goals
-###Design Goals
-####Digital Twin
+
+## Design Goals and Non-goals
+### Design Goals
+#### Digital Twin
 ***thingShifu*** is a digital twin of a ***thing***, a digital representation of evey man-made thing that has an entity in the real world.
-####Easy to Deploy and Use
+#### Easy to Deploy and Use
 By simply writting a configuration, the user can utilize ***thingShifu*** to easily control the ***thing*** in the most software way without worrying about hardware issues; being a part of the ***shifu framework***, multiple ***thingShifu*** can be easily grouped to accomplish more complex goals with very simple instruction from the user.
-####Easy to Extend
+#### Easy to Extend
 ***thingShifu*** has no limitation. Anyone can add new features to it easily.
 
-###Design Non-goals
-####100% accurate representation
+### Design Non-goals
+#### Absolute Accurate Representation
 ***thingShifu*** serves as a digital representation of a ***thing***, but becaue human's understanding of the real world is still not 100%, our ***thingShifu*** can not 100% represent a ***thing*** either.
-####Automatically Fix Hardware Issues
+#### Automatically Fix Hardware Issues
 If there are some issues about the ***thing*** real world representation like bad circuit design or malfunction chip, ***thingShifu*** as a digital representation software cannot help.
 
 ## What is ***thingShifu***?
