@@ -1,8 +1,8 @@
 trigger: 
- branches:
-   include:
-     - main
-     - releases/*
+  branches:
+    include:
+    - main
+    - releases/*
   paths:
     exclude:
     - docs
