@@ -1,3 +1,26 @@
+- [***shifud*** High-level design](#shifud-high-level-design)
+  - [Introduction:](#introduction)
+  - [Design principles](#design-principles)
+    - [Automatic & Autonomous](#automatic--autonomous)
+      - [1. Automatic discovery for discoverable ***edgeDevices***:](#1-automatic-discovery-for-discoverable-edgedevices)
+      - [2. Minimal information needed for non-automatic ***edgeDevice*** device discovery:](#2-minimal-information-needed-for-non-automatic-edgedevice-device-discovery)
+  - [Design goals and non-goals](#design-goals-and-non-goals)
+    - [Design goals](#design-goals)
+      - [Autonomous](#autonomous)
+      - [Lightweight](#lightweight)
+      - [Flexible](#flexible)
+    - [Design non-goals](#design-non-goals)
+  - [Design overview](#design-overview)
+    - [Components](#components)
+      - [Software components](#software-components)
+        - [1. ***deviceDiscoverer***](#1-devicediscoverer)
+        - [2. ***deviceVerifier***](#2-deviceverifier)
+        - [3. ***deviceUpdater***](#3-deviceupdater)
+    - [***shifud*** input & output](#shifud-input--output)
+      - [Architecture diagrams](#architecture-diagrams)
+      - [***shifud***'s execution flow(cluter):](#shifuds-execution-flowcluter)
+      - [***shifud***'s execution flow(edgeNode):](#shifuds-execution-flowedgenode)
+
 # ***shifud*** High-level design
 
 ## Introduction:
@@ -16,7 +39,7 @@ Developer should only need to provide necessary information in order for ***shif
 ## Design goals and non-goals
 ### Design goals
 #### Autonomous
-***shifud*** should be able to run on its own without as soon as ***Shifu*** framework is up.
+***shifud*** should be able to run on its own as soon as ***Shifu*** framework is up.
 
 #### Lightweight
 ***shifud*** should consume minimum amount of resource on each ***edgeNode*** and across the cluster.
@@ -25,7 +48,7 @@ Developer should only need to provide necessary information in order for ***shif
 ***shifud*** should be able to handle the majority of IoT protocols.
 
 ### Design non-goals
-[TODO]
+[None]
 
 ## Design overview
   
@@ -38,7 +61,7 @@ Developer should only need to provide necessary information in order for ***shif
 ***deviceDiscoverer*** is a process that continuously scans for device events on ***edgeNode***, including but not limited to network reachability, USB event.
 
 ##### 2. ***deviceVerifier***
-***deviceVerifier*** is a process that interacts with ***edgeDevice*** and try to populate and verify their metadata to match Kubernetes' ***edgeDevice*** resources
+***deviceVerifier*** is a process that interacts with ***edgeDevice*** and tries to populate and verify their metadata to match Kubernetes' ***edgeDevice*** resources
 
 ##### 3. ***deviceUpdater***
 ***deviceUpdater*** updates ***edgeDevice*** resource to ***kube-apiserver*** based on the ***edgeDevice***'s verification status
@@ -67,7 +90,7 @@ spec:
 ......
 ```
 
-### Architecture diagrams
+#### Architecture diagrams
 [![shifud design overview](/img/shifud-design-overview.svg)](/img/shifud-design-overview.svg)    
 
 
@@ -88,7 +111,7 @@ spec:
    MODBUS
    ```
 2. The discovery process depends on the protocol:
-    1. For TCP/IP type of edge devices, Ping/TCP connect can be use directly
+    1. For TCP/IP type of edge devices, ping/TCP connect can be use directly
     2. For udev/USB type of edge devices, ***deviceDiscoverer*** will utilize Linux's [udev](https://man7.org/linux/man-pages/man7/udev.7.html) tool    
 3. Once the device has been discovered, ***deviceVerifier*** will then start matching the device metatdata with device list through its connection protocol.
     ```
