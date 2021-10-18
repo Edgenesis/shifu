@@ -7,22 +7,22 @@
 ### 自动 & 自主
 ***shifud*** 的首要任务是将 ***edgeDevice*** 的发现和校验尽可能简单化。开发者不应该需要过多的配置来让它们的 ***edgeDevice*** 在 ***Shifu*** 中可用。下面是一些要求：
 
-#### 1. 自动发现可以被发现的 ***edgeDevice***:
-***shifud*** 应该可以发现如ONVIF或者类似协议的 ***edgeDevice***, 不需要用户/开发者的过多介入
+#### 1. 自动发现 ***edgeDevice***:
+***shifud*** 可以发现如ONVIF或者类似协议的 ***edgeDevice***, 不需要用户/开发者的过多介入
 
 #### 2. 最简化的发现不支持自动发现的 ***edgeDevice***:
-开发者应该只需要提供必须的信息来使 ***shifud*** 去发现一个特定的设备
+开发者只需要提供必须的信息来使 ***shifud*** 去发现一个特定的设备
 
 ## 设计目标和非目标
 ### 设计目标
 #### 自主
-***shifud*** 应该可以在 ***Shifu*** 框架安装后自己运行
+***shifud*** 可以在 ***Shifu*** 框架安装后自己运行
 
 #### 轻量
-***shifud*** 应该最小化每一个 ***edgeNode*** 合在整个集群中的内存消耗
+***shifud*** 会最小化每一个 ***edgeNode*** 合在整个集群中的内存消耗
 
 #### 扩展性
-***shifud*** 应该可以接入大部分的IoT协议
+***shifud*** 可以接入大部分的IoT协议
 
 ### 设计非目标
 [TODO]
@@ -38,7 +38,7 @@
 ***deviceDiscoverer*** 是一个持续扫描 ***edgeNode*** 设备事件的进程，包括但不限于网络连通性，USB事件。
 
 ##### 2. ***deviceVerifier***
-***deviceVerifier*** 是一个与 ***edgeDevice*** 交互的进程，他会尝试获取并校验设备的信息来和Kubernetes集群中添加的 ***edgeDevice*** 来进行比对
+***deviceVerifier*** 是一个与 ***edgeDevice*** 交互的进程，会尝试获取并校验设备的信息来和Kubernetes集群中添加的 ***edgeDevice*** 来进行比对
 
 ##### 3. ***deviceUpdater***
 ***deviceUpdater*** 会根据 ***edgeDevice*** 的校验状态通过apiServer更新  ***edgeDevice***  的资源
@@ -83,7 +83,7 @@ spec:
    ```
 
 #### ***shifud***的执行流(***edgeNode***):
-1. 当请求到设备列表时， ***deviceDiscoverer*** 开似用不同协议扫描本地，应支持以下协议:
+1. 当请求到设备列表时， ***deviceDiscoverer*** 开始用不同协议扫描本地，应支持以下协议:
    ```
    udev
    MODBUS
