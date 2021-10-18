@@ -44,9 +44,14 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
       http.ListenAndServe(":11111", nil)
     }
     ```
-   and its Dockerfile:
+    
+   and generate the go.mod file:
    ```
-   package main
+   go mod init helloworld
+   ```
+
+   and add its Dockerfile:
+   ```
    # syntax=docker/dockerfile:1
 
    FROM golang:1.17-alpine
@@ -59,10 +64,12 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
    CMD [ "/helloworld" ]    
    ```
    You can test it locally but it is not covered here.
-   
+
    Build the image
 
-    `docker build --tag helloworld-device:v0.0.1 .`
+   ```
+   docker build --tag helloworld-device:v0.0.1 .
+   ```
 
 2. ### Prepare the configuration for the ***edgeDevice***: 
    The basic information of the ***edgeDevice***: \
