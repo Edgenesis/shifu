@@ -1,7 +1,32 @@
 # shifuController design
+- [shifuController design](#shifucontroller-design)
+  - [Design goals and non-goals](#design-goals-and-non-goals)
+    - [Design goals](#design-goals)
+      - [low resource consumption](#low-resource-consumption)
+      - [highly available](#highly-available)
+      - [stateless](#stateless)
+      - [minimum privileges](#minimum-privileges)
+    - [Design non-goals](#design-non-goals)
+      - [***shifud*** management](#shifud-management)
+      - [***edgeDevice*** management](#edgedevice-management)
+  - [Design overview](#design-overview)
+    - [On ***edgeDevice*** events](#on-edgedevice-events)
+      - [1. create ***edgeDevice***](#1-create-edgedevice)
+      - [2. delete ***edgeDevice***](#2-delete-edgedevice)
+    - [on ***edgeNode*** events](#on-edgenode-events)
+      - [1. create ***edgeNode***](#1-create-edgenode)
+      - [2. delete ***edgeNode***](#2-delete-edgenode)
+    - [During normal operation](#during-normal-operation)
+    - [***deviceShifu*** object](#deviceshifu-object)
+      - [Basic thermometer sample](#basic-thermometer-sample)
+        - [Basic thermometer sample deployment](#basic-thermometer-sample-deployment)
+        - [Basic thermometer sample service](#basic-thermometer-sample-service)
+    - [***edgeMap*** design](#edgemap-design)
+      - [***edgeMap*** data structure](#edgemap-data-structure)
+      - [***edgeVertex*** data structure](#edgevertex-data-structure)
 
 ***shifuController***'s main responsibility is to manage the lifecycle of ***deviceShifu***.
-***shifuController*** react to ***edgeDevice*** and ***edgeNode*** events sent by ***apiServer*** by creating/deleting the corresponding ***deviceShifu*** instances.
+***shifuController*** reacts to ***edgeDevice*** and ***edgeNode*** events sent by ***apiServer*** by creating/deleting the corresponding ***deviceShifu*** instances.
 
 ## Design goals and non-goals
 
@@ -47,12 +72,12 @@ Whenever ***shifuController*** receives an ***edgeDevice*** connect event, ***sh
    1. If the ***edgeDevice*** is connected to a specific ***edgeNode***, then the ***deviceShifu*** will be scheduled on that ***edgeNode***.
    2. If the ***edgeDevice*** is connected to the cluster network, then the ***deviceShifu*** will be scheduled based on below priorities (subject to change):
       1. Location proximity: If location info is available, then the ***deviceShifu*** will be placed on the ***edgeNode*** closest to the ***edgeDevice***.
-      2. Resource availability: The ***deviceShifu*** will be placed on the ***edgeNode*** with highest free memory.
-2. Add: Add the ***edgeDevice*** to ***edgeMap***.
-3. Compose: Compile all computed info and compose the corresponding ***deviceShifu*** deployment object.
-4. Create: 
+      2. Resource availability: The ***deviceShifu*** will be placed on the ***edgeNode*** with highest available memory.
+2. Compose: Compile all computed info and compose the corresponding ***deviceShifu*** deployment object.
+3. Create: 
    1. Create the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
-   2. Expose the newly ***deviceShifu*** as a Kubernetes Service. 
+   2. Expose the newly created ***deviceShifu*** as a Kubernetes Service. 
+4. Add: Add the ***edgeDevice*** to ***edgeMap***.
 
 #### 2. delete ***edgeDevice***
 
@@ -87,115 +112,66 @@ Whenever ***shifuController*** receives an ***edgeNode*** delete event, ***shifu
 
 ***deviceShifu*** object is a bundle of a Kubernetes deployment and a Kubernetes service for an ***edgeDevice*** managed by ***shifuController***. Users should **NOT** manage ***deviceShifu*** by themselves.
 
-#### IP camera sample
+#### Basic thermometer sample
 
-##### IP camera sample deployment
-Below is a sample ***deviceShifu*** deployment yaml for an IP camera called *testcam*:
+##### Basic thermometer sample deployment
+Below is a sample ***deviceShifu*** deployment yaml for a basic thermometer:
 
 ```
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: testcam-deviceshifu
   labels:
-    app: testcam
+    app: edgedevice-thermometer-deployment
+  name: edgedevice-thermometer-deployment
+  namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: testcam
+      app: edgedevice-thermometer-deployment
   template:
     metadata:
       labels:
-        app: testcam
+        app: edgedevice-thermometer-deployment
     spec:
       containers:
-      - name: testcam-frontend
-        image: edgenesis/edgedevice-frontend:0.0.1
+      - image: edgehub/deviceshifu-http:v0.0.1
+        name: deviceshifu-http
         ports:
-        - containerPort: 9376
+        - containerPort: 8080
         volumeMounts:
         - name: edgedevice-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
+        env:
+        - name: EDGEDEVICE_NAME
+          value: "edgedevice-thermometer"
+        - name: EDGEDEVICE_NAMESPACE
+          value: "devices"
       volumes:
-      - name: config-volume
+      - name: edgedevice-config
         configMap:
-          name: testcam-cm # This config map contains all the device SKU related info
+          name: thermometer-configmap-0.0.1
+      serviceAccountName: edgedevice-mockdevice-sa
 ```
-##### - IP camera sample service
+##### Basic thermometer sample service
 ```
 apiVersion: v1
 kind: Service
 metadata:
-  name: testcam-service
-spec:
-  selector:
-    app: testcam
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 9376
-```
-
-#### robot sample
-
-##### robot sample deployment
-
-Below is a sample ***deviceShifu*** deployment yaml for a robot called *testrobot*, which needs its own proprietary driver:
-```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: testrobot-deviceshifu
   labels:
-    app: testrobot
+    app: edgedevice-thermometer-deployment
+  name: edgedevice-thermometer
+  namespace: default
 spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: testrobot
-  template:
-    metadata:
-      labels:
-        app: testcam
-    spec:
-      containers:
-      - name: testrobot-frontend
-        image: edgenesis/edgedevice-frontend:0.0.1
-        ports:
-        - containerPort: 9376
-        volumeMounts:
-        - name: edgedevice-config
-          mountPath: "/etc/edgedevice/config"
-          readOnly: true
-      - name: testrobot-driver
-        image: yourcompany/testrobot-driver:0.0.1
-        ports:
-        - containerPort: 8080 # If your driver listens on port 8080
-        volumeMounts:
-        - name: edgedevice-config
-          mountPath: "/etc/edgedevice/config"
-          readOnly: true
-      volumes:
-      - name: config-volume
-        configMap:
-          name: testrobot-cm # This config map contains all the device SKU related info        
-```
-
-##### robot sample service
-```
-apiVersion: v1
-kind: Service
-metadata:
-  name: testrobot-service
-spec:
-  selector:
-    app: testrobot
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 9376
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: edgedevice-thermometer-deployment
+  type: LoadBalancer
 ```
 
 ### ***edgeMap*** design
