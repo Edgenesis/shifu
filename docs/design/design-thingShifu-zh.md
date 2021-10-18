@@ -1,36 +1,47 @@
 # ***thingShifu*** 设计文档
-- [thingShifu设计文档](#thingShifu设计文档)
+- [***thingShifu*** 设计文档](#thingshifu-设计文档)
   - [设计目标和非目标](#设计目标和非目标)
-      - [设计目标](#设计目标)
-        - [数字孪生](#数字孪生)
-        - [轻松使用和部署](#轻松使用和部署)
-        - [易扩展](#易扩展)
-      - [非目标](#非目标)
-        - [百分百准确表达](#百分百准确表达)
-        - [自动修复硬件故障](#自动修复硬件故障)
+    - [设计目标](#设计目标)
+      - [数字孪生](#数字孪生)
+      - [轻松使用和部署](#轻松使用和部署)
+      - [易扩展](#易扩展)
+    - [非目标](#非目标)
+      - [百分百准确表达](#百分百准确表达)
+      - [自动修复硬件故障](#自动修复硬件故障)
   - [关于thingshifu](#关于thingshifu)
+  - [关于deviceshifu](#关于deviceshifu)
   - [什么是thing](#什么是thing)
   - [组成部分](#组成部分)
-    - [thingshifu核心](#thingshifu核心)
-      - [1. bootstrapper](#1-bootstrapper)
-      - [2. core preparer](#2-core-preparer)
-      - [3. inbound instruction processor](#3-inbound-instruction-processor)
-      - [4. thing telemetry collector](#4-thing-telemetry-collector)
-      - [5. thingShifu client message sender](#5-thingshifu-client-message-sender)
+    - [***thingshifu***核心](#thingshifu核心)
+      - [1. ***bootstrapper***](#1-bootstrapper)
+      - [2. ***core preparer***](#2-core-preparer)
+      - [3. ***inbound instruction processor***](#3-inbound-instruction-processor)
+      - [4. ***thing telemetry collector***](#4-thing-telemetry-collector)
+      - [5. ***thingShifu client message sender***](#5-thingshifu-client-message-sender)
   - [运行模式](#运行模式)
     - [Swarm Mode](#swarm-mode)
   - [运行时的状态](#运行时的状态)
-    - [1. creation state](#1-creation-state)
-    - [2. preparation state](#2-preparation-state)
-    - [3. running state](#3-running-state)
-    - [4. termination state](#4-termination-state)
+    - [1. ***creation state***](#1-creation-state)
+    - [2. ***preparation state***](#2-preparation-state)
+    - [3. ***running state***](#3-running-state)
+    - [4. ***termination state***](#4-termination-state)
   - [标准结构](#标准结构)
   - [层级结构](#层级结构)
-    - [YAML配置样例](#YAML配置样例)
+    - [YAML 配置示例](#yaml-配置示例)
+        - [***thing*** 配置](#thing-配置)
+  - [#Sample YAML of the Factory thing](#sample-yaml-of-the-factory-thing)
+  - [#Sample YAML of the Streamline Engine 1 thing](#sample-yaml-of-the-streamline-engine-1-thing)
+  - [#Sample YAML of the AR 1-1 thing](#sample-yaml-of-the-ar-1-1-thing)
+        - [***thingShifu*** 配置](#thingshifu-配置)
+  - [#Sample YAML of the Factory thingShifu](#sample-yaml-of-the-factory-thingshifu)
+  - [#if shifu_mode is not specified, standalone will be used](#if-shifu_mode-is-not-specified-standalone-will-be-used)
+  - [#Sample YAML of the AR 1-1 thingShifu](#sample-yaml-of-the-ar-1-1-thingshifu)
+  - [#Sample YAML of the temperature sensor thingShifu in swarm mode](#sample-yaml-of-the-temperature-sensor-thingshifu-in-swarm-mode)
     - [命令的层级](#命令的层级)
     - [监测数据的层级](#监测数据的层级)
   - [分组](#分组)
-  - [Race Condition](#race-condition)
+  - [Sample YAML of the Group A](#sample-yaml-of-the-group-a)
+  - [Race condition](#race-condition)
     - [命令的优先级](#命令的优先级)
   - [未来的计划](#未来的计划)
     - [消息队列](#消息队列)
@@ -40,6 +51,7 @@
 ### 设计目标
 #### 数字孪生
 ***thingShifu*** 是一个 ***thing*** 的数字孪生。人们制造的任何东西都是一个 ***thing***.
+
 
 #### 轻松使用和部署
 通过编写简单的配置，用户可以利用 ***thingShifu*** 来用控制 ***thing*** 而不必担心任何硬件适配问题。 作为 ***Shifu*** 架构的一部分，很多个 ***thingShifu*** 可以很容易地被分组，通过用户的简单命令来实现更复杂的目标。
@@ -56,6 +68,9 @@
 
 ## 关于thingshifu
 ***thingShifu*** 是一个 ***thing*** 的数字孪生，是 ***thing*** 的数字表达。它是 ***Shifu*** 框架中距离终端用户最近的一个组件，可以使开发和运维人员通过简单的API来控制 ***thing*** 并让运维人员很容易的知晓设备当前的状态。
+
+## 关于deviceshifu
+***deviceShifu*** 是 ***thingShifu*** 的针对机器设备的一个全功能子集。
 
 ## 什么是thing
 一个 ***thing*** 可以是任意人为制造的物件，它可以小到一个电路板，一枚芯片，一个摄像头，一个手机，一个机器人，一辆车。大到一栋楼，一座工厂，一条街，一个城市。
