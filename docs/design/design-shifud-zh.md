@@ -1,3 +1,26 @@
+- [***shifud*** 高层设计](#shifud-高层设计)
+  - [介绍:](#介绍)
+  - [设计理念](#设计理念)
+    - [自动 & 自主](#自动--自主)
+      - [1. 自动发现 ***edgeDevice***:](#1-自动发现-edgedevice)
+      - [2. 最简化的发现不支持自动发现的 ***edgeDevice***:](#2-最简化的发现不支持自动发现的-edgedevice)
+  - [设计目标和非目标](#设计目标和非目标)
+    - [设计目标](#设计目标)
+      - [自主](#自主)
+      - [轻量](#轻量)
+      - [扩展性](#扩展性)
+    - [设计非目标](#设计非目标)
+  - [设计总览](#设计总览)
+    - [组件](#组件)
+      - [软件组件](#软件组件)
+        - [1. ***deviceDiscoverer***](#1-devicediscoverer)
+        - [2. ***deviceVerifier***](#2-deviceverifier)
+        - [3. ***deviceUpdater***](#3-deviceupdater)
+    - [***shifud*** 输入 & 输出](#shifud-输入--输出)
+      - [结构图](#结构图)
+      - [***shifud*** 的执行流(集群):](#shifud-的执行流集群)
+      - [***shifud***的执行流(***edgeNode***):](#shifud的执行流edgenode)
+
 # ***shifud*** 高层设计
 
 ## 介绍:
@@ -68,7 +91,7 @@ spec:
 ......
 ```
 
-### 结构图
+#### 结构图
 [![shifud design overview](/img/shifud-design-overview.svg)](/img/shifud-design-overview.svg)    
 
 
