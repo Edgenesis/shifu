@@ -9,8 +9,7 @@ The deployment config for a fake thermometer which produces a integer value repr
 The device driver has an API `read_value` which returns such integer value.
 Under `shifu` root directory, we can run the following three commands to have *shifu* and the fake thermometer *deviceShifu* ready:
 ```
-./test/scripts/deviceshifu-setup.sh apply                          # pull and load images, and start cluster
-./test/scripts/deviceshifu-sample.sh apply                         # start shifu services
+./test/scripts/shifu-demo-env-setup.sh apply                       # setup and start shifu services for this demo
 ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer    # connect fake thermometer to shifu
 ```
 ### 2. High temperature detector application
