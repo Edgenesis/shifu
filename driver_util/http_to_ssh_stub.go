@@ -77,24 +77,26 @@ func main() {
 		}
 
 		defer session.Close()
-		rb, err := ioutil.ReadAll(req.Body)
+		httpCommand, err := ioutil.ReadAll(req.Body)
 		if err != nil {
 			panic(err)
 		}
 
-		cmdString := "timeout " + sshExecTimeoutSecond + " " + string(rb)
+		cmdString := "timeout " + sshExecTimeoutSecond + " " + string(httpCommand)
 		log.Printf("running command: %v\n", cmdString)
-		var stdcombined bytes.Buffer
-		session.Stdout = &stdcombined
-		session.Stderr = &stdcombined
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+		session.Stdout = &stdout
+		session.Stderr = &stderr
 		if err := session.Run(cmdString); err != nil {
-			log.Printf("Failed to run cmd: %v, stderr: %v", cmdString, stdcombined.String())
+			log.Printf("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stderr.String(), stdout.String())
 			resp.WriteHeader(http.StatusBadRequest)
-			resp.Write(stdcombined.Bytes())
+			resp.Write(append(stderr.Bytes(), stdout.Bytes()...))
 			return
 		}
 
+		log.Printf("cmd: %v success", cmdString)
 		resp.WriteHeader(http.StatusOK)
-		resp.Write(stdcombined.Bytes())
+		resp.Write(stdout.Bytes())
 	}))
 }
