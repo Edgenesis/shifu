@@ -4,12 +4,15 @@
 
 This instruction will show how to build and use an application to interact with the *deviceShifu*, by building a simple high temperature detector application to interact with the *deviceShifu* of a thermometer.
 
+### Prerequisite
+The following example requires [Go](https://golang.org/dl/), [Docker](https://docs.docker.com/get-docker/), [kind](https://kubernetes.io/docs/tasks/tools/), [kubectl](https://kubernetes.io/docs/tasks/tools/) and [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) installed.
+
 ### 1. Start *Shifu* and connect a simple thermometer device
 The deployment config for a fake thermometer which produces a integer value representing the temperature read should be already in the `shifu/deviceshifu/examples/demo_device` directory.\
 The device driver has an API `read_value` which returns such integer value.
 Under `shifu` root directory, we can run the following three commands to have *shifu* and the fake thermometer *deviceShifu* ready:
 ```
-./test/scripts/shifu-demo-env-setup.sh apply                       # setup and start shifu services for this demo
+./test/scripts/shifu-application-demo-env-setup.sh apply applicationDemo                       # setup and start shifu services for this demo
 ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer    # connect fake thermometer to shifu
 ```
 ### 2. High temperature detector application
@@ -50,6 +53,10 @@ func main() {
 }
 ```
 
+and generate the go.mod:
+```
+go mod init high-temperature-detector
+```
 ### 3. Containerize the application
 We will need a `Dockerfile` for this application:
 

@@ -44,7 +44,11 @@
       http.ListenAndServe(":11111", nil)
     }
     ```
-   和它的 Dockerfile:
+   生成go.mod:
+   ```
+   go mod init helloworld
+   ``` 
+   编写 Dockerfile:
    ```
    package main
    # syntax=docker/dockerfile:1
@@ -149,7 +153,7 @@
     #    device name and image address
       driverProperties: |
         driverSku: Hello World
-        driverImage: <your_docker_account>/helloworld:v0.0.1
+        driverImage: helloworld-device:v0.0.1
     #    available instructions
       instructions: |
         hello:
@@ -200,7 +204,7 @@
             - name: edgedevice-config
               configMap:
                 name: helloworld-configmap-0.0.1
-          serviceAccountName: edgedevice-readwrite-sa   
+          serviceAccountName: edgedevice-mockdevice-sa   
    ```
     ***deviceShifu***的Service:\
     **deviceshifu-helloworld-service.yaml**
@@ -226,20 +230,22 @@
    现在所有的准备已经就绪，是时候开始启动***Shifu***并连接设备\
    请确保***Shifu***的源代码已经同步到本地并且为当前目录(`cd shifu` 进到 ***Shifu*** 项目的根目录)
 
-   1. 创建Kind集群
+   1. 启动***Shifu***服务
        ```
-       kind create cluster
+       ./test/scripts/shifu-application-demo-env-setup.sh apply deviceDemo
        ```
-   2. 启动***Shifu***服务
+   2. 加载刚刚构建完成的docker镜像
        ```
-       ./test/scripts/deviceshifu-sample.sh apply
+       kind load docker-image helloworld-device:v0.0.1
        ```
    3. 让***Shifu***通过配置创建***deviceShifu***
        ```
        kubectl apply -f <working_dir>/helloworld-device/configuration
        ```
-   4. 启动一个 nginx 服务器\
-       `kubectl run nginx --image=nginx:1.21`\
+   4. 启动一个 nginx 服务器
+       ```
+       kubectl run nginx --image=nginx:1.21
+       ```
       现在集群中应该有以下Pod：
         ```
         kubectl get pods --all-namespaces
@@ -277,7 +283,7 @@
        ```
    6. 和 Hellow World ***edgeDevice***通过***deviceShifu***来进行交互：
       ```
-      /# curl http://edgedevice-helloworld:80/hello
+      /# curl http://edgedevice-helloworld-service:80/hello
       ```
 
       应该得到以下输出:

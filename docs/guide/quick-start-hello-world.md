@@ -154,7 +154,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
     #    device name and image address
       driverProperties: |
         driverSku: Hello World
-        driverImage: <your_docker_account>/helloworld:v0.0.1
+        driverImage: helloworld-device:v0.0.1
     #    available instructions
       instructions: |
         hello:
@@ -205,7 +205,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
             - name: edgedevice-config
               configMap:
                 name: helloworld-configmap-0.0.1
-          serviceAccountName: edgedevice-readwrite-sa   
+          serviceAccountName: edgedevice-mockdevice-sa   
    ```
     Service for the ***deviceShifu***:\
     **deviceshifu-helloworld-service.yaml**
@@ -230,20 +230,23 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
 4. ### Start ***Shifu*** and create ***deviceShifu***
    Now we have everything ready, and it is the time to start ***Shifu*** and connect the device.\
    Assuming the source code of ***Shifu*** is checked out in the working directory (`cd shifu` will go into the ***Shifu*** project root directory).
-   1. create Kind cluster
+
+   1. start ***Shifu*** service
        ```
-       kind create cluster
+       ./test/scripts/shifu-application-demo-env-setup.sh apply deviceDemo
        ```
-   2. start ***Shifu*** service
+   2. load the docker image we just built
        ```
-       ./test/scripts/deviceshifu-sample.sh apply
+       kind load docker-image helloworld-device:v0.0.1
        ```
    3. let ***Shifu*** create the ***deviceShifu*** from the configurations
        ```
        kubectl apply -f <working_dir>/helloworld-device/configuration
        ```
-   4. start a nginx server\
-       `kubectl run nginx --image=nginx:1.21`\
+   4. start a nginx server
+       ```
+       kubectl run nginx --image=nginx:1.21
+       ```
       Now we should have the following pods:
         ```
         kubectl get pods --all-namespaces
@@ -281,7 +284,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
        ```
    6. interact with the Hellow World ***edgeDevice*** via its ***deviceShifu***
       ```
-      /# curl http://edgedevice-helloworld:80/hello
+      /# curl http://edgedevice-helloworld-service:80/hello
       ```
 
       you should be able to see this:
