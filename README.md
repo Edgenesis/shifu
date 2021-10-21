@@ -1,9 +1,3 @@
-<div align="center">
-
-![Edgenesis logo](img/logo.png)
-
-</div>
-
 [![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/Edgenesis.shifu?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=1&branchName=main)
 
 <div align="right">
@@ -39,7 +33,7 @@ Shifu is a framework designed to abstract out the complexity of interacting with
 
 ## Why use Shifu?
 
-Shifu let you manage and control your IoT devices extremely easily. Whenever you connect your device, Shifu will recognize it and spawn an augmented digital twin called ***deviceShifu*** for it. deviceShifu provides you with a high-level abstraction to interact with your device. By implementing the interface of the deviceShifu, your IoT device can achieve everything its designed for, and much more! For example, your device's state can be rolled back with a single line of command. (If physically permitted, of course.) Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). Furthermore, Shifu will secure your entire IoT system from ground up. A simulation feature which allows developer to simulate a scenario before actually running will be available later.
+Shifu let you manage and control your IoT devices extremely easily. Whenever you connect your device, Shifu will recognize it and spawn an augmented digital twin called ***deviceShifu*** for it. deviceShifu provides you with a high-level abstraction to interact with your device. By implementing the interface of the deviceShifu, your IoT device can achieve everything its designed for, and much more! For example, your device's state can be rolled back with a single line of command. (If physically permitted, of course.) Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). A simulation feature which allows developer to simulate a scenario before actually running will be available later.
 
 ## How to use Shifu?
 
@@ -51,7 +45,6 @@ We prepared a [demo](docs/guide/quick-start-demo.md) for developers to intuitive
 # Our Roadmap
 
 ## Current state of Shifu OS
-We will continuously add in features as we develop Shifu OS
 ## Protocols
 ### Supported
 - HTTP
@@ -64,16 +57,13 @@ We will continuously add in features as we develop Shifu OS
 - Integration with Kubernetes with CRD
 - Basic Shifu Controller
 ### Not yet supported
-- Declarative API
-- Advanced Shifu Controller
-- shifud
+- [Declarative API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
+- [Advanced Shifu Controller](docs/design/design-shifuController.md)
+- [shifud](docs/design/design-shifud.md)
 - Abstraction:
   - Horizontal
   - Vertical
 - Simulation
-- Security features:
-  - Firewall
-  - uTLS
 
 ## Milestone
 <table class="tg">

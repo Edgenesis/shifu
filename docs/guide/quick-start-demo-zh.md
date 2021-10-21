@@ -1,4 +1,4 @@
-# 最快上手
+# 快速试玩
 
 我们准备了一个完整的包含所有Demo所需要文件的Docker镜像
 只需安装[Docker](https://docs.docker.com/get-docker/)，便可以开启你的`Shifu`体验之旅！

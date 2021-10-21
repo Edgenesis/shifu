@@ -1,8 +1,3 @@
-<div align="center">
-
-![Edgenesis logo](img/logo.png)
-
-</div>
 
 [![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/Edgenesis.shifu?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=1&branchName=main)
 
@@ -39,7 +34,7 @@ Shifu是一个k8s原生的IoT设备虚拟化框架。 Shifu希望帮助IoT开发
 
 ## 为什么用 Shifu?
 
-Shifu让管理和控制IoT设备变得极其简单。当你连接设备的时候，Shifu会识别并以一个k8s pod的方式启动一个该设备的虚拟设备 ***deviceShifu***。 ***deviceShifu*** 提供给用户了高层的交互抽象。开发者通过实现 ***deviceShifu*** 的接口，不仅可以实现IoT设备的所有设计功能，还可以实现原本设备所不具备的功能！例如：在设备允许的状况下，通过一行命令来回滚设备的状态。Shifu 还可以实现横向（设备分组）以及纵向（设备分层，来自动执行更高级的命令比如`工厂开`。Shifu 也会将您整个 IoT 系统安全升级。之后实现的 simulation 功能可以使开发人员在执行命令前演算一遍。
+Shifu让管理和控制IoT设备变得极其简单。当你连接设备的时候，Shifu会识别并以一个k8s pod的方式启动一个该设备的虚拟设备 ***deviceShifu***。 ***deviceShifu*** 提供给用户了高层的交互抽象。开发者通过接入 ***deviceShifu*** 的接口，不仅可以实现IoT设备的所有设计功能，还可以实现原本设备所不具备的功能！例如：在设备允许的状况下，通过一行命令来回滚设备的状态。Shifu 还可以实现设备分组以及多层封装，来自动执行更高级的命令比如 `Factory start`。之后实现的 simulation 功能可以使开发人员在执行命令前演算一遍，通过模拟显示来避免实际执行时可能遇到的问题。
 
 ## 如何使用 Shifu?
 
@@ -52,30 +47,25 @@ Shifu让管理和控制IoT设备变得极其简单。当你连接设备的时候
 # 我们的路线图
 
 ## Shifu OS 的当前状况
-We will continuously add in features as we develop Shifu OS
-我们将会在开发 Shifu OS 的过程中不断完善加入新的功能
 ## 协议
 ### 已支持
 - HTTP
-- 通过命令行的驱动
+- 通过命令行调用的驱动程序
 - ... 更多正在开发中
 ## 功能
 ### 已支持
-- 指标收集
-- 代理命令到设备
+- 遥测
+- 转发命令到设备
 - 和 Kubernetes 通过 CRD 整合
 - 初级的 Shifu 控制器
 ### 还未支持
-- 声明式 API
-- 高级的 Shifu 控制器
-- shifud
+- [声明式 API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
+- [高级的 Shifu 控制器](docs/design/design-shifuController-zh.md)
+- [shifud](docs/design/design-shifud-zh.md)
 - 抽象
   - 横向
   - 纵向
 - 演算
-- 安全功能
-  - 防火墙
-  - uTLS
 
 ## 里程碑
 <table class="tg">
