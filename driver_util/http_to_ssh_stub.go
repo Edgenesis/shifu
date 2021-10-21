@@ -12,12 +12,14 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-func main() {
-	privateSSHKeyFile := os.Getenv("EDGEDEVICE_DRIVER_SSH_KEY_PATH")
-	driverHTTPPort := os.Getenv("EDGEDEVICE_DRIVER_HTTP_PORT")
-	sshExecTimeoutSecond := os.Getenv("EDGEDEVICE_DRIVER_EXEC_TIMEOUT_SECOND")
-	sshUser := os.Getenv("EDGEDEVICE_DRIVER_SSH_USER")
+var (
+	privateSSHKeyFile    = os.Getenv("EDGEDEVICE_DRIVER_SSH_KEY_PATH")
+	driverHTTPPort       = os.Getenv("EDGEDEVICE_DRIVER_HTTP_PORT")
+	sshExecTimeoutSecond = os.Getenv("EDGEDEVICE_DRIVER_EXEC_TIMEOUT_SECOND")
+	sshUser              = os.Getenv("EDGEDEVICE_DRIVER_SSH_USER")
+)
 
+func init() {
 	if privateSSHKeyFile == "" {
 		log.Fatalf("SSH Keyfile needs to be specified")
 	}
@@ -36,7 +38,9 @@ func main() {
 		sshUser = "root"
 		log.Printf("No SSH user specified for driver, default to %v", sshUser)
 	}
+}
 
+func main() {
 	key, err := ioutil.ReadFile(privateSSHKeyFile)
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
