@@ -12,7 +12,6 @@
   - [How to use Shifu?](#how-to-use-shifu)
   - [Quick Start Guide with Demo](#quick-start-guide-with-demo)
 - [Our Roadmap](#our-roadmap)
-  - [Current state of Shifu OS](#current-state-of-shifu-os)
   - [Protocols](#protocols)
     - [Supported](#supported)
   - [Features](#features)
@@ -43,8 +42,6 @@ Currently, Shifu runs on [Kubernetes](k8s.io). We will provide more deployment m
 We prepared a [demo](docs/guide/quick-start-demo.md) for developers to intuitively show how our `shifu` is able to create and manage digital twins of any physical devices in real world. 
 
 # Our Roadmap
-
-## Current state of Shifu OS
 ## Protocols
 ### Supported
 - HTTP
