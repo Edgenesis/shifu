@@ -63,42 +63,14 @@ We prepared a [demo](docs/guide/quick-start-demo.md) for developers to intuitive
 - Simulation
 
 ## Milestone
-<table class="tg">
-<thead>
-  <tr>
-    <th class="tg-0pky">By</th>
-    <th class="tg-0pky">Protocol</th>
-    <th class="tg-0pky">Features</th>
-  </tr>
-</thead>
-<tbody>
-  <tr>
-    <td class="tg-0pky">Q4 2021</td>
-    <td class="tg-0pky">HTTP<br>Driver w/ command line<br></td>
-    <td class="tg-0pky">Telemetry<br>Command proxy<br>CRD integration<br>Basic Controller</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">Q1 2022</td>
-    <td class="tg-0pky">At least:<br>MQTT<br>Modbus<br>ONVIF<br>国标GB28181<br>USB</td>
-    <td class="tg-0pky">Declarative API<br>Advanced Controller<br>shifud</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">Q2 2022</td>
-    <td class="tg-0pky">At least:<br>OPC UA<br>Serial<br>Zigbee<br>LoRa<br>PROFINET</td>
-    <td class="tg-0pky">Abstraction</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">Q3 2022</td>
-    <td class="tg-0pky">TBD</td>
-    <td class="tg-0pky">Security Features</td>
-  </tr>
-  <tr>
-    <td class="tg-0pky">Q3 2023</td>
-    <td class="tg-0pky">TBD</td>
-    <td class="tg-0pky">Simulation</td>
-  </tr>
-</tbody>
-</table>
+
+| By      | Protocol                                     | Features                                                 |
+|---------|----------------------------------------------|----------------------------------------------------------|
+| Q4 2021 | HTTP<br>Driver w/ command line                  | Telemetry<br>Command proxy<br>CRD integration<br>Basic Controller |
+| Q1 2022 | At least:<br>MQTT<br>Modbus<br>ONVIF<br>国标GB28181<br>USB  | Declarative API<br>Advanced Controller<br>shifud               |
+| Q2 2022 | At least:<br>OPC UA<br>Serial<br>Zigbee<br>LoRa<br>PROFINET | Abstraction                                              |
+| Q3 2022 | TBD                                          | Security Features                                        |
+| Q3 2023 | TBD                                          | Simulation                                               |
 
 # Shifu's vision
 
