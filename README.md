@@ -22,10 +22,12 @@ Currently, Shifu runs on [Kubernetes](k8s.io). We will provide more deployment m
 
 ### [Install](docs/guide/install.md) Shifu on Kubernetes cluster
 
-#### [Quick Start Guide with Demo](docs/guide/quick-start-demo.md)
-- We prepared a demo for developers to intuitively show how `Shifu` is able to create and manage digital twins of any physical devices in real world. 
+---
 
-#### [Online interactive Demo (Katacoda)](https://www.katacoda.com/xqin/scenarios/shifu-demo)
+### Demo:
+We prepared a demo for developers to intuitively show how `Shifu` is able to create and manage digital twins of any physical devices in real world.
+- [Quick Start Guide with Demo](docs/guide/quick-start-demo.md)
+- [Online interactive Demo (Katacoda)](https://www.katacoda.com/xqin/scenarios/shifu-demo)
 
 # Our Roadmap
 ## Protocols

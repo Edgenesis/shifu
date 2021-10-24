@@ -19,19 +19,14 @@ Shifu是一个k8s原生的IoT设备虚拟化框架。 Shifu希望帮助IoT开发
 
 当前，Shifu运行在[Kubernetes](k8s.io) 上。我们将来会提供包含单独部署在内的更多部署方式
 
-在现有 Kubernetes 集群中，通过以下命令安装 Shifu:
-```
-$ wget --no-check-certificate -O shifu-setup.tar.gz \
-        https://edgenesis.com/wp-content/uploads/2021/10/shifu-setup.tar.gz \
-        && tar -zxvf shifu-setup.tar.gz && cd shifu
-$ bash ./test/scripts/deviceshifu-install.sh apply
-```
+### 在现有 Kubernetes 集群中[安装](docs/guide/install-zh.md) Shifu
 
-### [带演示的快速上手指南](docs/guide/quick-start-demo-zh.md)
+---
 
-- 我们为开发者准备了一个 demo 来更直观地展示 `Shifu`是如何建立管理IoT设备的
-
-### [在线演示(Katacoda)](https://www.katacoda.com/xqin/scenarios/shifu-demo)
+### 演示：
+我们为开发者准备了一个 demo 来更直观地展示 `Shifu`是如何建立管理IoT设备的
+- [带演示的快速上手指南](docs/guide/quick-start-demo-zh.md)
+- [在线演示(Katacoda)](https://www.katacoda.com/xqin/scenarios/shifu-demo)
 
 # 我们的路线图
 ## 协议
