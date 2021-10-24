@@ -30,7 +30,6 @@ type DeviceShifuMetaData struct {
 }
 
 type DeviceShifuHTTPHandlerMetaData struct {
-	httpClient     *http.Client
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
 	properties     *DeviceShifuInstruction
@@ -43,11 +42,14 @@ type DeviceShifuUSBHandlerMetaData struct {
 }
 
 type DeviceShifuHTTPCommandlineHandlerMetadata struct {
-	httpClient      *http.Client
 	edgeDeviceSpec  v1alpha1.EdgeDeviceSpec
 	instruction     string
 	properties      *DeviceShifuInstruction
 	driverExecution string
+}
+
+type deviceCommandHandler interface {
+	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
 }
 
 const (
@@ -101,13 +103,12 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		case v1alpha1.ProtocolHTTP:
 			for instruction, properties := range deviceShifuConfig.Instructions {
 				deviceShifuHTTPHandlerMetaData := &DeviceShifuHTTPHandlerMetaData{
-					client.Client,
 					edgeDevice.Spec,
 					instruction,
 					properties,
 				}
-
-				mux.HandleFunc("/"+instruction, deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData))
+				handler := DeviceCommandHandlerHTTP{client, deviceShifuHTTPHandlerMetaData}
+				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		case v1alpha1.ProtocolUSB:
 			for instruction, properties := range deviceShifuConfig.Instructions {
@@ -127,14 +128,13 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 			for instruction, properties := range deviceShifuConfig.Instructions {
 				deviceShifuHTTPCommandlineHandlerMetaData := &DeviceShifuHTTPCommandlineHandlerMetadata{
-					client.Client,
 					edgeDevice.Spec,
 					instruction,
 					properties,
 					deviceShifuConfig.driverProperties.DriverExecution,
 				}
-
-				mux.HandleFunc("/"+instruction, deviceCommandHandlerHTTPCommandline(deviceShifuHTTPCommandlineHandlerMetaData))
+				handler := DeviceCommandHandlerHTTPCommandline{client, deviceShifuHTTPCommandlineHandlerMetaData}
+				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		}
 	}
@@ -160,12 +160,17 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
 }
 
-func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData) http.HandlerFunc {
+type DeviceCommandHandlerHTTP struct {
+	client                         *rest.RESTClient
+	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
+}
+
+func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handlerProperties := deviceShifuHTTPHandlerMetaData.properties
-		handlerInstruction := deviceShifuHTTPHandlerMetaData.instruction
-		handlerHTTPClient := deviceShifuHTTPHandlerMetaData.httpClient
-		handlerEdgeDeviceSpec := deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
+		handlerProperties := handler.deviceShifuHTTPHandlerMetaData.properties
+		handlerInstruction := handler.deviceShifuHTTPHandlerMetaData.instruction
+		handlerEdgeDeviceSpec := handler.deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
+		handlerHTTPClient := handler.client.Client
 
 		if handlerProperties != nil {
 			// TODO: handle validation compile
@@ -178,6 +183,7 @@ func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHan
 		resp, err := handlerHTTPClient.Get("http://" + *handlerEdgeDeviceSpec.Address + "/" + handlerInstruction)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			log.Printf("HTTP error" + err.Error())
 		}
 
 		if resp != nil {
@@ -191,6 +197,7 @@ func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHan
 		log.Println("resp is nil")
 		w.Write([]byte(handlerInstruction))
 	}
+
 }
 
 // HTTP header type:
@@ -231,25 +238,31 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 				}
 			}
 		} else {
-			if len(parameterValues) > 0 {
-				requestStr += " " + parameterName + "="
-				for _, parameterValue := range parameterValues {
-					requestStr += parameterValue
-				}
+			if len(parameterValues) < 1 {
+				continue
+			}
+			requestStr += " " + parameterName + "="
+			for _, parameterValue := range parameterValues {
+				requestStr += parameterValue
 			}
 		}
 	}
 	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
-func deviceCommandHandlerHTTPCommandline(deviceShifuHTTPCommandlineHandlerMetadata *DeviceShifuHTTPCommandlineHandlerMetadata) http.HandlerFunc {
+type DeviceCommandHandlerHTTPCommandline struct {
+	client                                    *rest.RESTClient
+	deviceShifuHTTPCommandlineHandlerMetadata *DeviceShifuHTTPCommandlineHandlerMetadata
+}
+
+func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		driverExecution := deviceShifuHTTPCommandlineHandlerMetadata.driverExecution
-		handlerProperties := deviceShifuHTTPCommandlineHandlerMetadata.properties
-		handlerInstruction := deviceShifuHTTPCommandlineHandlerMetadata.instruction
-		handlerHTTPClient := deviceShifuHTTPCommandlineHandlerMetadata.httpClient
-		handlerEdgeDeviceSpec := deviceShifuHTTPCommandlineHandlerMetadata.edgeDeviceSpec
+		driverExecution := handler.deviceShifuHTTPCommandlineHandlerMetadata.driverExecution
+		handlerProperties := handler.deviceShifuHTTPCommandlineHandlerMetadata.properties
+		handlerInstruction := handler.deviceShifuHTTPCommandlineHandlerMetadata.instruction
+		handlerEdgeDeviceSpec := handler.deviceShifuHTTPCommandlineHandlerMetadata.edgeDeviceSpec
+		handlerHTTPClient := handler.client.Client
 
 		if handlerProperties != nil {
 			// TODO: handle validation compile
@@ -269,6 +282,7 @@ func deviceCommandHandlerHTTPCommandline(deviceShifuHTTPCommandlineHandlerMetada
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+			log.Printf("HTTP error" + err.Error())
 		}
 
 		if resp != nil {

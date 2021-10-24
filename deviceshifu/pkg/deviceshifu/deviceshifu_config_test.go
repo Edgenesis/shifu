@@ -38,7 +38,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	var mockDeviceDriverProperties = DeviceShifuDriverProperties{
 		"Edgenesis Mock Device",
 		"edgenesis/mockdevice:v0.0.1",
-		"python sample.py",
+		"python mock_driver.py",
 	}
 
 	var mockDeviceInstructions = map[string]*DeviceShifuInstruction{

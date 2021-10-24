@@ -2,7 +2,7 @@ data:
   driverProperties: |
     driverSku: Edgenesis Mock Device
     driverImage: edgenesis/mockdevice:v0.0.1
-    driverExecution: python sample.py
+    driverExecution: python mock_driver.py
   instructions: |
     get_reading:
     get_status:
