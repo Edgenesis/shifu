@@ -1,53 +1,45 @@
-[![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/Edgenesis.shifu?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=1&branchName=main)
+# Shifu
 
-<div align="right">
+[![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/Edgenesis.shifu?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=1&branchName=main)
 
 ## [中文文档](README-zh.md)
 
-</div>
+---
 
-- [Shifu](#shifu)
-  - [What is Shifu?](#what-is-shifu)
-  - [Why use Shifu?](#why-use-shifu)
-  - [How to use Shifu?](#how-to-use-shifu)
-  - [Quick Start Guide with Demo](#quick-start-guide-with-demo)
-- [Our Roadmap](#our-roadmap)
-  - [Protocols](#protocols)
-    - [Supported](#supported)
-  - [Features](#features)
-    - [Supported](#supported-1)
-    - [Not yet supported](#not-yet-supported)
-  - [Milestone](#milestone)
-- [Shifu's vision](#shifus-vision)
-  - [Make developers and operators happy again](#make-developers-and-operators-happy-again)
-  - [Software Defined World (SDW)](#software-defined-world-sdw)
-- [Community](#community)
-  - [Contact](#contact)
-
-# Shifu
-
-## What is Shifu?
-
-Shifu is a framework designed to abstract out the complexity of interacting with IoT devices. Shifu aims to achieve TRUE plug'n'play IoT device management.
+Shifu is a [Kubernetes](k8s.io) native framework designed to abstract out the complexity of interacting with IoT devices. Shifu aims to achieve TRUE plug'n'play IoT device management, control and automation.
 
 ## Why use Shifu?
 
-Shifu let you manage and control your IoT devices extremely easily. Whenever you connect your device, Shifu will recognize it and spawn an augmented digital twin called ***deviceShifu*** for it. deviceShifu provides you with a high-level abstraction to interact with your device. By implementing the interface of the deviceShifu, your IoT device can achieve everything its designed for, and much more! For example, your device's state can be rolled back with a single line of command. (If physically permitted, of course.) Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). A simulation feature which allows developer to simulate a scenario before actually running will be available later.
+- Shifu let you manage and control your IoT devices extremely easily. Whenever you connect your device, Shifu will recognize it and spawn an augmented digital twin called ***deviceShifu*** for it. 
+- ***deviceShifu*** provides you with a high-level abstraction to interact with your device. 
+  - By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything its designed for, and much more! For example, your device's state can be rolled back with a single line of command. (If physically permitted, of course.) 
+  - Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). 
+- A simulation feature which allows developer to simulate a scenario before actually running will be available later.
 
 ## How to use Shifu?
 
 Currently, Shifu runs on [Kubernetes](k8s.io). We will provide more deployment methods including standalone deployment in the future.
 
-## Quick Start Guide with Demo
-We prepared a [demo](docs/guide/quick-start-demo.md) for developers to intuitively show how our `shifu` is able to create and manage digital twins of any physical devices in real world. 
+### [Install](docs/guide/install.md) Shifu on Kubernetes cluster
+
+#### [Quick Start Guide with Demo](docs/guide/quick-start-demo.md)
+- We prepared a demo for developers to intuitively show how `Shifu` is able to create and manage digital twins of any physical devices in real world. 
+
+#### [Online interactive Demo (Katacoda)](https://www.katacoda.com/xqin/scenarios/shifu-demo)
 
 # Our Roadmap
 ## Protocols
+
+---
+
 ### Supported
 - HTTP
 - Driver implementation w/ command line execution
 - ... More on the way
 ## Features
+
+---
+
 ### Supported
 - Telemetry collection
 - Command proxy to device
@@ -61,6 +53,8 @@ We prepared a [demo](docs/guide/quick-start-demo.md) for developers to intuitive
   - Horizontal
   - Vertical
 - Simulation
+
+---
 
 ## Milestone
 
