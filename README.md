@@ -4,8 +4,6 @@
 
 ## [中文文档](README-zh.md)
 
----
-
 Shifu is a [Kubernetes](k8s.io) native framework designed to abstract out the complexity of interacting with IoT devices. Shifu aims to achieve TRUE plug'n'play IoT device management, control and automation.
 
 ## Why use Shifu?
@@ -31,17 +29,11 @@ We prepared a demo for developers to intuitively show how `Shifu` is able to cre
 
 # Our Roadmap
 ## Protocols
-
----
-
 ### Supported
 - HTTP
 - Driver implementation w/ command line execution
 - ... More on the way
 ## Features
-
----
-
 ### Supported
 - Telemetry collection
 - Command proxy to device

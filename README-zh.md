@@ -3,7 +3,6 @@
 [![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/Edgenesis.shifu?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=1&branchName=main)
 
 ## [English](README.md)
-----
 
 Shifu是一个k8s原生的IoT设备虚拟化框架。 Shifu希望帮助IoT开发者以即插即用的方式实现IoT设备的监视、管控和自动化
 
@@ -30,17 +29,11 @@ Shifu是一个k8s原生的IoT设备虚拟化框架。 Shifu希望帮助IoT开发
 
 # 我们的路线图
 ## 协议
-
----
-
 ### 已支持
 - HTTP
 - 通过命令行调用的驱动程序
 - ... 更多正在开发中
 ## 功能
-
----
-
 ### 已支持
 - 遥测
 - 转发命令到设备
