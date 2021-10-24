@@ -7,7 +7,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"os"
 	"strings"
 	"time"
 
@@ -44,10 +43,11 @@ type DeviceShifuUSBHandlerMetaData struct {
 }
 
 type DeviceShifuHTTPCommandlineHandlerMetadata struct {
-	httpClient     *http.Client
-	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
-	instruction    string
-	properties     *DeviceShifuInstruction
+	httpClient      *http.Client
+	edgeDeviceSpec  v1alpha1.EdgeDeviceSpec
+	instruction     string
+	properties      *DeviceShifuInstruction
+	driverExecution string
 }
 
 const (
@@ -120,12 +120,18 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				mux.HandleFunc("/"+instruction, deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData))
 			}
 		case v1alpha1.ProtocolHTTPCommandline:
+			driverExecution := deviceShifuConfig.driverProperties.DriverExecution
+			if driverExecution == "" {
+				return nil, fmt.Errorf("driverExecution cannot be empty")
+			}
+
 			for instruction, properties := range deviceShifuConfig.Instructions {
 				deviceShifuHTTPCommandlineHandlerMetaData := &DeviceShifuHTTPCommandlineHandlerMetadata{
 					client.Client,
 					edgeDevice.Spec,
 					instruction,
 					properties,
+					deviceShifuConfig.driverProperties.DriverExecution,
 				}
 
 				mux.HandleFunc("/"+instruction, deviceCommandHandlerHTTPCommandline(deviceShifuHTTPCommandlineHandlerMetaData))
@@ -159,7 +165,7 @@ func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHan
 		handlerProperties := deviceShifuHTTPHandlerMetaData.properties
 		handlerInstruction := deviceShifuHTTPHandlerMetaData.instruction
 		handlerHTTPClient := deviceShifuHTTPHandlerMetaData.httpClient
-		handlerEdgeDevice := deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
+		handlerEdgeDeviceSpec := deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
 
 		if handlerProperties != nil {
 			// TODO: handle validation compile
@@ -168,8 +174,8 @@ func deviceCommandHandlerHTTP(deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHan
 			}
 		}
 
-		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDevice.Address)
-		resp, err := handlerHTTPClient.Get("http://" + *handlerEdgeDevice.Address + "/" + handlerInstruction)
+		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
+		resp, err := handlerHTTPClient.Get("http://" + *handlerEdgeDeviceSpec.Address + "/" + handlerInstruction)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
 		}
@@ -213,24 +219,22 @@ func deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData *DeviceShifuUSBHandle
 // which is exactly what we need to run if we are operating directly on the device
 func createHTTPCommandlineRequestString(r *http.Request, driverExecution string, instruction string) string {
 	values := r.URL.Query()
-	var requestStr string
-	requestStr = ""
-	var flagsStr string
-	flagsStr = ""
-	for k, v := range values {
-		if k == "flags_no_parameter" {
-			if len(v) == 1 {
-				flagsStr = " " + strings.Replace(v[0], ",", " ", -1)
+	requestStr := ""
+	flagsStr := ""
+	for parameterName, parameterValues := range values {
+		if parameterName == "flags_no_parameter" {
+			if len(parameterValues) == 1 {
+				flagsStr = " " + strings.Replace(parameterValues[0], ",", " ", -1)
 			} else {
-				for _, value := range v {
-					flagsStr += " " + value
+				for _, parameterValue := range parameterValues {
+					flagsStr += " " + parameterValue
 				}
 			}
 		} else {
-			if len(v) > 0 {
-				requestStr += " " + k + "="
-				for _, value := range v {
-					requestStr += value
+			if len(parameterValues) > 0 {
+				requestStr += " " + parameterName + "="
+				for _, parameterValue := range parameterValues {
+					requestStr += parameterValue
 				}
 			}
 		}
@@ -241,11 +245,11 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 func deviceCommandHandlerHTTPCommandline(deviceShifuHTTPCommandlineHandlerMetadata *DeviceShifuHTTPCommandlineHandlerMetadata) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		driverExecution := os.Getenv("EDGEDEVICE_DRIVER_EXECUTION")
+		driverExecution := deviceShifuHTTPCommandlineHandlerMetadata.driverExecution
 		handlerProperties := deviceShifuHTTPCommandlineHandlerMetadata.properties
 		handlerInstruction := deviceShifuHTTPCommandlineHandlerMetadata.instruction
 		handlerHTTPClient := deviceShifuHTTPCommandlineHandlerMetadata.httpClient
-		handlerEdgeDevice := deviceShifuHTTPCommandlineHandlerMetadata.edgeDeviceSpec
+		handlerEdgeDeviceSpec := deviceShifuHTTPCommandlineHandlerMetadata.edgeDeviceSpec
 
 		if handlerProperties != nil {
 			// TODO: handle validation compile
@@ -254,11 +258,11 @@ func deviceCommandHandlerHTTPCommandline(deviceShifuHTTPCommandlineHandlerMetada
 			}
 		}
 
-		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDevice.Address)
+		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
 
 		commandString := createHTTPCommandlineRequestString(r, driverExecution, handlerInstruction)
 
-		postAddressString := "http://" + *handlerEdgeDevice.Address + "/post"
+		postAddressString := "http://" + *handlerEdgeDeviceSpec.Address + "/post"
 		log.Printf("posting '%v' to '%v'", commandString, postAddressString)
 
 		resp, err := handlerHTTPClient.Post(postAddressString, "text/plain", bytes.NewBuffer([]byte(commandString)))

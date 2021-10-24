@@ -23,8 +23,9 @@ type DeviceShifuConfig struct {
 }
 
 type DeviceShifuDriverProperties struct {
-	DriverSku   string `yaml:"driverSku"`
-	DriverImage string `yaml:"driverImage"`
+	DriverSku       string `yaml:"driverSku"`
+	DriverImage     string `yaml:"driverImage"`
+	DriverExecution string `yaml:"driverExecution"`
 }
 
 type DeviceShifuInstruction struct {
