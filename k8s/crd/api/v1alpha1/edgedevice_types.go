@@ -64,8 +64,9 @@ const (
 type Protocol string
 
 const (
-	ProtocolHTTP Protocol = "HTTP"
-	ProtocolUSB  Protocol = "USB"
+	ProtocolHTTP            Protocol = "HTTP"
+	ProtocolUSB             Protocol = "USB"
+	ProtocolHTTPCommandline Protocol = "HTTPCommandline"
 )
 
 // EdgeDevicePhase is a simple, high-level summary of where the EdgeDevice is in its lifecycle.

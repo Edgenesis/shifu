@@ -1,11 +1,14 @@
 package deviceshifu
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"os"
+	"strings"
 	"time"
 
 	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
@@ -35,6 +38,13 @@ type DeviceShifuHTTPHandlerMetaData struct {
 }
 
 type DeviceShifuUSBHandlerMetaData struct {
+	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
+	instruction    string
+	properties     *DeviceShifuInstruction
+}
+
+type DeviceShifuHTTPCommandlineHandlerMetadata struct {
+	httpClient     *http.Client
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
 	properties     *DeviceShifuInstruction
@@ -109,6 +119,17 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 				mux.HandleFunc("/"+instruction, deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData))
 			}
+		case v1alpha1.ProtocolHTTPCommandline:
+			for instruction, properties := range deviceShifuConfig.Instructions {
+				deviceShifuHTTPCommandlineHandlerMetaData := &DeviceShifuHTTPCommandlineHandlerMetadata{
+					client.Client,
+					edgeDevice.Spec,
+					instruction,
+					properties,
+				}
+
+				mux.HandleFunc("/"+instruction, deviceCommandHandlerHTTPCommandline(deviceShifuHTTPCommandlineHandlerMetaData))
+			}
 		}
 	}
 
@@ -179,6 +200,83 @@ func copyHeader(dst, src http.Header) {
 func deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData *DeviceShifuUSBHandlerMetaData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO: handle commands for USB devices
+	}
+}
+
+// this function gathers the instruction name and its arguments from user input via HTTP and create the direct call command
+// "flags_no_parameter" is a special key where it contains all flags
+// e.g.:
+// if we have localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2
+// and our driverExecution is "/usr/local/bin/python /usr/src/driver/python-car-driver.py"
+// then we will get this command string:
+// /usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency
+// which is exactly what we need to run if we are operating directly on the device
+func createHTTPCommandlineRequestString(r *http.Request, driverExecution string, instruction string) string {
+	values := r.URL.Query()
+	var requestStr string
+	requestStr = ""
+	var flagsStr string
+	flagsStr = ""
+	for k, v := range values {
+		if k == "flags_no_parameter" {
+			if len(v) == 1 {
+				flagsStr = " " + strings.Replace(v[0], ",", " ", -1)
+			} else {
+				for _, value := range v {
+					flagsStr += " " + value
+				}
+			}
+		} else {
+			if len(v) > 0 {
+				requestStr += " " + k + "="
+				for _, value := range v {
+					requestStr += value
+				}
+			}
+		}
+	}
+	return driverExecution + " --" + instruction + requestStr + flagsStr
+}
+
+func deviceCommandHandlerHTTPCommandline(deviceShifuHTTPCommandlineHandlerMetadata *DeviceShifuHTTPCommandlineHandlerMetadata) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+
+		driverExecution := os.Getenv("EDGEDEVICE_DRIVER_EXECUTION")
+		handlerProperties := deviceShifuHTTPCommandlineHandlerMetadata.properties
+		handlerInstruction := deviceShifuHTTPCommandlineHandlerMetadata.instruction
+		handlerHTTPClient := deviceShifuHTTPCommandlineHandlerMetadata.httpClient
+		handlerEdgeDevice := deviceShifuHTTPCommandlineHandlerMetadata.edgeDeviceSpec
+
+		if handlerProperties != nil {
+			// TODO: handle validation compile
+			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
+				log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
+			}
+		}
+
+		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDevice.Address)
+
+		commandString := createHTTPCommandlineRequestString(r, driverExecution, handlerInstruction)
+
+		postAddressString := "http://" + *handlerEdgeDevice.Address + "/post"
+		log.Printf("posting '%v' to '%v'", commandString, postAddressString)
+
+		resp, err := handlerHTTPClient.Post(postAddressString, "text/plain", bytes.NewBuffer([]byte(commandString)))
+
+		if err != nil {
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		}
+
+		if resp != nil {
+			copyHeader(w.Header(), resp.Header)
+			w.WriteHeader(resp.StatusCode)
+			io.Copy(w, resp.Body)
+			return
+		}
+
+		// TODO: For now, just write tht instruction to the response
+		log.Println("resp is nil")
+		w.Write([]byte(handlerInstruction))
 	}
 }
 
