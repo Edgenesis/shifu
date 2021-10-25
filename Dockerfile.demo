@@ -1,0 +1,18 @@
+FROM alpine
+
+RUN apk add --update docker openrc curl&& rc-update add docker boot
+
+RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64 \
+     && chmod +x ./kind \
+     && mv ./kind /usr/local/bin/kind
+
+RUN curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" \
+     && install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+
+COPY k8s/crd/config_crd.yaml /shifu/k8s/crd/config_crd.yaml
+COPY k8s/crd/config_default.yaml /shifu/k8s/crd/config_default.yaml
+COPY deviceshifu/examples /shifu/deviceshifu/examples
+COPY build_dir /build_dir
+COPY test/scripts/deviceshifu-demo.sh /shifu/test/scripts/
+COPY test/scripts/deviceshifu-setup.sh /shifu/test/scripts/
+WORKDIR /shifu/
