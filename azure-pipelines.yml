@@ -1,0 +1,87 @@
+trigger: 
+  branches:
+    include:
+    - main
+    - releases/*
+  paths:
+    exclude:
+    - docs
+    - img
+    - README.md
+    - README-zh.md
+    - README-en.md
+    - LICENSE
+    - .devcontainer
+    - .github
+
+pr:
+  branches:
+    include:
+    - main
+    - releases/*
+  paths:
+    exclude:
+    - docs
+    - img
+    - README.md
+    - README-zh.md
+    - README-en.md
+    - LICENSE
+    - .devcontainer
+    - .github
+
+pool:
+   vmImage: 'ubuntu-latest'
+
+steps: 
+- task: GoTool@0
+  inputs:
+    version: '1.17.1'
+- task: Go@0
+  displayName: "go get"
+  inputs:
+    command: 'get'
+    arguments: '-d'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
+- task: Go@0
+  displayName: "go build deviceshifu"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd'
+- task: Go@0
+  displayName: "go test deviceshifu"
+  inputs:
+    command: 'test'
+    arguments: '-v'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
+- task: Go@0
+  displayName: "go build mockdevice agv"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-agv'
+- task: Go@0
+  displayName: "go build mockdevice plate reader"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plate-reader'
+- task: Go@0
+  displayName: "go build mockdevice robot arm"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-robot-arm'
+- task: Go@0
+  displayName: "go build mockdevice thermometer"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-thermometer'
+- task: Go@0
+  displayName: "go test mockdevice"
+  inputs:
+    command: 'test'
+    arguments: '-v'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice'
+- task: Go@0
+  displayName: "go build http to ssh stub"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
