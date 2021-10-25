@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: edgedevice-plate-reader-deployment
+  name: edgedevice-plate-reader
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: edgedevice-plate-reader-deployment
+  type: LoadBalancer

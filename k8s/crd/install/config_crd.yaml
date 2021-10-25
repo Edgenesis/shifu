@@ -1,0 +1,60 @@
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.4.1
+  creationTimestamp: null
+  name: edgedevices.shifu.edgenesis.io
+spec:
+  group: shifu.edgenesis.io
+  names:
+    kind: EdgeDevice
+    listKind: EdgeDeviceList
+    plural: edgedevices
+    singular: edgedevice
+  scope: Namespaced
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: EdgeDevice is the Schema for the edgedevices API
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: EdgeDeviceSpec defines the desired state of EdgeDevice
+            properties:
+              address:
+                type: string
+              connection:
+                description: Connection specifies the EdgeDevice-EdgeNode connection type.
+                type: string
+              protocol:
+                description: Protocol specifies the EdgeDevice's communication protocol.
+                type: string
+              sku:
+                description: Sku specifies the EdgeDevice's SKU.
+                type: string
+            type: object
+          status:
+            description: EdgeDeviceStatus defines the observed state of EdgeDevice
+            properties:
+              edgedevicephase:
+                description: EdgeDevicePhase is a simple, high-level summary of where the EdgeDevice is in its lifecycle.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+status:
+  acceptedNames:
+    kind: ""
+    plural: ""
+  conditions: []
+  storedVersions: []
