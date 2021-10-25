@@ -133,6 +133,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					properties,
 					deviceShifuConfig.driverProperties.DriverExecution,
 				}
+
 				handler := DeviceCommandHandlerHTTPCommandline{client, deviceShifuHTTPCommandlineHandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
@@ -197,7 +198,6 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		log.Println("resp is nil")
 		w.Write([]byte(handlerInstruction))
 	}
-
 }
 
 // HTTP header type:
@@ -241,6 +241,7 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 			if len(parameterValues) < 1 {
 				continue
 			}
+
 			requestStr += " " + parameterName + "="
 			for _, parameterValue := range parameterValues {
 				requestStr += parameterValue
@@ -257,7 +258,6 @@ type DeviceCommandHandlerHTTPCommandline struct {
 
 func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		driverExecution := handler.deviceShifuHTTPCommandlineHandlerMetadata.driverExecution
 		handlerProperties := handler.deviceShifuHTTPCommandlineHandlerMetadata.properties
 		handlerInstruction := handler.deviceShifuHTTPCommandlineHandlerMetadata.instruction
@@ -274,10 +274,8 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
 
 		commandString := createHTTPCommandlineRequestString(r, driverExecution, handlerInstruction)
-
 		postAddressString := "http://" + *handlerEdgeDeviceSpec.Address + "/post"
 		log.Printf("posting '%v' to '%v'", commandString, postAddressString)
-
 		resp, err := handlerHTTPClient.Post(postAddressString, "text/plain", bytes.NewBuffer([]byte(commandString)))
 
 		if err != nil {
