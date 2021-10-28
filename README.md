@@ -17,6 +17,15 @@ Shifu is a [Kubernetes](https://k8s.io) native framework designed to abstract ou
   - Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). 
 - A simulation feature which allows developer to simulate a scenario before actually running will be available later.
 
+## Shifu and Thing
+
+Shifu utilized the conception of [Thing](https://www.w3.org/TR/wot-thing-description/) to describe a device to be connected. 
+- Within the shifu framework, the user just need to create configuration about the device to connect to the framework, and after the connection is established, shifu will automatically start managing the device. 
+- Shifu will need 3 types of descriptions: 
+  - the connection type and driver, which is the "property" of the device; 
+  - the available instructions, which is the "actions" or "services" of the device;
+  - the telemetries we expect to get from the device for monitoring, which is the "events" of the device.
+
 ## How to use Shifu?
 
 Currently, Shifu runs on [Kubernetes](https://k8s.io). We will provide more deployment methods including standalone deployment in the future.
