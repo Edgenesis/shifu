@@ -5,7 +5,7 @@
 
 # Shifu
 
-[![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/Edgenesis.shifu?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=1&branchName=main)
+[![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/Edgenesis.shifu-private?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=2&branchName=main)
 
 Shifu is a [Kubernetes](https://k8s.io) native framework designed to abstract out the complexity of interacting with IoT devices. Shifu aims to achieve TRUE plug'n'play IoT device virtualization, management, control and automation.
 
