@@ -18,7 +18,7 @@ Shifu是一个k8s原生的IoT设备虚拟化框架。 Shifu希望帮助IoT开发
 - 之后实现的 simulation 功能可以使开发人员在执行命令前演算一遍，通过模拟现实来避免实际执行时可能遇到的问题
 
 ## Shifu 与 Thing
-Shifu框架利用了[Thing](https://www.w3.org/TR/wot-thing-description/)的理念对连接的设备进行定义。
+Shifu框架利用Web of Things (WoT)提出的[Thing](https://www.w3.org/TR/wot-thing-description/)的理念对连接的设备进行定义。
 - Shifu框架内，用户添加关于设备的描述即可完成连接。在连接完成后，Shifu框架会开始管控该设备。
 - Shifu所需要的描述包括：
   - 设备的连接方式和驱动，即设备在物联网中的属性

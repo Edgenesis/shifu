@@ -19,7 +19,7 @@ Shifu is a [Kubernetes](https://k8s.io) native framework designed to abstract ou
 
 ## Shifu and Thing
 
-Shifu utilized the conception of [Thing](https://www.w3.org/TR/wot-thing-description/) to describe a device to be connected. 
+Shifu utilized the Web of Things (WoT)' conception of [Thing](https://www.w3.org/TR/wot-thing-description/) to describe a device to be connected. 
 - Within the Shifu framework, user can connect a device to the framework by simply creating a configuration about the device. After the connection is established, Shifu will automatically start managing the device. 
 - Shifu will need 3 types of descriptions: 
   - the connection type and driver, which is the "property" of the device; 
