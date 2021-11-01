@@ -12,7 +12,6 @@ COPY deviceshifu/pkg/mockdevice deviceshifu/pkg/mockdevice
 WORKDIR /shifu/deviceshifu/pkg/mockdevice/mockdevice
 
 RUN go mod download
-RUN go get github.com/xuri/excelize/v2
 
 # Build the Go app
 RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a \
@@ -24,7 +23,6 @@ FROM gcr.io/distroless/static
 WORKDIR /root/
 
 COPY --from=builder /output/mockdevice-plate-reader mockdevice-plate-reader
-COPY ["Method 1_20211025_180406.xlsx", "Method 1_20211025_180406.xlsx"]
 
 # Command to run the executable
 ENTRYPOINT ["./mockdevice-plate-reader"]
