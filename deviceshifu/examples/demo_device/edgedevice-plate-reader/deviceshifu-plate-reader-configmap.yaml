@@ -10,6 +10,8 @@ data:
   instructions: |
     get_measurement:
     get_status:
+    measure_plate:
+    get_output:
 # Telemetries are configurable health checks of the EdgeDevice
 # Developer/user can configure certain instructions to be used as health check
 # of the device. In this example, the device_health telemetry is mapped to

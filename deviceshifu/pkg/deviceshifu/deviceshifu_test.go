@@ -66,9 +66,9 @@ func TestDeviceHealthHandler(t *testing.T) {
 }
 
 func TestCreateHTTPCommandlineRequestString(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
-	fmt.Println(req.URL.Query())
-	createdReq := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "start")
+	req, err := http.NewRequest("GET", "http://localhost:8081/--start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
+	log.Println(req.URL.Query())
+	createdReq := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "--start")
 	if err != nil {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
