@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -73,10 +74,34 @@ func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	expectedReq := "/usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency"
+	expectedRequestExecution := "/usr/local/bin/python /usr/src/driver/python-car-driver.py"
+	expectedRequestInstruction := "--start"
+	expectedRequestArguments := []string{"time=10:00:00", "target=machine2", "-a", "-c", "--no-dependency"}
+	createdRequestList := strings.Split(createdReq, expectedRequestInstruction)
+	if len(createdRequestList) != 2 {
+		t.Error("created request instructiondoes not match the expected req")
+	}
 
-	if createdReq != expectedReq {
-		t.Errorf("created request: '%v' does not match the expected req: '%v'\n", createdReq, expectedReq)
+	if strings.TrimSpace(createdRequestList[0]) != expectedRequestExecution {
+		t.Errorf("created request execution: '%v' does not match the expected req execution: '%v'\n", createdRequestList[0], expectedRequestExecution)
+	}
+
+	createdRequestArguments := strings.Fields(createdRequestList[1])
+	if len(expectedRequestArguments) != len(createdRequestArguments) {
+		t.Errorf("length of created request args: '%v' does not match the expected req args: '%v'\n", createdRequestArguments, expectedRequestArguments)
+	}
+
+	isArgumentInRequest := false
+	for _, expectedArgument := range expectedRequestArguments {
+		for _, createdArgument := range createdRequestArguments {
+			if expectedArgument == strings.TrimSpace(createdArgument) {
+				isArgumentInRequest = true
+			}
+		}
+		if !isArgumentInRequest {
+			t.Errorf("expected request argument: '%v' not in created arguments: %v", expectedArgument, createdRequestArguments)
+		}
+		isArgumentInRequest = false
 	}
 }
 
