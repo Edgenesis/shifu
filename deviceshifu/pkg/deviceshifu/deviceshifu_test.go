@@ -80,6 +80,20 @@ func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	}
 }
 
+func TestCreateHTTPCommandlineRequestString2(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://localhost:8081/issue_cmd?cmdTimeout=10&flags_no_parameter=ping,8.8.8.8,-t", nil)
+	createdReq := createHTTPCommandlineRequestString(req, "poweshell.exe", DEVICE_HTTP_CMD_NO_EXEC)
+	if err != nil {
+		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+	}
+
+	expectedReq := "ping 8.8.8.8 -t"
+
+	if createdReq != expectedReq {
+		t.Errorf("created request: '%v' does not match the expected req: '%v'\n", createdReq, expectedReq)
+	}
+}
+
 func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint string) bool {
 	resp, err := http.Get(httpEndpoint + "/" + instruction)
 	if err != nil {

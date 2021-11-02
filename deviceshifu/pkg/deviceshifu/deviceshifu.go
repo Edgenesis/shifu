@@ -273,7 +273,7 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 	}
 
 	if instruction == DEVICE_HTTP_CMD_NO_EXEC {
-		return requestStr + flagsStr
+		return strings.TrimSpace(flagsStr)
 	} else if instruction == DEVICE_HTTP_CMD_HEALTH {
 		return "ls"
 	}
