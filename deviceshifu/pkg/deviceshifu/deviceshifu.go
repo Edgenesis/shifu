@@ -166,8 +166,8 @@ type DeviceCommandHandlerHTTP struct {
 	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
 }
 
-func createQueryStringFromRequest(r *http.Request) string {
-	var queryStr string
+func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
+	queryStr := "?"
 	for queryName, queryValues := range r.URL.Query() {
 		for _, queryValue := range queryValues {
 			queryStr += queryName + "=" + queryValue + "&"
@@ -175,7 +175,8 @@ func createQueryStringFromRequest(r *http.Request) string {
 	}
 
 	queryStr = strings.TrimSuffix(queryStr, "&")
-	return queryStr
+
+	return "http://" + address + "/" + handlerInstruction + queryStr
 }
 
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
@@ -199,12 +200,17 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
 		if reqType == http.MethodGet {
-			resp, httpErr = handlerHTTPClient.Get("http://" + *handlerEdgeDeviceSpec.Address + "/" + handlerInstruction)
+			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
+
+			resp, httpErr = handlerHTTPClient.Get(httpUri)
+
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
 				log.Printf("HTTP GET error" + httpErr.Error())
 			}
 		} else if reqType == http.MethodPost {
+			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
+
 			requestBody, parseErr := io.ReadAll(r.Body)
 			if parseErr != nil {
 				log.Panic("Error on parsing body" + parseErr.Error())
@@ -212,10 +218,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 
 			contentType := r.Header.Get("Content-type")
-			queryStr := createQueryStringFromRequest(r)
-
-			resp, httpErr = handlerHTTPClient.Post("http://"+*handlerEdgeDeviceSpec.Address+"/"+handlerInstruction+"?"+queryStr,
-				contentType, bytes.NewBuffer(requestBody))
+			resp, httpErr = handlerHTTPClient.Post(httpUri, contentType, bytes.NewBuffer(requestBody))
 
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)

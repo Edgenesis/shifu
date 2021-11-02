@@ -89,22 +89,25 @@ func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	}
 }
 
-func TestCreateHTTPRequestQueryString(t *testing.T) {
-	req, err := http.NewRequest("POST", "http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2", nil)
+func TestCreateHTTPUriString(t *testing.T) {
+	expectedUriString := "http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2"
+	req, err := http.NewRequest("POST", expectedUriString, nil)
 	log.Println(req.URL.Query())
-	createdQueryString := createQueryStringFromRequest(req)
+	createdUriString := createUriFromRequest("localhost:8081", "start", req)
+
+	createdUriStringWithoutQueries := strings.Split(createdUriString, "?")[0]
+	createdQueries := strings.Split(strings.Split(createdUriString, "?")[1], "&")
+	expectedUriStringWithoutQueries := strings.Split(expectedUriString, "?")[0]
+	expectedQueries := strings.Split(strings.Split(expectedUriString, "?")[1], "&")
+
 	if err != nil {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	createdQueries := strings.Split(createdQueryString, "&")
-
-	expectQueryString := "time=10:00:00&target=machine1&target=machine2"
-	expectedQueries := strings.Split(expectQueryString, "&")
 	sort.Strings(createdQueries)
 	sort.Strings(expectedQueries)
-	if !reflect.DeepEqual(createdQueries, expectedQueries) {
-		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdQueryString, expectQueryString)
+	if createdUriStringWithoutQueries != expectedUriStringWithoutQueries || !reflect.DeepEqual(createdQueries, expectedQueries) {
+		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdUriString, expectedUriString)
 	}
 }
 
