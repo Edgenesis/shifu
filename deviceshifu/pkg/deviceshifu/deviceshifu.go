@@ -166,6 +166,17 @@ type DeviceCommandHandlerHTTP struct {
 	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
 }
 
+func createQueryStringFromRequest(r *http.Request) string {
+	var queryStr string
+	for queryName, queryValue := range r.URL.Query() {
+		for i := 0; i < len(queryValue); i++ {
+			queryStr += queryName + "=" + queryValue[i] + "&"
+		}
+	}
+	queryStr = strings.TrimSuffix(queryStr, "&")
+	return queryStr
+}
+
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		handlerProperties := handler.deviceShifuHTTPHandlerMetaData.properties
@@ -180,11 +191,35 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 		}
 
-		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
-		resp, err := handlerHTTPClient.Get("http://" + *handlerEdgeDeviceSpec.Address + "/" + handlerInstruction)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			log.Printf("HTTP error" + err.Error())
+		var resp *http.Response
+		var httpErr error
+		reqType := r.Method
+
+		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
+
+		if reqType == "GET" {
+			resp, httpErr = handlerHTTPClient.Get("http://" + *handlerEdgeDeviceSpec.Address + "/" + handlerInstruction)
+			if httpErr != nil {
+				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+				log.Printf("HTTP GET error" + httpErr.Error())
+			}
+		} else if reqType == "POST" {
+			requestBody, parseErr := io.ReadAll(r.Body)
+			if parseErr != nil {
+				log.Panic("Error on parsing body" + parseErr.Error())
+				return
+			}
+			queryStr := createQueryStringFromRequest(r)
+			resp, httpErr = handlerHTTPClient.Post("http://"+*handlerEdgeDeviceSpec.Address+"/"+handlerInstruction+"?"+queryStr,
+				"application/json", bytes.NewBuffer(requestBody))
+
+			if httpErr != nil {
+				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+				log.Printf("HTTP POST error" + httpErr.Error())
+			}
+		} else {
+			log.Println("Request type " + reqType + " is not supported yet!")
+			return
 		}
 
 		if resp != nil {
