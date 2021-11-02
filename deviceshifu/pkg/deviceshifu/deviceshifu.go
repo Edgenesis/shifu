@@ -168,11 +168,12 @@ type DeviceCommandHandlerHTTP struct {
 
 func createQueryStringFromRequest(r *http.Request) string {
 	var queryStr string
-	for queryName, queryValue := range r.URL.Query() {
-		for i := 0; i < len(queryValue); i++ {
-			queryStr += queryName + "=" + queryValue[i] + "&"
+	for queryName, queryValues := range r.URL.Query() {
+		for _, queryValue := range queryValues {
+			queryStr += queryName + "=" + queryValue + "&"
 		}
 	}
+
 	queryStr = strings.TrimSuffix(queryStr, "&")
 	return queryStr
 }
@@ -197,27 +198,31 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
-		if reqType == "GET" {
+		if reqType == http.MethodGet {
 			resp, httpErr = handlerHTTPClient.Get("http://" + *handlerEdgeDeviceSpec.Address + "/" + handlerInstruction)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
 				log.Printf("HTTP GET error" + httpErr.Error())
 			}
-		} else if reqType == "POST" {
+		} else if reqType == http.MethodPost {
 			requestBody, parseErr := io.ReadAll(r.Body)
 			if parseErr != nil {
 				log.Panic("Error on parsing body" + parseErr.Error())
 				return
 			}
+
+			contentType := r.Header.Get("Content-type")
 			queryStr := createQueryStringFromRequest(r)
+
 			resp, httpErr = handlerHTTPClient.Post("http://"+*handlerEdgeDeviceSpec.Address+"/"+handlerInstruction+"?"+queryStr,
-				"application/json", bytes.NewBuffer(requestBody))
+				contentType, bytes.NewBuffer(requestBody))
 
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
 				log.Printf("HTTP POST error" + httpErr.Error())
 			}
 		} else {
+			http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
 			log.Println("Request type " + reqType + " is not supported yet!")
 			return
 		}
