@@ -167,7 +167,9 @@ type DeviceCommandHandlerHTTP struct {
 }
 
 func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
+
 	queryStr := "?"
+
 	for queryName, queryValues := range r.URL.Query() {
 		for _, queryValue := range queryValues {
 			queryStr += queryName + "=" + queryValue + "&"
@@ -176,7 +178,11 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 
 	queryStr = strings.TrimSuffix(queryStr, "&")
 
-	return "http://" + address + "/" + handlerInstruction + queryStr
+	if queryStr == "?" {
+		return "http://" + address + "/" + handlerInstruction
+	} else {
+		return "http://" + address + "/" + handlerInstruction + queryStr
+	}
 }
 
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
@@ -207,6 +213,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
 				log.Printf("HTTP GET error" + httpErr.Error())
+				return
 			}
 		} else if reqType == http.MethodPost {
 			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
@@ -223,6 +230,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
 				log.Printf("HTTP POST error" + httpErr.Error())
+				return
 			}
 		} else {
 			http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
