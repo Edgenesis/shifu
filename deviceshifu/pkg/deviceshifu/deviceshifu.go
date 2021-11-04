@@ -220,7 +220,8 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 			requestBody, parseErr := io.ReadAll(r.Body)
 			if parseErr != nil {
-				log.Panic("Error on parsing body" + parseErr.Error())
+				http.Error(w, "Error on parsing body", http.StatusBadRequest)
+				log.Printf("Error on parsing body" + parseErr.Error())
 				return
 			}
 
@@ -233,7 +234,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 		} else {
-			http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+			http.Error(w, httpErr.Error(), http.StatusBadRequest)
 			log.Println("Request type " + reqType + " is not supported yet!")
 			return
 		}
