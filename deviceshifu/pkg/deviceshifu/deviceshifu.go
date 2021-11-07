@@ -180,9 +180,9 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 
 	if queryStr == "?" {
 		return "http://" + address + "/" + handlerInstruction
-	} else {
-		return "http://" + address + "/" + handlerInstruction + queryStr
 	}
+
+	return "http://" + address + "/" + handlerInstruction + queryStr
 }
 
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
