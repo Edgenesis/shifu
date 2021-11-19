@@ -166,6 +166,25 @@ type DeviceCommandHandlerHTTP struct {
 	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
 }
 
+func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
+
+	queryStr := "?"
+
+	for queryName, queryValues := range r.URL.Query() {
+		for _, queryValue := range queryValues {
+			queryStr += queryName + "=" + queryValue + "&"
+		}
+	}
+
+	queryStr = strings.TrimSuffix(queryStr, "&")
+
+	if queryStr == "?" {
+		return "http://" + address + "/" + handlerInstruction
+	}
+
+	return "http://" + address + "/" + handlerInstruction + queryStr
+}
+
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		handlerProperties := handler.deviceShifuHTTPHandlerMetaData.properties
@@ -180,11 +199,44 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 		}
 
-		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
-		resp, err := handlerHTTPClient.Get("http://" + *handlerEdgeDeviceSpec.Address + "/" + handlerInstruction)
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			log.Printf("HTTP error" + err.Error())
+		var resp *http.Response
+		var httpErr error
+		reqType := r.Method
+
+		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
+
+		if reqType == http.MethodGet {
+			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
+
+			resp, httpErr = handlerHTTPClient.Get(httpUri)
+
+			if httpErr != nil {
+				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+				log.Printf("HTTP GET error" + httpErr.Error())
+				return
+			}
+		} else if reqType == http.MethodPost {
+			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
+
+			requestBody, parseErr := io.ReadAll(r.Body)
+			if parseErr != nil {
+				http.Error(w, "Error on parsing body", http.StatusBadRequest)
+				log.Printf("Error on parsing body" + parseErr.Error())
+				return
+			}
+
+			contentType := r.Header.Get("Content-type")
+			resp, httpErr = handlerHTTPClient.Post(httpUri, contentType, bytes.NewBuffer(requestBody))
+
+			if httpErr != nil {
+				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+				log.Printf("HTTP POST error" + httpErr.Error())
+				return
+			}
+		} else {
+			http.Error(w, httpErr.Error(), http.StatusBadRequest)
+			log.Println("Request type " + reqType + " is not supported yet!")
+			return
 		}
 
 		if resp != nil {

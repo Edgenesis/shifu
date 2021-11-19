@@ -5,6 +5,9 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"reflect"
+	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -67,16 +70,62 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	req, err := http.NewRequest("GET", "http://localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
-	fmt.Println(req.URL.Query())
-	createdReq := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "start")
+	log.Println(req.URL.Query())
+	createdRequestString := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "start")
 	if err != nil {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	expectedReq := "/usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency"
+	createdRequestArguments := strings.Fields(createdRequestString)
 
-	if createdReq != expectedReq {
-		t.Errorf("created request: '%v' does not match the expected req: '%v'\n", createdReq, expectedReq)
+	expectedRequestString := "/usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency"
+	expectedRequestArguments := strings.Fields(expectedRequestString)
+
+	sort.Strings(createdRequestArguments)
+	sort.Strings(expectedRequestArguments)
+
+	if !reflect.DeepEqual(createdRequestArguments, expectedRequestArguments) {
+		t.Errorf("created request: '%v' does not match the expected req: '%v'\n", createdRequestString, expectedRequestString)
+	}
+}
+
+func TestCreateHTTPUriString(t *testing.T) {
+	expectedUriString := "http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2"
+	req, err := http.NewRequest("POST", expectedUriString, nil)
+	if err != nil {
+		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+	}
+
+	log.Println(req.URL.Query())
+	createdUriString := createUriFromRequest("localhost:8081", "start", req)
+
+	createdUriStringWithoutQueries := strings.Split(createdUriString, "?")[0]
+	createdQueries := strings.Split(strings.Split(createdUriString, "?")[1], "&")
+	expectedUriStringWithoutQueries := strings.Split(expectedUriString, "?")[0]
+	expectedQueries := strings.Split(strings.Split(expectedUriString, "?")[1], "&")
+
+	sort.Strings(createdQueries)
+	sort.Strings(expectedQueries)
+	if createdUriStringWithoutQueries != expectedUriStringWithoutQueries || !reflect.DeepEqual(createdQueries, expectedQueries) {
+		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdUriString, expectedUriString)
+	}
+}
+
+func TestCreateHTTPUriStringNoQuery(t *testing.T) {
+	expectedUriString := "http://localhost:8081/start"
+	req, err := http.NewRequest("POST", expectedUriString, nil)
+	if err != nil {
+		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+	}
+
+	log.Println(req.URL.Query())
+	createdUriString := createUriFromRequest("localhost:8081", "start", req)
+
+	createdUriStringWithoutQueries := strings.Split(createdUriString, "?")[0]
+	expectedUriStringWithoutQueries := strings.Split(expectedUriString, "?")[0]
+
+	if createdUriStringWithoutQueries != expectedUriStringWithoutQueries {
+		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdUriString, expectedUriString)
 	}
 }
 
