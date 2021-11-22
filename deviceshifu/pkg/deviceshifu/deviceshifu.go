@@ -388,9 +388,12 @@ func (ds *DeviceShifu) collectHTTPTelemetries() error {
 	for telemetry, telemetryProperties := range telemetries {
 		status, err := ds.collectHTTPTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
 		if err != nil {
-			if !status && telemetryOK {
-				telemetryOK = false
-			}
+			log.Printf("Error is: %v", err.Error())
+			telemetryOK = false
+		}
+
+		if !status && telemetryOK {
+			telemetryOK = false
 		}
 	}
 
