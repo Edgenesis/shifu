@@ -33,4 +33,4 @@ spec:
       - name: edgedevice-config
         configMap:
           name: robotarm-configmap-0.0.1
-      serviceAccountName: edgedevice-mockdevice-sa
+      serviceAccountName: edgedevice-sa

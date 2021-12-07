@@ -33,4 +33,4 @@ spec:
       - name: edgedevice-config
         configMap:
           name: plate-reader-configmap-0.0.1
-      serviceAccountName: edgedevice-mockdevice-sa
+      serviceAccountName: edgedevice-sa
