@@ -268,7 +268,7 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=10
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+        image: quay.io/brancz/kube-rbac-proxy:v0.8.0
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
@@ -279,7 +279,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: edgehub/edgedevice-controller:v0.0.1
+        image: edgehub/edgedevice-controller-multi:v0.0.1
         livenessProbe:
           httpGet:
             path: /healthz
