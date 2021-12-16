@@ -5,6 +5,10 @@ IMAGE_VERSION = v0.0.1
 build-image-deviceshifu:
 	docker build -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http:${IMAGE_VERSION}
 
+.PHONY: buildx-push-image-deviceshifu
+buildx-push-image-deviceshifu:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-multi:${IMAGE_VERSION} --push
+
 .PHONY: download-demo-files
 download-demo-files:
 	mkdir -p build_dir
@@ -50,6 +54,14 @@ build-image-mockdevices:
 	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-robot-arm:${IMAGE_VERSION}
 	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-plate-reader:${IMAGE_VERSION}
 	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/agv/Dockerfile.mockdevice-agv --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-agv:${IMAGE_VERSION}
+
+.PHONY: buildx-push-image-mockdevices
+buildx-push-image-mockdevices:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-thermometer-multi:${IMAGE_VERSION} --push
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-robot-arm-multi:${IMAGE_VERSION} --push
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-plate-reader-multi:${IMAGE_VERSION} --push
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/agv/Dockerfile.mockdevice-agv --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-agv-multi:${IMAGE_VERSION} --push
+
 
 docker-push-image-deviceshifu:
 	docker push edgehub/deviceshifu-http:${IMAGE_VERSION}

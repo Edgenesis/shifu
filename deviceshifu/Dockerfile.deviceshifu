@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.17.1 as builder
+FROM --platform=$BUILDPLATFORM golang:1.17.1 as builder
 
 WORKDIR /shifu
 
@@ -15,13 +15,15 @@ COPY deviceshifu deviceshifu
 RUN go mod download
 
 # Build the Go app
-RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o /output/deviceshifu deviceshifu/cmd/main.go
+ARG TARGETOS
+ARG TARGETARCH
 
-FROM gcr.io/distroless/static
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/deviceshifu deviceshifu/cmd/main.go
 
-WORKDIR /root/
-
+FROM edgehub/distroless-static:nonroot
+WORKDIR /
 COPY --from=builder /output/deviceshifu deviceshifu
 
 # Command to run the executable
-ENTRYPOINT ["./deviceshifu"]
+USER 65532:65532
+ENTRYPOINT ["/deviceshifu"]
