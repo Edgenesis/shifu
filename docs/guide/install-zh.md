@@ -8,10 +8,10 @@
 2. 安装：
    ```
    cd shifu
-   bash ./test/scripts/deviceshifu-install.sh apply
+   kubectl apply -f k8s/crd/install/shifu_install.yml
    ```
 
 卸载：
 ```
-bash ./test/scripts/deviceshifu-install.sh delete
+kubectl delete -f k8s/crd/install/shifu_install.yml
 ```
