@@ -58,13 +58,16 @@ type AvailableInstruction struct {
 }
 
 type AvailableState struct {
-	State                 string                 `yaml:"state"`
-	AvailableInstructions []AvailableInstruction `yaml:"availableInstructions,omitempty"`
-	DefaultStateDuration  int                    `yaml:"defaultStateDuration,omitempty"`
-	DefaultTransition     string                 `yaml:"defaultTransition,omitempty"`
+	State                        string                 `yaml:"state"`
+	AvailableInstructions        []AvailableInstruction `yaml:"availableInstructions,omitempty"`
+	DefaultStateDuration         int                    `yaml:"defaultStateDuration,omitempty"`
+	DefaultTransition            string                 `yaml:"defaultTransition,omitempty"`
+	DefaultTransitionDataType    string                 `yaml:"defaultTransitionDataType,omitempty"`
+	DefaultTransitionMessageData string                 `yaml:"defaultTransitionMessageData,omitempty"`
 }
 
 type States struct {
+	InitialState               string           `yaml:"initialState"`
 	GlobalDefaultStateDuration int              `yaml:"globalDefaultStateDuration"`
 	GlobalDefaultTransition    string           `yaml:"globalDefaultTransition"`
 	AvailableStates            []AvailableState `yaml:"availableStates"`

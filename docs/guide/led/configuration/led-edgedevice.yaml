@@ -1,0 +1,10 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-led
+  namespace: devices
+spec:
+  sku: "rpi" 
+  connection: Ethernet
+  address: 192.168.14.95:11122
+  protocol: HTTP

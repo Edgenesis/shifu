@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: led-configmap-0.0.1
+  namespace: default
+data:
+  driverProperties: |
+    driverSku: rpi
+    driverImage: edgenesis/rpi:v0.0.1
+  instructions: |
+    led_control:
+    led_status:
+# Telemetries are configurable health checks of the EdgeDevice
+# Developer/user can configure certain instructions to be used as health check
+# of the device. In this example, the device_health telemetry is mapped to
+# "get_status" instruction, executed every 1000 ms
+  telemetries: |
+    device_health:
+      properties:
+        instruction: led_status
+        initialDelayMs: 1000
+        intervalMs: 1000
+
+  states: |
+    initialState: red
+    globalDefaultStateDuration: 10
+    globalDefaultTransition: red
+    availableStates:
+    - state: red
+      defaultTransition:green
+      defaultTransitionDataType:application/json
+      defaultTransitionMessageData:{"color": "green", "operate":"on"}
+      availableInstructions:
+      - availableInstruction: go
+        nextState: green
+        ackReturn: HTTP 200
+        doneSignal: HTTP 200
+        exceptionReturn: HTTP 500
+    - state: green
+      defaultStateDuration: 6
+      defaultTransition: yellow
+      defaultTransitionDataType:application/json
+      defaultTransitionMessageData:{"color": "yellow", "operate":"on"}
+      availableInstructions:
+      - availableInstruction: stop
+        nextState: red
+      - availableInstruction: wait
+        nextState: yellow
+    - state: yellow
+      defaultStateDuration: 3
+      defaultTransitionDataType:application/json
+      defaultTransitionMessageData:{"color": "red", "operate":"on"}
+      availableInstructions:
+      - availableInstruction: stop
+        nextState: red
+      - availableInstruction: go
+        nextState: green

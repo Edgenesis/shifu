@@ -85,9 +85,12 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	}
 	log.Printf("New deviceShifuConfig:%v", deviceShifuConfig)
 
+	currentState = deviceShifuConfig.DeviceStates.InitialState
+	lastStateUpdateTime = time.Now()
 	globalDefaultStateDuration = deviceShifuConfig.DeviceStates.GlobalDefaultStateDuration
 	globalDefaultTransition = deviceShifuConfig.DeviceStates.GlobalDefaultTransition
-	log.Printf("globalDefaultStateDuration:%v, globalDefaultTransition:%v\n", globalDefaultStateDuration, globalDefaultTransition)
+	log.Printf("Initialized with currentState:%v, globalDefaultStateDuration:%v, globalDefaultTransition:%v, lastStateUpdateTime:%v\n",
+		currentState, globalDefaultStateDuration, globalDefaultTransition, lastStateUpdateTime)
 	for _, deviceState := range deviceShifuConfig.DeviceStates.AvailableStates {
 		stateMap[deviceState.State] = deviceState
 	}
@@ -549,6 +552,12 @@ func (ds *DeviceShifu) StartStateMachine() error {
 
 			log.Printf("State timeout, transition from state %v to state %v; default duration %v, last update %v, currentDefaultStateDuration:%v, currentDefaultTransition:%v\n",
 				currentState, currentDefaultTransition, currentDefaultStateDuration, lastStateUpdateTime, currentDefaultStateDuration, currentDefaultTransition)
+
+			messageData := []byte(stateMap[currentState].DefaultTransitionMessageData)
+			_, err := http.Post("edgedevice-led", stateMap[currentState].DefaultTransitionDataType, bytes.NewBuffer(messageData))
+			if err != nil {
+				log.Printf("Failed sending led control %v", err)
+			}
 		}
 		time.Sleep(time.Second)
 	}
