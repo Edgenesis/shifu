@@ -21,6 +21,8 @@ var currentDefaultStateDuration int
 var currentDefaultTransition = "idle"
 var globalDefaultStateDuration int
 var globalDefaultTransition = "idle"
+var globalHanlder DeviceCommandHandlerHTTP
+var globalDefaultTransitionInstruction string
 
 type DeviceShifu struct {
 	Name              string
@@ -85,16 +87,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	}
 	log.Printf("New deviceShifuConfig:%v", deviceShifuConfig)
 
-	currentState = deviceShifuConfig.DeviceStates.InitialState
-	lastStateUpdateTime = time.Now()
-	globalDefaultStateDuration = deviceShifuConfig.DeviceStates.GlobalDefaultStateDuration
-	globalDefaultTransition = deviceShifuConfig.DeviceStates.GlobalDefaultTransition
-	log.Printf("Initialized with currentState:%v, globalDefaultStateDuration:%v, globalDefaultTransition:%v, lastStateUpdateTime:%v\n",
-		currentState, globalDefaultStateDuration, globalDefaultTransition, lastStateUpdateTime)
-	for _, deviceState := range deviceShifuConfig.DeviceStates.AvailableStates {
-		stateMap[deviceState.State] = deviceState
-	}
-	log.Printf("Initialized stateMap:%v", stateMap)
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", deviceHealthHandler)
 
@@ -128,6 +120,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					properties,
 				}
 				handler := DeviceCommandHandlerHTTP{client, deviceShifuHTTPHandlerMetaData}
+				globalHanlder = handler
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		case v1alpha1.ProtocolUSB:
@@ -174,6 +167,32 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	}
 
 	ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
+
+	initialHandlerEdgeDeviceSpec := globalHanlder.deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
+	initialHandlerHTTPClient := globalHanlder.client.Client
+	httpUri := "http://" + *initialHandlerEdgeDeviceSpec.Address + "/" + deviceShifuConfig.DeviceStates.InitialInstruction
+	log.Printf("Transition instruction:%v to url %v", deviceShifuConfig.DeviceStates.InitialInstruction, httpUri)
+	initialHandlerHTTPClient.Get(httpUri)
+	lastStateUpdateTime = time.Now()
+	currentState = deviceShifuConfig.DeviceStates.InitialState
+	globalDefaultStateDuration = deviceShifuConfig.DeviceStates.GlobalDefaultStateDuration
+	globalDefaultTransition = deviceShifuConfig.DeviceStates.GlobalDefaultTransition
+	globalDefaultTransitionInstruction = deviceShifuConfig.DeviceStates.GlobalDefaultTransitionInstruction
+	log.Printf("Initialized with currentState:%v, initialInstruction:%v, globalDefaultTransitionInstruction:%v, globalDefaultStateDuration:%v, globalDefaultTransition:%v, lastStateUpdateTime:%v\n",
+		currentState, deviceShifuConfig.DeviceStates.InitialInstruction, globalDefaultTransitionInstruction, globalDefaultStateDuration, globalDefaultTransition, lastStateUpdateTime)
+	for _, deviceState := range deviceShifuConfig.DeviceStates.AvailableStates {
+		stateMap[deviceState.State] = deviceState
+	}
+	log.Printf("Initialized stateMap:%v", stateMap)
+	currentDefaultStateDuration = stateMap[currentState].DefaultStateDuration
+	currentDefaultTransition = stateMap[currentState].DefaultTransition
+	if currentDefaultTransition == "" {
+		currentDefaultTransition = globalDefaultTransition
+	}
+	if currentDefaultStateDuration == 0 {
+		currentDefaultStateDuration = globalDefaultStateDuration
+	}
+
 	return ds, nil
 }
 
@@ -534,10 +553,26 @@ func (ds *DeviceShifu) StartStateMachine() error {
 		}
 		nowTime := time.Now()
 		timeDiff := nowTime.Sub(lastStateUpdateTime)
-		// log.Printf("State machine status: lastStateUpdateTime:%v, now:%v, diff:%v, threshold:%v\n", lastStateUpdateTime, nowTime, timeDiff.Seconds(), float64(currentDefaultStateDuration))
+		log.Printf("State machine status: currentState:%v, lastStateUpdateTime:%v, now:%v, diff:%v, threshold:%v\n", currentState, lastStateUpdateTime, nowTime, timeDiff.Seconds(), float64(currentDefaultStateDuration))
 		if timeDiff.Seconds() > float64(currentDefaultStateDuration) {
+			transitionInstruction := stateMap[currentState].DefaultTransitionInstruction
+			if transitionInstruction == "" {
+				transitionInstruction = globalDefaultTransitionInstruction
+			}
+			log.Printf("Transition instruction:%v", transitionInstruction)
+			handlerEdgeDeviceSpec := globalHanlder.deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
+			handlerHTTPClient := globalHanlder.client.Client
+			httpUri := "http://" + *handlerEdgeDeviceSpec.Address + "/" + transitionInstruction
+			log.Printf("Transition instruction:%v to url %v", transitionInstruction, httpUri)
+			_, err := handlerHTTPClient.Get(httpUri)
+
+			if err != nil {
+				log.Printf("Failed sending led control %v", err)
+			}
+
 			log.Printf("State timeout, transition from state %v to state %v; default duration %v, last update %v, currentDefaultStateDuration:%v, currentDefaultTransition:%v\n",
 				currentState, currentDefaultTransition, currentDefaultStateDuration, lastStateUpdateTime, currentDefaultStateDuration, currentDefaultTransition)
+
 			currentState = currentDefaultTransition
 			currentDefaultStateDuration = stateMap[currentState].DefaultStateDuration
 			currentDefaultTransition = stateMap[currentState].DefaultTransition
@@ -547,17 +582,8 @@ func (ds *DeviceShifu) StartStateMachine() error {
 			if currentDefaultTransition == "" {
 				currentDefaultTransition = globalDefaultTransition
 			}
-
 			lastStateUpdateTime = time.Now()
-
-			log.Printf("State timeout, transition from state %v to state %v; default duration %v, last update %v, currentDefaultStateDuration:%v, currentDefaultTransition:%v\n",
-				currentState, currentDefaultTransition, currentDefaultStateDuration, lastStateUpdateTime, currentDefaultStateDuration, currentDefaultTransition)
-
-			messageData := []byte(stateMap[currentState].DefaultTransitionMessageData)
-			_, err := http.Post("edgedevice-led", stateMap[currentState].DefaultTransitionDataType, bytes.NewBuffer(messageData))
-			if err != nil {
-				log.Printf("Failed sending led control %v", err)
-			}
+			log.Printf("Transitioned. current state:%v, currentDefaultStateDuration:%v", currentState, currentDefaultStateDuration)
 		}
 		time.Sleep(time.Second)
 	}

@@ -62,15 +62,16 @@ type AvailableState struct {
 	AvailableInstructions        []AvailableInstruction `yaml:"availableInstructions,omitempty"`
 	DefaultStateDuration         int                    `yaml:"defaultStateDuration,omitempty"`
 	DefaultTransition            string                 `yaml:"defaultTransition,omitempty"`
-	DefaultTransitionDataType    string                 `yaml:"defaultTransitionDataType,omitempty"`
-	DefaultTransitionMessageData string                 `yaml:"defaultTransitionMessageData,omitempty"`
+	DefaultTransitionInstruction string                 `yaml:"defaultTransitionInstruction,omitempty"`
 }
 
 type States struct {
-	InitialState               string           `yaml:"initialState"`
-	GlobalDefaultStateDuration int              `yaml:"globalDefaultStateDuration"`
-	GlobalDefaultTransition    string           `yaml:"globalDefaultTransition"`
-	AvailableStates            []AvailableState `yaml:"availableStates"`
+	InitialState                       string           `yaml:"initialState"`
+	InitialInstruction                 string           `yaml:"initialInstruction"`
+	GlobalDefaultTransitionInstruction string           `yaml:"globalDefaultTransitionInstruction"`
+	GlobalDefaultStateDuration         int              `yaml:"globalDefaultStateDuration"`
+	GlobalDefaultTransition            string           `yaml:"globalDefaultTransition"`
+	AvailableStates                    []AvailableState `yaml:"availableStates"`
 }
 
 type EdgeDeviceConfig struct {

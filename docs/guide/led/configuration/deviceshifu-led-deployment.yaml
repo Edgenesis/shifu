@@ -16,7 +16,7 @@ spec:
         app: edgedevice-led-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-multi:v0.0.1
+      - image: edgehub/deviceshifu-http:v0.0.1
         name: deviceshifu-http
         ports:
         - containerPort: 8080
@@ -33,4 +33,4 @@ spec:
       - name: edgedevice-config
         configMap:
           name: led-configmap-0.0.1
-      serviceAccountName: edgedevice-sa
+      serviceAccountName: edgedevice-mockdevice-sa

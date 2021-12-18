@@ -10,6 +10,9 @@ data:
   instructions: |
     led_control:
     led_status:
+    led_red_on:
+    led_yellow_on:
+    led_green_on:
 # Telemetries are configurable health checks of the EdgeDevice
 # Developer/user can configure certain instructions to be used as health check
 # of the device. In this example, the device_health telemetry is mapped to
@@ -23,15 +26,16 @@ data:
 
   states: |
     initialState: red
+    initialInstruction: led_red_on
     globalDefaultStateDuration: 10
     globalDefaultTransition: red
+    globalDefaultTransitionInstruction: led_red_on
     availableStates:
     - state: red
-      defaultTransition:green
-      defaultTransitionDataType:application/json
-      defaultTransitionMessageData:{"color": "green", "operate":"on"}
+      defaultTransition: green
+      defaultTransitionInstruction: led_green_on
       availableInstructions:
-      - availableInstruction: go
+      - availableInstruction: led_green_on
         nextState: green
         ackReturn: HTTP 200
         doneSignal: HTTP 200
@@ -39,19 +43,16 @@ data:
     - state: green
       defaultStateDuration: 6
       defaultTransition: yellow
-      defaultTransitionDataType:application/json
-      defaultTransitionMessageData:{"color": "yellow", "operate":"on"}
+      defaultTransitionInstruction: led_yellow_on
       availableInstructions:
-      - availableInstruction: stop
+      - availableInstruction: led_red_on
         nextState: red
-      - availableInstruction: wait
+      - availableInstruction: led_yellow_on
         nextState: yellow
     - state: yellow
       defaultStateDuration: 3
-      defaultTransitionDataType:application/json
-      defaultTransitionMessageData:{"color": "red", "operate":"on"}
       availableInstructions:
-      - availableInstruction: stop
+      - availableInstruction: led_red_on
         nextState: red
-      - availableInstruction: go
+      - availableInstruction: led_green_on
         nextState: green
