@@ -23,6 +23,7 @@ type ConfigMapData struct {
 		DriverProperties string `yaml:"driverProperties"`
 		Instructions     string `yaml:"instructions"`
 		Telemetries      string `yaml:"telemetries"`
+		States           string `yaml:"states"`
 	} `yaml:"data"`
 }
 

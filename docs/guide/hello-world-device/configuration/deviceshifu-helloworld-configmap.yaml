@@ -19,4 +19,25 @@ data:
         instruction: hello
         initialDelayMs: 1000
         intervalMs: 1000
+  states: |
+    globalDefaultStateDuration: 2
+    globalDefaultTransition: idle
+    availableStates:
+    - state: idle
+      availableInstructions:
+      - availableInstruction: hello
+        nextState: helloing
+        ackReturn: HTTP 200
+        doneSignal: HTTP 200
+        exceptionReturn: HTTP 500
+      - availableInstruction: bye
+        nextState: idle
+    - state: helloing
+      defaultStateDuration: 5
+      defaultTransition: helloed
+      availableInstructions:
+      - availableInstruction: bye
+        nextState: idle
+    - state: helloed
+      defaultStateDuration: 10
 

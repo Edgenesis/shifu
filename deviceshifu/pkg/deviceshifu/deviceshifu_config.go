@@ -20,6 +20,7 @@ type DeviceShifuConfig struct {
 	driverProperties DeviceShifuDriverProperties
 	Instructions     map[string]*DeviceShifuInstruction
 	Telemetries      map[string]*DeviceShifuTelemetry
+	DeviceStates     States
 }
 
 type DeviceShifuDriverProperties struct {
@@ -48,6 +49,27 @@ type DeviceShifuTelemetry struct {
 	DeviceShifuTelemetryProperties DeviceShifuTelemetryProperties `yaml:"properties,omitempty"`
 }
 
+type AvailableInstruction struct {
+	Instruction     string `yaml:"availableInstruction"`
+	NextState       string `yaml:"nextState"`
+	AckReturn       string `yaml:"ackReturn,omitempty"`
+	DoneSignal      string `yaml:"doneSignal,omitempty"`
+	ExceptionReturn string `yaml:"exceptionReturn,omitempty"`
+}
+
+type AvailableState struct {
+	State                 string                 `yaml:"state"`
+	AvailableInstructions []AvailableInstruction `yaml:"availableInstructions,omitempty"`
+	DefaultStateDuration  int                    `yaml:"defaultStateDuration,omitempty"`
+	DefaultTransition     string                 `yaml:"defaultTransition,omitempty"`
+}
+
+type States struct {
+	GlobalDefaultStateDuration int              `yaml:"globalDefaultStateDuration"`
+	GlobalDefaultTransition    string           `yaml:"globalDefaultTransition"`
+	AvailableStates            []AvailableState `yaml:"availableStates"`
+}
+
 type EdgeDeviceConfig struct {
 	nameSpace      string
 	deviceName     string
@@ -58,6 +80,7 @@ const (
 	CM_DRIVERPROPERTIES_STR = "driverProperties"
 	CM_INSTRUCTIONS_STR     = "instructions"
 	CM_TELEMETRIES_STR      = "telemetries"
+	CM_STATES_STR           = "states"
 	EDGEDEVICE_RESOURCE_STR = "edgedevices"
 )
 
@@ -93,6 +116,14 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 		err = yaml.Unmarshal([]byte(telemetries), &dsc.Telemetries)
 		if err != nil {
 			log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_TELEMETRIES_STR, err)
+			return nil, err
+		}
+	}
+
+	if deviceStates, ok := cfg[CM_STATES_STR]; ok {
+		err = yaml.Unmarshal([]byte(deviceStates), &dsc.DeviceStates)
+		if err != nil {
+			log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_STATES_STR, err)
 			return nil, err
 		}
 	}
