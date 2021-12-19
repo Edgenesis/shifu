@@ -16,13 +16,15 @@ import (
 
 var lastStateUpdateTime time.Time
 var stateMap = make(map[string]AvailableState)
-var currentState = "idle"
+var currentState = "red"
 var currentDefaultStateDuration int
-var currentDefaultTransition = "idle"
+var currentDefaultTransition = "red"
 var globalDefaultStateDuration int
-var globalDefaultTransition = "idle"
+var globalDefaultTransition = "red"
 var globalHanlder DeviceCommandHandlerHTTP
 var globalDefaultTransitionInstruction string
+var lastState = ""
+var globalApplicationEndpoint string
 
 type DeviceShifu struct {
 	Name              string
@@ -178,6 +180,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	globalDefaultStateDuration = deviceShifuConfig.DeviceStates.GlobalDefaultStateDuration
 	globalDefaultTransition = deviceShifuConfig.DeviceStates.GlobalDefaultTransition
 	globalDefaultTransitionInstruction = deviceShifuConfig.DeviceStates.GlobalDefaultTransitionInstruction
+	globalApplicationEndpoint = deviceShifuConfig.DeviceStates.GlobalApplicationEndpoint
 	log.Printf("Initialized with currentState:%v, initialInstruction:%v, globalDefaultTransitionInstruction:%v, globalDefaultStateDuration:%v, globalDefaultTransition:%v, lastStateUpdateTime:%v\n",
 		currentState, deviceShifuConfig.DeviceStates.InitialInstruction, globalDefaultTransitionInstruction, globalDefaultStateDuration, globalDefaultTransition, lastStateUpdateTime)
 	for _, deviceState := range deviceShifuConfig.DeviceStates.AvailableStates {
@@ -572,7 +575,6 @@ func (ds *DeviceShifu) StartStateMachine() error {
 
 			log.Printf("State timeout, transition from state %v to state %v; default duration %v, last update %v, currentDefaultStateDuration:%v, currentDefaultTransition:%v\n",
 				currentState, currentDefaultTransition, currentDefaultStateDuration, lastStateUpdateTime, currentDefaultStateDuration, currentDefaultTransition)
-
 			currentState = currentDefaultTransition
 			currentDefaultStateDuration = stateMap[currentState].DefaultStateDuration
 			currentDefaultTransition = stateMap[currentState].DefaultTransition
@@ -588,13 +590,45 @@ func (ds *DeviceShifu) StartStateMachine() error {
 		time.Sleep(time.Second)
 	}
 }
+
+func (ds *DeviceShifu) StartUICommunication() {
+	for {
+		if lastState == currentState {
+			continue
+		} else {
+			if currentState == "red" {
+				_, err := http.Get("http://" + globalApplicationEndpoint + "/red")
+				log.Printf("Updating states to %v", "http://"+globalApplicationEndpoint+"/red")
+				if err != nil {
+					log.Printf("Bad request! %v", err.Error())
+				}
+				lastState = currentState
+			} else if currentState == "yellow" {
+				_, err := http.Get("http://" + globalApplicationEndpoint + "/yellow")
+				log.Printf("Updating states to %v", "http://"+globalApplicationEndpoint+"/yellow")
+				if err != nil {
+					log.Printf("Bad request! %v", err.Error())
+				}
+				lastState = currentState
+			} else if currentState == "green" {
+				_, err := http.Get("http://" + globalApplicationEndpoint + "/green")
+				log.Printf("Updating states to %v", "http://"+globalApplicationEndpoint+"/green")
+				if err != nil {
+					log.Printf("Bad request! %v", err.Error())
+				}
+				lastState = currentState
+			}
+		}
+	}
+}
+
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	fmt.Printf("deviceShifu %s started\n", ds.Name)
 
 	go ds.startHttpServer(stopCh)
 	go ds.StartTelemetryCollection()
 	go ds.StartStateMachine()
-
+	go ds.StartUICommunication()
 	return nil
 }
 

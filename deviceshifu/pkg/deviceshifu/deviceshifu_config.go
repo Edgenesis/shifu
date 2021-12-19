@@ -69,6 +69,7 @@ type States struct {
 	InitialState                       string           `yaml:"initialState"`
 	InitialInstruction                 string           `yaml:"initialInstruction"`
 	GlobalDefaultTransitionInstruction string           `yaml:"globalDefaultTransitionInstruction"`
+	GlobalApplicationEndpoint          string           `yaml:"globalApplicationEndpoint"`
 	GlobalDefaultStateDuration         int              `yaml:"globalDefaultStateDuration"`
 	GlobalDefaultTransition            string           `yaml:"globalDefaultTransition"`
 	AvailableStates                    []AvailableState `yaml:"availableStates"`

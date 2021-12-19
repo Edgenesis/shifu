@@ -30,6 +30,7 @@ data:
     globalDefaultStateDuration: 10
     globalDefaultTransition: red
     globalDefaultTransitionInstruction: led_red_on
+    globalApplicationEndpoint: unityserver:8092
     availableStates:
     - state: red
       defaultTransition: green
@@ -37,9 +38,6 @@ data:
       availableInstructions:
       - availableInstruction: led_green_on
         nextState: green
-        ackReturn: HTTP 200
-        doneSignal: HTTP 200
-        exceptionReturn: HTTP 500
     - state: green
       defaultStateDuration: 6
       defaultTransition: yellow
