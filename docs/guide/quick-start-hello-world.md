@@ -293,3 +293,8 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
       ```
 
 Now the Hello World ***edgeDevice*** is fully integrated in the ***Shifu*** framework and we can interact with it via the ***deviceShifu*** as shown above.
+   
+   ***If you would like to update the configmap of the device, you can delete and re-apply the configuration:***
+
+      /# kubectl delete -f <working_dir>/helloworld-device/configuration
+      /# kubectl apply -f <working_dir>/helloworld-device/configuration
