@@ -77,6 +77,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", deviceHealthHandler)
+	mux.HandleFunc("/", instructionNotFoundHandler)
 
 	edgeDevice := &v1alpha1.EdgeDevice{}
 	client := &rest.RESTClient{}
@@ -164,6 +165,11 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 type DeviceCommandHandlerHTTP struct {
 	client                         *rest.RESTClient
 	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
+}
+
+func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Error: Device instruction does not exist!")
+	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
 func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
