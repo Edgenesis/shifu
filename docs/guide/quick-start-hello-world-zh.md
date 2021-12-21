@@ -291,3 +291,8 @@
       ```
 
 现在Hello World ***edgeDevice***已经完全整合到***Shifu***框架中，可以通过上述方式来通过***deviceShifu***与其交互
+
+***如果需要更新configuration，请先delete再apply configurtaion：***
+     
+      /# kubectl delete -f <working_dir>/helloworld-device/configuration
+      /# kubectl apply -f <working_dir>/helloworld-device/configuration
