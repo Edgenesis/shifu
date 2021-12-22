@@ -84,4 +84,4 @@ steps:
   displayName: "go build http to ssh stub"
   inputs:
     command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util/http-to-ssh-stub'

@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -58,6 +59,11 @@ const (
 	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR string = "NULL"
 	DEVICE_NAMESPACE_DEFAULT          string = "default"
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
+	DEVICE_HTTP_CMD_NO_EXEC           string = "issue_cmd"
+	DEVICE_HTTP_CMD_HEALTH            string = "stub_health"
+	DEVICE_HTTP_CMD_TIMEOUT_KEY       string = "cmdTimeout"
+	DEVICE_HTTP_CMD_TIMEOUT_DEFAULT   string = "5"
+	DEVICE_HTTP_DEFAULT_TIMEOUT       int    = 5
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 )
 
@@ -213,8 +219,17 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		if reqType == http.MethodGet {
 			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
+			req, err := http.NewRequest(reqType, httpUri, nil)
+			if err == nil {
+				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+				log.Printf("error creating request" + err.Error())
+				return
+			}
 
-			resp, httpErr = handlerHTTPClient.Get(httpUri)
+			copyHeader(req.Header, r.Header)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(DEVICE_HTTP_DEFAULT_TIMEOUT)*time.Second)
+			defer cancel()
+			resp, httpErr = handlerHTTPClient.Do(req.WithContext(ctx))
 
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
@@ -223,19 +238,27 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 		} else if reqType == http.MethodPost {
 			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
-
 			requestBody, parseErr := io.ReadAll(r.Body)
 			if parseErr != nil {
-				http.Error(w, "Error on parsing body", http.StatusBadRequest)
+				http.Error(w, "Error on parsing body", resp.StatusCode)
 				log.Printf("Error on parsing body" + parseErr.Error())
 				return
 			}
 
-			contentType := r.Header.Get("Content-type")
-			resp, httpErr = handlerHTTPClient.Post(httpUri, contentType, bytes.NewBuffer(requestBody))
+			req, err := http.NewRequest(reqType, httpUri, bytes.NewReader(requestBody))
+			if err == nil {
+				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+				log.Printf("error creating request" + err.Error())
+				return
+			}
+
+			copyHeader(req.Header, r.Header)
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(DEVICE_HTTP_DEFAULT_TIMEOUT)*time.Second)
+			defer cancel()
+			resp, httpErr = handlerHTTPClient.Do(req.WithContext(ctx))
 
 			if httpErr != nil {
-				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+				http.Error(w, httpErr.Error(), resp.StatusCode)
 				log.Printf("HTTP POST error" + httpErr.Error())
 				return
 			}
@@ -274,6 +297,17 @@ func deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData *DeviceShifuUSBHandle
 	}
 }
 
+func getHTTPRequestKeyValue(req *http.Request, key string) (value string, err error) {
+	keyValues, ok := req.URL.Query()[key]
+
+	if !ok || len(keyValues[0]) < 1 {
+		log.Printf("Url Param '%v' is missing", key)
+		return "", fmt.Errorf("url Param '%v' is missing", key)
+	}
+
+	return keyValues[0], nil
+}
+
 // this function gathers the instruction name and its arguments from user input via HTTP and create the direct call command
 // "flags_no_parameter" is a special key where it contains all flags
 // e.g.:
@@ -296,7 +330,7 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 				}
 			}
 		} else {
-			if len(parameterValues) < 1 {
+			if len(parameterValues) < 1 || parameterName == DEVICE_HTTP_CMD_TIMEOUT_KEY {
 				continue
 			}
 
@@ -306,7 +340,14 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 			}
 		}
 	}
-	return driverExecution + " --" + instruction + requestStr + flagsStr
+
+	if instruction == DEVICE_HTTP_CMD_NO_EXEC {
+		return strings.TrimSpace(flagsStr)
+	} else if instruction == DEVICE_HTTP_CMD_HEALTH {
+		return "ls"
+	}
+
+	return driverExecution + " " + instruction + requestStr + flagsStr
 }
 
 type DeviceCommandHandlerHTTPCommandline struct {
@@ -332,9 +373,25 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
 
 		commandString := createHTTPCommandlineRequestString(r, driverExecution, handlerInstruction)
-		postAddressString := "http://" + *handlerEdgeDeviceSpec.Address + "/post"
+		commandTimeout, err := getHTTPRequestKeyValue(r, DEVICE_HTTP_CMD_TIMEOUT_KEY)
+		if err != nil {
+			log.Printf("command timeout not specified, using default: %v", DEVICE_HTTP_CMD_TIMEOUT_DEFAULT)
+			commandTimeout = DEVICE_HTTP_CMD_TIMEOUT_DEFAULT
+		}
+
+		commandTimeoutInt, err := strconv.Atoi(commandTimeout)
+		if err != nil {
+			log.Printf("command timeout cannot be converted to int")
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		}
+
+		postAddressString := "http://" + *handlerEdgeDeviceSpec.Address + "/?" + DEVICE_HTTP_CMD_TIMEOUT_KEY + "=" + commandTimeout
 		log.Printf("posting '%v' to '%v'", commandString, postAddressString)
-		resp, err := handlerHTTPClient.Post(postAddressString, "text/plain", bytes.NewBuffer([]byte(commandString)))
+		req, err := http.NewRequest(http.MethodPost, postAddressString, bytes.NewBuffer([]byte(commandString)))
+		req.Header.Add("Content-Type", "text/plain")
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(commandTimeoutInt+1)*time.Second)
+		defer cancel()
+		resp, err := handlerHTTPClient.Do(req.WithContext(ctx))
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
@@ -416,6 +473,8 @@ func (ds *DeviceShifu) telemetryCollection() error {
 	if ds.edgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
+			ds.collectHTTPTelemetries()
+		case v1alpha1.ProtocolHTTPCommandline:
 			ds.collectHTTPTelemetries()
 		default:
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)

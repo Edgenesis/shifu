@@ -69,23 +69,54 @@ func TestDeviceHealthHandler(t *testing.T) {
 }
 
 func TestCreateHTTPCommandlineRequestString(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
+	req, err := http.NewRequest("GET", "http://localhost:8081/--start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
 	log.Println(req.URL.Query())
-	createdRequestString := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "start")
+	createdReq := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "--start")
 	if err != nil {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	createdRequestArguments := strings.Fields(createdRequestString)
+	expectedRequestExecution := "/usr/local/bin/python /usr/src/driver/python-car-driver.py"
+	expectedRequestInstruction := "--start"
+	expectedRequestArguments := []string{"time=10:00:00", "target=machine2", "-a", "-c", "--no-dependency"}
+	createdRequestList := strings.Split(createdReq, expectedRequestInstruction)
+	if len(createdRequestList) != 2 {
+		t.Error("created request instructiondoes not match the expected req")
+	}
 
-	expectedRequestString := "/usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency"
-	expectedRequestArguments := strings.Fields(expectedRequestString)
+	if strings.TrimSpace(createdRequestList[0]) != expectedRequestExecution {
+		t.Errorf("created request execution: '%v' does not match the expected req execution: '%v'\n", createdRequestList[0], expectedRequestExecution)
+	}
 
-	sort.Strings(createdRequestArguments)
-	sort.Strings(expectedRequestArguments)
+	createdRequestArguments := strings.Fields(createdRequestList[1])
+	if len(expectedRequestArguments) != len(createdRequestArguments) {
+		t.Errorf("length of created request args: '%v' does not match the expected req args: '%v'\n", createdRequestArguments, expectedRequestArguments)
+	}
 
-	if !reflect.DeepEqual(createdRequestArguments, expectedRequestArguments) {
-		t.Errorf("created request: '%v' does not match the expected req: '%v'\n", createdRequestString, expectedRequestString)
+	isArgumentInRequest := false
+	for _, expectedArgument := range expectedRequestArguments {
+		for _, createdArgument := range createdRequestArguments {
+			if expectedArgument == strings.TrimSpace(createdArgument) {
+				isArgumentInRequest = true
+			}
+		}
+		if !isArgumentInRequest {
+			t.Errorf("expected request argument: '%v' not in created arguments: %v", expectedArgument, createdRequestArguments)
+		}
+		isArgumentInRequest = false
+	}
+}
+
+func TestCreateHTTPCommandlineRequestString2(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://localhost:8081/issue_cmd?cmdTimeout=10&flags_no_parameter=ping,8.8.8.8,-t", nil)
+	createdReq := createHTTPCommandlineRequestString(req, "poweshell.exe", DEVICE_HTTP_CMD_NO_EXEC)
+	if err != nil {
+		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+	}
+
+	expectedReq := "ping 8.8.8.8 -t"
+	if createdReq != expectedReq {
+		t.Errorf("created request: '%v' does not match the expected req: '%v'\n", createdReq, expectedReq)
 	}
 }
 
