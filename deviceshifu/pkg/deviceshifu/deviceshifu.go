@@ -220,8 +220,8 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		if reqType == http.MethodGet {
 			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
 			req, err := http.NewRequest(reqType, httpUri, nil)
-			if err == nil {
-				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusServiceUnavailable)
 				log.Printf("error creating request" + err.Error())
 				return
 			}
@@ -246,8 +246,8 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 
 			req, err := http.NewRequest(reqType, httpUri, bytes.NewReader(requestBody))
-			if err == nil {
-				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+			if err != nil {
+				http.Error(w, err.Error(), http.StatusServiceUnavailable)
 				log.Printf("error creating request" + err.Error())
 				return
 			}
