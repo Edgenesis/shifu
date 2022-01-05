@@ -8,7 +8,7 @@ usage ()
 
 if ([ "$1" == "apply" ] || [ "$1" == "delete" ]) && ([ "$2" == "deviceDemo" ] || [ "$2" == "applicationDemo" ]); then
         if [ "$1" == "apply" ]; then
-                Images=("nginx:1.21" "gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0" "edgehub/mockdevice-agv:v0.0.1"
+                Images=("nginx:1.21" "quay.io/brancz/kube-rbac-proxy:v0.8.0" "edgehub/mockdevice-agv:v0.0.1"
                     "edgehub/mockdevice-plate-reader:v0.0.1" "edgehub/mockdevice-robot-arm:v0.0.1"
                     "edgehub/mockdevice-thermometer:v0.0.1" "edgehub/deviceshifu-http:v0.0.1"
                     "edgehub/edgedevice-controller:v0.0.1")
@@ -41,7 +41,7 @@ if ([ "$1" == "apply" ] || [ "$1" == "delete" ]) && ([ "$2" == "deviceDemo" ] ||
                 docker rmi $(docker images | grep 'edgehub/mockdevice' | awk '{print $3}')
                 docker rmi $(docker images | grep 'edgehub/deviceshifu-http' | awk '{print $3}')
                 docker rmi $(docker images | grep 'edgehub/edgedevice-controller' | awk '{print $3}')
-                docker rmi gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+                docker rmi quay.io/brancz/kube-rbac-proxy:v0.8.0
                 docker rmi $(docker images | grep 'kindest/node' | awk '{print $3}')
                 docker rmi nginx:1.21
                 if [ "$2" == "deviceDemo" ]; then

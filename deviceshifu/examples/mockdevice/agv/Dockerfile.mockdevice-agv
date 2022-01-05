@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.17.1 as builder
+FROM --platform=$BUILDPLATFORM golang:1.17.1 as builder
 
 WORKDIR /shifu
 
@@ -14,15 +14,17 @@ WORKDIR /shifu/deviceshifu/pkg/mockdevice/mockdevice
 RUN go mod download
 
 # Build the Go app
-RUN CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a \
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a \
     -o /output/mockdevice-agv \
     /shifu/deviceshifu/pkg/mockdevice/mockdevice-agv/mockdevice-agv.go
 
-FROM gcr.io/distroless/static
-
-WORKDIR /root/
-
+FROM edgehub/distroless-static:nonroot
+WORKDIR /
 COPY --from=builder /output/mockdevice-agv mockdevice-agv
 
 # Command to run the executable
-ENTRYPOINT ["./mockdevice-agv"]
+USER 65532:65532
+ENTRYPOINT ["/mockdevice-agv"]
