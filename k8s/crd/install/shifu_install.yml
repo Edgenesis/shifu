@@ -38,6 +38,14 @@ spec:
               protocol:
                 description: Protocol specifies the EdgeDevice's communication protocol.
                 type: string
+              protocolSettings:
+                description: ProtocolSettings defines settings when connecting to an EdgeDevice
+                properties:
+                  encoding:
+                    type: string
+                  networkType:
+                    type: string
+                type: object
               sku:
                 description: Sku specifies the EdgeDevice's SKU.
                 type: string
@@ -106,6 +114,14 @@ spec:
               protocol:
                 description: Protocol specifies the EdgeDevice's communication protocol.
                 type: string
+              protocolSettings:
+                description: ProtocolSettings defines settings when connecting to an EdgeDevice
+                properties:
+                  encoding:
+                    type: string
+                  networkType:
+                    type: string
+                type: object
               sku:
                 description: Sku specifies the EdgeDevice's SKU.
                 type: string
