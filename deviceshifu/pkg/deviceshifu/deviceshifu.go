@@ -60,16 +60,23 @@ const (
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 	STATE_IDLE                        string = "idle"
+	INSTRUCTION_IDLE                  string = "idle"
 )
 
 var (
-	lastStateUpdateTime         time.Time
-	stateMap                    = make(map[string]AvailableState)
-	currentState                = STATE_IDLE
-	currentDefaultStateDuration int
-	currentDefaultTransition    = STATE_IDLE
-	globalDefaultStateDuration  int
-	globalDefaultTransition     = STATE_IDLE
+	stateMachineEnabled                = false
+	lastStateUpdateTime                time.Time
+	stateMap                           = make(map[string]AvailableState)
+	currentState                       = STATE_IDLE
+	lastState                          = ""
+	currentDefaultStateDuration        = 10
+	currentDefaultTransition           = STATE_IDLE
+	globalDefaultStateDuration         = 10
+	globalDefaultTransition            = STATE_IDLE
+	globalDefaultTransitionInstruction = INSTRUCTION_IDLE
+	globalPushingApplicationEndpoint   = ""
+	httpRESTClient                     *http.Client
+	httpAddress                        string
 )
 
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
@@ -122,6 +129,9 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			log.Fatalf("edgeDeviceConfig.Spec is nil")
 			return nil, err
 		}
+
+		httpRESTClient = client.Client
+		httpAddress = *edgeDevice.Spec.Address
 
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
@@ -178,7 +188,50 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	}
 
 	ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
+	stateMachineEnabled = deviceShifuConfig.DeviceStates.StateMachineEnabled
+	if stateMachineEnabled {
+		stateMachineEnabled = true
+		log.Println("Initializing state machine...")
+		initializeState(*edgeDevice.Spec.Protocol, *deviceShifuConfig)
+	} else {
+		log.Println("State machine is not enabled.")
+	}
 	return ds, nil
+}
+
+/*
+ * Initialize the deviceshifu with initial state
+ * TODO: support more protocols
+ */
+
+func initializeState(protocol v1alpha1.Protocol, deviceShifuConfig DeviceShifuConfig) {
+	if protocol == v1alpha1.ProtocolHTTP || protocol == v1alpha1.ProtocolHTTPCommandline {
+		httpUri := "http://" + httpAddress + "/" + deviceShifuConfig.DeviceStates.InitialInstruction
+		log.Printf("Transition instruction:%v to url %v", deviceShifuConfig.DeviceStates.InitialInstruction, httpUri)
+		httpRESTClient.Get(httpUri)
+		lastStateUpdateTime = time.Now()
+		currentState = deviceShifuConfig.DeviceStates.InitialState
+		globalDefaultStateDuration = deviceShifuConfig.DeviceStates.GlobalDefaultStateDuration
+		globalDefaultTransition = deviceShifuConfig.DeviceStates.GlobalDefaultTransition
+		globalDefaultTransitionInstruction = deviceShifuConfig.DeviceStates.GlobalDefaultTransitionInstruction
+		globalPushingApplicationEndpoint = deviceShifuConfig.DeviceStates.GlobalPushingApplicationEndpoint
+		log.Printf("Initialized with currentState:%v, initialInstruction:%v, globalDefaultTransitionInstruction:%v, globalDefaultStateDuration:%v, globalDefaultTransition:%v, lastStateUpdateTime:%v\n",
+			currentState, deviceShifuConfig.DeviceStates.InitialInstruction, globalDefaultTransitionInstruction, globalDefaultStateDuration, globalDefaultTransition, lastStateUpdateTime)
+		for _, deviceState := range deviceShifuConfig.DeviceStates.AvailableStates {
+			stateMap[deviceState.State] = deviceState
+		}
+		log.Printf("Initialized stateMap:%v", stateMap)
+		currentDefaultStateDuration = stateMap[currentState].DefaultStateDuration
+		currentDefaultTransition = stateMap[currentState].DefaultTransition
+		if currentDefaultTransition == "" {
+			currentDefaultTransition = globalDefaultTransition
+		}
+		if currentDefaultStateDuration == 0 {
+			currentDefaultStateDuration = globalDefaultStateDuration
+		}
+	} else {
+
+	}
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
@@ -225,44 +278,46 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		handlerEdgeDeviceSpec := handler.deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
 		handlerHTTPClient := handler.client.Client
 
-		availableInstructions := stateMap[currentState].AvailableInstructions
-		instructionAllowed := false
-		nextState := currentState
-		nextDefaultStateDuration := currentDefaultStateDuration
-		nextDefaultStateTransition := currentDefaultTransition
-		log.Printf("Received new instruction. Current statemap:%v, availableInstructions:%v\n", stateMap, availableInstructions)
-		for _, availableInstruction := range availableInstructions {
-			if availableInstruction.Instruction == handlerInstruction {
-				instructionAllowed = true
-				nextState = availableInstruction.NextState
-				nextDefaultStateDuration = stateMap[nextState].DefaultStateDuration
-				nextDefaultStateTransition = stateMap[nextState].DefaultTransition
-				if nextDefaultStateDuration == 0 {
-					nextDefaultStateDuration = globalDefaultStateDuration
-				}
+		if stateMachineEnabled {
+			availableInstructions := stateMap[currentState].AvailableInstructions
+			instructionAllowed := false
+			nextState := currentState
+			nextDefaultStateDuration := currentDefaultStateDuration
+			nextDefaultStateTransition := currentDefaultTransition
+			log.Printf("Received new instruction. Current statemap:%v, availableInstructions:%v\n", stateMap, availableInstructions)
+			for _, availableInstruction := range availableInstructions {
+				if availableInstruction.Instruction == handlerInstruction {
+					instructionAllowed = true
+					nextState = availableInstruction.NextState
+					nextDefaultStateDuration = stateMap[nextState].DefaultStateDuration
+					nextDefaultStateTransition = stateMap[nextState].DefaultTransition
+					if nextDefaultStateDuration == 0 {
+						nextDefaultStateDuration = globalDefaultStateDuration
+					}
 
-				if nextDefaultStateTransition == "" {
-					nextDefaultStateTransition = globalDefaultTransition
-				}
+					if nextDefaultStateTransition == "" {
+						nextDefaultStateTransition = globalDefaultTransition
+					}
 
-				log.Printf("nextState:%v, nextDefaultStateDuration:%v, nextDefaultStateTransition:%v\n", nextState, nextDefaultStateDuration, nextDefaultStateTransition)
-				break
+					log.Printf("nextState:%v, nextDefaultStateDuration:%v, nextDefaultStateTransition:%v\n", nextState, nextDefaultStateDuration, nextDefaultStateTransition)
+					break
+				}
 			}
-		}
 
-		if !instructionAllowed {
-			log.Printf("Instruction %v is not allowed in state %v as its availableInstructions are %v\n", handlerInstruction, currentState, availableInstructions)
-			return
-		} else {
-			log.Printf("Transition from state %v to state %v\n", currentState, nextState)
-			log.Printf("Current state: currentState:%v, currentDefaultStateDuration:%v, currentDefaultTransition:%v, lastStateUpdateTime%v\n",
-				currentState, currentDefaultStateDuration, currentDefaultTransition, lastStateUpdateTime)
-			currentState = nextState
-			currentDefaultStateDuration = nextDefaultStateDuration
-			currentDefaultTransition = nextDefaultStateTransition
-			lastStateUpdateTime = time.Now()
-			log.Printf("New state: currentState:%v, currentDefaultStateDuration:%v, currentDefaultTransition:%v, lastStateUpdateTime%v\n",
-				currentState, currentDefaultStateDuration, currentDefaultTransition, lastStateUpdateTime)
+			if !instructionAllowed {
+				log.Printf("Instruction %v is not allowed in state %v as its availableInstructions are %v\n", handlerInstruction, currentState, availableInstructions)
+				return
+			} else {
+				log.Printf("Transition from state %v to state %v\n", currentState, nextState)
+				log.Printf("Current state: currentState:%v, currentDefaultStateDuration:%v, currentDefaultTransition:%v, lastStateUpdateTime%v\n",
+					currentState, currentDefaultStateDuration, currentDefaultTransition, lastStateUpdateTime)
+				currentState = nextState
+				currentDefaultStateDuration = nextDefaultStateDuration
+				currentDefaultTransition = nextDefaultStateTransition
+				lastStateUpdateTime = time.Now()
+				log.Printf("New state: currentState:%v, currentDefaultStateDuration:%v, currentDefaultTransition:%v, lastStateUpdateTime%v\n",
+					currentState, currentDefaultStateDuration, currentDefaultTransition, lastStateUpdateTime)
+			}
 		}
 
 		if handlerProperties != nil {
@@ -544,6 +599,13 @@ func (ds *DeviceShifu) StartTelemetryCollection() error {
 	}
 }
 
+/*
+ * Start the state machine automation.
+ * The automation logic is:
+ * State machine starts when the deviceshifu starts.
+ * It keeps checking the current time, and calculate the time elapsed since last state change.
+ * If the time elapsed is bigger than threshold, automatically change to the desired default state.
+ */
 func (ds *DeviceShifu) StartStateMachine() error {
 	log.Println("Start state machine")
 	time.Sleep(time.Second)
@@ -551,10 +613,24 @@ func (ds *DeviceShifu) StartStateMachine() error {
 		if lastStateUpdateTime.IsZero() {
 			continue
 		}
-
 		nowTime := time.Now()
 		timeDiff := nowTime.Sub(lastStateUpdateTime)
+		log.Printf("State machine status: currentState:%v, lastStateUpdateTime:%v, now:%v, diff:%v, threshold:%v\n", currentState, lastStateUpdateTime, nowTime, timeDiff.Seconds(), float64(currentDefaultStateDuration))
 		if timeDiff.Seconds() > float64(currentDefaultStateDuration) {
+			transitionInstruction := stateMap[currentState].DefaultTransitionInstruction
+			if transitionInstruction == "" {
+				transitionInstruction = globalDefaultTransitionInstruction
+			}
+			log.Printf("Transition instruction:%v", transitionInstruction)
+			handlerHTTPClient := httpRESTClient
+			httpUri := "http://" + httpAddress + "/" + transitionInstruction
+			log.Printf("Transition instruction:%v to url %v", transitionInstruction, httpUri)
+			_, err := handlerHTTPClient.Get(httpUri)
+
+			if err != nil {
+				log.Printf("Failed sending led control %v", err)
+			}
+
 			log.Printf("State timeout, transition from state %v to state %v; default duration %v, last update %v, currentDefaultStateDuration:%v, currentDefaultTransition:%v\n",
 				currentState, currentDefaultTransition, currentDefaultStateDuration, lastStateUpdateTime, currentDefaultStateDuration, currentDefaultTransition)
 			currentState = currentDefaultTransition
@@ -563,25 +639,25 @@ func (ds *DeviceShifu) StartStateMachine() error {
 			if currentDefaultStateDuration == 0 {
 				currentDefaultStateDuration = globalDefaultStateDuration
 			}
-
 			if currentDefaultTransition == "" {
 				currentDefaultTransition = globalDefaultTransition
 			}
-
 			lastStateUpdateTime = time.Now()
-
-			log.Printf("State timeout, transition from state %v to state %v; default duration %v, last update %v, currentDefaultStateDuration:%v, currentDefaultTransition:%v\n",
-				currentState, currentDefaultTransition, currentDefaultStateDuration, lastStateUpdateTime, currentDefaultStateDuration, currentDefaultTransition)
+			log.Printf("Transitioned. current state:%v, currentDefaultStateDuration:%v", currentState, currentDefaultStateDuration)
 		}
 		time.Sleep(time.Second)
 	}
 }
+
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	fmt.Printf("deviceShifu %s started\n", ds.Name)
 
 	go ds.startHttpServer(stopCh)
 	go ds.StartTelemetryCollection()
-	go ds.StartStateMachine()
+	if stateMachineEnabled {
+		log.Println("State machine is enabled. Starting...")
+		go ds.StartStateMachine()
+	}
 
 	return nil
 }

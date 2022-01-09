@@ -58,16 +58,23 @@ type AvailableInstruction struct {
 }
 
 type AvailableState struct {
-	State                 string                 `yaml:"state"`
-	AvailableInstructions []AvailableInstruction `yaml:"availableInstructions,omitempty"`
-	DefaultStateDuration  int                    `yaml:"defaultStateDuration,omitempty"`
-	DefaultTransition     string                 `yaml:"defaultTransition,omitempty"`
+	State                        string                 `yaml:"state"`
+	AvailableInstructions        []AvailableInstruction `yaml:"availableInstructions,omitempty"`
+	DefaultStateDuration         int                    `yaml:"defaultStateDuration,omitempty"`
+	DefaultTransition            string                 `yaml:"defaultTransition,omitempty"`
+	DefaultTransitionInstruction string                 `yaml:"defaultTransitionInstruction,omitempty"`
 }
 
 type States struct {
-	GlobalDefaultStateDuration int              `yaml:"globalDefaultStateDuration"`
-	GlobalDefaultTransition    string           `yaml:"globalDefaultTransition"`
-	AvailableStates            []AvailableState `yaml:"availableStates"`
+	StateMachineEnabled                bool   `yaml:"stateMachineEnabled"`
+	InitialState                       string `yaml:"initialState"`
+	InitialInstruction                 string `yaml:"initialInstruction"`
+	GlobalDefaultTransitionInstruction string `yaml:"globalDefaultTransitionInstruction"`
+	// If you like push model, you can specify this endpoint for the deviceshifu to push state updates to your app
+	GlobalPushingApplicationEndpoint string           `yaml:"globalPushingApplicationEndpoint"`
+	GlobalDefaultStateDuration       int              `yaml:"globalDefaultStateDuration"`
+	GlobalDefaultTransition          string           `yaml:"globalDefaultTransition"`
+	AvailableStates                  []AvailableState `yaml:"availableStates"`
 }
 
 type EdgeDeviceConfig struct {

@@ -11,6 +11,7 @@ data:
 #    available instructions
   instructions: |
     hello:
+    idle:
 #    telemetry retrieval methods
 #    in this example, a device_health telemetry is collected by calling hello instruction every 1 second
   telemetries: |
@@ -20,8 +21,12 @@ data:
         initialDelayMs: 1000
         intervalMs: 1000
   states: |
-    globalDefaultStateDuration: 2
+    stateMachineEnabled: true
+    initialState: idle
+    initialInstruction: idle
+    globalDefaultStateDuration: 10
     globalDefaultTransition: idle
+    globalDefaultTransitionInstruction: idle
     availableStates:
     - state: idle
       availableInstructions:
@@ -30,14 +35,13 @@ data:
         ackReturn: HTTP 200
         doneSignal: HTTP 200
         exceptionReturn: HTTP 500
-      - availableInstruction: bye
+      - availableInstruction: idle
         nextState: idle
     - state: helloing
       defaultStateDuration: 5
-      defaultTransition: helloed
+      defaultTransition: idle
+      defaultTransitionInstruction: idle
       availableInstructions:
-      - availableInstruction: bye
+      - availableInstruction: idle
         nextState: idle
-    - state: helloed
-      defaultStateDuration: 10
 

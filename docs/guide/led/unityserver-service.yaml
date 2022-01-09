@@ -1,0 +1,11 @@
+kind: Service
+apiVersion: v1
+metadata:
+  name: unityserver
+  namespace: default
+spec:
+  type: ExternalName
+  externalName: host.docker.internal
+  ports:
+    - name: port
+      port: 8092
