@@ -14,14 +14,6 @@ import (
 	"k8s.io/client-go/rest"
 )
 
-var lastStateUpdateTime time.Time
-var stateMap = make(map[string]AvailableState)
-var currentState = "idle"
-var currentDefaultStateDuration int
-var currentDefaultTransition = "idle"
-var globalDefaultStateDuration int
-var globalDefaultTransition = "idle"
-
 type DeviceShifu struct {
 	Name              string
 	server            *http.Server
@@ -67,10 +59,20 @@ const (
 	DEVICE_NAMESPACE_DEFAULT          string = "default"
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
+	STATE_IDLE                        string = "idle"
+)
+
+var (
+	lastStateUpdateTime         time.Time
+	stateMap                    = make(map[string]AvailableState)
+	currentState                = STATE_IDLE
+	currentDefaultStateDuration int
+	currentDefaultTransition    = STATE_IDLE
+	globalDefaultStateDuration  int
+	globalDefaultTransition     = STATE_IDLE
 )
 
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
-
 	if deviceShifuMetadata.Name == "" {
 		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
 	}
@@ -83,6 +85,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
 	}
+
 	log.Printf("New deviceShifuConfig:%v", deviceShifuConfig)
 
 	globalDefaultStateDuration = deviceShifuConfig.DeviceStates.GlobalDefaultStateDuration
@@ -91,10 +94,13 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	for _, deviceState := range deviceShifuConfig.DeviceStates.AvailableStates {
 		stateMap[deviceState.State] = deviceState
 	}
+
 	log.Printf("Initialized stateMap:%v", stateMap)
+
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", deviceHealthHandler)
 	mux.HandleFunc("/", instructionNotFoundHandler)
+	mux.HandleFunc("/shifu_state", shifuStateHandler)
 
 	edgeDevice := &v1alpha1.EdgeDevice{}
 	client := &rest.RESTClient{}
@@ -179,6 +185,10 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
 }
 
+func shifuStateHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, currentState)
+}
+
 type DeviceCommandHandlerHTTP struct {
 	client                         *rest.RESTClient
 	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
@@ -210,7 +220,6 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-
 		handlerProperties := handler.deviceShifuHTTPHandlerMetaData.properties
 		handlerInstruction := handler.deviceShifuHTTPHandlerMetaData.instruction
 		handlerEdgeDeviceSpec := handler.deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
@@ -231,13 +240,16 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				if nextDefaultStateDuration == 0 {
 					nextDefaultStateDuration = globalDefaultStateDuration
 				}
+
 				if nextDefaultStateTransition == "" {
 					nextDefaultStateTransition = globalDefaultTransition
 				}
+
 				log.Printf("nextState:%v, nextDefaultStateDuration:%v, nextDefaultStateTransition:%v\n", nextState, nextDefaultStateDuration, nextDefaultStateTransition)
 				break
 			}
 		}
+
 		if !instructionAllowed {
 			log.Printf("Instruction %v is not allowed in state %v as its availableInstructions are %v\n", handlerInstruction, currentState, availableInstructions)
 			return
@@ -539,9 +551,9 @@ func (ds *DeviceShifu) StartStateMachine() error {
 		if lastStateUpdateTime.IsZero() {
 			continue
 		}
+
 		nowTime := time.Now()
 		timeDiff := nowTime.Sub(lastStateUpdateTime)
-		// log.Printf("State machine status: lastStateUpdateTime:%v, now:%v, diff:%v, threshold:%v\n", lastStateUpdateTime, nowTime, timeDiff.Seconds(), float64(currentDefaultStateDuration))
 		if timeDiff.Seconds() > float64(currentDefaultStateDuration) {
 			log.Printf("State timeout, transition from state %v to state %v; default duration %v, last update %v, currentDefaultStateDuration:%v, currentDefaultTransition:%v\n",
 				currentState, currentDefaultTransition, currentDefaultStateDuration, lastStateUpdateTime, currentDefaultStateDuration, currentDefaultTransition)
@@ -551,6 +563,7 @@ func (ds *DeviceShifu) StartStateMachine() error {
 			if currentDefaultStateDuration == 0 {
 				currentDefaultStateDuration = globalDefaultStateDuration
 			}
+
 			if currentDefaultTransition == "" {
 				currentDefaultTransition = globalDefaultTransition
 			}
