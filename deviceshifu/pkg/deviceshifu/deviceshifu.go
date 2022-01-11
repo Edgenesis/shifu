@@ -166,6 +166,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				return nil, fmt.Errorf("Cannot connect to %v", *edgeDevice.Spec.Address)
 			}
 
+			log.Printf("Connected to '%v'\n", *edgeDevice.Spec.Address)
 			for instruction, properties := range deviceShifuConfig.Instructions {
 				deviceShifuSocketHandlerMetaData := &DeviceShifuSocketHandlerMetaData{
 					edgeDevice.Spec,
@@ -329,17 +330,18 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 			return
 		}
 
-		log.Printf("After decode socket request: %v", socketRequest)
+		log.Printf("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
 		connection := deviceShifuSocketHandlerMetaData.connection
 		command := socketRequest.Command
-		fmt.Fprintf(*connection, command+"\n")
-		message, err := bufio.NewReader(*connection).ReadString('\n')
+		(*connection).Write([]byte(command + "\n"))
+		log.Printf("Sending %v", []byte(command+"\n"))
+		message, err := bufio.NewReader(*connection).ReadBytes(0x0A)
 		if err != nil {
 			http.Error(w, "Failed to read message from socket"+err.Error(), http.StatusBadRequest)
 		}
 
 		returnMessage := DeviceShifuSocketReturnBody{
-			Message: message,
+			Message: string(message),
 			Status:  http.StatusOK,
 		}
 

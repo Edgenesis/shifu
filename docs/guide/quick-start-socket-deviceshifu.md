@@ -2,6 +2,8 @@
 
 **Note**: currently edgedevice's status for socket type connection will fail
 
+**Note**: deviceShifu currently will expect a `0x0A` character when receiving from TCP socket. Otherwise you may expect no return from the device.
+
 ## To create a socket type deviceShifu, use image:
 
 ```
@@ -47,7 +49,26 @@ spec:
         configMap:
           name: led-configmap-0.0.1
       serviceAccountName: edgedevice-sa
+```
 
+### Sample service file:
+
+```
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: edgedevice-led-deployment
+  name: edgedevice-led
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: edgedevice-led-deployment
+  type: LoadBalancer
 ```
 
 ### sample configmap file:
@@ -90,8 +111,8 @@ spec:
   address: 192.168.14.208:11122
   protocol: Socket
   protocolSettings:
-    encoding: utf-8 // currently this does not work
-    networkType: tcp // currently we only support TCP socket
+    encoding: utf-8 # currently this does not work
+    networkType: tcp # currently we only support TCP socket
 ```
 
 ## To interact with the device:
@@ -101,6 +122,8 @@ curl -XPOST -H 'Content-Type: application/json' -d '{"command": "test", "timeout
 ```
 
 Where `command` is the string being proxied to the actual device
+
+An `\n` character will be appended at the end of the `command` value.
 
 Return from an "echo" server:
 
