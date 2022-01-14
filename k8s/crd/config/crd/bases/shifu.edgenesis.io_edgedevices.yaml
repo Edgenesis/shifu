@@ -45,6 +45,18 @@ spec:
               protocol:
                 description: Protocol specifies the EdgeDevice's communication protocol.
                 type: string
+              protocolSettings:
+                description: ProtocolSettings defines settings when connecting to
+                  an EdgeDevice
+                properties:
+                  MQTTSetting:
+                    properties:
+                      MQTTServerAddress:
+                        type: string
+                      MQTTTopic:
+                        type: string
+                    type: object
+                type: object
               sku:
                 description: Sku specifies the EdgeDevice's SKU.
                 type: string

@@ -23,16 +23,27 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+type MQTTSetting struct {
+	MQTTTopic         *string `json:"MQTTTopic,omitempty"`
+	MQTTServerAddress *string `json:"MQTTServerAddress,omitempty"`
+}
+
+// ProtocolSettings defines settings when connecting to an EdgeDevice
+type ProtocolSettings struct {
+	MQTTSetting *MQTTSetting `json:"MQTTSetting,omitempty"`
+}
+
 // EdgeDeviceSpec defines the desired state of EdgeDevice
 type EdgeDeviceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of EdgeDevice
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Sku specifies the EdgeDevice's SKU.
-	Sku        *string     `json:"sku,omitempty"`
-	Connection *Connection `json:"connection,omitempty"`
-	Address    *string     `json:"address,omitempty"`
-	Protocol   *Protocol   `json:"protocol,omitempty"`
+	Sku              *string           `json:"sku,omitempty"`
+	Connection       *Connection       `json:"connection,omitempty"`
+	Address          *string           `json:"address,omitempty"`
+	Protocol         *Protocol         `json:"protocol,omitempty"`
+	ProtocolSettings *ProtocolSettings `json:"protocolSettings,omitempty"`
 
 	// TODO: add other fields like disconnectTimemoutInSeconds
 }
@@ -67,6 +78,7 @@ const (
 	ProtocolHTTP            Protocol = "HTTP"
 	ProtocolUSB             Protocol = "USB"
 	ProtocolHTTPCommandline Protocol = "HTTPCommandline"
+	ProtocolMQTT            Protocol = "MQTT"
 )
 
 // EdgeDevicePhase is a simple, high-level summary of where the EdgeDevice is in its lifecycle.

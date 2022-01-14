@@ -5,6 +5,7 @@ go 1.17
 require (
 	edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice v0.0.0
 	edgenesis.io/shifu/k8s/crd v0.0.0-20210920094059-497d4fcc9b6f
+	github.com/eclipse/paho.mqtt.golang v1.3.5
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apimachinery v0.22.2
 	k8s.io/client-go v0.22.2
@@ -22,6 +23,7 @@ require (
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.6 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
+	github.com/gorilla/websocket v1.4.2 // indirect
 	github.com/imdario/mergo v0.3.10 // indirect
 	github.com/json-iterator/go v1.1.11 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
