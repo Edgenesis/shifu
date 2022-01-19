@@ -26,6 +26,7 @@ import (
 type MQTTSetting struct {
 	MQTTTopic         *string `json:"MQTTTopic,omitempty"`
 	MQTTServerAddress *string `json:"MQTTServerAddress,omitempty"`
+	MQTTServerSecret  *string `json:"MQTTServerSecret,omitempty"`
 }
 
 // ProtocolSettings defines settings when connecting to an EdgeDevice

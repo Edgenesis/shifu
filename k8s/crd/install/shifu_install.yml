@@ -45,6 +45,8 @@ spec:
                     properties:
                       MQTTServerAddress:
                         type: string
+                      MQTTServerSecret:
+                        type: string
                       MQTTTopic:
                         type: string
                     type: object
@@ -123,6 +125,8 @@ spec:
                   MQTTSetting:
                     properties:
                       MQTTServerAddress:
+                        type: string
+                      MQTTServerSecret:
                         type: string
                       MQTTTopic:
                         type: string
