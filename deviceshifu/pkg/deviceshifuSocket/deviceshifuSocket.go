@@ -23,6 +23,7 @@ type DeviceShifu struct {
 	deviceShifuConfig *DeviceShifuConfig
 	edgeDevice        *v1alpha1.EdgeDevice
 	restClient        *rest.RESTClient
+	socketConnection  *net.Conn
 }
 
 type DeviceShifuMetaData struct {
@@ -91,6 +92,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 	edgeDevice := &v1alpha1.EdgeDevice{}
 	client := &rest.RESTClient{}
+	var socketConnection net.Conn
 
 	if deviceShifuMetadata.KubeConfigPath != DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
 		edgeDeviceConfig := &EdgeDeviceConfig{
@@ -161,7 +163,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				return nil, fmt.Errorf("Encoding error")
 			}
 
-			connection, err := net.Dial(*connectionType, *edgeDevice.Spec.Address)
+			socketConnection, err := net.Dial(*connectionType, *edgeDevice.Spec.Address)
 			if err != nil {
 				return nil, fmt.Errorf("Cannot connect to %v", *edgeDevice.Spec.Address)
 			}
@@ -172,7 +174,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					edgeDevice.Spec,
 					instruction,
 					properties,
-					&connection,
+					&socketConnection,
 				}
 
 				mux.HandleFunc("/"+instruction, deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData))
@@ -191,6 +193,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		deviceShifuConfig: deviceShifuConfig,
 		edgeDevice:        edgeDevice,
 		restClient:        client,
+		socketConnection:  &socketConnection,
 	}
 
 	ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
@@ -333,15 +336,16 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 		log.Printf("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
 		connection := deviceShifuSocketHandlerMetaData.connection
 		command := socketRequest.Command
-		(*connection).Write([]byte(command + "\n"))
 		log.Printf("Sending %v", []byte(command+"\n"))
-		message, err := bufio.NewReader(*connection).ReadBytes(0x0A)
+		(*connection).Write([]byte(command + "\n"))
+		message, err := bufio.NewReader(*connection).ReadString('\n')
 		if err != nil {
-			http.Error(w, "Failed to read message from socket"+err.Error(), http.StatusBadRequest)
+			log.Printf("Failed to ReadString from Socket, current message: %v", message)
+			http.Error(w, "Failed to read message from socket, error: "+err.Error(), http.StatusBadRequest)
 		}
 
 		returnMessage := DeviceShifuSocketReturnBody{
-			Message: string(message),
+			Message: message,
 			Status:  http.StatusOK,
 		}
 
