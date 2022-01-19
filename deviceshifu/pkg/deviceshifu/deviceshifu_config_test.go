@@ -14,6 +14,7 @@ import (
 const (
 	MOCK_DEVICE_CM_STR               = "configmap_snippet.yaml"
 	MOCK_DEVICE_WRITEFILE_PERMISSION = 0644
+	MOCK_DEVICE_CONFIG_PATH          = "etc"
 )
 
 var MOCK_DEVICE_CONFIG_FOLDER = path.Join("etc", "edgedevice", "config")
