@@ -1,11 +1,14 @@
-package deviceshifu
+package deviceshifuSocket
 
 import (
+	"bufio"
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -39,6 +42,13 @@ type DeviceShifuUSBHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
 	properties     *DeviceShifuInstruction
+}
+
+type DeviceShifuSocketHandlerMetaData struct {
+	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
+	instruction    string
+	properties     *DeviceShifuInstruction
+	connection     *net.Conn
 }
 
 type DeviceShifuHTTPCommandlineHandlerMetadata struct {
@@ -137,6 +147,35 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 				handler := DeviceCommandHandlerHTTPCommandline{client, deviceShifuHTTPCommandlineHandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
+			}
+		case v1alpha1.ProtocolSocket:
+			// Open the connection:
+			connectionType := edgeDevice.Spec.ProtocolSettings.NetworkType
+			encoding := edgeDevice.Spec.ProtocolSettings.Encoding
+			if connectionType == nil || *connectionType != "tcp" {
+				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
+			}
+
+			if encoding == nil {
+				log.Println("Socket encoding not specified, default to UTF-8")
+				return nil, fmt.Errorf("Encoding error")
+			}
+
+			connection, err := net.Dial(*connectionType, *edgeDevice.Spec.Address)
+			if err != nil {
+				return nil, fmt.Errorf("Cannot connect to %v", *edgeDevice.Spec.Address)
+			}
+
+			log.Printf("Connected to '%v'\n", *edgeDevice.Spec.Address)
+			for instruction, properties := range deviceShifuConfig.Instructions {
+				deviceShifuSocketHandlerMetaData := &DeviceShifuSocketHandlerMetaData{
+					edgeDevice.Spec,
+					instruction,
+					properties,
+					&connection,
+				}
+
+				mux.HandleFunc("/"+instruction, deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData))
 			}
 		}
 	}
@@ -271,6 +310,44 @@ func copyHeader(dst, src http.Header) {
 func deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData *DeviceShifuUSBHandlerMetaData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// TODO: handle commands for USB devices
+	}
+}
+
+func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSocketHandlerMetaData) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		headerContentType := r.Header.Get("Content-Type")
+		if headerContentType != "application/json" {
+			http.Error(w, "content-type is not application/json", http.StatusBadRequest)
+			log.Println("content-type is not application/json")
+			return
+		}
+
+		var socketRequest DeviceShifuSocketRequestBody
+		err := json.NewDecoder(r.Body).Decode(&socketRequest)
+		if err != nil {
+			log.Printf("error decode: %v", socketRequest)
+			http.Error(w, "error decode JSON "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
+		log.Printf("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
+		connection := deviceShifuSocketHandlerMetaData.connection
+		command := socketRequest.Command
+		(*connection).Write([]byte(command + "\n"))
+		log.Printf("Sending %v", []byte(command+"\n"))
+		message, err := bufio.NewReader(*connection).ReadBytes(0x0A)
+		if err != nil {
+			http.Error(w, "Failed to read message from socket"+err.Error(), http.StatusBadRequest)
+		}
+
+		returnMessage := DeviceShifuSocketReturnBody{
+			Message: string(message),
+			Status:  http.StatusOK,
+		}
+
+		w.WriteHeader(http.StatusOK)
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(returnMessage)
 	}
 }
 

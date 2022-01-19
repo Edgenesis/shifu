@@ -1,4 +1,4 @@
-package deviceshifu
+package deviceshifuSocket
 
 import (
 	"context"
@@ -54,6 +54,16 @@ type EdgeDeviceConfig struct {
 	kubeconfigPath string
 }
 
+type DeviceShifuSocketRequestBody struct {
+	Command string `json:"command"`
+	Timeout int    `json:"timeout"`
+}
+
+type DeviceShifuSocketReturnBody struct {
+	Message string `json:"message"`
+	Status  int    `json:"status"`
+}
+
 const (
 	CM_DRIVERPROPERTIES_STR = "driverProperties"
 	CM_INSTRUCTIONS_STR     = "instructions"
@@ -78,6 +88,8 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 			log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_DRIVERPROPERTIES_STR, err)
 			return nil, err
 		}
+
+		log.Printf("%v", dsc.driverProperties)
 	}
 
 	// TODO: add validation to types and readwrite mode
