@@ -55,6 +55,12 @@ steps:
     arguments: '-v'
     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
 - task: Go@0
+  displayName: "go test deviceshifuSocket"
+  inputs:
+    command: 'test'
+    arguments: '-v'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuSocket'
+- task: Go@0
   displayName: "go build mockdevice agv"
   inputs:
     command: 'build'

@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -127,6 +128,15 @@ func TestCreateHTTPUriStringNoQuery(t *testing.T) {
 	if createdUriStringWithoutQueries != expectedUriStringWithoutQueries {
 		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdUriString, expectedUriString)
 	}
+
+	// cleanup
+	t.Cleanup(func() {
+		//tear-down code
+		err := os.RemoveAll(MOCK_DEVICE_CONFIG_PATH)
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
 }
 
 func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint string) bool {
