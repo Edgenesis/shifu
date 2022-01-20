@@ -336,6 +336,11 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 		log.Printf("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
 		connection := deviceShifuSocketHandlerMetaData.connection
 		command := socketRequest.Command
+		timeout := socketRequest.Timeout
+		if timeout != 0 {
+			(*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
+		}
+
 		log.Printf("Sending %v", []byte(command+"\n"))
 		(*connection).Write([]byte(command + "\n"))
 		message, err := bufio.NewReader(*connection).ReadString('\n')
