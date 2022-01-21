@@ -142,6 +142,17 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
    With the following configurations, ***Shifu*** is able to create a ***deviceShifu*** automatically for the device.\
    Assuming all configurations are saved in `<working_dir>/helloworld-device/configuration`.
 
+   A brief explanation of the state machine config:
+   **stateMachineEnabled** - if false, no state machine is configured\
+   **initialState** - the initial state that the deviceShifu will have once started\
+   **initialInstruction** - the instruction that the deviceShifu calls to enter the initial state once started\
+   **globalDefaultStateDuration** - a default state duration is the longest time for a deviceShifu to be in one state, once the duration passed, the deviceShifu will go to a state = defaultTransition; this is global one and can be overwritten at state level\
+   **globalDefaultTransition** - a default transition is the state that the deviceShifu will automatically transition to if duration passed; this is global one and can be overwritten at state level\
+   **globalDefaultTransitionInstruction** - a transitionInstruction is the instruction the deviceShifu will call to automatically transition to default transition; this is global one and can be overwritten at state level\
+   **availableStates** - a list of all states that the deviceShifu can have\
+   **availableInstructions** - a list of all instructions that the state can accept, if an instruction is received but not in the availableInstructions list of the current state, the deviceShifu will reject it\
+   **nextState** - the state that the deviceShifu will transition into after receiving the instruction\
+
    ConfigMap for the ***deviceShifu***:\
    **deviceshifu-helloworld-configmap.yaml**
     ```
@@ -158,6 +169,7 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
     #    available instructions
       instructions: |
         hello:
+        idle:
     #    telemetry retrieval methods
     #    in this example, a device_health telemetry is collected by calling hello instruction every 1 second
       telemetries: |
@@ -166,6 +178,30 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
             instruction: hello
             initialDelayMs: 1000
             intervalMs: 1000
+    #    state machine configuration
+    #    in this example, we have 2 states: idle and helloing, coordinating to instruction idle and hello
+      states: |
+        stateMachineEnabled: true
+        initialState: idle
+        initialInstruction: idle
+        globalDefaultStateDuration: 25
+        globalDefaultTransition: idle
+        globalDefaultTransitionInstruction: idle
+        availableStates:
+        - state: idle
+          availableInstructions:
+          - availableInstruction: hello
+            nextState: helloing
+          - availableInstruction: idle
+            nextState: idle
+        - state: helloing
+          defaultStateDuration: 5
+          defaultTransition: idle
+          defaultTransitionInstruction: idle
+          availableInstructions:
+          - availableInstruction: idle
+            nextState: idle
+
    ```
    Deployment for the ***deviceShifu***:\
    **deviceshifu-helloworld-deployment.yaml**

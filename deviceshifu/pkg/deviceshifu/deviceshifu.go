@@ -75,7 +75,6 @@ var (
 	globalDefaultTransition            = STATE_IDLE
 	globalDefaultTransitionInstruction = INSTRUCTION_IDLE
 	globalPushingApplicationEndpoint   = ""
-	httpRESTClient                     *http.Client
 	httpAddress                        string
 )
 
@@ -130,7 +129,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			return nil, err
 		}
 
-		httpRESTClient = client.Client
 		httpAddress = *edgeDevice.Spec.Address
 
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
@@ -190,9 +188,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	stateMachineEnabled = deviceShifuConfig.DeviceStates.StateMachineEnabled
 	if stateMachineEnabled {
-		stateMachineEnabled = true
 		log.Println("Initializing state machine...")
-		initializeState(*edgeDevice.Spec.Protocol, *deviceShifuConfig)
+		initializeState(*edgeDevice.Spec.Protocol, *deviceShifuConfig, ds.restClient.Client)
 	} else {
 		log.Println("State machine is not enabled.")
 	}
@@ -204,8 +201,9 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
  * TODO: support more protocols
  */
 
-func initializeState(protocol v1alpha1.Protocol, deviceShifuConfig DeviceShifuConfig) {
-	if protocol == v1alpha1.ProtocolHTTP || protocol == v1alpha1.ProtocolHTTPCommandline {
+func initializeState(protocol v1alpha1.Protocol, deviceShifuConfig DeviceShifuConfig, httpRESTClient *http.Client) {
+	switch protocol {
+	case v1alpha1.ProtocolHTTP, v1alpha1.ProtocolHTTPCommandline:
 		httpUri := "http://" + httpAddress + "/" + deviceShifuConfig.DeviceStates.InitialInstruction
 		log.Printf("Transition instruction:%v to url %v", deviceShifuConfig.DeviceStates.InitialInstruction, httpUri)
 		httpRESTClient.Get(httpUri)
@@ -223,14 +221,16 @@ func initializeState(protocol v1alpha1.Protocol, deviceShifuConfig DeviceShifuCo
 		log.Printf("Initialized stateMap:%v", stateMap)
 		currentDefaultStateDuration = stateMap[currentState].DefaultStateDuration
 		currentDefaultTransition = stateMap[currentState].DefaultTransition
+
 		if currentDefaultTransition == "" {
 			currentDefaultTransition = globalDefaultTransition
 		}
+
 		if currentDefaultStateDuration == 0 {
 			currentDefaultStateDuration = globalDefaultStateDuration
 		}
-	} else {
-
+	default:
+		log.Printf("Unsupported protocol %v", protocol)
 	}
 }
 
@@ -314,6 +314,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				currentState = nextState
 				currentDefaultStateDuration = nextDefaultStateDuration
 				currentDefaultTransition = nextDefaultStateTransition
+
 				lastStateUpdateTime = time.Now()
 				log.Printf("New state: currentState:%v, currentDefaultStateDuration:%v, currentDefaultTransition:%v, lastStateUpdateTime%v\n",
 					currentState, currentDefaultStateDuration, currentDefaultTransition, lastStateUpdateTime)
@@ -622,7 +623,7 @@ func (ds *DeviceShifu) StartStateMachine() error {
 				transitionInstruction = globalDefaultTransitionInstruction
 			}
 			log.Printf("Transition instruction:%v", transitionInstruction)
-			handlerHTTPClient := httpRESTClient
+			handlerHTTPClient := ds.restClient.Client
 			httpUri := "http://" + httpAddress + "/" + transitionInstruction
 			log.Printf("Transition instruction:%v to url %v", transitionInstruction, httpUri)
 			_, err := handlerHTTPClient.Get(httpUri)
@@ -636,9 +637,11 @@ func (ds *DeviceShifu) StartStateMachine() error {
 			currentState = currentDefaultTransition
 			currentDefaultStateDuration = stateMap[currentState].DefaultStateDuration
 			currentDefaultTransition = stateMap[currentState].DefaultTransition
+
 			if currentDefaultStateDuration == 0 {
 				currentDefaultStateDuration = globalDefaultStateDuration
 			}
+
 			if currentDefaultTransition == "" {
 				currentDefaultTransition = globalDefaultTransition
 			}
