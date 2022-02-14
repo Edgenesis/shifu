@@ -3,6 +3,7 @@ package deviceshifuMQTT
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -36,6 +37,12 @@ type DeviceShifuHTTPHandlerMetaData struct {
 	properties     *DeviceShifuInstruction
 }
 
+type DeviceShifuMQTTHandlerMetaData struct {
+	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
+	// instruction    string
+	// properties     *DeviceShifuInstruction
+}
+
 type DeviceShifuUSBHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
@@ -60,6 +67,12 @@ const (
 	DEVICE_NAMESPACE_DEFAULT          string = "default"
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
+	MQTT_DATA_ENDPOINT                string = "mqtt_data"
+)
+
+var (
+	MQTT_MESSAGE_STR               string
+	MQTT_MESSAGE_RECEIVE_TIMESTAMP time.Time
 )
 
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
@@ -141,16 +154,21 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			}
 		case v1alpha1.ProtocolMQTT:
 			mqttSetting := *edgeDevice.Spec.ProtocolSettings.MQTTSetting
+			var mqttServerAddress string
 			if mqttSetting.MQTTTopic == nil || *mqttSetting.MQTTTopic == "" {
 				return nil, fmt.Errorf("MQTT Topic cannot be empty")
 			}
 
 			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
-				return nil, fmt.Errorf("MQTT server cannot be empty")
+				// return nil, fmt.Errorf("MQTT server cannot be empty")
+				log.Println("MQTT Server Address is empty, use address instead")
+				mqttServerAddress = *edgeDevice.Spec.Address
+			} else {
+				mqttServerAddress = *mqttSetting.MQTTServerAddress
 			}
 
 			opts := mqtt.NewClientOptions()
-			opts.AddBroker(fmt.Sprintf("tcp://%s", *mqttSetting.MQTTServerAddress))
+			opts.AddBroker(fmt.Sprintf("tcp://%s", mqttServerAddress))
 			opts.SetClientID(*&edgeDeviceConfig.deviceName)
 			opts.SetDefaultPublishHandler(messagePubHandler)
 			opts.OnConnect = connectHandler
@@ -159,7 +177,15 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			if token := client.Connect(); token.Wait() && token.Error() != nil {
 				panic(token.Error())
 			}
-			sub(client)
+
+			sub(client, *mqttSetting.MQTTTopic)
+
+			deviceShifuMQTTHandlerMetaData := &DeviceShifuMQTTHandlerMetaData{
+				edgeDevice.Spec,
+			}
+
+			handler := DeviceCommandHandlerMQTT{deviceShifuMQTTHandlerMetaData}
+			mux.HandleFunc("/"+MQTT_DATA_ENDPOINT, handler.commandHandleFunc())
 		}
 	}
 
@@ -181,22 +207,25 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 }
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	fmt.Printf("Received message: %s from topic: %s\n", msg.Payload(), msg.Topic())
+	log.Printf("Received message: %v from topic: %v\n", msg.Payload(), msg.Topic())
+	MQTT_MESSAGE_STR = string(msg.Payload())
+	MQTT_MESSAGE_RECEIVE_TIMESTAMP = time.Now()
+	log.Print("MESSAGE_STR updated")
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	fmt.Println("Connected")
+	log.Println("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	fmt.Printf("Connect lost: %v", err)
+	log.Printf("Connect lost: %v", err)
 }
 
-func sub(client mqtt.Client) {
-	topic := "topic/test"
+func sub(client mqtt.Client, topic string) {
+	// topic := "topic/test"
 	token := client.Subscribe(topic, 1, nil)
 	token.Wait()
-	fmt.Printf("Subscribed to topic: %s", topic)
+	log.Printf("Subscribed to topic: %s", topic)
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
@@ -206,6 +235,11 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 type DeviceCommandHandlerHTTP struct {
 	client                         *rest.RESTClient
 	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
+}
+
+type DeviceCommandHandlerMQTT struct {
+	// client                         *rest.RESTClient
+	deviceShifuMQTTHandlerMetaData *DeviceShifuMQTTHandlerMetaData
 }
 
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
@@ -230,6 +264,29 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 	}
 
 	return "http://" + address + "/" + handlerInstruction + queryStr
+}
+
+func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		// handlerEdgeDeviceSpec := handler.deviceShifuMQTTHandlerMetaData.edgeDeviceSpec
+		reqType := r.Method
+
+		if reqType == http.MethodGet {
+			returnMessage := DeviceShifuMQTTReturnBody{
+				MQTTMessage:   MQTT_MESSAGE_STR,
+				MQTTTimestamp: MQTT_MESSAGE_RECEIVE_TIMESTAMP.String(),
+			}
+
+			w.WriteHeader(http.StatusOK)
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(returnMessage)
+		} else {
+			http.Error(w, "must be GET method", http.StatusBadRequest)
+			log.Println("Request type " + reqType + " is not supported yet!")
+			return
+		}
+
+	}
 }
 
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {

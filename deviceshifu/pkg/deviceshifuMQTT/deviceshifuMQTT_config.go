@@ -44,6 +44,11 @@ type DeviceShifuTelemetryProperties struct {
 	IntervalMs            *int    `yaml:"intervalMs,omitempty"`
 }
 
+type DeviceShifuMQTTReturnBody struct {
+	MQTTMessage   string `json:"mqtt_message"`
+	MQTTTimestamp string `json:"mqtt_receive_timestamp"`
+}
+
 type DeviceShifuTelemetry struct {
 	DeviceShifuTelemetryProperties DeviceShifuTelemetryProperties `yaml:"properties,omitempty"`
 }
