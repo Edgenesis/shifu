@@ -20,9 +20,9 @@ RUN curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.11.1/kind-linux-amd64 \
      && chmod +x ./kind \
      && mv ./kind /usr/local/bin/kind
 
-RUN curl -Lo ./kubebuilder https://go.kubebuilder.io/dl/master/$(go env GOOS)/$(go env GOARCH) \
+RUN curl -L -o kubebuilder https://go.kubebuilder.io/dl/latest/$(go env GOOS)/$(go env GOARCH) \
      && chmod +x ./kubebuilder \ 
-     && mv ./kubebuilder /usr/local/bin/kubebuilder
+     && mv kubebuilder /usr/local/bin/
 
 # [Optional] Uncomment the next line to use go get to install anything else you need
 RUN go get -u github.com/ramya-rao-a/go-outline \
