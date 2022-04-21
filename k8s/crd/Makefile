@@ -51,9 +51,7 @@ generate-controller-yaml: kustomize manifests
 	$(KUSTOMIZE) build config/default > install/config_default.yaml
 
 generate-install-yaml:
-	cat install/config_crd.yaml > install/shifu_install.yml
-	echo "---" >> install/shifu_install.yml
-	cat install/config_default.yaml >> install/shifu_install.yml
+	cat install/config_default.yaml > install/shifu_install.yml
 	echo "---" >> install/shifu_install.yml
 	cat install/config_sa.yaml >> install/shifu_install.yml
 
