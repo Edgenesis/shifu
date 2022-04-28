@@ -6,11 +6,11 @@
 ## Helloworld 设备
 Helloworld设备只有一个功能：每次收到请求时，返回“hello world”信息。
 
-### Steps
-1. ### Prepare the EdgeDevice:  Docker image
-   The expected EdgeDevice is an application that response "Hello_world from device via shifu!" every time it receives an HTTP GET request. Additionally, the telemetry collection feature is used to collect this response every second.
+### 步骤
+1. ### 准备虚拟设备
+   本次要创建的虚拟设备是一个软件应用，它每次收到HTTP GET请求时，都会返回“Hello_world from device via shifu!” 这条信息。另外，我们还将使用Shifu的数据收集功能对这条信息进行每秒一次的自动收集。
 
-   In the working directory, create a `helloworld.go` with following content:
+   在开发路径中，创建一个`helloworld.go`文件，包含如下内容:
    ```
     package main
     import (
@@ -38,12 +38,12 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
     }
     ```
     
-   Generate the go.mod file:
+   生成 go.mod 文件:
    ```
    go mod init helloworld
    ```
 
-   Add its Dockerfile:
+   添加 Dockerfile:
    ```
    # syntax=docker/dockerfile:1
 
@@ -56,17 +56,17 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
    EXPOSE 11111
    CMD [ "/helloworld" ]    
    ```
-   Build the image
+   创建镜像
 
    ```
    docker build --tag helloworld-device:v0.0.1 .
    ```
 
-2. ### Prepare the configuration for the EdgeDevice: 
-   The basic information of the EdgeDevice:  
-   Assuming all configurations are saved in `<working_dir>/helloworld-device/configuration`
+2. ### 准备 EdgeDevice: 
+   EdgeDevice的基本信息:  
+   假设所有配置文件都保存在 `<working_dir>/helloworld-device/configuration`
 
-   Deployment for the EdgeDevice:\
+   Deployment 配置:\
    **helloworld-deployment.yaml**
     ```
     apiVersion: apps/v1
@@ -93,7 +93,7 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
                 - containerPort: 11111
       ```
    
-   Hardware and connection info for the EdgeDevice:\
+   硬件和连接信息:\
     **helloworld-edgedevice.yaml**
     ```
     apiVersion: shifu.edgenesis.io/v1alpha1
@@ -110,7 +110,7 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
       edgedevicephase: "Pending"
     ```
 
-    Service for the EdgeDevice:\
+    Service:\
     **helloworld-service.yaml**
    ```
    apiVersion: v1
@@ -129,11 +129,11 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
        app: helloworld
      type: LoadBalancer
    ```
-3. ### Prepare the configurations for Shifu to create the deviceShifu
-   With the following configurations, Shifu is able to create a deviceShifu automatically for the device.\
-   Assuming all configurations are saved in `<working_dir>/helloworld-device/configuration`.
+3. ### 准备DeviceShifu
+   使用下面的配置文件，Shifu将自动生成DeviceShifu的Pod。  
+   假设所有配置文件都保存在 `<working_dir>/helloworld-device/configuration`.
 
-   ConfigMap for the deviceShifu:\
+   ConfigMap:\
    **deviceshifu-helloworld-configmap.yaml**
     ```
     apiVersion: v1
@@ -158,7 +158,7 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
             initialDelayMs: 1000
             intervalMs: 1000
    ```
-   Deployment for the deviceShifu:\
+   Deployment:\
    **deviceshifu-helloworld-deployment.yaml**
     ```
     apiVersion: apps/v1
@@ -198,7 +198,7 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
                 name: helloworld-configmap-0.0.1
           serviceAccountName: edgedevice-mockdevice-sa   
    ```
-    Service for the deviceShifu:\
+    Service:\
     **deviceshifu-helloworld-service.yaml**
     ```
     apiVersion: v1
@@ -218,21 +218,21 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
       type: LoadBalancer
    ```
 
-4. ### Create new deviceShifu
-   The following steps require Shifu already started and running, which is covered in [Getting started: installation](./getting_started_installation.md)
-   1. load the docker image of the helloworld device
+4. ### 创建 DeviceShifu
+   下面的步骤都需要要求Shifu平台已经启动并且正在运行, 参见 [快速上手：安装](./getting_started_installation.md)
+   1. 加载刚刚构建完成的docker镜像
        ```
        kind load docker-image helloworld-device:v0.0.1
        ```
-   2. let Shifu create the deviceShifu from the configurations
+   2. 让Shifu通过配置创建DeviceShifu的Pod
        ```
        kubectl apply -f <working_dir>/helloworld-device/configuration
        ```
-   3. start a nginx server
+   3. 启动一个nginx的服务器
        ```
        kubectl run nginx --image=nginx:1.21
        ```
-      So far, the following pods should be generated:
+      现在集群中应当有以下Pod:
         ```
         kubectl get pods --all-namespaces
         NAMESPACE            NAME                                                READY   STATUS    RESTARTS   AGE
@@ -250,7 +250,7 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
         kube-system          kube-scheduler-kind-control-plane                   1/1     Running   0          30m
         local-path-storage   local-path-provisioner-547f784dff-44xnv             1/1     Running   0          30m
        ```
-       Check the EdgeDevice instance created:
+       查看创建的EdgeDevice：
 
         ```
         kubectl get edgedevice --namespace devices edgedevice-helloworld
@@ -258,31 +258,31 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
         NAME                    AGE
         edgedevice-helloworld   22m
         ```
-       Get detailed EdgeDevice connection and status information by calling `describe` on the pod: 
+        DeviceShifu的细节信息以及状态可以通过 `describe` 命令获取： 
         ```
         kubectl describe edgedevice --namespace devices edgedevice-helloworld
         ```
 
-   4. get into the nginx shell
+   4. 使用nginx：
        ```
        kubectl exec -it --namespace default nginx -- bash
        ```
-   5. interact with the Hellow World EdgeDevice via its deviceShifu
+   5. 与DeviceShifu进行交互：
       ```
       /# curl http://edgedevice-helloworld-service:80/hello
       ```
 
-      The response should be:
+      应该得到以下输出:
       ```
       Hello_world from device via shifu!
       ```
-   6. check the telemetry reported by the deviceShifu:
+   6. 在日志中查看收集到的数据:
       ```
       kubectl logs edgedevice-helloworld-deployment-6464b55979-hbdhr
       ```
-Now the Hello World EdgeDevice is fully integrated in the Shifu framework and we can interact with it via the deviceShifu as shown above.
+现在 helloworld 设备已经完全整合到Shifu框架中，可以通过上述方式来通过DeviceShifu与其交互。
    
-   ***To update the configmap, Shifu currently requires delete and re-apply the configuration:***
+   ***如果需要更新configuration，请先delete再apply configurtaion:***
 
       /# kubectl delete -f <working_dir>/helloworld-device/configuration
       /# kubectl apply -f <working_dir>/helloworld-device/configuration

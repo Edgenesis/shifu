@@ -1,11 +1,10 @@
-# Getting started: connect a PLC
-Shifu's Siemens S7 Suite provides the ability to edit the PLC memory area through HTTP requests. This article will provide an example on connecting a Siemens S7-1200 1214C PLC to Shifu and using Shifu to interact with it.
+# 快速上手: 接入一个PLC
+Shifu对西门子S7系列PLC提供了兼容。用户可以使用Shifu，通过HTTP请求对S7 PLC的内存进行修改。本文将介绍如何接入一台西门子S7-1200 1214C PLC并且与它交互。
 
-## Connecting S7 PLC
-Before connected to Shifu, an S7 PLC needs to be physically connected over Ethernet with an IP address, for example, 192.168.0.1. 
+## 连接
+在接入Shifu之前，PLC应当已经通过以太网完成物理连接，并且拥有一个IP地址。这里我们使用192.168.0.1。
 
-
-In this scenario, Shifu needs the deployment config to tell Shifu the address and type of the device:  
+Shifu需要如下例所示的配置文件来获取IP地址与设备类型：  
 **plc-deployment.yaml**
 ```
 apiVersion: apps/v1
@@ -39,7 +38,7 @@ spec:
               value: "1"
 ```
 
-Other configuration files should also be prepared with necessary information:  
+同时，Shifu还需要一些通用的配置文件:  
 **deviceshifu-plc-configmap.yaml**
 ```
 apiVersion: v1
@@ -157,31 +156,31 @@ spec:
   type: LoadBalancer
 ```
 
-Add the PLC device to Shifu to start:
+向Shifu添加PLC设备，创建和启动DeviceShifu:
 ```
 kubectl apply -f plc_configuration_directory
 ```
 
-## Operations
-Shifu provides the following HTTP APIs to edit memory area.  
+## 操作
+Shifu支持通过HTTP请求来编辑PLC内存。  
 
 **sendsinglebit**:  
-Edit a single bit of a given memory area. It takes the following parameters:
-- **rootaddress**: the name of the root memory area, e.g., M for Merker, Q for Digital Output Process Image, etc.
-- **address**: the address in the memory area.
-- **start**: the starting position in the address.
-- **digit**: the nth digit of bit to be edited.
-- **value**: the value to be set to the nth digit of bit.
+修改一个bit，它需要下列参数:
+- **rootaddress**: 内存区域名称，比如M代表Merker，Q代表Digital Output。
+- **address**: 内存区域中的地址。
+- **start**: 开始位置。
+- **digit**: 从开始位置起第几个bit。
+- **value**: 需要修改成为的数值.
 
-For example, `plc-device/sendsinglebit?rootaddress=M&address=0&start=2&digit=2&value=1` will make M0.2's second digit to 1.  
+比如，`plc-device/sendsinglebit?rootaddress=M&address=0&start=2&digit=2&value=1` 会将 M0.2 的第二个 bit 修改为1.  
 
 **getcontent**:  
-Get the current value of a given memory area in byte. It takes the following parameters:  
-- **rootaddress**: the name of the root memory area, e.g., M for Merker, Q for Digital Output Process Image, etc.
-- **address**: the address in the memory area.
-- **start**: the starting position in the address.
+得到内存区域中一个byte的值，它需要下列参数:  
+- **rootaddress**: 内存区域名称，比如M代表Merker，Q代表Digital Output。
+- **address**: 内存区域中的地址。
+- **start**: 开始位置。
 
-For example, `plc-device/sendsinglebit?rootaddress=M&address=0&start=2` will get M0.2's value.
+比如 `plc-device/sendsinglebit?rootaddress=M&address=0&start=2` 会返回 M0.2 的一个 byte 的值.
 
 **getcpuordercode**:  
-Get the S7 PLC static information.
+得到PLC的静态信息。

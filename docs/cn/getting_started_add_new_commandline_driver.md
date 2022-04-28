@@ -1,17 +1,19 @@
-# Getting started: add new commandline driver
-If a device communicates via direct command calling executables in the driver, Shifu allows user to add it to the platform, and then this device becomes a Shifu-native device.
+# 快速上手: 添加新驱动
+如果一个驱动使用命令行可执行文件，Shifu支持将它直接接入，从而可以远程操作使用这类驱动的设备。
 
 ## HTTP to SSH driver stub
-Shifu has the HTTP to SSH driver stub component. Every time an HTTP request comes, Shifu will ask the stub to convert the request to the actual command and remotely ssh to the place where the driver locates and execute the command.
+这个组件的功能是将接收到的HTTP请求转化为对驱动可执行文件的命令并远程执行。
 
-## Configuration
-In a deployment configuration, Shifu needs user to provide the following information:
-- **EDGEDEVICE_DRIVER_SSH_KEY_PATH**：The key path of SSH key on driver container which we used to connect to the driver container itself.
-- **EDGEDEVICE_DRIVER_HTTP_PORT**(Optional): The HTTP server port of the driver container, default to `11112`.
-- **EDGEDEVICE_DRIVER_EXEC_TIMEOUT_SECOND**(Optional): The timeout of an execution.
-- **EDGEDEVICE_DRIVER_SSH_USER**(Optional): This is the user we used to SSH into the driver container, default to `root`.
+## 配置
+首先，我们需要将带有可执行文件的驱动打包成一个Docker容器镜像。
 
-Here is an example of a deployment config:
+在Deployment的配置中，Shifu需要下列四个元素:
+- **EDGEDEVICE_DRIVER_SSH_KEY_PATH**：SSH key 的路径，Shifu需要通过它来访问驱动的容器。
+- **EDGEDEVICE_DRIVER_HTTP_PORT**(可选): 驱动容器的，默认值为`11112`.
+- **EDGEDEVICE_DRIVER_EXEC_TIMEOUT_SECOND**(可选): 一个操作的超时设置。
+- **EDGEDEVICE_DRIVER_SSH_USER**(可选): 驱动容器的用户账户，默认为`root`。
+
+下面是一个简单的例子:
 
 ```
 apiVersion: apps/v1
