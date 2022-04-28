@@ -7,6 +7,9 @@ updates:
     directory: "/" # Location of package manifests
     schedule:
       interval: "daily"
+    ignore:
+      - dependency-name: "edgenesis.io/shifu/k8s/crd" # ignore update for shifu modules
+      - dependency-name: "edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice" # ignore update for shifu modules
 
   - package-ecosystem: "gomod"
     directory: "k8s/crd" # Location of package manifests
