@@ -1,0 +1,14 @@
+# Basic dependabot.yml file with
+# minimum configuration for two package managers
+
+version: 2
+updates:
+  - package-ecosystem: "gomod"
+    directory: "/" # Location of package manifests
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "gomod"
+    directory: "k8s/crd" # Location of package manifests
+    schedule:
+      interval: "daily"
