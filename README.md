@@ -57,6 +57,7 @@ We prepared a demo for developers to intuitively show how `Shifu` is able to cre
 - Telemetry collection: shifu supports periodic collection of any telemetries from device. What telemetries to collect, how to collect, how frequent is the collection are all customizable in one single configuration file.
 - Integration with Kubernetes with CRD: shifu allows any types or forms of configurations for your devices.
 ### Not yet supported
+- Auto ***deviceShifu*** generation
 - [Declarative API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
 - [Advanced Shifu Controller](docs/design/design-shifuController.md)
 - [shifud](docs/design/design-shifud.md)
