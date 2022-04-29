@@ -1,0 +1,36 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: edgedevice-socket-deployment
+  name: edgedevice-socket-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edgedevice-socket-deployment
+  template:
+    metadata:
+      labels:
+        app: edgedevice-socket-deployment
+    spec:
+      containers:
+      - image: edgehub/deviceshifu-http-socket:v0.0.1
+        name: deviceshifu-http
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: edgedevice-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+        env:
+        - name: EDGEDEVICE_NAME
+          value: "edgedevice-socket"
+        - name: EDGEDEVICE_NAMESPACE
+          value: "devices"
+      volumes:
+      - name: edgedevice-config
+        configMap:
+          name: socket-configmap-0.0.1
+      serviceAccountName: edgedevice-sa

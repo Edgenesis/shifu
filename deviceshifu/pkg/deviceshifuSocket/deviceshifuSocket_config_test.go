@@ -1,4 +1,4 @@
-package deviceshifu
+package deviceshifuSocket
 
 import (
 	"io/ioutil"

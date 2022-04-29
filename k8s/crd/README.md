@@ -25,14 +25,14 @@ make uninstall
 make kube-builder-create-api-edgedevice
 ```
 
-### Build and publish EdgeDevice controller
+### Build EdgeDevice controller and load into Docker
 ```
-make docker-build docker-push IMG=edgehub/edgedevice-controller:v0.0.1
+make docker-buildx-load
 ```
 
 ### Deploy EdgeDeivce controller
 ```
-make deploy IMG=edgehub/edgedevice-controller:v0.0.1
+make deploy IMG=edgehub/edgedevice-controller-multi:v0.0.1
 ```
 
 ### Deploy sample edgedevice

@@ -23,16 +23,28 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// SocketSetting defines Socket specific settings when connecting to an EdgeDevice
+type SocketSetting struct {
+	Encoding    *string `json:"encoding,omitempty"`
+	NetworkType *string `json:"networkType,omitempty"`
+}
+
+// ProtocolSettings defines protocol settings when connecting to an EdgeDevice
+type ProtocolSettings struct {
+	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
+}
+
 // EdgeDeviceSpec defines the desired state of EdgeDevice
 type EdgeDeviceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of EdgeDevice
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Sku specifies the EdgeDevice's SKU.
-	Sku        *string     `json:"sku,omitempty"`
-	Connection *Connection `json:"connection,omitempty"`
-	Address    *string     `json:"address,omitempty"`
-	Protocol   *Protocol   `json:"protocol,omitempty"`
+	Sku              *string           `json:"sku,omitempty"`
+	Connection       *Connection       `json:"connection,omitempty"`
+	Address          *string           `json:"address,omitempty"`
+	Protocol         *Protocol         `json:"protocol,omitempty"`
+	ProtocolSettings *ProtocolSettings `json:"protocolSettings,omitempty"`
 
 	// TODO: add other fields like disconnectTimemoutInSeconds
 }
@@ -67,6 +79,7 @@ const (
 	ProtocolHTTP            Protocol = "HTTP"
 	ProtocolUSB             Protocol = "USB"
 	ProtocolHTTPCommandline Protocol = "HTTPCommandline"
+	ProtocolSocket          Protocol = "Socket"
 )
 
 // EdgeDevicePhase is a simple, high-level summary of where the EdgeDevice is in its lifecycle.
