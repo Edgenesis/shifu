@@ -152,8 +152,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			}
 		case v1alpha1.ProtocolSocket:
 			// Open the connection:
-			connectionType := edgeDevice.Spec.ProtocolSettings.NetworkType
-			encoding := edgeDevice.Spec.ProtocolSettings.Encoding
+			connectionType := edgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
+			encoding := edgeDevice.Spec.ProtocolSettings.SocketSetting.Encoding
 			if connectionType == nil || *connectionType != "tcp" {
 				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
 			}

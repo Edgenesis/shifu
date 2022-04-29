@@ -10,25 +10,25 @@
 edgehub/deviceshifu-http-socket:v0.0.1
 ```
 
-### Sample deployment file:
+### Sample deployment file, all files are available in `/shifu/examples/socketDeviceShifu`:
 
 ```
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-led-deployment
-  name: edgedevice-led-deployment
+    app: edgedevice-socket-deployment
+  name: edgedevice-socket-deployment
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-led-deployment
+      app: edgedevice-socket-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-led-deployment
+        app: edgedevice-socket-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-socket:v0.0.1
@@ -41,13 +41,13 @@ spec:
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "edgedevice-led"
+          value: "edgedevice-socket"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
       - name: edgedevice-config
         configMap:
-          name: led-configmap-0.0.1
+          name: socket-configmap-0.0.1
       serviceAccountName: edgedevice-sa
 ```
 
@@ -58,8 +58,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-led-deployment
-  name: edgedevice-led
+    app: edgedevice-socket-deployment
+  name: edgedevice-socket
   namespace: default
 spec:
   ports:
@@ -67,7 +67,7 @@ spec:
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-led-deployment
+    app: edgedevice-socket-deployment
   type: LoadBalancer
 ```
 
@@ -77,24 +77,15 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: led-configmap-0.0.1
+  name: socket-configmap-0.0.1
   namespace: default
 data:
   driverProperties: |
-    driverSku: rpi
-    driverImage: edgenesis/rpi:v0.0.1
+    driverSku: testSocket
+    driverImage: 
   instructions: |
     cmd:
-# Telemetries are configurable health checks of the EdgeDevice
-# Developer/user can configure certain instructions to be used as health check
-# of the device. In this example, the device_health telemetry is mapped to
-# "get_status" instruction, executed every 1000 ms
   telemetries: |
-    device_health:
-      properties:
-        instruction: led_status
-        initialDelayMs: 1000
-        intervalMs: 1000
 ```
 
 ### sample edgedevice file:
@@ -103,16 +94,17 @@ data:
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: edgedevice-led
+  name: edgedevice-socket
   namespace: devices
 spec:
-  sku: "rpi" 
+  sku: "testSocket" 
   connection: Ethernet
-  address: 192.168.14.208:11122
+  address: 192.168.15.248:11122 #change this accordingly
   protocol: Socket
   protocolSettings:
-    encoding: utf-8 # currently this does not work
-    networkType: tcp # currently we only support TCP socket
+    SocketSetting:
+      encoding: utf-8
+      networkType: tcp
 ```
 
 ## To interact with the device:

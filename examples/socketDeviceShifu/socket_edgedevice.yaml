@@ -1,0 +1,14 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-socket
+  namespace: devices
+spec:
+  sku: "testSocket" 
+  connection: Ethernet
+  address: 192.168.15.248:11122 #change this accordingly
+  protocol: Socket
+  protocolSettings:
+    SocketSetting:
+      encoding: utf-8
+      networkType: tcp

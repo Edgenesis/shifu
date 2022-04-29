@@ -23,10 +23,15 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
-// ProtocolSettings defines settings when connecting to an EdgeDevice
-type ProtocolSettings struct {
+// SocketSetting defines Socket specific settings when connecting to an EdgeDevice
+type SocketSetting struct {
 	Encoding    *string `json:"encoding,omitempty"`
 	NetworkType *string `json:"networkType,omitempty"`
+}
+
+// ProtocolSettings defines protocol settings when connecting to an EdgeDevice
+type ProtocolSettings struct {
+	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
 }
 
 // EdgeDeviceSpec defines the desired state of EdgeDevice
