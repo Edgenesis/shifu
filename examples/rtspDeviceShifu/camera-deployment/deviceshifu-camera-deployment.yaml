@@ -1,0 +1,59 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: edgedevice-camera-deployment
+  name: edgedevice-camera-deployment
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: edgedevice-camera-deployment
+  template:
+    metadata:
+      labels:
+        app: edgedevice-camera-deployment
+    spec:
+      containers:
+      - image: edgehub/deviceshifu-http-multi:v0.0.1
+        name: deviceshifu-http
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: edgedevice-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+        env:
+        - name: EDGEDEVICE_NAME
+          value: "edgedevice-camera"
+        - name: EDGEDEVICE_NAMESPACE
+          value: "devices"
+      - image: edgehub/camera-python:v0.0.1
+        name: camera-python
+        ports:
+        - containerPort: 11112
+        volumeMounts:
+        - name: edgedevice-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+        env:
+        - name: EDGEDEVICE_NAME
+          value: "edgedevice-camera"
+        - name: EDGEDEVICE_NAMESPACE
+          value: "devices"
+        - name: IP_CAMERA_ADDRESS
+          value: "192.168.14.254"
+        - name: IP_CAMERA_USERNAME
+          value: "admin"
+        - name: IP_CAMERA_PASSWORD
+          value: "password"
+        - name: IP_CAMERA_CONTAINER_PORT
+          value: "11112"
+        - name: PYTHONUNBUFFERED
+          value: "1"
+      volumes:
+      - name: edgedevice-config
+        configMap:
+          name: camera-configmap-0.0.1
+      serviceAccountName: edgedevice-sa
