@@ -48,6 +48,16 @@ spec:
               protocolSettings:
                 description: ProtocolSettings defines protocol settings when connecting to an EdgeDevice
                 properties:
+                  MQTTSetting:
+                    description: MQTTSetting defines MQTT specific settings when connecting to an EdgeDevice
+                    properties:
+                      MQTTServerAddress:
+                        type: string
+                      MQTTServerSecret:
+                        type: string
+                      MQTTTopic:
+                        type: string
+                    type: object
                   SocketSetting:
                     description: SocketSetting defines Socket specific settings when connecting to an EdgeDevice
                     properties:
