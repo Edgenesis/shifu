@@ -56,6 +56,7 @@ Shifu框架利用Web of Things (WoT)提出的[Thing](https://www.w3.org/TR/wot-t
 - Telemetry 收集：shifu可以定期收集设备的监测数据。监测数据的种类、收集的方式以及收集的频率都可以由用户在配置文件中自由设置。
 - 和 Kubernetes 通过 CRD 整合：shifu可以支持对任何设备进行任何形式的配置。
 ### 还未支持
+- 自动生成***deviceShifu***
 - [声明式 API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
 - [高级的 Shifu 控制器](docs/design/design-shifuController-zh.md)
 - [shifud](docs/design/design-shifud-zh.md)
