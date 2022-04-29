@@ -1,10 +1,10 @@
 # Shifu 架构
-Shifu是一个Kubernetes原生的平台，它的所有组件都以Pod的形式运行。下图是Shifu架构的概览：
+Shifu是一个[Kubernetes](https://kubernetes.io/)原生的平台，它的所有组件都以[Pod](https://kubernetes.io/docs/concepts/workloads/pods/)的形式运行。下图是Shifu架构的概览：
 
 ![Overall_Architecture](./overall_architecture.svg)
 
 ## EdgeDevice
-Shifu定义了一个CRD `EdgeDevice`，它描述了一个连接到Shifu的实际设备的各项信息。
+Shifu定义了一个[CRD](https://kubernetes.io/docs/tasks/extend-kubernetes/custom-resources/custom-resource-definitions/) `EdgeDevice`，它描述了一个连接到Shifu的实际设备的各项信息。
 
 每一个EdgeDevice拥有两个部分：
 `EdgeDeviceSpec` 和 `EdgeDeviceStatus`.
@@ -40,13 +40,13 @@ EdgeDevice定义了名为`DeviceShifu`的Kubernetes Pod. DeviceShifu是一个实
 Shifu在持续加入新的工具类服务来保证不同协议和驱动的兼容。
 
 ### MQTT Broker
-MQTT Broker被用来帮助MQTT信息的订阅和发布。
+MQTT Broker被用来帮助MQTT信息的订阅和发布。当前，Shifu使用了[Mosquitto](https://mosquitto.org/)来实现兼容。
 
 ### RTSP Client
 RTSP Client保证了流媒体信息的传输。
 
 ### Siemens S7 Suite
-Siemens S7 Suite支持了西门子S7系列PLC的操作。
+Siemens S7 Suite支持了西门子S7系列PLC的操作。当前，Shifu使用了[Snap7](http://snap7.sourceforge.net/)来实现兼容。
 
 ### HTTP to SSH driver stub
-HTTP to SSH driver stub使得Shifu可以允许用户任意添加新的命令行驱动。 参见[快速上手：添加新的命令行驱动](./add_new_commandline_driver.md)。
+HTTP to SSH driver stub使得Shifu可以允许用户任意添加新的命令行驱动。 参见[快速上手：添加新的命令行驱动](./getting_started_add_new_commandline_driver.md)。

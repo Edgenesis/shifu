@@ -1,5 +1,5 @@
 # 快速上手: 添加新驱动
-如果一个驱动使用命令行可执行文件，Shifu支持将它直接接入，从而可以远程操作使用这类驱动的设备。
+如果设备是通过命令行直接调用驱动程序中的可执行文件进行通信，Shifu支持将他直接接入，从而可以远程操作使用这类驱动的设备。
 
 ## HTTP to SSH driver stub
 这个组件的功能是将接收到的HTTP请求转化为对驱动可执行文件的命令并远程执行。
@@ -9,9 +9,9 @@
 
 在Deployment的配置中，Shifu需要下列四个元素:
 - **EDGEDEVICE_DRIVER_SSH_KEY_PATH**：SSH key 的路径，Shifu需要通过它来访问驱动的容器。
-- **EDGEDEVICE_DRIVER_HTTP_PORT**(可选): 驱动容器的，默认值为`11112`.
+- **EDGEDEVICE_DRIVER_HTTP_PORT**(可选): 驱动容器的HTTP服务器端口，默认值为`11112`.
 - **EDGEDEVICE_DRIVER_EXEC_TIMEOUT_SECOND**(可选): 一个操作的超时设置。
-- **EDGEDEVICE_DRIVER_SSH_USER**(可选): 驱动容器的用户账户，默认为`root`。
+- **EDGEDEVICE_DRIVER_SSH_USER**(可选): 通过 SSH 连接到驱动程序容器的用户，默认为`root`。
 
 下面是一个简单的例子:
 

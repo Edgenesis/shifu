@@ -1,5 +1,5 @@
 # Welcome to Shifu
-Shifu is an open-source, Kubernetes-based Internet of Things (IoT) development and management platform to connect, monitor and control all the IoT devices in a place. Shifu allows users to create software applications to interact with different types of IoT devices in an easier way.
+Shifu is an open-source, [Kubernetes](https://kubernetes.io/)-based Internet of Things (IoT) development and management platform to connect, monitor and control all the IoT devices in a place. Shifu allows users to create software applications to interact with different types of IoT devices in an easier way.
 
 ## IoT devices
 An IoT device is a device that can connect and exchange data with other devices and systems over the Internet or other communications networks. For example: 
