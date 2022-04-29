@@ -14,7 +14,7 @@ Shifu is a [Kubernetes](https://k8s.io) native framework designed to abstract ou
 - Shifu let you manage and control your IoT devices extremely easily. Whenever you connect your device, Shifu will recognize it and spawn an augmented digital twin called ***deviceShifu*** for it. 
 - ***deviceShifu*** provides you with a high-level abstraction to interact with your device. 
   - By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything its designed for, and much more! For example, your device's state can be rolled back with a single line of command. (If physically permitted, of course.) 
-  - Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). 
+  - Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). For example, we can group ***deviceShifu*** of machines into a ***factoryShifu***, and then high-level commands like `factory start` will make the whole factory start manufacturing.
 - A simulation feature which allows developer to simulate a scenario before actually running will be available later.
 
 ## Shifu and Thing
