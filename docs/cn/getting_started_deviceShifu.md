@@ -232,9 +232,12 @@ Helloworld设备只有一个功能：每次收到请求时，返回“hello worl
        ```
        kubectl run nginx --image=nginx:1.21
        ```
-      现在集群中应当有以下Pod:
+      现在使用kubectl来查看Pods：
+      ```
+      kubectl get pods --all-namespaces
+      ```
+      集群中应当有以下Pod:
         ```
-        kubectl get pods --all-namespaces
         NAMESPACE            NAME                                                READY   STATUS    RESTARTS   AGE
         crd-system           crd-controller-manager-7bc78896b9-sq72b             2/2     Running   0          28m
         default              edgedevice-helloworld-deployment-6464b55979-hbdhr   1/1     Running   0          27m

@@ -232,9 +232,12 @@ The helloworld device only does one job: respond hello world message upon reques
        ```
        kubectl run nginx --image=nginx:1.21
        ```
+      Use kubectl to get all pods available:
+      ```
+      kubectl get pods --all-namespaces 
+      ```
       So far, the following pods should be generated:
         ```
-        kubectl get pods --all-namespaces
         NAMESPACE            NAME                                                READY   STATUS    RESTARTS   AGE
         crd-system           crd-controller-manager-7bc78896b9-sq72b             2/2     Running   0          28m
         default              edgedevice-helloworld-deployment-6464b55979-hbdhr   1/1     Running   0          27m

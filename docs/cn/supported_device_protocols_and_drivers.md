@@ -5,6 +5,7 @@
 2. MQTT
 3. RTSP for streaming
 4. Siemens S7
+5. TCP socket
 
 ## 驱动
-Shifu允许用户向平台添加任意驱动，参见[快速上手：添加新的命令行驱动](./add_new_commandline_driver.md)。
+Shifu允许用户向平台添加任意驱动，参见[快速上手：添加新的命令行驱动](./getting_started_add_new_commandline_driver.md)。
