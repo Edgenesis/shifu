@@ -6,7 +6,7 @@
 
 `IP_CAMERA_ADDRESS=192.168.14.172 IP_CAMERA_USERNAME=admin IP_CAMERA_PASSWORD=password IP_CAMERA_CONTAINER_PORT=8000 python3 camera.py`
 
-## To run the camera deviceShifu, update the following fields in `shifu/guide/camera/camera-deployment/deviceshifu-camera-deployment.yaml`
+## To run the camera deviceShifu, update the following fields in `shifu/examples/rtspDeviceShifu/camera-deployment/deviceshifu-camera-deployment.yaml`
 
 ```
 ......
