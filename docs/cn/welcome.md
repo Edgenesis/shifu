@@ -10,6 +10,9 @@ Shifu是一个基于[Kubernetes](https://kubernetes.io/)的开源物联网开发
 ## 通信
 Shifu兼容不同的通信协议和驱动，它将不同设备的不同形式的请求进行统一，以HTTP的形式对用户开放，使得用户可以更简单地使用设备的功能。
 
+Shifu与用户和设备之间的关系，可以用下图来表示：
+![User_Shifu_Device](./user_shifu_device.svg)
+
 **Shifu与设备之间的通信:**
 Shifu在持续增加对于新协议和驱动的兼容。对于当前兼容的列表，参见[当前兼容的设备协议和驱动](./supported_device_protocols_and_drivers.md)。
 
@@ -20,3 +23,4 @@ Shifu在持续增加新协议供用户进行选择。对于当前可用协议的
 Shifu作为一个物联网设备管理和开发平台，提供以下功能：
 - 从设备取得数据。
 - 给设备发送用户命令。
+

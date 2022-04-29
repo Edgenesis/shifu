@@ -12,6 +12,9 @@ There is a wide variety of devices available from different manufacturers that c
 ## Communication
 Shifu accepts different types of communication from devices, and converts them into a simpler one such as HTTP, to help user interact with the devices more easily.
 
+The image below shows the relationship between user and Shifu, and between Shifu and device:
+![User_Shifu_Device](./user_shifu_device.svg)
+
 **Between Shifu and IoT devices:**
 Shifu is constantly integrating new protocols and drivers. For a list of supported device protocols and drivers, see the page of [Supported Device Protocols and Drivers](./supported_device_protocols_and_drivers.md).
 
