@@ -39,3 +39,8 @@ make deploy IMG=edgehub/edgedevice-controller:v0.0.1
 ```
 kubectl apply -f config/samples/shifu_v1alpha1_edgedevice.yaml
 ```
+
+### Create install CRD file
+```
+make generate-controller-yaml IMG=edgehub/edgedevice-controller-multi:v0.0.1 generate-install-yaml
+```
