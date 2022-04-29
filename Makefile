@@ -8,6 +8,11 @@ build-image-deviceshifu:
 .PHONY: buildx-push-image-deviceshifu
 buildx-push-image-deviceshifu:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-multi:${IMAGE_VERSION} --push
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuSocket --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-socket:${IMAGE_VERSION} --push
+
+buildx-load-image-deviceshifu:
+	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-http:${IMAGE_VERSION} --load
+	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuSocket --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-socket:${IMAGE_VERSION} --load
 
 buildx-load-image-deviceshifu:
 	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-http:${IMAGE_VERSION} --load

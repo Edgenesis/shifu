@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: edgedevice-socket-deployment
+  name: edgedevice-socket
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: edgedevice-socket-deployment
+  type: LoadBalancer
