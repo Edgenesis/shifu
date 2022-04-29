@@ -1,10 +1,5 @@
-**Note**: currently encoding does not work, command will be proxied directly
 
-**Note**: currently edgedevice's status for socket type connection will fail
-
-**Note**: deviceShifu currently will expect a `0x0A` character when receiving from TCP socket. Otherwise you may expect no return from the device.
-
-## To create a socket type deviceShifu, use image:
+### To create a MQTT type deviceShifu, use image:
 
 ```
 edgehub/deviceshifu-http-mqtt:v0.0.1
