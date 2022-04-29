@@ -1,12 +1,12 @@
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: edgedevice-led
+  name: edgedevice-mqtt
   namespace: devices
 spec:
-  sku: "rpi" 
+  sku: "testMQTT" 
   connection: Ethernet
-  address: 172.28.15.229:1883
+  address: 192.168.62.231:1883 # change this accordingly
   protocol: MQTT
   protocolSettings:
     MQTTSetting:

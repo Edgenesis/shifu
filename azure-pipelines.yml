@@ -54,6 +54,11 @@ steps:
     command: 'build'
     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdSocket'
 - task: Go@0
+  displayName: "go build deviceshifuMQTT"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdMQTT'
+- task: Go@0
   displayName: "go test deviceshifu"
   inputs:
     command: 'test'
@@ -65,6 +70,12 @@ steps:
     command: 'test'
     arguments: '-v'
     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuSocket'
+- task: Go@0
+  displayName: "go test deviceshifuMQTT"
+  inputs:
+    command: 'test'
+    arguments: '-v'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuMQTT'
 - task: Go@0
   displayName: "go build mockdevice agv"
   inputs:

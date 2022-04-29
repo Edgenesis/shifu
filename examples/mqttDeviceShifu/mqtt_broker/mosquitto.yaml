@@ -49,5 +49,5 @@ spec:
   ports:
     - name: mosquitto
       protocol: TCP
-      port: 63306
+      port: 1883
       targetPort: 1883
