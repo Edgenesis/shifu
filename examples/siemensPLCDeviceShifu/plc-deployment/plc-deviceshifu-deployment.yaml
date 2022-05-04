@@ -32,7 +32,7 @@ spec:
         - image: edgehub/plc-device:v0.0.1
           name: plc
           env:
-            - name: PLC_ADDR
+            - name: PLC_ADDRESS
               value: "192.168.0.1"
             - name: PLC_RACK
               value: "0"        
