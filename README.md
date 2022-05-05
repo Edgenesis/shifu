@@ -34,13 +34,6 @@ Currently, Shifu runs on [Kubernetes](https://k8s.io). We will provide more depl
 
 ---
 
-### Guides:
-- Read the [Quick start hello world guide](docs/guide/quick-start-hello-world.md) on connecting ***edgeDevice***
-
-- Read the [Write a simple application guide](docs/guide/guide-on-writing-an-application-for-deviceShifu.md) to see how to interact with ***deviceShifu***
-
----
-
 ### Demo:
 We prepared a demo for developers to intuitively show how `Shifu` is able to create and manage digital twins of any physical devices in real world.
 - [Quick Start Guide with Demo](docs/guide/quick-start-demo.md)
