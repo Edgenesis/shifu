@@ -33,13 +33,6 @@ Shifu框架利用Web of Things (WoT)提出的[Thing](https://www.w3.org/TR/wot-t
 
 ---
 
-### 教程:
-- 连接一个 ***edgeDevice***： [Hello world设备教程](docs/guide/quick-start-hello-world-zh.md)
-
-- 通过程序与 ***deviceShifu*** 交互： [和 deviceShifu 交互的简单应用](docs/guide/guide-on-writing-an-application-for-deviceShifu-zh.md)
-
----
-
 ### 演示：
 我们为开发者准备了一个 demo 来更直观地展示 `Shifu`是如何建立管理IoT设备的
 - [带演示的快速上手指南](docs/guide/quick-start-demo-zh.md)
