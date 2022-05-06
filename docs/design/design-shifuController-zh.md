@@ -1,4 +1,4 @@
-# shifuController 设计
+# 【暂未实现】shifuController 设计
 - [shifuController 设计](#shifucontroller-设计)
   - [设计目标和非目标](#设计目标和非目标)
     - [设计目标](#设计目标)
