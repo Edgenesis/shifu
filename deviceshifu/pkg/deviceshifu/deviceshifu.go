@@ -99,7 +99,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			log.Fatalf("edgeDeviceConfig.Spec is nil")
 			return nil, err
 		}
-
+		//Confirm agreement
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
 			for instruction, properties := range deviceShifuConfig.Instructions {
