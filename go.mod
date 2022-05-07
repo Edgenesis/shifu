@@ -2,19 +2,19 @@ module github.com/edgenesis/shifu
 
 go 1.17
 
+replace edgenesis.io/shifu/k8s/crd => ./k8s/crd
+
+replace edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice => ./deviceshifu/pkg/mockdevice/mockdevice
+
 require (
 	edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice v0.0.0
-	edgenesis.io/shifu/k8s/crd v0.0.0-20210920094059-497d4fcc9b6f
+	edgenesis.io/shifu/k8s/crd v0.0.0
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/apimachinery v0.24.0-alpha.4
 	k8s.io/client-go v0.24.0-alpha.4
 	knative.dev/pkg v0.0.0-20210915055909-d8349b0909c4
 )
-
-replace edgenesis.io/shifu/k8s/crd => ./k8s/crd
-
-replace edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice => ./deviceshifu/pkg/mockdevice/mockdevice
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -34,6 +34,7 @@ require (
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8 // indirect
+	golang.org/x/tools v0.1.6-0.20210820212750-d4cc65f0b2ff // indirect
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
