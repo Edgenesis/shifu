@@ -15,3 +15,8 @@ updates:
     directory: "k8s/crd" # Location of package manifests
     schedule:
       interval: "daily"
+
+  - package-ecosystem: "gomod"
+    directory: "deviceshifu/pkg/mockdevice/mockdevice" # Location of package manifests
+    schedule:
+      interval: "daily"
