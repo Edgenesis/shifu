@@ -11,14 +11,14 @@ require (
 	edgenesis.io/shifu/k8s/crd v0.0.0
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/apimachinery v0.24.0-alpha.4
-	k8s.io/client-go v0.24.0-alpha.4
+	k8s.io/apimachinery v0.24.0
+	k8s.io/client-go v0.24.0
 	knative.dev/pkg v0.0.0-20210915055909-d8349b0909c4
 )
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
-	github.com/go-logr/logr v1.2.0 // indirect
+	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/gofuzz v1.2.0 // indirect
@@ -38,8 +38,8 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	k8s.io/api v0.24.0-alpha.4 // indirect
-	k8s.io/klog/v2 v2.40.1 // indirect
+	k8s.io/api v0.24.0 // indirect
+	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/controller-runtime v0.11.2 // indirect
 	sigs.k8s.io/json v0.0.0-20211208200746-9f7c6b3444d2 // indirect
