@@ -83,4 +83,7 @@ Shifu框架利用Web of Things (WoT)提出的[Thing](https://www.w3.org/TR/wot-t
 # 社区
 ## 联系
 有问题？尝试[建立一个 GitHub Issue](https://github.com/Edgenesis/shifu/issues/new)，或者通过以下方式联系我们：
-- 发送邮件到 info@edgenesis.com 
+- 邮件: info@edgenesis.com 
+- 微信:
+  - zhengkaiwen196649 
+  - if7369

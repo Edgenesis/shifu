@@ -86,4 +86,7 @@ If every IoT device has a Shifu with it, we can leverage software to manage our 
 ## Contact
 
 Feel free to open a GitHub issue or contact us in the following ways:
-- Send an email to info@edgenesis.com
+- Email: info@edgenesis.com
+- Wechat:
+  - zhengkaiwen196649 
+  - if7369
