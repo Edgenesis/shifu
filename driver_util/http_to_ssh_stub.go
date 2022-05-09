@@ -12,7 +12,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
-//Get the required configuration in the environment information
+//Get the required configuration in the environment variables
 var (
 	privateSSHKeyFile    = os.Getenv("EDGEDEVICE_DRIVER_SSH_KEY_PATH")
 	driverHTTPPort       = os.Getenv("EDGEDEVICE_DRIVER_HTTP_PORT")
@@ -21,7 +21,7 @@ var (
 )
 
 func init() {
-	//Verify the environment information. If it is blank, it is the default
+	//Verify the environment variables. If it is blank, it is the default
 	if privateSSHKeyFile == "" {
 		log.Fatalf("SSH Keyfile needs to be specified")
 	}
@@ -47,7 +47,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}
-	//Get SSHkey
+	//Get SSH key
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
 		log.Fatalf("unable to parse private key: %v", err)
@@ -61,12 +61,12 @@ func main() {
 		HostKeyCallback: ssh.HostKeyCallback(func(hostname string, remote net.Addr, key ssh.PublicKey) error { return nil }),
 		Timeout:         time.Minute,
 	}
-	//Create SSH link
+	//Create SSH connection
 	sshClient, err := ssh.Dial("tcp", "localhost:22", config)
 	if err != nil {
 		log.Fatal("unable to connect: ", err)
 	}
-	//Close SSH link
+	//Close SSH connection
 	defer sshClient.Close()
 	log.Println("Driver SSH established")
 	//Listening port
@@ -76,13 +76,11 @@ func main() {
 	}
 	defer ssh_listener.Close()
 	log.Println("Driver HTTP listener established")
-	//Create goroutine for each link
 	http.Serve(ssh_listener, httpCmdlinePostHandler(sshClient))
 }
 
 func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
-		//create new session
 		session, err := sshConnection.NewSession()
 		if err != nil {
 			log.Fatal("Failed to create session: ", err)
