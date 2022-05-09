@@ -16,7 +16,7 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
                 kind load docker-image edgehub/mockdevice-plate-reader:v0.0.1
                 kind load docker-image edgehub/mockdevice-robot-arm:v0.0.1
                 kind load docker-image edgehub/mockdevice-thermometer:v0.0.1
-                kind load docker-image edgehub/deviceshifu-http:v0.0.1
+                kind load docker-image edgehub/deviceshifu-http-http:v0.0.1
                 kind load docker-image edgehub/edgedevice-controller:v0.0.1
                 kubectl apply -f k8s/crd
                 kubectl create ns devices
@@ -27,7 +27,7 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
         else
                 kind delete cluster
                 docker rmi $(docker images | grep 'edgehub/mockdevice' | awk '{print $3}')
-                docker rmi $(docker images | grep 'edgehub/deviceshifu-http' | awk '{print $3}')
+                docker rmi $(docker images | grep 'edgehub/deviceshifu-http-http' | awk '{print $3}')
                 docker rmi $(docker images | grep 'edgehub/edgedevice-controller' | awk '{print $3}')
                 docker rmi quay.io/brancz/kube-rbac-proxy:v0.8.0
                 docker rmi $(docker images | grep 'kindest/node' | awk '{print $3}')
