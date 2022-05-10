@@ -17,18 +17,21 @@ import (
 
 func TestNew(t *testing.T) {
 	deviceShifuMetadata := &DeviceShifuMetaData{
-		"TestNEW",
+		"TestNew",
 		"etc/edgedevice/config",
 		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"TestNewNamespace",
+		"",
 	}
 
 	_, err := New(deviceShifuMetadata)
 	if err != nil {
-		t.Errorf("Failed creating new deviceShifu")
+		t.Log(err)
+	} else {
+		t.Errorf("The detection with namespace nil not pass")
 	}
 	time.Sleep(1 * time.Second)
 }
+
 func TestStart(t *testing.T) {
 	deviceShifuMetadata := &DeviceShifuMetaData{
 		"TestStart",
