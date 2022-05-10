@@ -20,7 +20,7 @@ func TestStart(t *testing.T) {
 		"TestStart",
 		"etc/edgedevice/config",
 		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"TESTnamespace",
+		"TestStartNamespace",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
@@ -41,7 +41,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 		"TestStartHttpServer",
 		"etc/edgedevice/config",
 		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"",
+		"TestStartHttpServerNamespace",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
