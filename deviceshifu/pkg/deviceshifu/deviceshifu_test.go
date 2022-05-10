@@ -20,7 +20,7 @@ func TestStart(t *testing.T) {
 		"TestStart",
 		"etc/edgedevice/config",
 		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"",
+		"TESTnamespace",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
