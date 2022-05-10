@@ -15,6 +15,20 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+func TestNew(t *testing.T) {
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		"TestNEW",
+		"etc/edgedevice/config",
+		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		"TestNewNamespace",
+	}
+
+	_, err := New(deviceShifuMetadata)
+	if err != nil {
+		t.Errorf("Failed creating new deviceShifu")
+	}
+	time.Sleep(1 * time.Second)
+}
 func TestStart(t *testing.T) {
 	deviceShifuMetadata := &DeviceShifuMetaData{
 		"TestStart",
