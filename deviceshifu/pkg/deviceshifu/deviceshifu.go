@@ -66,8 +66,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
 	}
 
-	if deviceShifuMetadata.ConfigFilePath == "" {
-		deviceShifuMetadata.ConfigFilePath = DEVICE_CONFIGMAP_FOLDER_PATH
+	if deviceShifuMetadata.Namespace == "" {
+		return nil, fmt.Errorf("DeviceShifu's namespace can't be empty\n")
 	}
 
 	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
