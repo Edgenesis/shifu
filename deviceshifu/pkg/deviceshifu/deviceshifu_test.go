@@ -15,9 +15,9 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
-func TestNew(t *testing.T) {
+func TestDeviceShifuEmptyNamespace(t *testing.T) {
 	deviceShifuMetadata := &DeviceShifuMetaData{
-		"TestNew",
+		"TestDeviceShifuEmptyNamespace",
 		"etc/edgedevice/config",
 		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
 		"",
@@ -25,9 +25,9 @@ func TestNew(t *testing.T) {
 
 	_, err := New(deviceShifuMetadata)
 	if err != nil {
-		t.Log(err)
+		log.Print(err)
 	} else {
-		t.Errorf("The detection with namespace nil not pass")
+		t.Errorf("DeviceShifu Test with empty namespace failed")
 	}
 	time.Sleep(1 * time.Second)
 }
