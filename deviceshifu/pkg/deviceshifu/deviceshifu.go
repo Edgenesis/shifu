@@ -61,6 +61,7 @@ const (
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 )
 
+//	This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	if deviceShifuMetadata.Name == "" {
 		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
@@ -88,7 +89,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			deviceShifuMetadata.Name,
 			deviceShifuMetadata.KubeConfigPath,
 		}
-
+		// New edgedevice api and rest client
 		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
 			log.Fatalf("Error retrieving EdgeDevice")
@@ -99,7 +100,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			log.Fatalf("edgeDeviceConfig.Spec is nil")
 			return nil, err
 		}
-		//switch for different Shifu Protocols
+		// switch for different Shifu Protocols
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
 			for instruction, properties := range deviceShifuConfig.Instructions {
@@ -158,6 +159,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	return ds, nil
 }
 
+// This function writes the status as healthy
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
 }
@@ -167,11 +169,14 @@ type DeviceCommandHandlerHTTP struct {
 	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
 }
 
+// This function is to print the error message to the logger
+// and reply to the error request
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("Error: Device instruction does not exist!")
 	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
+// This function is to create a URL containing directives from the requested URL
 func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
 
 	queryStr := "?"
@@ -191,6 +196,7 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 	return "http://" + address + "/" + handlerInstruction + queryStr
 }
 
+// This function requests the url containing the command to execute the command
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		handlerProperties := handler.deviceShifuHTTPHandlerMetaData.properties
@@ -314,6 +320,7 @@ type DeviceCommandHandlerHTTPCommandline struct {
 	deviceShifuHTTPCommandlineHandlerMetadata *DeviceShifuHTTPCommandlineHandlerMetadata
 }
 
+//
 func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		driverExecution := handler.deviceShifuHTTPCommandlineHandlerMetadata.driverExecution
@@ -354,6 +361,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 	}
 }
 
+//	This function starts an http server connection
 func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 	fmt.Printf("deviceShifu %s's http server started\n", ds.Name)
 	return ds.server.ListenAndServe()
@@ -432,6 +440,7 @@ func (ds *DeviceShifu) telemetryCollection() error {
 	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
 }
 
+// This function is used to update the state of Device Shifu
 func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
 	log.Printf("updating device %v status to: %v\n", ds.Name, edPhase)
 	currEdgeDevice := &v1alpha1.EdgeDevice{}
@@ -468,6 +477,7 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 	}
 }
 
+//
 func (ds *DeviceShifu) StartTelemetryCollection() error {
 	log.Println("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
@@ -477,6 +487,7 @@ func (ds *DeviceShifu) StartTelemetryCollection() error {
 	}
 }
 
+// This function runs Device Shifu
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	fmt.Printf("deviceShifu %s started\n", ds.Name)
 
@@ -486,6 +497,8 @@ func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	return nil
 }
 
+// The purpose of this function is to gracefully
+//close the connection of DeviceShifu
 func (ds *DeviceShifu) Stop() error {
 	if err := ds.server.Shutdown(context.TODO()); err != nil {
 		return err
