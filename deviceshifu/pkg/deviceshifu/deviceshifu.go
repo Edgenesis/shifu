@@ -200,7 +200,7 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 	return "http://" + address + "/" + handlerInstruction + queryStr
 }
 
-// This function requests the url containing the command to execute the command
+// This function executes the instruction by requesting the url returned by createUriFromRequest
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		handlerProperties := handler.deviceShifuHTTPHandlerMetaData.properties
