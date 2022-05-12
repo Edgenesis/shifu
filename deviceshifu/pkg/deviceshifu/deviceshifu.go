@@ -176,11 +176,11 @@ func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // This function is to create a URL containing directives from the requested URL
-//  e.g.:
+// e.g.:
 // if we have http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2
-// and our address is http://localhost:8088 and instruction is stop
+// and our address is http://localhost:8088 and instruction is start
 // then we will get this URL string:
-// http://localhost:8088/stop?time=10:00:00&target=machine1&target=machine2
+// http://localhost:8088/start?time=10:00:00&target=machine1&target=machine2
 func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
 
 	queryStr := "?"
@@ -207,6 +207,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		handlerInstruction := handler.deviceShifuHTTPHandlerMetaData.instruction
 		handlerEdgeDeviceSpec := handler.deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
 		handlerHTTPClient := handler.client.Client
+
 		if handlerProperties != nil {
 			// TODO: handle validation compile
 			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {

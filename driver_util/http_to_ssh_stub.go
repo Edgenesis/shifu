@@ -46,11 +46,13 @@ func main() {
 	if err != nil {
 		log.Fatalf("unable to read private key: %v", err)
 	}
+
 	// Get SSH key
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
 		log.Fatalf("unable to parse private key: %v", err)
 	}
+
 	// Configure SSH parameters
 	config := &ssh.ClientConfig{
 		User: sshUser,
@@ -60,23 +62,27 @@ func main() {
 		HostKeyCallback: ssh.HostKeyCallback(func(hostname string, remote net.Addr, key ssh.PublicKey) error { return nil }),
 		Timeout:         time.Minute,
 	}
+
 	sshClient, err := ssh.Dial("tcp", "localhost:22", config)
 	if err != nil {
 		log.Fatal("unable to connect: ", err)
 	}
 	defer sshClient.Close()
 	log.Println("Driver SSH established")
+
 	ssh_listener, err := sshClient.Listen("tcp", "localhost:"+driverHTTPPort)
 	if err != nil {
 		log.Fatal("unable to register tcp forward: ", err)
 	}
 	defer ssh_listener.Close()
 	log.Println("Driver HTTP listener established")
+
 	http.Serve(ssh_listener, httpCmdlinePostHandler(sshClient))
 }
 
 // Create a session reply for the incoming connection, obtain the connection body information,
-// process it, hand it over to the shell for processing, and return the connection status code
+// process it, hand it over to the shell for processing,return both result and status code based
+//on shell execution result
 func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		session, err := sshConnection.NewSession()
