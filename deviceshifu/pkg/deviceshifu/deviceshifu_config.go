@@ -61,7 +61,7 @@ const (
 	EDGEDEVICE_RESOURCE_STR = "edgedevices"
 )
 
-// Read the configuration under the path directory and return the configuration item
+// Read the configuration under the path directory and return configuration
 func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if path == "" {
 		return nil, errors.New("DeviceShifuConfig path can't be empty")

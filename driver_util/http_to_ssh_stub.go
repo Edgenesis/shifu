@@ -96,7 +96,7 @@ func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 		var stderr bytes.Buffer
 		session.Stdout = &stdout
 		session.Stderr = &stderr
-		//Run the body command
+		// Run the body command
 		if err := session.Run(cmdString); err != nil {
 			log.Printf("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stderr.String(), stdout.String())
 			resp.WriteHeader(http.StatusBadRequest)
