@@ -176,6 +176,11 @@ func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // This function is to create a URL containing directives from the requested URL
+//  e.g.:
+// if we have http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2
+// and our address is http://localhost:8088 and instruction is stop
+// then we will get this URL string:
+// http://localhost:8088/stop?time=10:00:00&target=machine1&target=machine2
 func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
 
 	queryStr := "?"
