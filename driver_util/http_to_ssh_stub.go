@@ -47,13 +47,11 @@ func main() {
 		log.Fatalf("unable to read private key: %v", err)
 	}
 
-	// Get SSH key
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
 		log.Fatalf("unable to parse private key: %v", err)
 	}
 
-	// Configure SSH parameters
 	config := &ssh.ClientConfig{
 		User: sshUser,
 		Auth: []ssh.AuthMethod{
@@ -82,7 +80,7 @@ func main() {
 
 // Create a session reply for the incoming connection, obtain the connection body information,
 // process it, hand it over to the shell for processing,return both result and status code based
-//on shell execution result
+// on shell execution result
 func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		session, err := sshConnection.NewSession()
@@ -102,7 +100,6 @@ func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 		var stderr bytes.Buffer
 		session.Stdout = &stdout
 		session.Stderr = &stderr
-		// Run the body command
 		if err := session.Run(cmdString); err != nil {
 			log.Printf("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stderr.String(), stdout.String())
 			resp.WriteHeader(http.StatusBadRequest)
