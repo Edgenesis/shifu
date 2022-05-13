@@ -12,6 +12,7 @@ import (
 	"golang.org/x/crypto/ssh"
 )
 
+// Get the required configuration from the environment variables
 var (
 	privateSSHKeyFile    = os.Getenv("EDGEDEVICE_DRIVER_SSH_KEY_PATH")
 	driverHTTPPort       = os.Getenv("EDGEDEVICE_DRIVER_HTTP_PORT")
@@ -77,6 +78,9 @@ func main() {
 	http.Serve(ssh_listener, httpCmdlinePostHandler(sshClient))
 }
 
+// Create a session reply for the incoming connection, obtain the connection body information,
+// process it, hand it over to the shell for processing,return both result and status code based
+// on shell execution result
 func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		session, err := sshConnection.NewSession()
