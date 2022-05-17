@@ -102,7 +102,7 @@ Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 �
 
 ## 设计总览
 
-当前版本的 ***Shifu*** 类似 [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)。通过利用 Operator 的模式，***Shifu*** 自动会拥有所有 Kubernetes 带来的好处
+当前版本的 ***Shifu*** 类似 [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)。因为利用了 Operator 的模式，因此***Shifu*** 拥有所有 Kubernetes 带来的好处
 
 ### 组件
 
