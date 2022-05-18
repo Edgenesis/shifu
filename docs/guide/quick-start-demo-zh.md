@@ -51,11 +51,7 @@
     * **robotarm**: 一个实验室用的机械臂，命令`get_coordinate`会返回机械臂当前的x, y, z轴坐标
     * **plate-reader**: 一个实验室用的酶标仪，命令`get_measurement`会返回每一个样本中光谱分析扫描的结果数值，样本为8*12个正方矩阵排列
 
-<<<<<<< HEAD
-   在shifu根目录执行以下命令，以运行4个设备的deviceShifu:
-=======
     在shifu根目录执行以下命令，以运行4个设备的deviceShifu:
->>>>>>> bdc2b206ad101c2a723eed31865382d4ad9854cb
     ```
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-agv
