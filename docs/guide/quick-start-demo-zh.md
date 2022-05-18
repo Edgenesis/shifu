@@ -11,8 +11,8 @@
     ```
 
 2. **建立Kubernetes集群，开启Shifu服务：**
-
-   在shifu根目录执行以下脚本会创建一个包含预定义CRD的Kubernetes集群，以及开启一个最小化的Shifu服务：
+    
+    下面这个脚本会创建一个包含预定义CRD的Kubernetes集群，以及开启一个最小化的Shifu服务：
     ```
     ./test/scripts/deviceshifu-setup.sh apply
     ```
@@ -51,7 +51,7 @@
     * **robotarm**: 一个实验室用的机械臂，命令`get_coordinate`会返回机械臂当前的x, y, z轴坐标
     * **plate-reader**: 一个实验室用的酶标仪，命令`get_measurement`会返回每一个样本中光谱分析扫描的结果数值，样本为8*12个正方矩阵排列
 
-   在shifu根目录执行以下命令，以运行4个设备的deviceShifu:
+    运行4个设备的deviceShifu:
     ```
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer
     ./test/scripts/deviceshifu-demo.sh apply edgedevice-agv
