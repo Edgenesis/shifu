@@ -1,11 +1,7 @@
 # Install Shifu
 ## Install/Uninstall
 ### Install
-<<<<<<< HEAD
 1. Clone Shifu repository:
-=======
-1. Clone Shifu from  Github to local:
->>>>>>> 22aa156 (Modify some old documents)
    ```
    git clone https://github.com/Edgenesis/shifu.git
    ```

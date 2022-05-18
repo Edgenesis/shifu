@@ -1,11 +1,7 @@
 # 安装 Shifu
 ## 安装/卸载
 ### 安装
-<<<<<<< HEAD
 1. 从 GitHub 克隆项目到本地：
-=======
-1. 从GitHub 克隆项目到本地：
->>>>>>> 22aa156 (Modify some old documents)
    ```
    git clone https://github.com/Edgenesis/shifu.git
    ```
