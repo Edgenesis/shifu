@@ -11,7 +11,7 @@
     ```
 
 2. **建立Kubernetes集群，开启Shifu服务：**
-3. 
+
     在shifu根目录执行以下脚本会创建一个包含预定义CRD的Kubernetes集群，以及开启一个最小化的Shifu服务：
     ```
     ./test/scripts/deviceshifu-setup.sh apply
@@ -42,7 +42,7 @@
     kubectl --namespace crd-system logs crd-controller-manager-7bc78896b9-cpk7d -c manager
     ```
 
-4. **启动演示的deviceShifu（数字孪生）:**
+3. **启动演示的deviceShifu（数字孪生）:**
     
     在`deviceshifu/examples/demo_device`目录下，我们有4个演示的设备来创建 ***deviceShifu***（虚拟设备）。所有的设备都有 `get_status`命令来获取当前设备的状态，如Busy, Error, Idle等
     除了`get_status`，每一台设备有一个自己的命令：
