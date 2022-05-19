@@ -81,7 +81,7 @@ CMD [ "/high-temperature-detector" ]
 docker build --tag high-temperature-detector:v0.0.1 .
 ```
 
-现在我们已经建立高温度检测应用的的镜像。
+现在温度检测应用的镜像已经构建完成。
 
 ### 4. 加载应用镜像并启动应用 Pod
 
@@ -97,7 +97,7 @@ kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1
 
 ### 5. 检查应用输出
 
-高温度应用会每两秒钟通过温度计的 *deviceShifu* 获取当前数值。
+温度检测应用会每两秒钟通过温度计的 *deviceShifu* 获取当前数值。
 
 一切准备就绪，通过 log 来查看程序输出：
 
