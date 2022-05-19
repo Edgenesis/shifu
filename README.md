@@ -62,14 +62,15 @@ We prepared a demo for developers to intuitively show how `Shifu` is able to cre
 ---
 
 ## Milestone
+If you want more features/protocols supported, please open an issue [here](https://github.com/Edgenesis/shifu/issues)!
 
 | By      | Protocol                                     | Features                                                 |
-|---------|----------------------------------------------|----------------------------------------------------------|
-| Q4 2021 | HTTP<br>Driver w/ command line                  | Telemetry<br>Command proxy<br>CRD integration<br>Basic Controller |
-| Q1 2022 | At least:<br>MQTT<br>Modbus<br>ONVIF<br>国标GB28181<br>USB  | Declarative API<br>Advanced Controller<br>shifud               |
-| Q2 2022 | At least:<br>OPC UA<br>Serial<br>Zigbee<br>LoRa<br>PROFINET | Abstraction                                              |
-| Q3 2022 | TBD                                          | Security Features                                        |
-| Q3 2023 | TBD                                          | Simulation                                               |
+|---------|----------------------------------------------|---------------------------------------------------------|
+| Q1 2022 | HTTP<br>Driver w/ command line | telemetry<br>command proxy<br>CRD integration<br>basic controller |
+| Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7 | state machine |
+| Q3 2022 | ONVIF<br>OPC-UA | abstraction |
+| Q4 2022 | gRPC | simulation |
+| Q1 2023 | TBD | TBD |
 
 # Shifu's vision
 
