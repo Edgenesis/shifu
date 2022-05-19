@@ -68,7 +68,7 @@ If you want more features/protocols supported, please open an issue [here](https
 |---------|----------------------------------------------|---------------------------------------------------------|
 | Q1 2022 | HTTP<br>Driver w/ command line | telemetry<br>command proxy<br>CRD integration<br>basic controller |
 | Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7 | state machine |
-| Q3 2022 | ONVIF<br>OPC-UA | abstraction |
+| Q3 2022 | ONVIF<br>OPC UA | abstraction |
 | Q4 2022 | gRPC | simulation |
 | Q1 2023 | TBD | TBD |
 
