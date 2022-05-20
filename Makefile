@@ -54,10 +54,14 @@ build-deviceshifu-demo-image:
 	docker build -f ${PROJECT_ROOT}/Dockerfile.demo --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/demo-image-alpine:${IMAGE_VERSION}
 
 buildx-load-deviceshifu-demo-image:
-	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/Dockerfile.demo --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/demo-image-alpine-multi:${IMAGE_VERSION} --load
+	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/Dockerfile.demo \
+	    --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/demo-image-alpine-multi:${IMAGE_VERSION} --load
 
 buildx-push-deviceshifu-demo-image:
-	docker buildx build --platform=linux/amd64,linux/arm64,darwin/arm64 -f ${PROJECT_ROOT}/Dockerfile.demo --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/demo-image-alpine-multi:${IMAGE_VERSION} --push
+	docker buildx build --platform=linux/amd64,linux/arm64,darwin/arm64 -f ${PROJECT_ROOT}/Dockerfile.demo \
+	    --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/demo-image-alpine-multi:${IMAGE_VERSION} --push
 
 .PHONY: build-image-mockdevices
 build-image-mockdevices:
