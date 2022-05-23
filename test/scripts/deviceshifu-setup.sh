@@ -17,13 +17,8 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
                 kind load docker-image edgehub/mockdevice-robot-arm:v0.0.1
                 kind load docker-image edgehub/mockdevice-thermometer:v0.0.1
                 kind load docker-image edgehub/deviceshifu-http-http:v0.0.1
-                kind load docker-image edgehub/edgedevice-controller:v0.0.1
-                kubectl apply -f k8s/crd
-                kubectl create ns devices
-                kubectl config set-context --current --namespace=default
-                kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-serviceaccount.yaml
-                kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-clusterrole.yaml
-                kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-crb.yaml
+                kind load docker-image edgehub/edgedevice-controller-multi:v0.0.1
+                kubectl apply -f k8s/crd/install/shifu_install.yml
         else
                 kind delete cluster
                 docker rmi $(docker images | grep 'edgehub/mockdevice' | awk '{print $3}')
