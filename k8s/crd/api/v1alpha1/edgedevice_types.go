@@ -30,6 +30,14 @@ type MQTTSetting struct {
 	MQTTServerSecret  *string `json:"MQTTServerSecret,omitempty"`
 }
 
+// OPCUASetting defines OPC UA specific settings when connecting to an OPC UA endpoint
+type OPCUASetting struct {
+	OPCUAEndpoint *string `json:"OPCUAEndpoint,omitempty"`
+	SecurityMode  *string `json:"SecurityMode,omitempty"`
+	Username      *string `json:"Username,omitempty"`
+	Password      *string `json:"Password,omitempty"`
+}
+
 // SocketSetting defines Socket specific settings when connecting to an EdgeDevice
 type SocketSetting struct {
 	Encoding    *string `json:"encoding,omitempty"`
@@ -38,7 +46,8 @@ type SocketSetting struct {
 
 // ProtocolSettings defines protocol settings when connecting to an EdgeDevice
 type ProtocolSettings struct {
-	MQTTSetting *MQTTSetting `json:"MQTTSetting,omitempty"`
+	MQTTSetting   *MQTTSetting   `json:"MQTTSetting,omitempty"`
+	OPCUASetting  *OPCUASetting  `json:"OPCUASetting,omitempty"`
 	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
 }
 
@@ -87,6 +96,7 @@ const (
 	ProtocolHTTP            Protocol = "HTTP"
 	ProtocolHTTPCommandline Protocol = "HTTPCommandline"
 	ProtocolMQTT            Protocol = "MQTT"
+	ProtocolOPCUA           Protocol = "OPCUA"
 	ProtocolSocket          Protocol = "Socket"
 	ProtocolUSB             Protocol = "USB"
 )

@@ -60,6 +60,19 @@ spec:
                       MQTTTopic:
                         type: string
                     type: object
+                  OPCUASetting:
+                    description: OPCUASetting defines OPC UA specific settings when
+                      connecting to an OPC UA endpoint
+                    properties:
+                      AuthenticationMethod:
+                        type: string
+                      OPCUAEndpoint:
+                        type: string
+                      Password:
+                        type: string
+                      Username:
+                        type: string
+                    type: object
                   SocketSetting:
                     description: SocketSetting defines Socket specific settings when
                       connecting to an EdgeDevice
