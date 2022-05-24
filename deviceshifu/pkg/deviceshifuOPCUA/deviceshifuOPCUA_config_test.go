@@ -1,4 +1,4 @@
-package deviceshifu
+package deviceshifuOPCUA
 
 import (
 	"io/ioutil"
@@ -46,24 +46,18 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 
 	var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
 		InstructionNameGetValue: {
-			[]DeviceShifuInstructionProperty{
-				{
-					OPCUANodeID: InstructionNodeIDValue,
-				},
+			&DeviceShifuInstructionProperty{
+				OPCUANodeID: InstructionNodeIDValue,
 			},
 		},
 		InstructionNameGetTime: {
-			[]DeviceShifuInstructionProperty{
-				{
-					OPCUANodeID: InstructionNodeIDTime,
-				},
+			&DeviceShifuInstructionProperty{
+				OPCUANodeID: InstructionNodeIDTime,
 			},
 		},
 		InstructionNameGetServerVersion: {
-			[]DeviceShifuInstructionProperty{
-				{
-					OPCUANodeID: InstructionNodeIDServerVersion,
-				},
+			&DeviceShifuInstructionProperty{
+				OPCUANodeID: InstructionNodeIDServerVersion,
 			},
 		},
 	}

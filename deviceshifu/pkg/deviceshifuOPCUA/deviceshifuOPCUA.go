@@ -1,4 +1,4 @@
-package deviceshifu
+package deviceshifuOPCUA
 
 import (
 	"bytes"
@@ -53,7 +53,7 @@ type DeviceShifuHTTPCommandlineHandlerMetadata struct {
 type DeviceShifuOPCUAHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *DeviceShifuInstruction
+	properties     *DeviceShifuInstructionProperty
 }
 
 type deviceCommandHandler interface {
@@ -61,12 +61,13 @@ type deviceCommandHandler interface {
 }
 
 const (
-	DEVICE_IS_HEALTHY_STR             string = "Device is healthy"
-	DEVICE_CONFIGMAP_FOLDER_PATH      string = "/etc/edgedevice/config"
-	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR string = "NULL"
-	DEVICE_NAMESPACE_DEFAULT          string = "default"
-	DEVICE_DEFAULT_PORT_STR           string = ":8080"
-	KUBERNETES_CONFIG_DEFAULT         string = ""
+	DEVICE_IS_HEALTHY_STR                string = "Device is healthy"
+	DEVICE_CONFIGMAP_FOLDER_PATH         string = "/etc/edgedevice/config"
+	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR    string = "NULL"
+	DEVICE_NAMESPACE_DEFAULT             string = "default"
+	DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS int64  = 3000
+	DEVICE_DEFAULT_PORT_STR              string = ":8080"
+	KUBERNETES_CONFIG_DEFAULT            string = ""
 )
 
 // This function creates a new Device Shifu based on the configuration
@@ -153,21 +154,30 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				deviceShifuOPCUAHandlerMetaData := &DeviceShifuOPCUAHandlerMetaData{
 					edgeDevice.Spec,
 					instruction,
-					properties,
+					properties.DeviceShifuInstructionProperties,
 				}
 
 				ctx := context.Background()
-
 				client := opcua.NewClient(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.OPCUAEndpoint,
 					opcua.SecurityMode(ua.MessageSecurityModeNone))
-
 				if err := client.Connect(ctx); err != nil {
-					log.Fatal(err)
+					log.Fatalf("Unable to connect to OPC UA server, error: %v", err)
 				}
 
 				defer client.CloseWithContext(ctx)
 
-				handler := DeviceCommandHandlerOPCUA{client, deviceShifuOPCUAHandlerMetaData}
+				// var timeout *int64
+				// timeout := edgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutMs
+				var handler DeviceCommandHandlerOPCUA
+				if edgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutMs == nil {
+					timeout := DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS
+					handler = DeviceCommandHandlerOPCUA{client, &timeout, deviceShifuOPCUAHandlerMetaData}
+				} else {
+					timeout := edgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutMs
+					handler = DeviceCommandHandlerOPCUA{client, timeout, deviceShifuOPCUAHandlerMetaData}
+				}
+
+				// handler := DeviceCommandHandlerOPCUA{client, timeout, deviceShifuOPCUAHandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		}
@@ -202,6 +212,7 @@ type DeviceCommandHandlerHTTP struct {
 
 type DeviceCommandHandlerOPCUA struct {
 	client                          *opcua.Client
+	timeout                         *int64
 	deviceShifuOPCUAHandlerMetaData *DeviceShifuOPCUAHandlerMetaData
 }
 
@@ -245,9 +256,9 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		if handlerProperties != nil {
 			// TODO: handle validation compile
-			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
-			}
+			// for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
+			// 	log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
+			// }
 		}
 
 		var resp *http.Response
@@ -369,9 +380,9 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 
 		if handlerProperties != nil {
 			// TODO: handle validation compile
-			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
-			}
+			// for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
+			// 	log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
+			// }
 		}
 
 		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
@@ -401,7 +412,47 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 
 func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		nodeID := handler.deviceShifuOPCUAHandlerMetaData.properties.OPCUANodeID
+		log.Printf("Requesting NodeID: %v", nodeID)
 
+		id, err := ua.ParseNodeID(nodeID)
+		if err != nil {
+			log.Fatalf("invalid node id: %v", err)
+		}
+
+		req := &ua.ReadRequest{
+			MaxAge: 2000,
+			NodesToRead: []*ua.ReadValueID{
+				{NodeID: id},
+			},
+			TimestampsToReturn: ua.TimestampsToReturnBoth,
+		}
+
+		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
+		defer cancel()
+
+		resp, err := handler.client.ReadWithContext(ctx, req)
+		if err != nil {
+			log.Fatalf("Read failed: %s", err)
+			http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
+		}
+
+		if resp.Results[0].Status != ua.StatusOK {
+			log.Fatalf("Status not OK: %v", resp.Results[0].Status)
+			http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(resp.Results[0].Status), http.StatusBadRequest)
+		}
+
+		log.Printf("%#v", resp.Results[0].Value.Value())
+		// returnMessage := DeviceShifuSocketReturnBody{
+		// 	Message: message,
+		// 	Status:  http.StatusOK,
+		// }
+
+		w.WriteHeader(http.StatusOK)
+		fmt.Fprintf(w, "%v", resp.Results[0].Value.Value())
+		// w.Header().Set("Content-Type", "application/json")
+		// json.NewEncoder(w).Encode(returnMessage)
 	}
 }
 

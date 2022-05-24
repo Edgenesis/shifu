@@ -1,4 +1,4 @@
-package deviceshifu
+package deviceshifuOPCUA
 
 import (
 	"fmt"

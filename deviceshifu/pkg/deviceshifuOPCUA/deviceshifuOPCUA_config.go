@@ -1,4 +1,4 @@
-package deviceshifu
+package deviceshifuOPCUA
 
 import (
 	"context"
@@ -29,11 +29,11 @@ type DeviceShifuDriverProperties struct {
 }
 
 type DeviceShifuInstruction struct {
-	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"instructionProperties,omitempty"`
+	DeviceShifuInstructionProperties *DeviceShifuInstructionProperty `yaml:"instructionProperties,omitempty"`
 }
 
 type DeviceShifuInstructionProperty struct {
-	OPCUANodeID  string      `yaml:"OPCUANodeID"`
+	OPCUANodeID string `yaml:"OPCUANodeID"`
 }
 
 type DeviceShifuTelemetryProperties struct {
@@ -140,7 +140,7 @@ func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	crdConfig.APIPath = "/apis"
 	crdConfig.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
-	crdConfig.Timeout = 3 * time.Second
+	crdConfig.Timeout = time.Duration(DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS) * time.Millisecond
 	exampleRestClient, err := rest.UnversionedRESTClientFor(crdConfig)
 	if err != nil {
 		return nil, err
