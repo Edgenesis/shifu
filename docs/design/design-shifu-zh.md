@@ -72,7 +72,7 @@ Shifu 一直会向开发者提供非常易用的 SDK，因为 Shifu 想让开发
 
 ##### 1. 自我修复
 
-Shifu 在遇到突发事件时可以自我修复并将自己驱动到目标状态
+Shifu 在遇到突发事件时可以自我修复并将自己调整到目标状态
 
 ##### 2. 稳定
 
@@ -88,7 +88,7 @@ Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 �
 
 #### 可扩展性和可变性
 
-世界上有着太多异构的 IoT 设备。Shifu 需要可扩展和可变来应对不同情景
+世界上有着太多异构的 IoT 设备。Shifu 需要可扩展和可改变来应对不同情景
 
 ### 设计非目标
 
@@ -102,7 +102,7 @@ Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 �
 
 ## 设计总览
 
-当前版本的 ***Shifu*** 类似 [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)。通过利用 Operator 的模式，***Shifu*** 自动会拥有所有 Kubernetes 带来的好处
+当前版本的 ***Shifu*** 类似 [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/)。因为利用了 Operator 的模式，因此 ***Shifu*** 拥有所有 Kubernetes 带来的好处
 
 ### 组件
 

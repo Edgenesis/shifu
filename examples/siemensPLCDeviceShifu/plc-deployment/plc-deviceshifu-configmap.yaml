@@ -20,7 +20,7 @@ data:
   telemetries: |
     device_health:
       properties:
-        instruction: hello
+        instruction: getcpuordercode
         initialDelayMs: 1000
         intervalMs: 1000
 

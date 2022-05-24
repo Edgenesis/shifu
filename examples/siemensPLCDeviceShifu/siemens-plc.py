@@ -98,5 +98,5 @@ def get_cpu_ordercode():
     return order_code
 
 if __name__ == "__main__":
+    client.connect(ip, int(rack), int(slot))
     app.run(host="0.0.0.0", port=port)
-    client.connect('rack', int(rack), int(slot))
