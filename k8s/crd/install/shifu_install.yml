@@ -61,11 +61,14 @@ spec:
                   OPCUASetting:
                     description: OPCUASetting defines OPC UA specific settings when connecting to an OPC UA endpoint
                     properties:
-                      AuthenticationMethod:
-                        type: string
+                      ConnectionTimeoutMs:
+                        format: int64
+                        type: integer
                       OPCUAEndpoint:
                         type: string
                       Password:
+                        type: string
+                      SecurityMode:
                         type: string
                       Username:
                         type: string

@@ -6,8 +6,9 @@ metadata:
 spec:
   sku: "opcua-test" 
   connection: Ethernet
-  address:  opc.tcp://192.168.0.111:4840 #change this accordingly
+  address:  opc.tcp://192.168.0.111:4840/freeopcua/server #change this accordingly
   protocol: OPCUA
   protocolSettings:
     OPCUASetting:
-      OPCUAEndpoint: opc.tcp://192.168.0.111:4840/freeopcua/server #change this accordingly
+      SecurityMode: None
+      ConnectionTimeoutMs: 5000

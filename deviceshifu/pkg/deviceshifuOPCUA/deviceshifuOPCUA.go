@@ -158,7 +158,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				}
 
 				ctx := context.Background()
-				client := opcua.NewClient(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.OPCUAEndpoint,
+				// TODO: handle different security modes
+				client := opcua.NewClient(*edgeDevice.Spec.Address,
 					opcua.SecurityMode(ua.MessageSecurityModeNone))
 				if err := client.Connect(ctx); err != nil {
 					log.Fatalf("Unable to connect to OPC UA server, error: %v", err)
@@ -440,6 +441,8 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 		log.Printf("%#v", resp.Results[0].Value.Value())
 
 		w.WriteHeader(http.StatusOK)
+		// TODO: Should handle different type of return values and return JSON/other data
+		// types instead of plain text
 		fmt.Fprintf(w, "%v", resp.Results[0].Value.Value())
 	}
 }
