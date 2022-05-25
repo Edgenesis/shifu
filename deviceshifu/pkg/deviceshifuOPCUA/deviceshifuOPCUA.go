@@ -164,10 +164,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					log.Fatalf("Unable to connect to OPC UA server, error: %v", err)
 				}
 
-				defer client.CloseWithContext(ctx)
-
-				// var timeout *int64
-				// timeout := edgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutMs
 				var handler DeviceCommandHandlerOPCUA
 				if edgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutMs == nil {
 					timeout := DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS
@@ -177,7 +173,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					handler = DeviceCommandHandlerOPCUA{client, timeout, deviceShifuOPCUAHandlerMetaData}
 				}
 
-				// handler := DeviceCommandHandlerOPCUA{client, timeout, deviceShifuOPCUAHandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		}
@@ -380,9 +375,6 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 
 		if handlerProperties != nil {
 			// TODO: handle validation compile
-			// for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-			// 	log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
-			// }
 		}
 
 		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
@@ -434,25 +426,21 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 
 		resp, err := handler.client.ReadWithContext(ctx, req)
 		if err != nil {
-			log.Fatalf("Read failed: %s", err)
 			http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
+			log.Printf("Read failed: %s", err)
+			return
 		}
 
 		if resp.Results[0].Status != ua.StatusOK {
-			log.Fatalf("Status not OK: %v", resp.Results[0].Status)
 			http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(resp.Results[0].Status), http.StatusBadRequest)
+			log.Printf("Status not OK: %v", resp.Results[0].Status)
+			return
 		}
 
 		log.Printf("%#v", resp.Results[0].Value.Value())
-		// returnMessage := DeviceShifuSocketReturnBody{
-		// 	Message: message,
-		// 	Status:  http.StatusOK,
-		// }
 
 		w.WriteHeader(http.StatusOK)
 		fmt.Fprintf(w, "%v", resp.Results[0].Value.Value())
-		// w.Header().Set("Content-Type", "application/json")
-		// json.NewEncoder(w).Encode(returnMessage)
 	}
 }
 
