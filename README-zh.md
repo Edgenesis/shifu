@@ -61,13 +61,15 @@ Shifu框架利用Web of Things (WoT)提出的[Thing](https://www.w3.org/TR/wot-t
 
 ## 里程碑
 
-| By      | Protocol                                     | Features                                                 |
-|---------|----------------------------------------------|----------------------------------------------------------|
-| Q4 2021 | HTTP<br>Driver w/ command line                  | Telemetry<br>Command proxy<br>CRD integration<br>Basic Controller |
-| Q1 2022 | 至少:<br>MQTT<br>Modbus<br>ONVIF<br>国标GB28181<br>USB  | Declarative API<br>Advanced Controller<br>shifud               |
-| Q2 2022 | 至少:<br>OPC UA<br>Serial<br>Zigbee<br>LoRa<br>PROFINET | Abstraction                                              |
-| Q3 2022 | TBD                                          | Security Features                                        |
-| Q3 2023 | TBD                                          | Simulation                                               |
+如果您想要shifu支持更多的协议/功能，请在[这里](https://github.com/Edgenesis/shifu/issues)提交一个issue!
+
+| 时间      | 协议                                     | 功能                                                 |
+|---------|----------------------------------------------|---------------------------------------------------------|
+| Q1 2022 | HTTP<br>命令行驱动 | 监测<br>命令代理<br>CRD 整合<br>基础shifu控制器 |
+| Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7 | 状态机 |
+| Q3 2022 | ONVIF<br>OPC UA | 抽象 |
+| Q4 2022 | gRPC | 仿真 |
+| Q1 2023 | TBD | TBD |
 
 
 # Shifu的愿景
