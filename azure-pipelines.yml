@@ -8,7 +8,7 @@ trigger:
     - docs
     - examples
     - img
-    - *.md
+    - ./*.md
     - LICENSE
     - .devcontainer
     - .github
@@ -23,7 +23,7 @@ pr:
     - docs
     - examples
     - img
-    - *.md
+    - ./*.md
     - LICENSE
     - .devcontainer
     - .github
