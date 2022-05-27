@@ -11,4 +11,4 @@ spec:
   protocolSettings:
     OPCUASetting:
       SecurityMode: None
-      ConnectionTimeoutMs: 5000
+      ConnectionTimeoutInMilliseconds: 5000

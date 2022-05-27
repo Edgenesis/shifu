@@ -32,11 +32,11 @@ type MQTTSetting struct {
 
 // OPCUASetting defines OPC UA specific settings when connecting to an OPC UA endpoint
 type OPCUASetting struct {
-	OPCUAEndpoint       *string `json:"OPCUAEndpoint,omitempty"`
-	SecurityMode        *string `json:"SecurityMode,omitempty"`
-	Username            *string `json:"Username,omitempty"`
-	Password            *string `json:"Password,omitempty"`
-	ConnectionTimeoutMs *int64  `json:"ConnectionTimeoutMs,omitempty"`
+	OPCUAEndpoint                   *string `json:"OPCUAEndpoint,omitempty"`
+	SecurityMode                    *string `json:"SecurityMode,omitempty"`
+	Username                        *string `json:"Username,omitempty"`
+	Password                        *string `json:"Password,omitempty"`
+	ConnectionTimeoutInMilliseconds *int64  `json:"ConnectionTimeoutInMilliseconds,omitempty"`
 }
 
 // SocketSetting defines Socket specific settings when connecting to an EdgeDevice

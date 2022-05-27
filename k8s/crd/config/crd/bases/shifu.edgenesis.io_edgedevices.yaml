@@ -64,7 +64,7 @@ spec:
                     description: OPCUASetting defines OPC UA specific settings when
                       connecting to an OPC UA endpoint
                     properties:
-                      ConnectionTimeoutMs:
+                      ConnectionTimeoutInMilliseconds:
                         format: int64
                         type: integer
                       OPCUAEndpoint:

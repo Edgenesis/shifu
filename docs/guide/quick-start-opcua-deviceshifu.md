@@ -119,7 +119,7 @@ spec:
   protocolSettings:
     OPCUASetting:
       SecurityMode: None
-      ConnectionTimeoutMs: 5000
+      ConnectionTimeoutInMilliseconds: 5000
 ```
 
 - Currently we use the `spec.address` field for endpoint address
