@@ -251,10 +251,6 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		handlerHTTPClient := handler.client.Client
 
 		if handlerProperties != nil {
-			// TODO: handle validation compile
-			// for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-			// 	log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
-			// }
 		}
 
 		var resp *http.Response
