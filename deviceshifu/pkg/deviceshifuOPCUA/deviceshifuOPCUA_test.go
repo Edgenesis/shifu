@@ -25,7 +25,6 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 	} else {
 		t.Errorf("DeviceShifu Test with empty namespace failed")
 	}
-	time.Sleep(1 * time.Second)
 }
 
 func TestStart(t *testing.T) {
@@ -46,7 +45,6 @@ func TestStart(t *testing.T) {
 	}
 
 	mockds.Stop()
-	time.Sleep(1 * time.Second)
 }
 
 func TestDeviceHealthHandler(t *testing.T) {
@@ -79,7 +77,6 @@ func TestDeviceHealthHandler(t *testing.T) {
 	}
 
 	mockds.Stop()
-	time.Sleep(1 * time.Second)
 
 	// cleanup
 	t.Cleanup(func() {
