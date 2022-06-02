@@ -38,12 +38,15 @@ Follow the official [installation guide](https://docs.docker.com/desktop/windows
 [Download](https://code.visualstudio.com/download) the installation exe and install.
 
 After installation, use `F1` key to open a new WSL window:
+
 ![Open WSL window](img/vscode-wsl-window.png)
 
 Then, use "File --> Open Folder" to open ***Shifu*** directory:
+
 ![Open folder](img/vscode-open-folder.png)
 
 A prompt should show up automatically to open this project in remote container:
+
 ![Remote container prompt](img/develop-vscode-2.png)
 
 Click on that, VSCode should open your project in remote container. Your development environment is ready!

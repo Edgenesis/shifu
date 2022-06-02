@@ -40,9 +40,11 @@ Follow the official [installation guide](https://docs.docker.com/desktop/mac/ins
 [Download](https://code.visualstudio.com/download) the installation dmg and install.
 
 After installation, use "File --> Open Folder" to open ***Shifu*** directory:
+
 ![Open folder](img/develop-vscode-1.png)
 
 A prompt should show up automatically to open this project in remote container:
+
 ![Remote container prompt](img/develop-vscode-2.png)
 
 Click on that, VSCode should open your project in remote container. Your development environment is ready!

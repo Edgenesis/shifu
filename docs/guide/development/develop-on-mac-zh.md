@@ -40,9 +40,11 @@ git clone https://github.com/Edgenesis/shifu.git
 [下载](https://code.visualstudio.com/download) dmg 并安装。
 
 按章完成后，使用 "File --> Open Folder" 来打开 ***Shifu*** 目录:
+
 ![Open folder](img/develop-vscode-1.png)
 
 屏幕右下角会自动有一个弹窗来从 remote container 中打开项目:
+
 ![Remote container prompt](img/develop-vscode-2.png)
 
 点击之后，VSCode会将项目挂载到容器中并打开。开发环境至此搭建完毕！

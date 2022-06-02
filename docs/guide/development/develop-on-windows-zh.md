@@ -38,12 +38,15 @@ git clone https://github.com/Edgenesis/shifu.git
 [下载](https://code.visualstudio.com/download) exe 并安装。
 
 安装完毕后运行, 使用 `F1` 键来打开一个新的 WSL 窗口:
+
 ![Open WSL window](img/vscode-wsl-window.png)
 
 之后，用 "File --> Open Folder" 来打开 ***Shifu*** 的目录:
+
 ![Open folder](img/vscode-open-folder.png)
 
 屏幕右下角会自动有一个弹窗来从 remote container 中打开项目:
+
 ![Remote container prompt](img/develop-vscode-2.png)
 
 点击之后，VSCode会将项目挂载到容器中并打开。开发环境至此搭建完毕！
