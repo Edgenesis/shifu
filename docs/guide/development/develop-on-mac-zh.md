@@ -45,7 +45,7 @@ git clone https://github.com/Edgenesis/shifu.git
 屏幕右下角会自动有一个弹窗来从 remote container 中打开项目:
 ![Remote container prompt](img/develop-vscode-2.png)
 
-点击从容器中打开， VSCode会将项目挂载到容器中并打开。开发环境至此搭建完毕！
+点击之后，VSCode会将项目挂载到容器中并打开。开发环境至此搭建完毕！
 
 
 ***提示***: 如果您使用 `Visual Studio Code` 的 `Dev Container`, 您可以跳过下面所有的环境部署步骤。
