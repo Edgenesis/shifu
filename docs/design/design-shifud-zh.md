@@ -68,7 +68,7 @@
 
 ### ***shifud*** 输入 & 输出
 ***shifud*** 的输入输出总览可以被总结为下图：
-[![shifud input and output overview](/img/shifud-input-output.svg)](/img/shifud-input-output.svg)    
+[![shifud input and output overview](/docs/img/shifud-input-output.svg)](/docs/img/shifud-input-output.svg)    
 
 ***shifud*** 来自Kubernetes ***edgeDevice*** 资源的输入应该是一个 ***edgeDevice*** 列表：
 ```
@@ -92,7 +92,7 @@ spec:
 ```
 
 #### 结构图
-[![shifud design overview](/img/shifud-design-overview.svg)](/img/shifud-design-overview.svg)    
+[![shifud design overview](/docs/img/shifud-design-overview.svg)](/docs/img/shifud-design-overview.svg)    
 
 
 #### ***shifud*** 的执行流(集群):

@@ -68,7 +68,7 @@ Developer should only need to provide necessary information in order for ***shif
 
 ### ***shifud*** input & output
 The overall input and output of ***shifud*** can be summarized in the following graph:
-[![shifud input and output overview](/img/shifud-input-output.svg)](/img/shifud-input-output.svg)    
+[![shifud input and output overview](/docs/img/shifud-input-output.svg)](/docs/img/shifud-input-output.svg)    
 The input to ***shifud*** from Kubernetes ***edgeDevice*** resource should be a list of ***edgeDevices***:    
 ```
 apiVersion: v1
@@ -91,7 +91,7 @@ spec:
 ```
 
 #### Architecture diagrams
-[![shifud design overview](/img/shifud-design-overview.svg)](/img/shifud-design-overview.svg)    
+[![shifud design overview](/docs/img/shifud-design-overview.svg)](/docs/img/shifud-design-overview.svg)    
 
 
 #### ***shifud***'s execution flow(cluter):

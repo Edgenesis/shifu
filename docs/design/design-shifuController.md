@@ -1,5 +1,5 @@
 # 【WIP】shifuController design
-- [shifuController design](#shifucontroller-design)
+- [【WIP】shifuController design](#wipshifucontroller-design)
   - [Design goals and non-goals](#design-goals-and-non-goals)
     - [Design goals](#design-goals)
       - [low resource consumption](#low-resource-consumption)

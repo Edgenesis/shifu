@@ -114,19 +114,19 @@ The goal of ***shifud*** is to achieve the following:
 
 ### Call stack
 #### ***overall***
-[![shifud overall call stack](/img/shifud-overall-call-stack.svg)](/img/shifud-overall-call-stack.svg)    
+[![shifud overall call stack](/docs/img/shifud-overall-call-stack.svg)](/docs/img/shifud-overall-call-stack.svg)    
 
 #### ***deviceDiscoverer*** (per cluster)
-[![shifud deviceDiscoverer call stack](/img/shifud-deviceDiscoverer-cluster-call-stack.svg)](/img/shifud-deviceDiscoverer-cluster-call-stack.svg)    
+[![shifud deviceDiscoverer call stack](/docs/img/shifud-deviceDiscoverer-cluster-call-stack.svg)](/docs/img/shifud-deviceDiscoverer-cluster-call-stack.svg)    
 
 #### ***deviceDiscoverer*** (per ***edgeNode***)
-[![shifud deviceDiscoverer call stack](/img/shifud-deviceDiscoverer-edgeNode-call-stack.svg)](/img/shifud-deviceDiscoverer-edgeNode-call-stack.svg)    
+[![shifud deviceDiscoverer call stack](/docs/img/shifud-deviceDiscoverer-edgeNode-call-stack.svg)](/docs/img/shifud-deviceDiscoverer-edgeNode-call-stack.svg)    
 
 #### ***deviceVerifier*** (per cluster)
-[![shifud deviceVerifier call stack](/img/shifud-deviceVerifier-cluster-call-stack.svg)](/img/shifud-deviceVerifier-cluster-call-stack.svg)    
+[![shifud deviceVerifier call stack](/docs/img/shifud-deviceVerifier-cluster-call-stack.svg)](/docs/img/shifud-deviceVerifier-cluster-call-stack.svg)    
 
 #### ***deviceVerifier*** (per ***edgeNode***)
-[![shifud deviceVerifier call stack](/img/shifud-deviceVerifier-edgeNode-call-stack.svg)](/img/shifud-deviceVerifier-edgeNode-call-stack.svg)    
+[![shifud deviceVerifier call stack](/docs/img/shifud-deviceVerifier-edgeNode-call-stack.svg)](/docs/img/shifud-deviceVerifier-edgeNode-call-stack.svg)    
 
 #### ***deviceUpdater***
-[![shifud deviceUpdater call stack](/img/shifud-deviceUpdater-call-stack.svg)](/img/shifud-deviceUpdater-call-stack.svg)    
+[![shifud deviceUpdater call stack](/docs/img/shifud-deviceUpdater-call-stack.svg)](/docs/img/shifud-deviceUpdater-call-stack.svg)    

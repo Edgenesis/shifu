@@ -146,13 +146,13 @@ The current version of Shifu resembles a [Kubernetes Operator](https://kubernete
 Upon an ***edgeDevice*** connects to the ***edgeNode***, Shifu will 
 1. create a ***deviceShifu***, an augmented digital twin of the ***edgeDevice*** to manage it.
 
-[![shifu-device connect](/img/shifu-device-connect.svg)](/img/shifu-device-connect.svg)
+[![shifu-device connect](/docs/img/shifu-device-connect.svg)](/docs/img/shifu-device-connect.svg)
 
 ##### 2. Device operating | TODO: formalize deviceShifu interface
 
 During normal operation, ***shifud*** and ***shifuController*** don't do much. User workloads interacts ***deviceShifu*** directly. For example, you can call ***deviceShifu***'s API to retrieve device metadata, device health, etc. Since it's two-way communication, once you implement your ***edgeDevice***'s specific methods in ***deviceShifu***'s API, can also call ***deviceShifu***'s API to manage your ***edgeDevice***. For example, you can setup your video camera's video stream through a few lines of code.
 
-[![shifu-device operating](/img/shifu-device-operating.svg)](/img/shifu-device-operating.svg)
+[![shifu-device operating](/docs/img/shifu-device-operating.svg)](/docs/img/shifu-device-operating.svg)
 
 ##### 3. Device disconnect (user workload not shown in below figure)
 
@@ -160,4 +160,4 @@ During normal operation, ***shifud*** and ***shifuController*** don't do much. U
 2. device disconnect: ***shifud*** detects the newly disconnected device, and sends the event to ***shifuController***.
 3. delete: ***shifuController*** deletes the ***deviceShifu*** for the ***edgeDevice***. The delete process might take longer due to cleanup.
 
-[![shifu-device disconnect](/img/shifu-device-disconnect.svg)](/img/shifu-device-disconnect.svg)
+[![shifu-device disconnect](/docs/img/shifu-device-disconnect.svg)](/docs/img/shifu-device-disconnect.svg)

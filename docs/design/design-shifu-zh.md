@@ -150,13 +150,13 @@ Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 �
 当 ***edgeDevice*** 连接到 ***edgeNode*** 时, Shifu 会 
 1. 创建一个 ***deviceShifu***, 通过 ***edgeDevice*** 的数字孪生来管理他
 
-[![shifu-device connect](/img/shifu-device-connect.svg)](/img/shifu-device-connect.svg)
+[![shifu-device connect](/docs/img/shifu-device-connect.svg)](/docs/img/shifu-device-connect.svg)
 
 ##### 2. 设备操作 | TODO: 统一 deviceShifu 接口
 
 在正常运行时，***shifud*** 和 ***shifuController*** 不会做太多事。用户直接和 ***deviceShifu*** 交互。比如，可以通过 ***deviceShifu*** 的API来获取设备的信息，健康状态等。因为是双向的，当开发者在 ***deviceShifu*** 的API中实现了 ***edgeDevice*** 的特定功能后，可以通过 ***deviceShifu*** 的 API 来管理 ***edgeDevice***。比如通过很少行的代码搭建摄像头的视频流
 
-[![shifu-device operating](/img/shifu-device-operating.svg)](/img/shifu-device-operating.svg)
+[![shifu-device operating](/docs/img/shifu-device-operating.svg)](/docs/img/shifu-device-operating.svg)
 
 ##### 3. 设备断连（用户操作不在下图中）
 
@@ -164,4 +164,4 @@ Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 �
 2. 设备断开连接: ***shifud*** 检测到断开事件，将事件发送给 ***shifuController***
 3. 删除: ***shifuController*** 删除 ***edgeDevice*** 的 ***deviceShifu***。删除过程会因为清理持续一阵子
 
-[![shifu-device disconnect](/img/shifu-device-disconnect.svg)](/img/shifu-device-disconnect.svg)
+[![shifu-device disconnect](/docs/img/shifu-device-disconnect.svg)](/docs/img/shifu-device-disconnect.svg)
