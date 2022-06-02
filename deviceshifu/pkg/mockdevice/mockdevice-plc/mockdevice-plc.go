@@ -11,15 +11,22 @@ import (
 )
 
 var (
-	resp              map[string]string
+	dataStorage       map[string]string
 	MemoryArea        = []string{"M", "Q", "T", "C"}
-	originalCharacter = "00000000"
+	originalCharacter = "0b0000000000000000"
+)
+
+const (
+	rootAddress = "rootaddress"
+	address     = "address"
+	digit       = "digit"
+	value       = "value"
 )
 
 func main() {
-	resp = make(map[string]string)
+	dataStorage = make(map[string]string)
 	for _, v := range MemoryArea {
-		resp[v] = "00000000"
+		dataStorage[v] = originalCharacter
 	}
 
 	available_funcs := []string{
@@ -37,30 +44,30 @@ func instructionHandler(functionName string) http.HandlerFunc {
 		switch functionName {
 		case "getcontent":
 			query := r.URL.Query()
-			rootaddress := query.Get("rootaddress")
-			if _, ok := resp[rootaddress]; !ok {
+			rootaddress := query.Get(rootAddress)
+			if _, ok := dataStorage[rootaddress]; !ok {
 				fmt.Errorf("error getting", rootaddress)
 				return
 			}
-			fmt.Fprintf(w, "0b00000000"+resp[rootaddress])
+			fmt.Fprintf(w, dataStorage[rootaddress])
 		case "sendsinglebit":
 			query := r.URL.Query()
-			rootaddress := query.Get("rootaddress")
-			address, err := strconv.Atoi(query.Get("address"))
+			rootaddress := query.Get(rootAddress)
+			addressValue, err := strconv.Atoi(query.Get(address))
 			if err != nil {
 				panic(err)
 			}
-			digits, err := strconv.Atoi(query.Get("digit"))
+			digitsValue, err := strconv.Atoi(query.Get(digit))
 			if err != nil {
 				panic(err)
 			}
-			value := query.Get("value")
-			sendsed := []byte(resp[rootaddress])
-			send := []byte(value)
-			sendsed[len(resp[rootaddress])-1-address-digits] = send[0]
-			resp[rootaddress] = string(sendsed)
+			valueValue := query.Get(value)
+			sendsed := []byte(dataStorage[rootaddress])
+			send := []byte(valueValue)
+			sendsed[len(dataStorage[rootaddress])-1-addressValue-digitsValue] = send[0]
+			dataStorage[rootaddress] = string(sendsed)
 			log.Println(sendsed)
-			fmt.Fprintf(w, "0b00000000"+resp[rootaddress])
+			fmt.Fprintf(w, dataStorage[rootaddress])
 		case "get_status":
 			rand.Seed(time.Now().UnixNano())
 			fmt.Fprintf(w, mockdevice.STATUS_STR_LIST[(rand.Intn(len(mockdevice.STATUS_STR_LIST)))])
