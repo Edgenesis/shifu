@@ -3,7 +3,7 @@ package main
 import (
 	"os"
 
-	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifuMQTT"
+	"github.com/edgenesis/shifu/pkg/deviceshifuMQTT"
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
