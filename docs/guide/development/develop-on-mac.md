@@ -1,6 +1,6 @@
-# Development Guide:
+# Setup Guide:
 
-Welcome developers! This guide will help you on setting up development environment for Shifu on `Mac OS`
+Welcome developers! This guide will help you on setting up development environment for `Shifu` on `Mac OS`
 
 ### This guide has been tested on the following platform:
 ```
@@ -74,7 +74,7 @@ brew install kubectl
 ```
 
 ### 1.8 Install `kubebuilder`
-from [Kubernetes](https://kubernetes.io/docs/tasks/tools/install-kubectl-macos/), install with:
+from [kubebuilder](https://book.kubebuilder.io/quick-start.html), install with:
 ```sh
 curl -L -o kubebuilder https://go.kubebuilder.io/dl/latest/$(go env GOOS)/$(go env GOARCH)
 chmod +x kubebuilder && mv kubebuilder /usr/local/bin/

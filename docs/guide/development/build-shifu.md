@@ -3,7 +3,7 @@
 Finish setting up using the setup guide: [Windows](develop-on-windows.md)/[Mac OS](develop-on-mac.md)
 
 ## Overview:
-It is possible to build Shifu's binaries locally, we have provided a `Docker` Dev Container environment that simplifies setup and provides consistent environment across all platforms.
+It is possible to build `Shifu`'s binaries locally, we have provided a `Docker` Dev Container environment that simplifies setup and provides consistent environment across all platforms.
 
 ## Building
 ### 1. Build ***deviceShifu*** binaries directly:
