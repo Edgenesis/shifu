@@ -7,7 +7,7 @@ replace edgenesis.io/shifu/k8s/crd => ./k8s/crd
 replace edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice => ./deviceshifu/pkg/mockdevice/mockdevice
 
 require (
-	edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice v0.0.0
+	edgenesis.io/shifu/pkg/mockdevice/mockdevice v0.0.0
 	edgenesis.io/shifu/k8s/crd v0.0.0
 	github.com/eclipse/paho.mqtt.golang v1.3.5
 	gopkg.in/yaml.v3 v3.0.1
