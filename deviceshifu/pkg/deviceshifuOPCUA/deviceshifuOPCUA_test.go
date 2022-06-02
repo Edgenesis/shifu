@@ -11,6 +11,20 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+func TestNew(t *testing.T) {
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		"TestStartHttpServer",
+		"etc/edgedevice/config",
+		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		"TestStartHttpServerNamespace",
+	}
+
+	_, err := New(deviceShifuMetadata)
+	if err != nil {
+		t.Errorf("Failed creating new deviceShifu")
+	}
+}
+
 func TestDeviceShifuEmptyNamespace(t *testing.T) {
 	deviceShifuMetadata := &DeviceShifuMetaData{
 		"TestDeviceShifuEmptyNamespace",
@@ -40,9 +54,7 @@ func TestStart(t *testing.T) {
 		t.Errorf("Failed creating new deviceShifu")
 	}
 
-	if err := mockds.Start(wait.NeverStop); err != nil {
-		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
-	}
+	mockds.Start(wait.NeverStop)
 
 	mockds.Stop()
 }

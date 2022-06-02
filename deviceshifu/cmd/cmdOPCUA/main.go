@@ -23,9 +23,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	if err := ds.Start(wait.NeverStop); err != nil {
-		panic(err.Error())
-	}
+	ds.Start(wait.NeverStop)
 
 	select {}
 }

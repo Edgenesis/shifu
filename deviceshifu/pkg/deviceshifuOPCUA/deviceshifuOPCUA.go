@@ -264,13 +264,11 @@ func (ds *DeviceShifu) StartTelemetryCollection() error {
 	}
 }
 
-func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
+func (ds *DeviceShifu) Start(stopCh <-chan struct{}) {
 	fmt.Printf("deviceShifu %s started\n", ds.Name)
 
 	go ds.startHttpServer(stopCh)
 	go ds.StartTelemetryCollection()
-
-	return nil
 }
 
 func (ds *DeviceShifu) Stop() error {
