@@ -28,6 +28,8 @@ Shifu utilized the Web of Things (WoT)' conception of [Thing](https://www.w3.org
 
 ## How to use Shifu?
 
+See our [documentation](https://en.docs.edgenesis.io/)
+ 
 Currently, Shifu runs on [Kubernetes](https://k8s.io). We will provide more deployment methods including standalone deployment in the future.
 
 ### [Install](docs/guide/install.md) Shifu on Kubernetes cluster
