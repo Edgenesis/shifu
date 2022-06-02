@@ -40,13 +40,13 @@ func main() {
 func instructionHandler(functionName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log.Printf("Handling: %v", functionName)
-
 		switch functionName {
 		case "getcontent":
 			query := r.URL.Query()
 			rootaddress := query.Get(rootAddress)
 			if _, ok := dataStorage[rootaddress]; !ok {
-				fmt.Errorf("error getting", rootaddress)
+				log.Println("error getting", rootaddress)
+				fmt.Fprintf(w, "error getting")
 				return
 			}
 			fmt.Fprintf(w, dataStorage[rootaddress])
