@@ -36,6 +36,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		InstructionNodeIDTime           string = "i=2258"
 		InstructionNodeIDServerVersion  string = "i=2261"
 		TelemetryMs1000                 int    = 1000
+		TelemetryMs1000Int64            int64  = 1000
 	)
 
 	var mockDeviceDriverProperties = DeviceShifuDriverProperties{
@@ -62,12 +63,17 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		},
 	}
 
-	var mockDeviceTelemetries = map[string]*DeviceShifuTelemetry{
-		"device_health": {
-			DeviceShifuTelemetryProperties{
-				DeviceInstructionName: &InstructionNameGetServerVersion,
-				InitialDelayMs:        &TelemetryMs1000,
-				IntervalMs:            &TelemetryMs1000,
+	var mockDeviceTelemetries = &DeviceShifuTelemetries{
+		DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
+			DeviceShifuTelemetryUpdateIntervalMiliseconds: &TelemetryMs1000Int64,
+		},
+		DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
+			"device_health": {
+				DeviceShifuTelemetryProperties{
+					DeviceInstructionName: &InstructionNameGetServerVersion,
+					InitialDelayMs:        &TelemetryMs1000,
+					IntervalMs:            &TelemetryMs1000,
+				},
 			},
 		},
 	}

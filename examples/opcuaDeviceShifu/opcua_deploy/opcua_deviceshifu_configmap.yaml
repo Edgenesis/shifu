@@ -18,9 +18,12 @@ data:
       instructionProperties:
         OPCUANodeID: "i=2261"
   telemetries: |
-    device_health:
-      properties:
-        instruction: get_server
-        initialDelayMs: 1000
-        intervalMs: 1000
+    telemetrySettings:
+      updateIntervalMs: 1000
+    telemetries:
+      device_health:
+        properties:
+          instruction: get_server
+          initialDelayMs: 1000
+          intervalMs: 1000
    
