@@ -70,7 +70,6 @@ If you want more features/protocols supported, please open an issue [here](https
 | Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7<br>OPC UA | state machine<br>shifu portal(frontend) |
 | Q3 2022 | ONVIF | abstraction<br>[shifuController](docs/design/design-shifuController.md)<br>[shifud](docs/design/design-shifud.md) |
 | Q4 2022 | gRPC | simulation |
-| Q1 2023 | TBD | TBD |
 
 # Shifu's vision
 
