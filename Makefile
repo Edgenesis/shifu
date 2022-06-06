@@ -12,9 +12,18 @@ buildx-push-image-deviceshifu:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuSocket --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-socket:${IMAGE_VERSION} --push
 
 buildx-load-image-deviceshifu:
-	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-http:${IMAGE_VERSION} --load
-	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuMQTT --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-mqtt:${IMAGE_VERSION} --load
-	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuSocket --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/deviceshifu-http-socket:${IMAGE_VERSION} --load	
+	docker buildx build --platform=$(go env GOOS)/$(go env GOARCH) -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-http-http:${IMAGE_VERSION} --load
+	docker buildx build --platform=$(go env GOOS)/$(go env GOARCH) -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuMQTT \
+	 	--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-http-mqtt:${IMAGE_VERSION} --load
+	docker buildx build --platform=$(go env GOOS)/$(go env GOARCH) -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuSocket \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} 
+		-t edgehub/deviceshifu-http-socket:${IMAGE_VERSION} --load	
+	docker buildx build --platform=$(go env GOOS)/$(go env GOARCH) -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuOPCUA \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} 
+		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --load	
 
 .PHONY: download-demo-files
 download-demo-files:
