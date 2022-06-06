@@ -67,7 +67,7 @@ Shifu框架利用Web of Things (WoT)提出的[Thing](https://www.w3.org/TR/wot-t
 |---------|----------------------------------------------|---------------------------------------------------------|
 | Q1 2022 | HTTP<br>命令行驱动 | 监测<br>命令代理<br>CRD 整合 |
 | Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7<br>OPC UA | 状态机<br>shifu portal（前端） |
-| Q3 2022 | ONVIF<br>OPC UA | shifu抽象<br>[shifuController](docs/design/design-shifuController-zh.md)<br>[shifud](docs/design/design-shifud-zh.md) |
+| Q3 2022 | ONVIF | shifu抽象<br>[shifuController](docs/design/design-shifuController-zh.md)<br>[shifud](docs/design/design-shifud-zh.md) |
 | Q4 2022 | gRPC | 仿真 |
 
 # Shifu的愿景
