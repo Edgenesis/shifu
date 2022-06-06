@@ -48,6 +48,7 @@ const (
 	DEVICE_DEFAULT_PORT_STR                     string = ":8080"
 	DEVICE_DEFAULT_REQUEST_TIMEOUT_MS           int64  = 1000
 	DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS int64  = 1000
+	EDGEDEVICE_STATUS_FAIL                      bool   = false
 	KUBERNETES_CONFIG_DEFAULT                   string = ""
 )
 
@@ -208,10 +209,8 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 }
 
 func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string) (string, error) {
-	for instruction, instructionProperties := range ds.deviceShifuConfig.Instructions {
-		if instructionName == instruction {
-			return instructionProperties.DeviceShifuInstructionProperties.OPCUANodeID, nil
-		}
+	if instructionProperties, exists := ds.deviceShifuConfig.Instructions[instructionName]; exists {
+		return instructionProperties.DeviceShifuInstructionProperties.OPCUANodeID, nil
 	}
 
 	return "", fmt.Errorf("Instruction %v not found in list of deviceShifu instructions", instructionName)
@@ -267,9 +266,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry(telemetry string, telemetryProperti
 		return false, err
 	}
 
-	err = ds.requestOPCUANodeID(nodeID)
-
-	if err != nil {
+	if err = ds.requestOPCUANodeID(nodeID); err != nil {
 		log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
 		return false, err
 	}
@@ -282,13 +279,13 @@ func (ds *DeviceShifu) collectOPCUATelemetries() error {
 	telemetries := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetries
 	for telemetry, telemetryProperties := range telemetries {
 		status, err := ds.collectOPCUATelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
-		log.Printf("Status is: %v", status)
 		if err != nil {
 			log.Printf("Error is: %v", err.Error())
 			telemetryOK = false
 		}
 
-		if !status && telemetryOK {
+		log.Printf("Status is: %v", status)
+		if status == EDGEDEVICE_STATUS_FAIL && telemetryOK {
 			telemetryOK = false
 		}
 	}
@@ -362,11 +359,20 @@ func (ds *DeviceShifu) StartTelemetryCollection() error {
 	time.Sleep(5 * time.Second)
 	telemetryUpdateIntervalMiliseconds := DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS
 
-	if ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings != nil &&
-		ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.
+	if ds.
+		deviceShifuConfig.
+		Telemetries.
+		DeviceShifuTelemetrySettings != nil &&
+		ds.
+			deviceShifuConfig.
+			Telemetries.
+			DeviceShifuTelemetrySettings.
 			DeviceShifuTelemetryUpdateIntervalMiliseconds != nil {
-		telemetryUpdateIntervalMiliseconds = *ds.deviceShifuConfig.Telemetries.
-			DeviceShifuTelemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds
+		telemetryUpdateIntervalMiliseconds = *ds.
+			deviceShifuConfig.
+			Telemetries.
+			DeviceShifuTelemetrySettings.
+			DeviceShifuTelemetryUpdateIntervalMiliseconds
 	}
 
 	for {

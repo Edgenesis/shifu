@@ -15,7 +15,7 @@ data:
         OPCUANodeID: "i=2261"
   telemetries: |
     telemetrySettings:
-      updateIntervalMs: 1000
+      telemetryUpdateIntervaInlMiliseconds: 1000
     telemetries:
       device_health:
         properties:
