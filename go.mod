@@ -9,7 +9,7 @@ replace edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice => ./deviceshif
 require (
 	edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice v0.0.0
 	edgenesis.io/shifu/k8s/crd v0.0.0
-	github.com/eclipse/paho.mqtt.golang v1.3.5
+	github.com/eclipse/paho.mqtt.golang v1.4.1
 	github.com/gopcua/opcua v0.3.4
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.24.1
@@ -32,6 +32,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	golang.org/x/net v0.0.0-20220418201149-a630d4f3e7a2 // indirect
 	golang.org/x/oauth2 v0.0.0-20211104180415-d3ed0bb246c8 // indirect
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.0.0-20220412211240-33da011f77ad // indirect
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211 // indirect
 	golang.org/x/text v0.3.7 // indirect
