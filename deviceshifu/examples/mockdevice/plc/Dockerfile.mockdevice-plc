@@ -19,7 +19,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/mockdevice-plc \
-                                                                       /shifu/deviceshifu/pkg/mockdevice/mockdevice-plc/mockdevice-plc.go
+    /shifu/deviceshifu/pkg/mockdevice/mockdevice-plc/mockdevice-plc.go
 
 FROM edgehub/distroless-static:nonroot
 WORKDIR /

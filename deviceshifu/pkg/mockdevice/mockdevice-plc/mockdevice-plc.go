@@ -45,31 +45,46 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			query := r.URL.Query()
 			rootaddress := query.Get(rootAddress)
 			if _, ok := dataStorage[rootaddress]; !ok {
-				log.Println("error getting", rootaddress)
-				fmt.Fprintf(w, "error getting")
+				log.Println("Nonexistent memory area:", rootaddress)
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintf(w, "Nonexistent memory area")
 				return
 			}
+
+			w.WriteHeader(http.StatusOK)
 			fmt.Fprintf(w, dataStorage[rootaddress])
 		case "sendsinglebit":
 			query := r.URL.Query()
 			rootaddress := query.Get(rootAddress)
 			addressValue, err := strconv.Atoi(query.Get(address))
 			if err != nil {
-				panic(err)
+				log.Fatalln(err)
 			}
+
 			digitsValue, err := strconv.Atoi(query.Get(digit))
 			if err != nil {
-				panic(err)
+				log.Fatalln(err)
 			}
+
+			if _, ok := dataStorage[rootaddress]; !ok {
+				log.Println("Nonexistent memory area:", rootaddress)
+				w.WriteHeader(http.StatusBadRequest)
+				fmt.Fprintf(w, "Nonexistent memory area")
+				return
+			}
+
 			valueValue := query.Get(value)
-			sendsed := []byte(dataStorage[rootaddress])
-			send := []byte(valueValue)
-			sendsed[len(dataStorage[rootaddress])-1-addressValue-digitsValue] = send[0]
-			dataStorage[rootaddress] = string(sendsed)
-			log.Println(sendsed)
+			responseValue := []byte(dataStorage[rootaddress])
+			valueModificator := []byte(valueValue)
+			responseValue[len(dataStorage[rootaddress])-1-
+				addressValue-digitsValue] = valueModificator[0]
+			dataStorage[rootaddress] = string(responseValue)
+			log.Println(responseValue)
+			w.WriteHeader(http.StatusOK)
 			fmt.Fprintf(w, dataStorage[rootaddress])
 		case "get_status":
 			rand.Seed(time.Now().UnixNano())
+			w.WriteHeader(http.StatusOK)
 			fmt.Fprintf(w, mockdevice.STATUS_STR_LIST[(rand.Intn(len(mockdevice.STATUS_STR_LIST)))])
 		}
 	}
