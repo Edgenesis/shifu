@@ -73,11 +73,11 @@ func instructionHandler(functionName string) http.HandlerFunc {
 				return
 			}
 
-			valueValue := query.Get(value)
+			requestValue := query.Get(value)
 			responseValue := []byte(dataStorage[rootaddress])
-			valueModificator := []byte(valueValue)
+			valueModifier := []byte(requestValue)
 			responseValue[len(dataStorage[rootaddress])-1-
-				addressValue-digitsValue] = valueModificator[0]
+				addressValue-digitsValue] = valueModifier[0]
 			dataStorage[rootaddress] = string(responseValue)
 			log.Println(responseValue)
 			w.WriteHeader(http.StatusOK)

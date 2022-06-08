@@ -2,7 +2,7 @@
 There is already a demo virtual PLC deployment configuration in `shifu/deviceshifu/examples/demo_device` . The virtual PLC will virtualize the binary code of the four storage areas "M", "Q", "T" and "C" of the PLC device. This binary encoding can be read with the `getcontent` API, or modified with the `sendsinglebit` API.
 
 
-From the `shifu` root directory, run the following command to run *shifu* :
+From the `shifu` root directory, run the following command to install *shifu* :
 
 ```
 kubectl apply -f k8s/crd/install/shifu_install.yml
@@ -32,7 +32,7 @@ Interact with the virtual PLC through the following commands on the nginx comman
 curl "edgedevice-plc/sendsinglebit?rootaddress=DB&address=0&start=0&digit=0&value=1";echo 
 curl edgedevice-plc/getcontent?rootaddress=Q;echo 
 ```
-输出示例：
+example output:
 
 ```
 curl edgedevice-plc/getcontent?rootaddress=Q;echo 
