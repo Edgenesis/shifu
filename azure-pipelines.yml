@@ -1,4 +1,4 @@
-trigger: 
+trigger:
   branches:
     include:
     - main
@@ -33,7 +33,7 @@ pr:
 pool:
    vmImage: 'ubuntu-latest'
 
-steps: 
+steps:
 - task: GoTool@0
   inputs:
     version: '1.17.1'
@@ -86,6 +86,11 @@ steps:
   inputs:
     command: 'build'
     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plate-reader'
+- task: Go@0
+  displayName: "go build mockdevice plc"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plc'
 - task: Go@0
   displayName: "go build mockdevice robot arm"
   inputs:
