@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: edgedevice-plc-deployment
+  name: edgedevice-plc
+  namespace: default
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    targetPort: 8080
+  selector:
+    app: edgedevice-plc-deployment
+  type: LoadBalancer
