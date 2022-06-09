@@ -1,4 +1,4 @@
-# shifuController design
+# 【WIP】shifuController design
 - [shifuController design](#shifucontroller-design)
   - [Design goals and non-goals](#design-goals-and-non-goals)
     - [Design goals](#design-goals)
@@ -136,7 +136,7 @@ spec:
         app: edgedevice-thermometer-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http:v0.0.1
+      - image: edgehub/deviceshifu-http-http:v0.0.1
         name: deviceshifu-http
         ports:
         - containerPort: 8080

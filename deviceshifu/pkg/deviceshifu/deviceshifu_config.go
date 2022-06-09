@@ -6,7 +6,7 @@ import (
 	"log"
 
 	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -60,6 +60,7 @@ const (
 	EDGEDEVICE_RESOURCE_STR = "edgedevices"
 )
 
+// Read the configuration under the path directory and return configuration
 func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if path == "" {
 		return nil, errors.New("DeviceShifuConfig path can't be empty")

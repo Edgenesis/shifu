@@ -14,7 +14,7 @@ Shifu是一个k8s原生的IoT设备虚拟化框架。 Shifu希望帮助IoT开发
 - Shifu让管理和控制IoT设备变得极其简单。当你连接设备的时候，Shifu会识别并以一个k8s Pod的方式启动一个该设备的虚拟设备 ***deviceShifu***
 - ***deviceShifu*** 提供给用户了高层的交互抽象
   - 开发者通过接入 ***deviceShifu*** 的接口，不仅可以实现IoT设备的所有设计功能，还可以实现原本设备所不具备的功能！例如：在设备允许的状况下，通过一行命令来回滚设备的状态
-  - Shifu 还可以实现设备分组以及多层封装，来自动执行更高级的命令比如 `Factory start`
+  - Shifu 还可以实现设备分组以及多层封装，来自动执行更高级的命令。比如通过把各种机器的***deviceShifu***进一步封装到***factoryShifu***里面，再通过类似`Factory start`这样的命令，可以让一个工业4.0的工厂自动开始生产。
 - 之后实现的 simulation 功能可以使开发人员在执行命令前演算一遍，通过模拟现实来避免实际执行时可能遇到的问题
 
 ## Shifu 与 Thing
@@ -30,13 +30,6 @@ Shifu框架利用Web of Things (WoT)提出的[Thing](https://www.w3.org/TR/wot-t
 当前，Shifu运行在[Kubernetes](https://k8s.io) 上。我们将来会提供包含单独部署在内的更多部署方式
 
 ### 在现有 Kubernetes 集群中[安装](docs/guide/install-zh.md) Shifu
-
----
-
-### 教程:
-- 连接一个 ***edgeDevice***： [Hello world设备教程](docs/guide/quick-start-hello-world-zh.md)
-
-- 通过程序与 ***deviceShifu*** 交互： [和 deviceShifu 交互的简单应用](docs/guide/guide-on-writing-an-application-for-deviceShifu-zh.md)
 
 ---
 
@@ -56,26 +49,26 @@ Shifu框架利用Web of Things (WoT)提出的[Thing](https://www.w3.org/TR/wot-t
 - Telemetry 收集：shifu可以定期收集设备的监测数据。监测数据的种类、收集的方式以及收集的频率都可以由用户在配置文件中自由设置。
 - 和 Kubernetes 通过 CRD 整合：shifu可以支持对任何设备进行任何形式的配置。
 ### 还未支持
+- 自动生成***deviceShifu***
 - [声明式 API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
 - [高级的 Shifu 控制器](docs/design/design-shifuController-zh.md)
 - [shifud](docs/design/design-shifud-zh.md)
-- 抽象
-  - 横向
-  - 纵向
+- 设备分组
+- 多层封装
 - 演算
 
 ---
 
 ## 里程碑
 
-| By      | Protocol                                     | Features                                                 |
-|---------|----------------------------------------------|----------------------------------------------------------|
-| Q4 2021 | HTTP<br>Driver w/ command line                  | Telemetry<br>Command proxy<br>CRD integration<br>Basic Controller |
-| Q1 2022 | 至少:<br>MQTT<br>Modbus<br>ONVIF<br>国标GB28181<br>USB  | Declarative API<br>Advanced Controller<br>shifud               |
-| Q2 2022 | 至少:<br>OPC UA<br>Serial<br>Zigbee<br>LoRa<br>PROFINET | Abstraction                                              |
-| Q3 2022 | TBD                                          | Security Features                                        |
-| Q3 2023 | TBD                                          | Simulation                                               |
+如果您想要shifu支持更多的协议/功能，请在[这里](https://github.com/Edgenesis/shifu/issues)提交一个issue!
 
+| 时间      | 协议                                     | 功能                                                 |
+|---------|----------------------------------------------|---------------------------------------------------------|
+| Q1 2022 | HTTP<br>命令行驱动 | 监测<br>命令代理<br>CRD 整合 |
+| Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7<br>OPC UA | 状态机<br>shifu portal（前端） |
+| Q3 2022 | ONVIF | shifu抽象<br>[shifuController](docs/design/design-shifuController-zh.md)<br>[shifud](docs/design/design-shifud-zh.md) |
+| Q4 2022 | gRPC | 仿真 |
 
 # Shifu的愿景
 
@@ -90,4 +83,7 @@ Shifu框架利用Web of Things (WoT)提出的[Thing](https://www.w3.org/TR/wot-t
 # 社区
 ## 联系
 有问题？尝试[建立一个 GitHub Issue](https://github.com/Edgenesis/shifu/issues/new)，或者通过以下方式联系我们：
-- 发送邮件到 info@edgenesis.com 
+- 邮件: info@edgenesis.com 
+- 微信:
+  - zhengkaiwen196649 
+  - if7369

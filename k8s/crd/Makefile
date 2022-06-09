@@ -46,9 +46,14 @@ kube-builder-create-api-edgedevice:
 download: controller-gen kustomize
 
 generate-controller-yaml: kustomize manifests
-	$(KUSTOMIZE) build config/crd > config_crd.yaml
+	$(KUSTOMIZE) build config/crd > install/config_crd.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default > config_default.yaml
+	$(KUSTOMIZE) build config/default > install/config_default.yaml
+
+generate-install-yaml:
+	cat install/config_default.yaml > install/shifu_install.yml
+	echo "---" >> install/shifu_install.yml
+	cat install/config_sa.yaml >> install/shifu_install.yml
 
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases
@@ -65,7 +70,7 @@ vet: ## Run go vet against code.
 ENVTEST_ASSETS_DIR=$(shell pwd)/testbin
 test: manifests generate fmt vet ## Run tests.
 	mkdir -p ${ENVTEST_ASSETS_DIR}
-	test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.8.3/hack/setup-envtest.sh
+	test -f ${ENVTEST_ASSETS_DIR}/setup-envtest.sh || curl -sSLo ${ENVTEST_ASSETS_DIR}/setup-envtest.sh https://raw.githubusercontent.com/kubernetes-sigs/controller-runtime/v0.11.2/hack/setup-envtest.sh
 	source ${ENVTEST_ASSETS_DIR}/setup-envtest.sh; fetch_envtest_tools $(ENVTEST_ASSETS_DIR); setup_envtest_env $(ENVTEST_ASSETS_DIR); go test ./... -coverprofile cover.out
 
 ##@ Build
@@ -81,6 +86,12 @@ docker-build: test ## Build docker image with the manager.
 
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
+
+docker-buildx-push-multi-platform:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -t ${IMG} . --push
+
+docker-buildx-load:
+	docker buildx build --platform=linux/amd64 -t ${IMG} . --load
 
 ##@ Deployment
 

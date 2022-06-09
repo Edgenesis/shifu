@@ -1,17 +1,18 @@
 # 安装 Shifu
 ## 安装/卸载
-### 从 GitHub
-1. 克隆 GitHub 项目到本地：
+### 安装
+1. 从 GitHub 克隆项目到本地:
    ```
    git clone https://github.com/Edgenesis/shifu.git
    ```
-2. 安装：
+2. 执行安装命令:
    ```
    cd shifu
-   bash ./test/scripts/deviceshifu-install.sh apply
+   kubectl apply -f k8s/crd/install/shifu_install.yml
    ```
 
-卸载：
-```
-bash ./test/scripts/deviceshifu-install.sh delete
-```
+### 卸载：
+1. 执行卸载命令:
+   ``` 
+   kubectl delete -f k8s/crd/install/shifu_install.yml
+   ```

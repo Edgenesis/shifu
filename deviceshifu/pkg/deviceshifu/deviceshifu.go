@@ -67,13 +67,14 @@ const (
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 )
 
+// This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	if deviceShifuMetadata.Name == "" {
 		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
 	}
 
-	if deviceShifuMetadata.ConfigFilePath == "" {
-		deviceShifuMetadata.ConfigFilePath = DEVICE_CONFIGMAP_FOLDER_PATH
+	if deviceShifuMetadata.Namespace == "" {
+		return nil, fmt.Errorf("DeviceShifu's namespace can't be empty\n")
 	}
 
 	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
@@ -106,6 +107,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			return nil, err
 		}
 
+		// switch for different Shifu Protocols
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
 			for instruction, properties := range deviceShifuConfig.Instructions {
@@ -164,6 +166,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	return ds, nil
 }
 
+// deviceHealthHandler writes the status as healthy
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
 }
@@ -178,6 +181,12 @@ func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
+// This function is to create a URL containing directives from the requested URL
+// e.g.:
+// if we have http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2
+// and our address is http://localhost:8088 and instruction is start
+// then we will get this URL string:
+// http://localhost:8088/start?time=10:00:00&target=machine1&target=machine2
 func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
 
 	queryStr := "?"
@@ -197,6 +206,7 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 	return "http://" + address + "/" + handlerInstruction + queryStr
 }
 
+// This function executes the instruction by requesting the url returned by createUriFromRequest
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		handlerProperties := handler.deviceShifuHTTPHandlerMetaData.properties
@@ -450,10 +460,14 @@ func (ds *DeviceShifu) collectHTTPTelemetries() error {
 	telemetries := ds.deviceShifuConfig.Telemetries
 	for telemetry, telemetryProperties := range telemetries {
 		status, err := ds.collectHTTPTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
+		log.Printf("Status is: %v", status)
 		if err != nil {
-			if !status && telemetryOK {
-				telemetryOK = false
-			}
+			log.Printf("Error is: %v", err.Error())
+			telemetryOK = false
+		}
+
+		if !status && telemetryOK {
+			telemetryOK = false
 		}
 	}
 

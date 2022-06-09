@@ -25,17 +25,22 @@ make uninstall
 make kube-builder-create-api-edgedevice
 ```
 
-### Build and publish EdgeDevice controller
+### Build EdgeDevice controller and load into Docker
 ```
-make docker-build docker-push IMG=edgehub/edgedevice-controller:v0.0.1
+make docker-buildx-load IMG=edgehub/edgedevice-controller-multi:v0.0.1
 ```
 
 ### Deploy EdgeDeivce controller
 ```
-make deploy IMG=edgehub/edgedevice-controller:v0.0.1
+make deploy IMG=edgehub/edgedevice-controller-multi:v0.0.1
 ```
 
 ### Deploy sample edgedevice
 ```
 kubectl apply -f config/samples/shifu_v1alpha1_edgedevice.yaml
+```
+
+### Create install CRD file
+```
+make generate-controller-yaml IMG=edgehub/edgedevice-controller-multi:v0.0.1 generate-install-yaml
 ```

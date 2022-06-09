@@ -1,17 +1,18 @@
 # Install Shifu
 ## Install/Uninstall
-### via GitHub repository
-1. Clone the Shifu repo via:
+### Install
+1. Clone Shifu repository:
    ```
    git clone https://github.com/Edgenesis/shifu.git
    ```
 2. Install via:
    ```
    cd shifu
-   bash ./test/scripts/deviceshifu-install.sh apply
+   kubectl apply -f k8s/crd/install/shifu_install.yml
    ```
 
-To uninstall, issue:
-```
-bash ./test/scripts/deviceshifu-install.sh delete
-```
+### Uninstall
+1. To uninstall, issue:
+   ```
+   kubectl delete -f k8s/crd/install/shifu_install.yml
+   ```

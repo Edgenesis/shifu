@@ -14,7 +14,7 @@ Shifu is a [Kubernetes](https://k8s.io) native framework designed to abstract ou
 - Shifu let you manage and control your IoT devices extremely easily. Whenever you connect your device, Shifu will recognize it and spawn an augmented digital twin called ***deviceShifu*** for it. 
 - ***deviceShifu*** provides you with a high-level abstraction to interact with your device. 
   - By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything its designed for, and much more! For example, your device's state can be rolled back with a single line of command. (If physically permitted, of course.) 
-  - Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). 
+  - Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). For example, we can group ***deviceShifu*** of machines into a ***factoryShifu***, and then high-level commands like `factory start` will make the whole factory start manufacturing.
 - A simulation feature which allows developer to simulate a scenario before actually running will be available later.
 
 ## Shifu and Thing
@@ -34,13 +34,6 @@ Currently, Shifu runs on [Kubernetes](https://k8s.io). We will provide more depl
 
 ---
 
-### Guides:
-- Read the [Quick start hello world guide](docs/guide/quick-start-hello-world.md) on connecting ***edgeDevice***
-
-- Read the [Write a simple application guide](docs/guide/guide-on-writing-an-application-for-deviceShifu.md) to see how to interact with ***deviceShifu***
-
----
-
 ### Demo:
 We prepared a demo for developers to intuitively show how `Shifu` is able to create and manage digital twins of any physical devices in real world.
 - [Quick Start Guide with Demo](docs/guide/quick-start-demo.md)
@@ -57,6 +50,7 @@ We prepared a demo for developers to intuitively show how `Shifu` is able to cre
 - Telemetry collection: shifu supports periodic collection of any telemetries from device. What telemetries to collect, how to collect, how frequent is the collection are all customizable in one single configuration file.
 - Integration with Kubernetes with CRD: shifu allows any types or forms of configurations for your devices.
 ### Not yet supported
+- Auto ***deviceShifu*** generation
 - [Declarative API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
 - [Advanced Shifu Controller](docs/design/design-shifuController.md)
 - [shifud](docs/design/design-shifud.md)
@@ -68,14 +62,14 @@ We prepared a demo for developers to intuitively show how `Shifu` is able to cre
 ---
 
 ## Milestone
+If you want more features/protocols supported, please open an issue [here](https://github.com/Edgenesis/shifu/issues)!
 
 | By      | Protocol                                     | Features                                                 |
-|---------|----------------------------------------------|----------------------------------------------------------|
-| Q4 2021 | HTTP<br>Driver w/ command line                  | Telemetry<br>Command proxy<br>CRD integration<br>Basic Controller |
-| Q1 2022 | At least:<br>MQTT<br>Modbus<br>ONVIF<br>国标GB28181<br>USB  | Declarative API<br>Advanced Controller<br>shifud               |
-| Q2 2022 | At least:<br>OPC UA<br>Serial<br>Zigbee<br>LoRa<br>PROFINET | Abstraction                                              |
-| Q3 2022 | TBD                                          | Security Features                                        |
-| Q3 2023 | TBD                                          | Simulation                                               |
+|---------|----------------------------------------------|---------------------------------------------------------|
+| Q1 2022 | HTTP<br>Driver w/ command line | telemetry<br>command proxy<br>CRD integration |
+| Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7<br>OPC UA | state machine<br>shifu portal(frontend) |
+| Q3 2022 | ONVIF | abstraction<br>[shifuController](docs/design/design-shifuController.md)<br>[shifud](docs/design/design-shifud.md) |
+| Q4 2022 | gRPC | simulation |
 
 # Shifu's vision
 
@@ -91,5 +85,8 @@ If every IoT device has a Shifu with it, we can leverage software to manage our 
 
 ## Contact
 
-Feel free to open a GitHub issue or contact us in the following ways:
-- Send an email to info@edgenesis.com
+Feel free to open a [GitHub issue](https://github.com/Edgenesis/shifu/issues/new) or contact us in the following ways:
+- Email: info@edgenesis.com
+- Wechat:
+  - zhengkaiwen196649 
+  - if7369

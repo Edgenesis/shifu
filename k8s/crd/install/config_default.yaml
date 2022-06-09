@@ -3,7 +3,7 @@ kind: Namespace
 metadata:
   labels:
     control-plane: controller-manager
-  name: crd-system
+  name: shifu-crd-system
 ---
 apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
@@ -45,6 +45,43 @@ spec:
               protocol:
                 description: Protocol specifies the EdgeDevice's communication protocol.
                 type: string
+              protocolSettings:
+                description: ProtocolSettings defines protocol settings when connecting to an EdgeDevice
+                properties:
+                  MQTTSetting:
+                    description: MQTTSetting defines MQTT specific settings when connecting to an EdgeDevice
+                    properties:
+                      MQTTServerAddress:
+                        type: string
+                      MQTTServerSecret:
+                        type: string
+                      MQTTTopic:
+                        type: string
+                    type: object
+                  OPCUASetting:
+                    description: OPCUASetting defines OPC UA specific settings when connecting to an OPC UA endpoint
+                    properties:
+                      ConnectionTimeoutInMilliseconds:
+                        format: int64
+                        type: integer
+                      OPCUAEndpoint:
+                        type: string
+                      Password:
+                        type: string
+                      SecurityMode:
+                        type: string
+                      Username:
+                        type: string
+                    type: object
+                  SocketSetting:
+                    description: SocketSetting defines Socket specific settings when connecting to an EdgeDevice
+                    properties:
+                      encoding:
+                        type: string
+                      networkType:
+                        type: string
+                    type: object
+                type: object
               sku:
                 description: Sku specifies the EdgeDevice's SKU.
                 type: string
@@ -69,14 +106,14 @@ status:
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: crd-controller-manager
-  namespace: crd-system
+  name: shifu-crd-controller-manager
+  namespace: shifu-crd-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: crd-leader-election-role
-  namespace: crd-system
+  name: shifu-crd-leader-election-role
+  namespace: shifu-crd-system
 rules:
 - apiGroups:
   - ""
@@ -114,7 +151,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   creationTimestamp: null
-  name: crd-manager-role
+  name: shifu-crd-manager-role
 rules:
 - apiGroups:
   - shifu.edgenesis.io
@@ -146,7 +183,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: crd-metrics-reader
+  name: shifu-crd-metrics-reader
 rules:
 - nonResourceURLs:
   - /metrics
@@ -156,7 +193,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: crd-proxy-role
+  name: shifu-crd-proxy-role
 rules:
 - apiGroups:
   - authentication.k8s.io
@@ -174,42 +211,42 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: crd-leader-election-rolebinding
-  namespace: crd-system
+  name: shifu-crd-leader-election-rolebinding
+  namespace: shifu-crd-system
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
-  name: crd-leader-election-role
+  name: shifu-crd-leader-election-role
 subjects:
 - kind: ServiceAccount
-  name: crd-controller-manager
-  namespace: crd-system
+  name: shifu-crd-controller-manager
+  namespace: shifu-crd-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: crd-manager-rolebinding
+  name: shifu-crd-manager-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: crd-manager-role
+  name: shifu-crd-manager-role
 subjects:
 - kind: ServiceAccount
-  name: crd-controller-manager
-  namespace: crd-system
+  name: shifu-crd-controller-manager
+  namespace: shifu-crd-system
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: crd-proxy-rolebinding
+  name: shifu-crd-proxy-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: crd-proxy-role
+  name: shifu-crd-proxy-role
 subjects:
 - kind: ServiceAccount
-  name: crd-controller-manager
-  namespace: crd-system
+  name: shifu-crd-controller-manager
+  namespace: shifu-crd-system
 ---
 apiVersion: v1
 data:
@@ -227,16 +264,16 @@ data:
       resourceName: 7ede39d4.edgenesis.io
 kind: ConfigMap
 metadata:
-  name: crd-manager-config
-  namespace: crd-system
+  name: shifu-crd-manager-config
+  namespace: shifu-crd-system
 ---
 apiVersion: v1
 kind: Service
 metadata:
   labels:
     control-plane: controller-manager
-  name: crd-controller-manager-metrics-service
-  namespace: crd-system
+  name: shifu-crd-controller-manager-metrics-service
+  namespace: shifu-crd-system
 spec:
   ports:
   - name: https
@@ -250,8 +287,8 @@ kind: Deployment
 metadata:
   labels:
     control-plane: controller-manager
-  name: crd-controller-manager
-  namespace: crd-system
+  name: shifu-crd-controller-manager
+  namespace: shifu-crd-system
 spec:
   replicas: 1
   selector:
@@ -268,7 +305,7 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=10
-        image: gcr.io/kubebuilder/kube-rbac-proxy:v0.8.0
+        image: quay.io/brancz/kube-rbac-proxy:v0.8.0
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
@@ -279,7 +316,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: edgehub/edgedevice-controller:v0.0.1
+        image: edgehub/edgedevice-controller-multi:v0.0.1
         livenessProbe:
           httpGet:
             path: /healthz
@@ -304,5 +341,5 @@ spec:
           allowPrivilegeEscalation: false
       securityContext:
         runAsNonRoot: true
-      serviceAccountName: crd-controller-manager
+      serviceAccountName: shifu-crd-controller-manager
       terminationGracePeriodSeconds: 10

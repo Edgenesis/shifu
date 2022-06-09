@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -14,12 +15,29 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+func TestDeviceShifuEmptyNamespace(t *testing.T) {
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		"TestDeviceShifuEmptyNamespace",
+		"etc/edgedevice/config",
+		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		"",
+	}
+
+	_, err := New(deviceShifuMetadata)
+	if err != nil {
+		log.Print(err)
+	} else {
+		t.Errorf("DeviceShifu Test with empty namespace failed")
+	}
+	time.Sleep(1 * time.Second)
+}
+
 func TestStart(t *testing.T) {
 	deviceShifuMetadata := &DeviceShifuMetaData{
 		"TestStart",
 		"etc/edgedevice/config",
 		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"",
+		"TestStartNamespace",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
@@ -40,7 +58,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 		"TestStartHttpServer",
 		"etc/edgedevice/config",
 		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"",
+		"TestStartHttpServerNamespace",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
@@ -158,6 +176,15 @@ func TestCreateHTTPUriStringNoQuery(t *testing.T) {
 	if createdUriStringWithoutQueries != expectedUriStringWithoutQueries {
 		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdUriString, expectedUriString)
 	}
+
+	// cleanup
+	t.Cleanup(func() {
+		//tear-down code
+		err := os.RemoveAll(MOCK_DEVICE_CONFIG_PATH)
+		if err != nil {
+			log.Fatal(err)
+		}
+	})
 }
 
 func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint string) bool {
