@@ -3,7 +3,7 @@
 根据我们 [Windows](develop-on-windows-zh.md)/[Mac OS](develop-on-mac-zh.md) 的配置指南来搭建本地环境。
 
 ## 概览:
-在本地构建 `Shifu` 是可行的，我们提供了一个 `Docker` 开发镜像环境来简化配置步骤以及在不同平台提供一个一致的环境。
+我们提供了一个 `Docker` 开发镜像环境来简化配置步骤以及在不同平台提供一个一致的环境。
 
 ## 构建
 ### 1. 直接构建 ***deviceShifu*** 二进制文件:
@@ -27,7 +27,7 @@ CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o /output
 ```
 
 ### 2. 构建 ***deviceShifu*** `Docker` 镜像:
-运行下面命令来构建以下不同的 ***deviceShifu*** 镜像, 标记为当前版本并载入到 `Docker` images:
+运行下面命令来构建以下不同的 ***deviceShifu*** 镜像, 标记为当前版本并载入到 `Docker` 镜像:
 ```sh
 make buildx-load-image-deviceshifu
 ```
