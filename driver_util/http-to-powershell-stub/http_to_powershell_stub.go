@@ -15,10 +15,8 @@ import (
 )
 
 var (
-	privateSSHKeyFile    = os.Getenv("EDGEDEVICE_DRIVER_SSH_KEY_PATH")
 	driverHTTPPort       = os.Getenv("EDGEDEVICE_DRIVER_HTTP_PORT")
 	cmdExecTimeoutSecond = os.Getenv("EDGEDEVICE_DRIVER_EXEC_TIMEOUT_SECOND")
-	sshUser              = os.Getenv("EDGEDEVICE_DRIVER_SSH_USER")
 )
 
 func init() {
