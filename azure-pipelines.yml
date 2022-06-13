@@ -12,6 +12,7 @@ trigger:
     - LICENSE
     - .devcontainer
     - .github
+    - CHANGELOG
 
 pr:
   branches:
@@ -27,6 +28,7 @@ pr:
     - LICENSE
     - .devcontainer
     - .github
+    - CHANGELOG
 
 pool:
    vmImage: 'ubuntu-latest'
