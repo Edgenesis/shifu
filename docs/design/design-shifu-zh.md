@@ -134,7 +134,7 @@ Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 �
 
 ***deviceShifu*** 有以下两种运行方式：
 1. ***standalone mode***: ***standalone mode*** 是被设计为用来管理单个复杂的 ***edgeDevice*** 比如机械手臂来提供高质量的一对一 ***edgeDevice*** 管理
-2. ***swarm mode***: ***swarm mode*** 是被设计用来管理多个简单且同类的 ***edgeDevice*** 比如温度计来提供搞笑的一对多 ***edgeDevice*** 管理
+2. ***swarm mode***: ***swarm mode*** 是被设计用来管理多个简单且同类的 ***edgeDevice*** 比如温度计来提供高效的一对多 ***edgeDevice*** 管理
 
 ### 架构图
 

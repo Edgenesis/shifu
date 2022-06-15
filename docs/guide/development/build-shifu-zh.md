@@ -11,19 +11,19 @@
 
 `HTTP 转 HTTP` ***deviceShifu***:
 ```sh
-CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o /output/deviceshifu-http-http deviceshifu/cmd/main.go
+CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-http deviceshifu/cmd/main.go
 ```
 `HTTP 转 Socket` ***deviceShifu***:
 ```sh
-CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o /output/deviceshifu-http-socket deviceshifu/cmd/cmdSocket/main.go
+CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-socket deviceshifu/cmd/cmdSocket/main.go
 ```
 `HTTP 转 MQTT` ***deviceShifu***:
 ```sh
-CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o /output/deviceshifu-http-mqtt deviceshifu/cmd/cmdMQTT/main.go
+CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-mqtt deviceshifu/cmd/cmdMQTT/main.go
 ```
 `HTTP 转 OPC UA` ***deviceShifu***:
 ```sh
-CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o /output/deviceshifu-http-opcua deviceshifu/cmd/cmdOPCUA/main.go
+CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-opcua deviceshifu/cmd/cmdOPCUA/main.go
 ```
 
 ### 2. 构建 ***deviceShifu*** `Docker` 镜像:

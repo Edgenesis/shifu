@@ -14,7 +14,7 @@
 在 `shifu` 根目录下，运行下面两条命令来运行 *shifu* 和演示温度计的 *deviceShifu*：
 
 ```
-./test/scripts/shifu-application-demo-env-setup.sh apply applicationDemo                       # setup and start shifu services for this demo
+./test/scripts/deviceshifu-setup.sh apply applicationDemo          # setup and start shifu services for this demo
 ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer    # connect fake thermometer to shifu
 ```
 ### 2. 温度检测程序
@@ -119,4 +119,5 @@ kubectl logs -n default high-temperature-detector -f
 2021/10/18 10:35:49 High temperature: 30
 2021/10/18 10:35:51 High temperature: 30
 2021/10/18 10:35:53 Low temperature: 15
+
 
