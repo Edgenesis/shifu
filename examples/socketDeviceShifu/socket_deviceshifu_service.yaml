@@ -13,3 +13,4 @@ spec:
   selector:
     app: deviceshifu-socket-deployment
   type: LoadBalancer
+  

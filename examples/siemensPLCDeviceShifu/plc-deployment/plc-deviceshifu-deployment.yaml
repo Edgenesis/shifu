@@ -45,3 +45,4 @@ spec:
           configMap:
             name: plc-configmap-0.0.1
       serviceAccountName: edgedevice-sa
+      

@@ -34,3 +34,4 @@ spec:
           configMap:
             name: helloworld-configmap-0.0.1
       serviceAccountName: edgedevice-mockdevice-sa
+      

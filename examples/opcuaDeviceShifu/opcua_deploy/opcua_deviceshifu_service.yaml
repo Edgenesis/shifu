@@ -13,3 +13,4 @@ spec:
   selector:
     app: deviceshifu-opcua-deployment
   type: LoadBalancer
+  
