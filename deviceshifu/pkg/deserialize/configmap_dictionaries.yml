@@ -1,0 +1,15 @@
+data:
+    decoding: |
+        enabled : "true"
+        decodeDictionaries:
+            getContentJson:
+                responseMsgType: "json"
+            getcontentString:
+                responseMsgType: "string"
+            getcontentformatted: 
+                responseMsgType: "formattedString"
+                dictionaryDilimiter: ','
+                dictionary:
+                    - "age"
+                    - "name"
+                    - "gender"

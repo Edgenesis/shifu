@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deserialize"
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -258,7 +260,29 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		if resp != nil {
 			copyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
-			io.Copy(w, resp.Body)
+
+			response, err := deserialize.NewReader(r.URL, resp)
+			if err != nil {
+				io.Copy(w, resp.Body)
+				return
+			}
+
+			reader, err := response.Deserialize()
+			if err != nil {
+				io.Copy(w, resp.Body)
+				return
+			}
+
+			buf := new(bytes.Buffer)
+			n, err := buf.ReadFrom(reader)
+			if err != nil {
+				io.Copy(w, resp.Body)
+				return
+			}
+
+			w.Header().Del("Content-Length")
+			w.Header().Add("Content-Length", strconv.FormatInt(n, 10))
+			w.Write(buf.Bytes())
 			return
 		}
 
@@ -354,7 +378,29 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		if resp != nil {
 			copyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
-			io.Copy(w, resp.Body)
+
+			response, err := deserialize.NewReader(r.URL, resp)
+			if err != nil {
+				io.Copy(w, resp.Body)
+				return
+			}
+
+			reader, err := response.Deserialize()
+			if err != nil {
+				io.Copy(w, resp.Body)
+				return
+			}
+
+			buf := new(bytes.Buffer)
+			n, err := buf.ReadFrom(reader)
+			if err != nil {
+				io.Copy(w, resp.Body)
+				return
+			}
+
+			w.Header().Del("Content-Length")
+			w.Header().Add("Content-Length", strconv.FormatInt(n, 10))
+			w.Write(buf.Bytes())
 			return
 		}
 
