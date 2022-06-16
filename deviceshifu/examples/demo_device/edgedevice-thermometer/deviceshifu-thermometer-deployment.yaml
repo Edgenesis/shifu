@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-thermometer-deployment
-  name: edgedevice-thermometer-deployment
+    app: deviceshifu-thermometer-deployment
+  name: deviceshifu-thermometer-deployment
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-thermometer-deployment
+      app: deviceshifu-thermometer-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-thermometer-deployment
+        app: deviceshifu-thermometer-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-http:v0.0.1
@@ -21,16 +21,16 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "edgedevice-thermometer"
+          value: "thermometer"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: thermometer-configmap-0.0.1
       serviceAccountName: edgedevice-sa

@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-plate-reader-deployment
-  name: edgedevice-plate-reader-deployment
+    app: deviceshifu-plate-reader-deployment
+  name: deviceshifu-plate-reader-deployment
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-plate-reader-deployment
+      app: deviceshifu-plate-reader-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-plate-reader-deployment
+        app: deviceshifu-plate-reader-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-http:v0.0.1
@@ -21,7 +21,7 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
@@ -30,7 +30,7 @@ spec:
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: plate-reader-configmap-0.0.1
       serviceAccountName: edgedevice-sa

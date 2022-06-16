@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-socket-deployment
-  name: edgedevice-socket
+    app: deviceshifu-socket-deployment
+  name: deviceshifu-socket
   namespace: default
 spec:
   ports:
@@ -11,5 +11,5 @@ spec:
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-socket-deployment
+    app: deviceshifu-socket-deployment
   type: LoadBalancer

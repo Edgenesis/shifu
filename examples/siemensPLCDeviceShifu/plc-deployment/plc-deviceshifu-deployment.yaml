@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-plc-deployment
-  name: edgedevice-plc-deployment
+    app: deviceshifu-plc-deployment
+  name: deviceshifu-plc-deployment
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-plc-deployment
+      app: deviceshifu-plc-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-plc-deployment
+        app: deviceshifu-plc-deployment
     spec:
       containers:
         - image: edgehub/deviceshifu-http-http:v0.0.1
@@ -21,12 +21,12 @@ spec:
           ports:
             - containerPort: 8080
           volumeMounts:
-            - name: edgedevice-config
+            - name: deviceshifu-config
               mountPath: "/etc/edgedevice/config"
               readOnly: true
           env:
             - name: EDGEDEVICE_NAME
-              value: "edgedevice-plc"
+              value: "plc"
             - name: EDGEDEVICE_NAMESPACE
               value: "devices"
         - image: edgehub/plc-device:v0.0.1
@@ -41,7 +41,7 @@ spec:
             - name: PLC_CONTAINER_PORT
               value: "11111"
       volumes:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           configMap:
             name: plc-configmap-0.0.1
       serviceAccountName: edgedevice-sa

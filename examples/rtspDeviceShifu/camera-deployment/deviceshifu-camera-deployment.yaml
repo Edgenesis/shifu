@@ -13,7 +13,7 @@ spec:
   template:
     metadata:
       labels:
-        app: edgedevice-camera-deployment
+        app: deviceshifu-camera-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-http:v0.0.1
@@ -26,7 +26,7 @@ spec:
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "edgedevice-camera"
+          value: "camera"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       - image: edgehub/camera-python:v0.0.1
@@ -34,12 +34,12 @@ spec:
         ports:
         - containerPort: 11112
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "edgedevice-camera"
+          value: "camera"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
         - name: IP_CAMERA_ADDRESS
@@ -53,7 +53,7 @@ spec:
         - name: PYTHONUNBUFFERED
           value: "1"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: camera-configmap-0.0.1
       serviceAccountName: edgedevice-sa

@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-thermometer-deployment
-  name: edgedevice-thermometer
+    app: deviceshifu-thermometer-deployment
+  name: deviceshifu-thermometer
   namespace: default
 spec:
   ports:
@@ -11,5 +11,5 @@ spec:
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-thermometer-deployment
+    app: deviceshifu-thermometer-deployment
   type: LoadBalancer
