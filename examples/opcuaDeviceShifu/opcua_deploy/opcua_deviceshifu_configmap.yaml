@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: opcua-configmap-0.0.1
-  namespace: default
+  namespace: deviceshifu
 data:
   driverProperties: |
     driverSku: Test OPC UA Server

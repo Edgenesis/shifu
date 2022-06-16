@@ -4,7 +4,7 @@ metadata:
   labels:
     app: edgedevice-camera-deployment
   name: edgedevice-camera-deployment
-  namespace: default
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:

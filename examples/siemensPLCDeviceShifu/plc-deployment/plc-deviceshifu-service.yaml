@@ -4,7 +4,7 @@ metadata:
   labels:
     app: deviceshifu-plc-deployment
   name: deviceshifu-plc
-  namespace: default
+  namespace: deviceshifu
 spec:
   ports:
     - port: 80

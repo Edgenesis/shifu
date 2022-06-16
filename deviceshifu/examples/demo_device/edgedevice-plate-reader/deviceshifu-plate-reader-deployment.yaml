@@ -4,7 +4,7 @@ metadata:
   labels:
     app: deviceshifu-plate-reader-deployment
   name: deviceshifu-plate-reader-deployment
-  namespace: default
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:

@@ -4,7 +4,7 @@ metadata:
   labels:
     app: deviceshifu-thermometer-deployment
   name: deviceshifu-thermometer-deployment
-  namespace: default
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:

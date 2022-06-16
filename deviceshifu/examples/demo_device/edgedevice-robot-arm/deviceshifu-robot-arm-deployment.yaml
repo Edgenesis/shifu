@@ -4,7 +4,7 @@ metadata:
   labels:
     app: deviceshifu-robotarm-deployment
   name: deviceshifu-robotarm-deployment
-  namespace: default
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:

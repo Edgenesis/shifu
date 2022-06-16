@@ -4,7 +4,7 @@ metadata:
   labels:
     app: deviceshifu-opcua-deployment
   name: deviceshifu-opcua
-  namespace: default
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80

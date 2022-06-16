@@ -4,7 +4,7 @@ metadata:
   labels:
     app: deviceshifu-socket-deployment
   name: deviceshifu-socket
-  namespace: default
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80

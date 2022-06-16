@@ -4,7 +4,7 @@ metadata:
   labels:
     app: deviceshifu-plate-reader-deployment
   name: deviceshifu-plate-reader
-  namespace: default
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80

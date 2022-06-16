@@ -19,7 +19,7 @@ metadata:
   labels:
     app: deviceshifu-opcua-deployment
   name: deviceshifu-opcua-deployment
-  namespace: default
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
@@ -60,7 +60,7 @@ metadata:
   labels:
     app: deviceshifu-opcua-deployment
   name: deviceshifu-opcua
-  namespace: default
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80
@@ -78,7 +78,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: opcua-configmap-0.0.1
-  namespace: default
+  namespace: deviceshifu
 data:
   driverProperties: |
     driverSku: Test OPC UA Server

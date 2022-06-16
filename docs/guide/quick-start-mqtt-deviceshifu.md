@@ -14,7 +14,7 @@ metadata:
   labels:
     app: deviceshifu-mqtt-deployment
   name: deviceshifu-mqtt-deployment
-  namespace: default
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
@@ -55,7 +55,7 @@ metadata:
   labels:
     app: deviceshifu-mqtt-deployment
   name: deviceshifu-mqtt
-  namespace: default
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80
@@ -73,7 +73,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mqtt-configmap-0.0.1
-  namespace: default
+  namespace: deviceshifu
 data:
   driverProperties: |
     driverSku: testMQTT
