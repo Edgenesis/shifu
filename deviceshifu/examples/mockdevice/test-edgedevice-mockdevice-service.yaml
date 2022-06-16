@@ -2,13 +2,13 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-mockdevice-deployment
-  name: edgedevice-mockdevice
+    app: deviceshifu-mockdevice-deployment
+  name: deviceshifu-mockdevice
 spec:
   ports:
   - port: 1234
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-mockdevice-deployment
+    app: deviceshifu-mockdevice-deployment
   type: LoadBalancer

@@ -28,14 +28,14 @@ kubectl exec -it nginx -- bash
 在 nginx 命令行中通过如下命令与虚拟 PLC 进行交互：
 
 ```
-curl "edgedevice-plc/sendsinglebit?rootaddress=DB&address=0&start=0&digit=0&value=1";echo 
-curl edgedevice-plc/getcontent?rootaddress=Q;echo 
+curl "deviceshifu-plc/sendsinglebit?rootaddress=DB&address=0&start=0&digit=0&value=1";echo 
+curl deviceshifu-plc/getcontent?rootaddress=Q;echo 
 ```
 输出示例：
 
 ```
-curl edgedevice-plc/getcontent?rootaddress=Q;echo 
+curl deviceshifu-plc/getcontent?rootaddress=Q;echo 
 0b0000000000000000
-curl "edgedevice-plc/sendsinglebit?rootaddress=DB&address=0&start=0&digit=0&value=1";echo 
+curl "deviceshifu-plc/sendsinglebit?rootaddress=DB&address=0&start=0&digit=0&value=1";echo 
 0b0000000000000001 
 ```

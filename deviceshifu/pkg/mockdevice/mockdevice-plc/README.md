@@ -29,8 +29,8 @@ kubectl exec -it nginx -- bash
 Interact with the virtual PLC through the following commands on the nginx command line:
 
 ```
-curl "edgedevice-plc/sendsinglebit?rootaddress=DB&address=0&start=0&digit=0&value=1";echo 
-curl edgedevice-plc/getcontent?rootaddress=Q;echo 
+curl "deviceshifu-plc/sendsinglebit?rootaddress=DB&address=0&start=0&digit=0&value=1";echo 
+curl deviceshifu-plc/getcontent?rootaddress=Q;echo 
 ```
 example output:
 

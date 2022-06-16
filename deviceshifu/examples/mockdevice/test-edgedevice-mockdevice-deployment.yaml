@@ -2,17 +2,17 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-mockdevice-deployment
-  name: edgedevice-mockdevice-deployment
+    app: deviceshifu-mockdevice-deployment
+  name: deviceshifu-mockdevice-deployment
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-mockdevice-deployment
+      app: deviceshifu-mockdevice-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-mockdevice-deployment
+        app: deviceshifu-mockdevice-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-http:v0.0.1
@@ -20,16 +20,16 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "edgedevice-agv"
+          value: "agv"
         - name: EDGEDEVICE_NAMESPACE
           value: "default"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: mockdevice-configmap-0.0.1
       serviceAccountName: edgedevice-mockdevice-sa

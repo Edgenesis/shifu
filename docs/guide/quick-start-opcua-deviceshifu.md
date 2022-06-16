@@ -17,18 +17,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-opcua-deployment
-  name: edgedevice-opcua-deployment
+    app: deviceshifu-opcua-deployment
+  name: deviceshifu-opcua-deployment
   namespace: default
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-opcua-deployment
+      app: deviceshifu-opcua-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-opcua-deployment
+        app: deviceshifu-opcua-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-opcua:v0.0.1
@@ -36,16 +36,16 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "edgedevice-opcua"
+          value: "opcua"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: opcua-configmap-0.0.1
       serviceAccountName: edgedevice-sa
@@ -58,8 +58,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-opcua-deployment
-  name: edgedevice-opcua
+    app: deviceshifu-opcua-deployment
+  name: deviceshifu-opcua
   namespace: default
 spec:
   ports:
@@ -67,7 +67,7 @@ spec:
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-opcua-deployment
+    app: deviceshifu-opcua-deployment
   type: LoadBalancer
 ```
 
@@ -109,7 +109,7 @@ data:
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: edgedevice-opcua
+  name: opcua
   namespace: devices
 spec:
   sku: "opcua-test" 
@@ -127,7 +127,7 @@ spec:
 ## To interact with the device:
 
 ```bash
-root@nginx:/# curl edgedevice-opcua/get_server;echo
+root@nginx:/# curl deviceshifu-opcua/get_server;echo
 FreeOpcUa Python Server
 ```
 

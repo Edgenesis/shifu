@@ -85,21 +85,21 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
     Each deviceShifu has its instructions defined in the configmap file.
     ```
 
-    / # curl http://edgedevice-thermometer/get_status
+    / # curl http://deviceshifu-thermometer/get_status
     Busy
-    / # curl http://edgedevice-thermometer/read_value
+    / # curl http://deviceshifu-thermometer/read_value
     27
-    / # curl http://edgedevice-agv/get_status
+    / # curl http://deviceshifu-agv/get_status
     Busy
-    / # curl http://edgedevice-agv/get_position
+    / # curl http://deviceshifu-agv/get_position
     xpos: 54, ypos: 34
-    / # curl http://edgedevice-robotarm/get_status
+    / # curl http://deviceshifu-robotarm/get_status
     Busy
-    / # curl http://edgedevice-robotarm/get_coordinate
+    / # curl http://deviceshifu-robotarm/get_coordinate
     xpos: 55, ypos: 140, zpos: 135
-    / # curl http://edgedevice-plate-reader/get_status
+    / # curl http://deviceshifu-plate-reader/get_status
     Idle
-    / # curl http://edgedevice-plate-reader/get_measurement
+    / # curl http://deviceshifu-plate-reader/get_measurement
     0.75 0.50 1.34 0.95 2.79 2.66 2.68 0.59 0.97 0.93 0.70 0.62 
     0.61 1.47 1.68 1.65 1.05 1.59 0.78 2.92 1.22 1.12 2.86 0.29 
     2.15 2.45 1.99 0.36 1.47 0.18 2.47 0.61 2.43 1.53 0.14 2.41 
