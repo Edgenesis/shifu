@@ -27,7 +27,7 @@ make kube-builder-create-api-edgedevice
 
 ### Build EdgeDevice controller and load into Docker
 ```
-make docker-buildx-load
+make docker-buildx-load IMG=edgehub/edgedevice-controller-multi:v0.0.1
 ```
 
 ### Deploy EdgeDeivce controller

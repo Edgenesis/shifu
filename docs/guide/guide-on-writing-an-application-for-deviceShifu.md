@@ -10,9 +10,9 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
 ### 1. Start *Shifu* and connect a simple thermometer device
 The deployment config for a fake thermometer which produces a integer value representing the temperature read should be already in the `shifu/deviceshifu/examples/demo_device` directory.\
 The device driver has an API `read_value` which returns such integer value.
-Under `shifu` root directory, we can run the following three commands to have *shifu* and the fake thermometer *deviceShifu* ready:
+Under `shifu` root directory, we can run the following two commands to have *shifu* and the fake thermometer *deviceShifu* ready:
 ```
-./test/scripts/shifu-application-demo-env-setup.sh apply applicationDemo                       # setup and start shifu services for this demo
+./test/scripts/deviceshifu-setup.sh apply applicationDemo          # setup and start shifu services for this demo
 ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer    # connect fake thermometer to shifu
 ```
 ### 2. High temperature detector application

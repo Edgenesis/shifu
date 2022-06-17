@@ -1,0 +1,24 @@
+data:
+  driverProperties: |
+    driverSku: Edgenesis Mock Device
+    driverImage: edgenesis/mockdevice:v0.0.1
+    driverExecution: python mock_driver.py
+  instructions: |
+    get_value:
+      instructionProperties:
+        OPCUANodeID: "ns=2;i=2"
+    get_time:
+      instructionProperties:
+        OPCUANodeID: "i=2258"
+    get_server:
+      instructionProperties:
+        OPCUANodeID: "i=2261"
+  telemetries: |
+    telemetrySettings:
+      telemetryUpdateIntervaInlMiliseconds: 1000
+    telemetries:
+      device_health:
+        properties:
+          instruction: get_server
+          initialDelayMs: 1000
+          intervalMs: 1000

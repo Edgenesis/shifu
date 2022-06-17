@@ -1,4 +1,4 @@
-trigger: 
+trigger:
   branches:
     include:
     - main
@@ -6,13 +6,13 @@ trigger:
   paths:
     exclude:
     - docs
+    - examples
     - img
-    - README.md
-    - README-zh.md
-    - README-en.md
+    - ./*.md
     - LICENSE
     - .devcontainer
     - .github
+    - CHANGELOG
 
 pr:
   branches:
@@ -22,21 +22,21 @@ pr:
   paths:
     exclude:
     - docs
+    - examples
     - img
-    - README.md
-    - README-zh.md
-    - README-en.md
+    - ./*.md
     - LICENSE
     - .devcontainer
     - .github
+    - CHANGELOG
 
 pool:
    vmImage: 'ubuntu-latest'
 
-steps: 
+steps:
 - task: GoTool@0
   inputs:
-    version: '1.17.1'
+    version: '1.17.9'
 - task: Go@0
   displayName: "go get"
   inputs:
@@ -59,6 +59,11 @@ steps:
     command: 'build'
     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdMQTT'
 - task: Go@0
+  displayName: "go build deviceshifuOPCUA"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdOPCUA'
+- task: Go@0
   displayName: "go test deviceshifu"
   inputs:
     command: 'test'
@@ -77,6 +82,12 @@ steps:
     arguments: '-v'
     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuMQTT'
 - task: Go@0
+  displayName: "go test deviceshifuOPCUA"
+  inputs:
+    command: 'test'
+    arguments: '-v'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuOPCUA'
+- task: Go@0
   displayName: "go build mockdevice agv"
   inputs:
     command: 'build'
@@ -86,6 +97,11 @@ steps:
   inputs:
     command: 'build'
     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plate-reader'
+- task: Go@0
+  displayName: "go build mockdevice plc"
+  inputs:
+    command: 'build'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plc'
 - task: Go@0
   displayName: "go build mockdevice robot arm"
   inputs:
