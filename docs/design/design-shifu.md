@@ -115,7 +115,7 @@ The current version of Shifu resembles a [Kubernetes Operator](https://kubernete
 
 ***edgeNode*** is a [Kubernetes node](https://kubernetes.io/docs/concepts/architecture/nodes/) that can connect to multiple ***edgeDevices***. By default, all worker nodes in the Kubernetes cluster are [tainted](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) with ***edgeNode***. For example User is able to configure nodes to not be an ***edgeNode***, therefore isolating their application Pods and ***deviceShifu*** Pods.
 
-#### Software components
+#### Software components (Control Plane)
 
 ##### 1. ***shifud***
 
@@ -125,9 +125,10 @@ The current version of Shifu resembles a [Kubernetes Operator](https://kubernete
 
 ***shifuController*** is a [Kubernetes controller](https://kubernetes.io/docs/concepts/architecture/controller/) listens to hardware events sent by ***shifud*** and make corresponding actions to manage the lifecycle of ***deviceShifu***.
 
-##### 3. ***deviceShifu***
+#### Software Components (Data Plane)
+##### 1. ***deviceShifu***
 
-***deviceShifu*** is an augmented [digital twin](https://en.wikipedia.org/wiki/Digital_twin) of the ***edgeDevice***. We call it **augmented** because it's not only a virtual presentation of the ***edgeDevice*** but also it's capable of driving the corresponding ***edgeDevice*** towards its goal state. For example, if you want your robot to move a box but it's currently busy on something else, ***deviceShifu*** will cache your instructions and tell your robot to move the box whenever it's available. For the basic part, ***deviceShifu*** provides some general functionalities such as ***edgeDevice*** health monitoring, state caching, etc. By implementing the interface of ***deviceShifu***, your ***edgeDevice*** can achieve everything its designed for, and much more!
+***deviceShifu*** is an structural [digital twin](https://en.wikipedia.org/wiki/Digital_twin) of the ***edgeDevice***. We call it **structural** because it's not only a virtual presentation of the ***edgeDevice*** but also it's capable of driving the corresponding ***edgeDevice*** towards its goal state. For example, if you want your robot to move a box but it's currently busy on something else, ***deviceShifu*** will cache your instructions and tell your robot to move the box whenever it's available. For the basic part, ***deviceShifu*** provides some general functionalities such as ***edgeDevice*** health monitoring, state caching, etc. By implementing the interface of ***deviceShifu***, your ***edgeDevice*** can achieve everything its designed for, and much more!
 ***deviceShifu*** has two operation modes: 
 1. ***standalone mode***: ***standalone mode*** is designed to manage a single complex ***edgeDevice*** like robotic arm to provide high quality 1-to-1 management for the ***edgeDevice***.
 2. ***swarm mode***: ***swarm mode*** is designed to manage massive simple ***edgeDevices*** of the same kind like temperature sensors to provide efficient 1-to-N management for the ***edgeDevices***.
