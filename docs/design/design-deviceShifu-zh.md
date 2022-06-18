@@ -36,3 +36,33 @@
 | 1 | 99% |
 | 2 | 99.99% |
 | 3 | 99.9999% |
+
+### 组件
+
+***deviceShifu*** 的组件主要分三方面，网络、存储和计算。
+#### 网络
+
+***deviceShifu*** 需要处理的网络流量主要分为北向、南向、和东西向。
+
+##### 北向
+
+```mermaid
+    flowchart BT;
+    ds[deviceShifu]<-->ua[User App]
+```
+
+##### 南向
+
+```mermaid
+    flowchart TD;
+    ds[deviceShifu]<-->ed[edgeDevice]
+```
+
+##### 东西向
+
+```mermaid
+    flowchart LR;
+    ds[deviceShifu]
+    ods[other deviceShifu]<-->ds
+    ds<-->os["other services (DB,MQ,etc.)"]
+```
