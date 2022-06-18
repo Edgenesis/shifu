@@ -45,17 +45,27 @@
 ***deviceShifu*** 的网络组件主要分为北向、南向、东西向和安全组件。
 
 ##### 北向
-
+如下图所示，***deviceShifu*** 主要与用户的应用进行北向通信。
+因此，***deviceShifu*** 的北向通信组件以http与gRPC等web通信方式为主。
 ```mermaid
     flowchart BT
-    ds[deviceShifu]<-->ua[User App]
+    subgraph sg-ds["deviceShifu (north bound part)"]
+    http[HTTP]
+    grpc[gRPC]
+    end
+    sg-ds<-->ua[User App]
 ```
 
 ##### 南向
-
+如下图所示，***deviceShifu*** 主要与 ***edgeDevice***进行南向通信。
+因此，***deviceShifu*** 的南向通信组件以协议与驱动等IoT通信方式为主。
 ```mermaid
     flowchart TD
-    ds[deviceShifu]<-->ed[edgeDevice]
+    subgraph sg-ds["deviceShifu (south bound part)"]
+    http[protocol broker]
+    grpc[device driver]
+    end
+    sg-ds<-->ed[edgeDevice]
 ```
 
 ##### 东西向
