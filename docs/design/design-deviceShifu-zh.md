@@ -42,27 +42,40 @@
 ***deviceShifu*** 的组件主要分三方面，网络、存储和计算。
 #### 网络
 
-***deviceShifu*** 需要处理的网络流量主要分为北向、南向、和东西向。
+***deviceShifu*** 的网络组件主要分为北向、南向、东西向和安全组件。
 
 ##### 北向
 
 ```mermaid
-    flowchart BT;
+    flowchart BT
     ds[deviceShifu]<-->ua[User App]
 ```
 
 ##### 南向
 
 ```mermaid
-    flowchart TD;
+    flowchart TD
     ds[deviceShifu]<-->ed[edgeDevice]
 ```
 
 ##### 东西向
 
 ```mermaid
-    flowchart LR;
-    ds[deviceShifu]
-    ods[other deviceShifu]<-->ds
-    ds<-->os["other services (DB,MQ,etc.)"]
+    flowchart LR
+    ds[deviceShifu]<-->os["other infra (DB,MQ,etc.)"]
+```
+
+##### 安全
+
+```mermaid
+    flowchart LR
+    
+    subgraph sg-ss[security services]
+    direction LR
+    fw[Firewall]
+    mTLS[mTLS]
+    dotsinsg-ss[...]
+    end
+
+    ds[deviceShifu]<-->sg-ss<-->os[other services]
 ```
