@@ -70,12 +70,12 @@
 ```mermaid
     flowchart LR
     
-    subgraph sg-ss[security services]
+    subgraph sg-pi[security plug-ins]
     direction LR
     fw[Firewall]
     mTLS[mTLS]
-    dotsinsg-ss[...]
+    dotsinsg-sg-pi[...]
     end
 
-    ds[deviceShifu]<-->sg-ss<-->os[other services]
+    ds[deviceShifu]<-->sg-pi<-->os[other services]
 ```
