@@ -3,8 +3,10 @@ package deviceshifuOPCUA
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
@@ -42,6 +44,7 @@ type deviceCommandHandler interface {
 const (
 	DEVICE_IS_HEALTHY_STR                       string = "Device is healthy"
 	DEVICE_CONFIGMAP_FOLDER_PATH                string = "/etc/edgedevice/config"
+	DEVICE_CONFIGMAP_CERTIFICATE_PATH           string = "/etc/edgedevice/certificate"
 	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR           string = "NULL"
 	DEVICE_NAMESPACE_DEFAULT                    string = "default"
 	DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS        int64  = 3000
@@ -104,9 +107,18 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				}
 
 				ctx := context.Background()
-				// TODO: handle different security modes
-				opcuaClient = opcua.NewClient(*edgeDevice.Spec.Address,
-					opcua.SecurityMode(ua.MessageSecurityModeNone))
+
+				var options []opcua.Option
+				options = append(options, opcua.SecurityMode(ua.MessageSecurityModeNone))
+				switch ua.UserTokenTypeFromString(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.SecurityMode) {
+				case ua.UserTokenTypeUserName:
+					options = append(options, opcua.AuthUsername(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.Username, *edgeDevice.Spec.ProtocolSettings.OPCUASetting.Password))
+				case ua.UserTokenTypeCertificate:
+					options = append(options, opcua.CertificateFile(getCertificateFilePath()))
+				case ua.UserTokenTypeAnonymous:
+				default:
+				}
+				opcuaClient = opcua.NewClient(*edgeDevice.Spec.Address, options...)
 				if err := opcuaClient.Connect(ctx); err != nil {
 					log.Fatalf("Unable to connect to OPC UA server, error: %v", err)
 				}
@@ -395,4 +407,15 @@ func (ds *DeviceShifu) Stop() error {
 
 	fmt.Printf("deviceShifu %s's http server stopped\n", ds.Name)
 	return nil
+}
+
+func getCertificateFilePath() string {
+	files, _ := ioutil.ReadDir(DEVICE_CONFIGMAP_CERTIFICATE_PATH)
+	for _, f := range files {
+		if strings.HasSuffix(f.Name(), ".pem") || strings.HasSuffix(f.Name(), ".der") {
+			return DEVICE_CONFIGMAP_CERTIFICATE_PATH + "/" + f.Name()
+		}
+	}
+	log.Fatalf("CertificateFile Not Found")
+	return ""
 }
