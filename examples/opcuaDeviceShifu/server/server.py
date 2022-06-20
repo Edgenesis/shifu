@@ -1,9 +1,12 @@
 import sys
+
+import opcua.crypto.security_policies
+
 sys.path.insert(0, "..")
 import time
 
 
-from opcua import ua, Server
+from opcua import ua, Server,crypto
 
 #With Authentication
 users_db = {
@@ -19,16 +22,17 @@ if __name__ == "__main__":
     # setup our server
     server = Server()
     server.set_endpoint("opc.tcp://0.0.0.0:4840/freeopcua/server/")
-
-    #With Certificate！！！
-    server.set_security_policy([ua.SecurityPolicyType.Basic256Sha256_SignAndEncrypt])
-    # Set Your Private Key And Certificate Path
-    server.load_certificate("../cert.der")
-    server.load_private_key("../private_key.pem")
-
-    # # With Authentication too!!!
-    # server.set_security_IDs(["Username"])
-    # server.user_manager.set_user_manager(user_manager)
+    if len(sys.argv) >= 2 and sys.argv[1] == "Certificate":
+      print("OPC UA Server is Certificate Mode")
+      server.set_security_policy([ua.SecurityPolicyType.Basic256Sha256_SignAndEncrypt])
+      server.load_certificate("../cert.der")
+      server.load_private_key("../private_key.pem")
+    elif len(sys.argv) >= 2 and sys.argv[1] == "UserName":
+      print("OPC UA Server is UserName Mode")
+      server.set_security_IDs(["UserName"])
+      server.user_manager.set_user_manager(user_manager)
+    else:
+      print("OPC UA Server is Anonymous Mode")
 
     # setup our own namespace, not really necessary but should as spec
     uri = "http://examples.freeopcua.github.io"
@@ -44,7 +48,7 @@ if __name__ == "__main__":
 
     # starting!
     server.start()
-    
+
     try:
         count = 0
         while True:
