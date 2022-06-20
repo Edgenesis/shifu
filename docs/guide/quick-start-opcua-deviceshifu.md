@@ -41,7 +41,7 @@ spec:
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "opcua"
+          value: "edgedevice-opcua"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:

@@ -36,7 +36,7 @@ spec:
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "mqtt"
+          value: "edgedevice-mqtt"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:

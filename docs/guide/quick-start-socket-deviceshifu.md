@@ -41,7 +41,7 @@ spec:
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "socket"
+          value: "edgedevice-socket"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
