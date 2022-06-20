@@ -26,7 +26,7 @@ spec:
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "camera"
+          value: "edgedevice-camera"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       - image: edgehub/camera-python:v0.0.1

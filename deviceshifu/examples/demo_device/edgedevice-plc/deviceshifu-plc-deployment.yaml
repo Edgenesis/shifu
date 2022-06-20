@@ -26,7 +26,7 @@ spec:
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "plc"
+          value: "edgedevice-plc"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
