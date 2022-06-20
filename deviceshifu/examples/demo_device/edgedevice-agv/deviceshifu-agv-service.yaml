@@ -4,7 +4,7 @@ metadata:
   labels:
     app: deviceshifu-agv-deployment
   name: deviceshifu-agv
-  namespace: shifudevice
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80

@@ -4,7 +4,7 @@ metadata:
   labels:
     app: deviceshifu-agv-deployment
   name: deviceshifu-agv-deployment
-  namespace: shifudevice
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
