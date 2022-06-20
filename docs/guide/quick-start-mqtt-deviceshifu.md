@@ -91,7 +91,7 @@ data:
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: mqtt
+  name: edgedevice-mqtt
   namespace: devices
 spec:
   sku: "testMQTT" 

@@ -109,7 +109,7 @@ data:
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: opcua
+  name: edgedevice-opcua
   namespace: devices
 spec:
   sku: "opcua-test" 

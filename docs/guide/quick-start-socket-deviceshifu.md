@@ -94,7 +94,7 @@ data:
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: socket
+  name: edgedevice-socket
   namespace: devices
 spec:
   sku: "testSocket" 

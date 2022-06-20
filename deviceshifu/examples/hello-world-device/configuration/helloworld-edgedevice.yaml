@@ -1,7 +1,7 @@
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: helloworld
+  name: edgedevice-helloworld
   namespace: devices
 spec:
   sku: "Hello World"

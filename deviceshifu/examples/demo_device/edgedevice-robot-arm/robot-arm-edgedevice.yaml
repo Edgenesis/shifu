@@ -1,7 +1,7 @@
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: robotarm
+  name: edgedevice-robotarm
   namespace: devices
 spec:
   sku: "Franka Emika" 

@@ -1,7 +1,7 @@
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: EdgeDevice
 metadata:
-  name: plate-reader
+  name: edgedevice-plate-reader
   namespace: devices
 spec:
   sku: "Tecan SPark" 
