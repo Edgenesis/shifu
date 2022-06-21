@@ -2,14 +2,14 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-camera-deployment
-  name: edgedevice-camera-deployment
+    app: deviceshifu-camera-deployment
+  name: deviceshifu-camera-deployment
   namespace: deviceshifu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-camera-deployment
+      app: deviceshifu-camera-deployment
   template:
     metadata:
       labels:
@@ -21,7 +21,7 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
