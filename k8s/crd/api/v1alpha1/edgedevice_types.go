@@ -58,11 +58,12 @@ type EdgeDeviceSpec struct {
 	// Important: Run "make" to regenerate code after modifying this file
 
 	// Sku specifies the EdgeDevice's SKU.
-	Sku              *string           `json:"sku,omitempty"`
-	Connection       *Connection       `json:"connection,omitempty"`
-	Address          *string           `json:"address,omitempty"`
-	Protocol         *Protocol         `json:"protocol,omitempty"`
-	ProtocolSettings *ProtocolSettings `json:"protocolSettings,omitempty"`
+	Sku              *string            `json:"sku,omitempty"`
+	Connection       *Connection        `json:"connection,omitempty"`
+	Address          *string            `json:"address,omitempty"`
+	Protocol         *Protocol          `json:"protocol,omitempty"`
+	ProtocolSettings *ProtocolSettings  `json:"protocolSettings,omitempty"`
+	CustomMetadata   *map[string]string `json:"customMetadata,omitempty"`
 
 	// TODO: add other fields like disconnectTimemoutInSeconds
 }

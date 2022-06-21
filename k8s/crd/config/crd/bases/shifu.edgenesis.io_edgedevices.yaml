@@ -42,6 +42,10 @@ spec:
                 description: Connection specifies the EdgeDevice-EdgeNode connection
                   type.
                 type: string
+              customMetadata:
+                additionalProperties:
+                  type: string
+                type: object
               protocol:
                 description: Protocol specifies the EdgeDevice's communication protocol.
                 type: string
