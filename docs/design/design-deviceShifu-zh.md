@@ -1,3 +1,23 @@
+- [deviceShifu 高层设计](#deviceshifu-高层设计)
+  - [设计目标和非目标](#设计目标和非目标)
+    - [设计目标](#设计目标)
+      - [低资源消耗](#低资源消耗)
+      - [多态](#多态)
+      - [无状态](#无状态)
+      - [跨平台](#跨平台)
+    - [设计非目标](#设计非目标)
+      - [高并发](#高并发)
+      - [高可用](#高可用)
+    - [架构](#架构)
+      - [网络](#网络)
+        - [北向](#北向)
+        - [南向](#南向)
+        - [东西向（复用北向）](#东西向复用北向)
+        - [安全](#安全)
+      - [存储](#存储)
+        - [数据面 Data Plane](#数据面-data-plane)
+        - [控制面 Control Plane](#控制面-control-plane)
+      - [计算](#计算)
 # deviceShifu 高层设计
 
 ***deviceShifu*** 是 ***Shifu*** 用户所写的应用于 ***Shifu*** 本身交互的唯一入口。所以 ***Shifu*** 用户绝大多数时间只需要和 ***deviceShifu*** 交互即可，也是 ***Shifu*** 用户最需要了解的 ***Shifu*** 组件。***deviceShifu*** 是IoT设备在 ***Shifu*** 中的结构性数字孪生，以微服务的形式存在。其底层是Kubernetes的Pod。
@@ -37,13 +57,13 @@
 | 2 | 99.99% |
 | 3 | 99.9999% |
 
-### 组件
+### 架构
 
-***deviceShifu*** 的组件主要分三方面，网络、存储和计算。
+***deviceShifu*** 的架构主要分三方面，网络、存储和计算。
 #### 网络
 
 ***deviceShifu*** 的网络组件主要分为北向、南向、东西向和安全组件。
-
+以下讨论均在同一个网段内，跨网段的设计会在未来更新。
 ##### 北向
 如下图所示，***deviceShifu*** 主要与用户的应用进行北向通信。
 因此，***deviceShifu*** 的北向通信组件以http与gRPC等web通信方式为主。
@@ -68,7 +88,8 @@
     sg-ds<-->ed[edgeDevice]
 ```
 
-##### 东西向
+##### 东西向（复用北向）
+如下图所示，***deviceShifu*** 主要与包括数据库在内的其他infra进行东西向通信。因此，因此，***deviceShifu*** 的东西向通信组件会直接使用北向的通信组件，以http与gRPC等web通信方式为主。
 
 ```mermaid
     flowchart LR
@@ -76,7 +97,7 @@
 ```
 
 ##### 安全
-
+因为 ***Shifu*** 运行在Kubernetes上，所以一切Kubernetes的安全策略与组件都可以用来保护 ***Shifu*** 有关组件的安全。
 ```mermaid
     flowchart LR
     
@@ -84,8 +105,63 @@
     direction LR
     fw[Firewall]
     mTLS[mTLS]
+    vpn[VPN Tunnel]
     dotsinsg-sg-pi[...]
     end
 
     ds[deviceShifu]<-->sg-pi<-->os[other services]
+```
+
+#### 存储
+
+因为 ***deviceShifu*** 的设计是无状态的，所以它只会缓存数据，而不会有数据面的持久化存储。
+数据面的持久化存储会由数据库和文件系统等存储组件来完成。而控制面的持久化存储则依赖Kubernetes的CRD机制存储在etcd中。
+
+注：以下示意图中没有消息队列等组件，请读者根据自身的场景需求进行进一步设计。
+
+##### 数据面 Data Plane
+***deviceShifu*** 的数据面存储结构如下：
+```mermaid
+    flowchart LR
+
+    subgraph sg-ds[deviceShifu]
+    cache[internal cache]
+    end
+    
+    sg-ds-->tsdb["Time series database (TDEngine, InfluxDB, etc.)"]
+    sg-ds-->sql["SQL database (MySQL, PostgreSQL, etc."]
+    sg-ds-->nosql["NoSQL database (MongoDB, Apache HBase, etc.)"]
+```
+
+##### 控制面 Control Plane
+***deviceShifu*** 的控制面存储结构如下：
+```mermaid
+    flowchart LR
+
+    subgraph sg-etcd[etcd]
+    direction LR
+    deploy[deployment]
+    cm[configMap]
+    cr[custom resource]
+    end
+
+    sg-etcd-->ds[deviceShifu]
+```
+
+#### 计算
+
+由于计算的需求过于多样化，***deviceShifu*** 的计算组件会在未来根据开发者的需求来添加。
+目前已有的组件有：
+1. 周期性执行任务（典型应用：数据采集）
+2. 有限状态机（典型应用：流程自动化
+
+如果读者对更多的计算组件有需求，请[点击这里](https://github.com/Edgenesis/shifu/issues)建立一个issue，把你的想法告诉我们！
+
+***deviceShifu*** 的计算架构示意图如下：
+```mermaid
+    classDiagram
+    class deviceShifu
+    deviceShifu: Telemetry
+    deviceShifu: StateMachine
+    deviceShifu: Other Compute Modules...
 ```
