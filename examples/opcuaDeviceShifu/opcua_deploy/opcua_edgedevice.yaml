@@ -10,7 +10,9 @@ spec:
   protocol: OPCUA
   protocolSettings:
     OPCUASetting:
-      SecurityMode: Anonymous
+      SecurityMode: Certificate
+      CertificateFileName: crt.der
       ConnectionTimeoutInMilliseconds: 5000
-      Username: user1
-      Password: pwd0
+      AuthenticationMode: Certificate
+      Username:
+      Password:

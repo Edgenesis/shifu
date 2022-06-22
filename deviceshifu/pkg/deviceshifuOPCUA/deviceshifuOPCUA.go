@@ -108,17 +108,36 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 				ctx := context.Background()
 
-				var options []opcua.Option
-				options = append(options, opcua.SecurityMode(ua.MessageSecurityModeNone))
-				switch ua.UserTokenTypeFromString(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.SecurityMode) {
+				options := []opcua.Option{
+					opcua.SecurityPolicy("None"),
+					opcua.SecurityModeString("None"),
+				}
+
+				endpoints, err := opcua.GetEndpoints(ctx, *edgeDevice.Spec.Address)
+				if err != nil {
+					log.Fatal("Cannot Get EndPoint Description")
+					return nil, err
+				}
+				ep := opcua.SelectEndpoint(endpoints, "None", ua.MessageSecurityModeFromString("None"))
+				if ep == nil {
+					log.Fatal("Failed to find suitable endpoint")
+				}
+
+				switch ua.UserTokenTypeFromString(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.AuthenticationMode) {
+				case ua.UserTokenTypeCertificate:
+					options = append(options, opcua.CertificateFile(DEVICE_CONFIGMAP_CERTIFICATE_PATH+"/"+*edgeDevice.Spec.ProtocolSettings.OPCUASetting.CertificateFileName))
+				case ua.UserTokenTypeIssuedToken:
+					options = append(options, opcua.AuthIssuedToken([]byte(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.IssuedToken)))
 				case ua.UserTokenTypeUserName:
 					options = append(options, opcua.AuthUsername(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.Username, *edgeDevice.Spec.ProtocolSettings.OPCUASetting.Password))
-				case ua.UserTokenTypeCertificate:
-					options = append(options, opcua.CertificateFile(getCertificateFilePath()))
 				case ua.UserTokenTypeAnonymous:
+					fallthrough
 				default:
+					options = append(options, opcua.AuthAnonymous())
 				}
+				options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.AuthenticationMode)))
 				opcuaClient = opcua.NewClient(*edgeDevice.Spec.Address, options...)
+
 				if err := opcuaClient.Connect(ctx); err != nil {
 					log.Fatalf("Unable to connect to OPC UA server, error: %v", err)
 				}
@@ -409,13 +428,17 @@ func (ds *DeviceShifu) Stop() error {
 	return nil
 }
 
-func getCertificateFilePath() string {
-	files, _ := ioutil.ReadDir(DEVICE_CONFIGMAP_CERTIFICATE_PATH)
+func getCertificateFilePath() (string, bool) {
+	files, err := ioutil.ReadDir(DEVICE_CONFIGMAP_CERTIFICATE_PATH)
+	if err != nil {
+		return "", false
+	}
 	for _, f := range files {
 		if strings.HasSuffix(f.Name(), ".pem") || strings.HasSuffix(f.Name(), ".der") {
-			return DEVICE_CONFIGMAP_CERTIFICATE_PATH + "/" + f.Name()
+			return DEVICE_CONFIGMAP_CERTIFICATE_PATH + "/" + f.Name(), true
 		}
 	}
 	log.Fatalf("CertificateFile Not Found")
-	return ""
+
+	return "", false
 }

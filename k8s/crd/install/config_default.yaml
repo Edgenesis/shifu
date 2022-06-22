@@ -61,9 +61,15 @@ spec:
                   OPCUASetting:
                     description: OPCUASetting defines OPC UA specific settings when connecting to an OPC UA endpoint
                     properties:
+                      AuthenticationMode:
+                        type: string
+                      CertificateFileName:
+                        type: string
                       ConnectionTimeoutInMilliseconds:
                         format: int64
                         type: integer
+                      IssuedToken:
+                        type: string
                       OPCUAEndpoint:
                         type: string
                       Password:

@@ -34,6 +34,10 @@ type MQTTSetting struct {
 type OPCUASetting struct {
 	OPCUAEndpoint                   *string `json:"OPCUAEndpoint,omitempty"`
 	SecurityMode                    *string `json:"SecurityMode,omitempty"`
+	AuthenticationMode              *string `json:"AuthenticationMode,omitempty"`
+	CertificateFileName             *string `json:"CertificateFileName,omitempty"`
+	IssuedToken                     *string `json:"IssuedToken,omitempty"`
+	SecurityPolicy                  *string `json:"SecurityPolicy,omitempty"`
 	Username                        *string `json:"Username,omitempty"`
 	Password                        *string `json:"Password,omitempty"`
 	ConnectionTimeoutInMilliseconds *int64  `json:"ConnectionTimeoutInMilliseconds,omitempty"`
