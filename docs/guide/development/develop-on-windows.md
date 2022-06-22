@@ -57,7 +57,7 @@ Click on that, VSCode should open your project in remote container. Your develop
 From [Go](https://go.dev/doc/install), download and install go using the following command:
 ```bash
 $ wget https://go.dev/dl/go1.17.10.linux-amd64.tar.gz
-$ rm -rf /usr/local/go && tar -C /usr/local -xzf go1.18.3.linux-amd64.tar.gz
+$ rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.10.linux-amd64.tar.gz
 $ echo "export PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile
 ```
 
