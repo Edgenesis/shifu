@@ -11,7 +11,7 @@
       - [Highly available](#highly-available)
         - [1. Self healing](#1-self-healing)
         - [2. Stable](#2-stable)
-      - [Portable](#portable)
+      - [Cross-Platform](#cross-platform)
       - [Lightweight](#lightweight)
       - [Extensible and flexible](#extensible-and-flexible)
     - [Design non-goals](#design-non-goals)
@@ -22,10 +22,11 @@
       - [Physical components](#physical-components)
         - [1. ***edgeDevice***](#1-edgedevice)
         - [2. ***edgeNode***](#2-edgenode)
-      - [Software components](#software-components)
+      - [Software components (Control Plane)](#software-components-control-plane)
         - [1. ***shifud***](#1-shifud)
         - [2. ***shifuController***](#2-shifucontroller)
-        - [3. ***deviceShifu***](#3-deviceshifu)
+      - [Software components (Data Plane)](#software-components-data-plane)
+        - [1. ***deviceShifu***](#1-deviceshifu)
     - [Architecture diagrams](#architecture-diagrams)
       - [The lifecycle of ***deviceShifu***](#the-lifecycle-of-deviceshifu)
         - [1. Device connect (user workload not shown in below figure)](#1-device-connect-user-workload-not-shown-in-below-figure)
@@ -63,7 +64,7 @@ Shifu will always provide developers with super easy to use SDKs, simple because
 #### Simple
 
 It is extremely important to have a simple architecture and logic to preserve a high standard of readability and maintainability.
-An easy-to-read and easy-to-change code base will enable developers to improve ***shifu*** or even create their very own versions of ***shifu***.
+An easy-to-read and easy-to-change code base will enable developers to improve ***Shifu*** or even create their very own versions of ***Shifu***.
 
 #### Highly available
 
@@ -77,7 +78,7 @@ Shifu should always be able to heal itself upon unexpected events and drive itse
 
 Shifu aims to achieve high availability and eliminate your operation costs.
 
-#### Portable
+#### Cross-Platform
 
 Shifu should be able to run on all major platforms, including but not limited to x86/64, ARM64, etc.
 
@@ -97,7 +98,7 @@ Our first priority is to ensure ***shifu*** runs on Kubernetes smoothly. We migh
 
 #### 100% up-time
 
-***Shifu***'s design has built-in fault-tolerance. ***Shifu*** strives to achieve >99% up-time, but doesn't aim for 100% up-time. 
+***Shifu***'s design has built-in fault-tolerance. ***Shifu*** strives to achieve >99.9999% up-time, but doesn't aim for 100% up-time.
 
 ## Design overview
 

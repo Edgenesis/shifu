@@ -35,7 +35,7 @@ In a complex scenario with more than a thousand kinds of devices, ***Shifu*** wi
 ***deviceShifu*** will cache some data come from devices and applications, but it's database and file system's job to handle persistent store.
 
 #### Cross platform
-***deviceShifu*** can run on all major platforms, including but not limited to x86/64, ARM 64, etc.
+***deviceShifu*** can run on all major platforms, including but not limited to x86-64, ARM 64, etc.
 
 ### Design non-goals
 
@@ -45,7 +45,7 @@ Since high concurrency connections will be handled by the broker between a devic
 
 #### Highly available
 Wait! Why there's no HA in ANY component's design goals? Relax, this is because ***deviceShifu*** is a Kubernetes pod under the hood.
-Kubernetes's Deployment creates multiple replicas for a pod to achieve HA. Therefore, ***Shifu*** users can create multiple replicas for each ***deviceShifu*** depending on the compute resources. This way, you can achieve unprecedented high availability! The table below demonstrates ***deviceShifu***'s replica # v.s. it's availability.
+Kubernetes's Deployment creates multiple replicas for a pod to achieve HA. Therefore, ***Shifu*** users can create multiple replicas for each ***deviceShifu*** depending on the compute resources. This way, you can achieve unprecedented high availability! The table below demonstrates ***deviceShifu***'s replica # v.s. its availability.
 | ***deviceShifu*** replica # | availability |
 |--|--|
 | 1 | 99% |
@@ -73,7 +73,7 @@ Therefore, ***deviceShifu***'s north bound plug-ins focus on web communications,
 
 ##### South bound
 As shown below, ***deviceShifu*** mainly communicates with ***edgeDevice*** through south bound plug-ins.
-Therefore, ****deviceShifu***'s south bound plug-ins focus IoT communications, such as drivers and protocols.
+Therefore, ***deviceShifu***'s south bound plug-ins focus IoT communications, such as drivers and protocols.
 
 ```mermaid
     flowchart TD
@@ -146,8 +146,8 @@ Note: There's no additional components like message queues. Please add those com
 #### Compute
 Since the need of compute is very fragmented, ***deviceShifu*** will add more compute plug-ins based on developers' feedbacks.
 Currently we have the following compute plug-ins:
-1. Periodical task execution(sample usage: data collection)
-2. Finite state machine(sample usage: process automation)
+1. Periodical task execution (sample usage: data collection)
+2. Finite state machine (sample usage: process automation)
 
 If you have additional needs for compute plug-ins, please [click here](https://github.com/Edgenesis/shifu/issues) to create an issue and tell us what's up in your mind!
 
