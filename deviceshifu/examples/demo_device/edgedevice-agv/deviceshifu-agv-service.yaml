@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-agv-deployment
-  name: edgedevice-agv
-  namespace: default
+    app: deviceshifu-agv-deployment
+  name: deviceshifu-agv
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-agv-deployment
+    app: deviceshifu-agv-deployment
   type: LoadBalancer

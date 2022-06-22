@@ -354,10 +354,15 @@ metadata:
   name: devices
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: deviceshifu
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: edgedevice-sa
-  namespace: default
+  namespace: deviceshifu
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -381,4 +386,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: edgedevice-sa
-  namespace: default
+  namespace: deviceshifu

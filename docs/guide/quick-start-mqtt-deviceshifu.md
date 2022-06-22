@@ -12,18 +12,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-mqtt-deployment
-  name: edgedevice-mqtt-deployment
-  namespace: default
+    app: deviceshifu-mqtt-deployment
+  name: deviceshifu-mqtt-deployment
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-mqtt-deployment
+      app: deviceshifu-mqtt-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-mqtt-deployment
+        app: deviceshifu-mqtt-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-mqtt:v0.0.1
@@ -31,7 +31,7 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
@@ -40,7 +40,7 @@ spec:
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: mqtt-configmap-0.0.1
       serviceAccountName: edgedevice-sa
@@ -53,16 +53,16 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-mqtt-deployment
-  name: edgedevice-mqtt
-  namespace: default
+    app: deviceshifu-mqtt-deployment
+  name: deviceshifu-mqtt
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-mqtt-deployment
+    app: deviceshifu-mqtt-deployment
   type: LoadBalancer
 ```
 
@@ -73,7 +73,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mqtt-configmap-0.0.1
-  namespace: default
+  namespace: deviceshifu
 data:
   driverProperties: |
     driverSku: testMQTT
@@ -106,7 +106,7 @@ spec:
 ## To get the latest MQTT message from device:
 
 ```
-curl edgedevice-mqtt/mqtt_data
+curl deviceshifu-mqtt/mqtt_data
 ```
 
 Where `mqtt_data` is the embedded query string

@@ -4,7 +4,7 @@ metadata:
   labels:
     app: driver
   name: driver
-  namespace: default
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:

@@ -34,7 +34,7 @@ import (
 )
 
 func main() {
-	targetUrl := "http://edgedevice-thermometer/read_value"
+	targetUrl := "http://deviceshifu-thermometer/read_value"
 	req, _ := http.NewRequest("GET", targetUrl, nil)
 	for {
 		res, _ := http.DefaultClient.Do(req)

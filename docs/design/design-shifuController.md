@@ -124,7 +124,7 @@ metadata:
   labels:
     app: edgedevice-thermometer-deployment
   name: edgedevice-thermometer-deployment
-  namespace: default
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
@@ -163,7 +163,7 @@ metadata:
   labels:
     app: edgedevice-thermometer-deployment
   name: edgedevice-thermometer
-  namespace: default
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80

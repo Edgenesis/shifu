@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-camera-deployment
-  name: edgedevice-camera
-  namespace: default
+    app: deviceshifu-camera-deployment
+  name: deviceshifu-camera
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-camera-deployment
+    app: deviceshifu-camera-deployment
   type: LoadBalancer

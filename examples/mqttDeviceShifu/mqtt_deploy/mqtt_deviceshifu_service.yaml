@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-mqtt-deployment
-  name: edgedevice-mqtt
-  namespace: default
+    app: deviceshifu-mqtt-deployment
+  name: deviceshifu-mqtt
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-mqtt-deployment
+    app: deviceshifu-mqtt-deployment
   type: LoadBalancer

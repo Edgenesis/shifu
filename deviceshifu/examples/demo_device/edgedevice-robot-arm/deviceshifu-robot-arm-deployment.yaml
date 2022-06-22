@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-robotarm-deployment
-  name: edgedevice-robotarm-deployment
-  namespace: default
+    app: deviceshifu-robotarm-deployment
+  name: deviceshifu-robotarm-deployment
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-robotarm-deployment
+      app: deviceshifu-robotarm-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-robotarm-deployment
+        app: deviceshifu-robotarm-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-http:v0.0.1
@@ -21,7 +21,7 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
@@ -30,7 +30,7 @@ spec:
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: robotarm-configmap-0.0.1
       serviceAccountName: edgedevice-sa
