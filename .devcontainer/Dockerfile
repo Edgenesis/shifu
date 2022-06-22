@@ -1,8 +1,6 @@
 # See here for image contents: https://github.com/microsoft/vscode-dev-containers/tree/v0.194.0/containers/go/.devcontainer/base.Dockerfile
 
 ARG VARIANT="latest"
-
-
 FROM edgehub/go-dev:${VARIANT}
 
 ARG KIND_VERSION="v0.14.0"
