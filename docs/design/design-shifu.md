@@ -11,7 +11,7 @@
       - [Highly available](#highly-available)
         - [1. Self healing](#1-self-healing)
         - [2. Stable](#2-stable)
-      - [Portable](#portable)
+      - [Cross-Platform](#cross-platform)
       - [Lightweight](#lightweight)
       - [Extensible and flexible](#extensible-and-flexible)
     - [Design non-goals](#design-non-goals)
@@ -22,10 +22,11 @@
       - [Physical components](#physical-components)
         - [1. ***edgeDevice***](#1-edgedevice)
         - [2. ***edgeNode***](#2-edgenode)
-      - [Software components](#software-components)
+      - [Software components (Control Plane)](#software-components-control-plane)
         - [1. ***shifud***](#1-shifud)
         - [2. ***shifuController***](#2-shifucontroller)
-        - [3. ***deviceShifu***](#3-deviceshifu)
+      - [Software components (Data Plane)](#software-components-data-plane)
+        - [1. ***deviceShifu***](#1-deviceshifu)
     - [Architecture diagrams](#architecture-diagrams)
       - [The lifecycle of ***deviceShifu***](#the-lifecycle-of-deviceshifu)
         - [1. Device connect (user workload not shown in below figure)](#1-device-connect-user-workload-not-shown-in-below-figure)
@@ -63,7 +64,7 @@ Shifu will always provide developers with super easy to use SDKs, simple because
 #### Simple
 
 It is extremely important to have a simple architecture and logic to preserve a high standard of readability and maintainability.
-An easy-to-read and easy-to-change code base will enable developers to improve ***shifu*** or even create their very own versions of ***shifu***.
+An easy-to-read and easy-to-change code base will enable developers to improve ***Shifu*** or even create their very own versions of ***Shifu***.
 
 #### Highly available
 
@@ -77,7 +78,7 @@ Shifu should always be able to heal itself upon unexpected events and drive itse
 
 Shifu aims to achieve high availability and eliminate your operation costs.
 
-#### Portable
+#### Cross-Platform
 
 Shifu should be able to run on all major platforms, including but not limited to x86/64, ARM64, etc.
 
@@ -97,7 +98,7 @@ Our first priority is to ensure ***shifu*** runs on Kubernetes smoothly. We migh
 
 #### 100% up-time
 
-***Shifu***'s design has built-in fault-tolerance. ***Shifu*** strives to achieve >99% up-time, but doesn't aim for 100% up-time. 
+***Shifu***'s design has built-in fault-tolerance. ***Shifu*** strives to achieve >99.9999% up-time, but doesn't aim for 100% up-time.
 
 ## Design overview
 
@@ -115,7 +116,7 @@ The current version of Shifu resembles a [Kubernetes Operator](https://kubernete
 
 ***edgeNode*** is a [Kubernetes node](https://kubernetes.io/docs/concepts/architecture/nodes/) that can connect to multiple ***edgeDevices***. By default, all worker nodes in the Kubernetes cluster are [tainted](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) with ***edgeNode***. For example User is able to configure nodes to not be an ***edgeNode***, therefore isolating their application Pods and ***deviceShifu*** Pods.
 
-#### Software components
+#### Software components (Control Plane)
 
 ##### 1. ***shifud***
 
@@ -125,9 +126,10 @@ The current version of Shifu resembles a [Kubernetes Operator](https://kubernete
 
 ***shifuController*** is a [Kubernetes controller](https://kubernetes.io/docs/concepts/architecture/controller/) listens to hardware events sent by ***shifud*** and make corresponding actions to manage the lifecycle of ***deviceShifu***.
 
-##### 3. ***deviceShifu***
+#### Software Components (Data Plane)
+##### 1. ***deviceShifu***
 
-***deviceShifu*** is an augmented [digital twin](https://en.wikipedia.org/wiki/Digital_twin) of the ***edgeDevice***. We call it **augmented** because it's not only a virtual presentation of the ***edgeDevice*** but also it's capable of driving the corresponding ***edgeDevice*** towards its goal state. For example, if you want your robot to move a box but it's currently busy on something else, ***deviceShifu*** will cache your instructions and tell your robot to move the box whenever it's available. For the basic part, ***deviceShifu*** provides some general functionalities such as ***edgeDevice*** health monitoring, state caching, etc. By implementing the interface of ***deviceShifu***, your ***edgeDevice*** can achieve everything its designed for, and much more!
+***deviceShifu*** is an structural [digital twin](https://en.wikipedia.org/wiki/Digital_twin) of the ***edgeDevice***. We call it **structural** because it's not only a virtual presentation of the ***edgeDevice*** but also it's capable of driving the corresponding ***edgeDevice*** towards its goal state. For example, if you want your robot to move a box but it's currently busy on something else, ***deviceShifu*** will cache your instructions and tell your robot to move the box whenever it's available. For the basic part, ***deviceShifu*** provides some general functionalities such as ***edgeDevice*** health monitoring, state caching, etc. By implementing the interface of ***deviceShifu***, your ***edgeDevice*** can achieve everything its designed for, and much more!
 ***deviceShifu*** has two operation modes: 
 1. ***standalone mode***: ***standalone mode*** is designed to manage a single complex ***edgeDevice*** like robotic arm to provide high quality 1-to-1 management for the ***edgeDevice***.
 2. ***swarm mode***: ***swarm mode*** is designed to manage massive simple ***edgeDevices*** of the same kind like temperature sensors to provide efficient 1-to-N management for the ***edgeDevices***.
