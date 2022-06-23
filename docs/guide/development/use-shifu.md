@@ -50,7 +50,7 @@ kubectl run nginx --image=nginx
 Run the following command to get the real-time coordinates of the `demo` device:
 ```shell
 kubectl exec -it nginx -- bash
-curl edgedevice-agv/get_position;echo
+curl deviceshifu-agv.deviceshifu.svc.cluster.local/get_position;echo
 ```
 
 
