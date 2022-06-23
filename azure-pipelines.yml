@@ -140,7 +140,7 @@ steps:
     kind --version
     kind delete cluster && kind create cluster
     kubectl version
-    kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
+    # kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
