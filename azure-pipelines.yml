@@ -46,7 +46,7 @@ steps:
   inputs:
      kubectlVersion: latest   
 - task: Go@0
-  displayName: "go get"
+  displayName: "Kind Installer"
   inputs:
     command: 'get'
     arguments: 'sigs.k8s.io/kind@v0.14.0'  
@@ -165,4 +165,4 @@ steps:
     kubectl delete -f $(System.DefaultWorkingDirectory)/examples/socketDeviceShifu/          
     kubectl delete -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
   displayName: "kubectl apply$delete" 
-     
+
