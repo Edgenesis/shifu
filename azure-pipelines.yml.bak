@@ -33,33 +33,16 @@ pr:
 pool:
    vmImage: 'ubuntu-latest'
 
-steps: 
+steps:
 - task: GoTool@0
   inputs:
     version: '1.17.9'
-- task: DockerInstaller@0
-  displayName: Docker Installer
-  inputs:
-    dockerVersion: 17.09.0-ce
-    releaseType: stable    
-- task: KubectlInstaller@0
-  inputs:
-     kubectlVersion: latest   
-- task: Go@0
-  displayName: "go get"
-  inputs:
-    command: 'get'
-    arguments: 'sigs.k8s.io/kind@v0.14.0'
-- script: |
-    kind --version
-    kind delete cluster && kind create cluster
-    kubectl version
 - task: Go@0
   displayName: "go get"
   inputs:
     command: 'get'
     arguments: '-d'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'    
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
 - task: Go@0
   displayName: "go build deviceshifu"
   inputs:
