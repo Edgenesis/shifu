@@ -49,14 +49,7 @@ steps:
   displayName: "go get"
   inputs:
     command: 'get'
-    arguments: 'sigs.k8s.io/kind@v0.14.0'
-- script: |
-    kind --version
-    kind delete cluster && kind create cluster
-    kubectl version
-    kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
-    kubectl delete -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
-  displayName: "go get"  
+    arguments: 'sigs.k8s.io/kind@v0.14.0'  
 - task: Go@0
   displayName: "go get"
   inputs:
@@ -143,3 +136,33 @@ steps:
   inputs:
     command: 'build'
     workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
+- script: |
+    kind --version
+    kind delete cluster && kind create cluster
+    kubectl version
+    kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-thermometer
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-thermometer
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/hello-world-device/configuration/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/hello-world-device/configuration/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/mqttDeviceShifu/mqtt_deploy/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/mqttDeviceShifu/mqtt_deploy/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/opcuaDeviceShifu/opcua_deploy/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/opcuaDeviceShifu/opcua_deploy/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/rtspDeviceShifu/camera-deployment/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/rtspDeviceShifu/camera-deployment/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/siemensPLCDeviceShifu/plc-deployment/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/siemensPLCDeviceShifu/plc-deployment/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/socketDeviceShifu/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/socketDeviceShifu/          
+    kubectl delete -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
+  displayName: "kubectl apply$delete" 
+     
