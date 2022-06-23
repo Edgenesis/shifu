@@ -67,7 +67,11 @@ spec:
                         type: string
                       Password:
                         type: string
+                      PrivateKeyFileName:
+                        type: string
                       SecurityMode:
+                        type: string
+                      SecurityPolicy:
                         type: string
                       Username:
                         type: string

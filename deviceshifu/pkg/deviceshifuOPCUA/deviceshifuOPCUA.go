@@ -124,18 +124,24 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				}
 
 				switch ua.UserTokenTypeFromString(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.AuthenticationMode) {
-				case ua.UserTokenTypeCertificate:
-					options = append(options, opcua.CertificateFile(DEVICE_CONFIGMAP_CERTIFICATE_PATH+"/"+*edgeDevice.Spec.ProtocolSettings.OPCUASetting.CertificateFileName))
 				case ua.UserTokenTypeIssuedToken:
 					options = append(options, opcua.AuthIssuedToken([]byte(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.IssuedToken)))
+				case ua.UserTokenTypeCertificate:
+					options = append(options,
+						opcua.CertificateFile(DEVICE_CONFIGMAP_CERTIFICATE_PATH+"/"+*edgeDevice.Spec.ProtocolSettings.OPCUASetting.CertificateFileName),
+						opcua.PrivateKeyFile(DEVICE_CONFIGMAP_CERTIFICATE_PATH+"/"+*edgeDevice.Spec.ProtocolSettings.OPCUASetting.PrivateKeyFileName),
+						opcua.AuthAnonymous(),
+					)
 				case ua.UserTokenTypeUserName:
 					options = append(options, opcua.AuthUsername(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.Username, *edgeDevice.Spec.ProtocolSettings.OPCUASetting.Password))
+					fallthrough
 				case ua.UserTokenTypeAnonymous:
 					fallthrough
 				default:
 					options = append(options, opcua.AuthAnonymous())
 				}
 				options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.AuthenticationMode)))
+
 				opcuaClient = opcua.NewClient(*edgeDevice.Spec.Address, options...)
 
 				if err := opcuaClient.Connect(ctx); err != nil {

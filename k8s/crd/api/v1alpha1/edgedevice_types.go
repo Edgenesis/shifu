@@ -36,6 +36,7 @@ type OPCUASetting struct {
 	SecurityMode                    *string `json:"SecurityMode,omitempty"`
 	AuthenticationMode              *string `json:"AuthenticationMode,omitempty"`
 	CertificateFileName             *string `json:"CertificateFileName,omitempty"`
+	PrivateKeyFileName              *string `json:"PrivateKeyFileName,omitempty"`
 	IssuedToken                     *string `json:"IssuedToken,omitempty"`
 	SecurityPolicy                  *string `json:"SecurityPolicy,omitempty"`
 	Username                        *string `json:"Username,omitempty"`
