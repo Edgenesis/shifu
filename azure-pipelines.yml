@@ -40,7 +40,7 @@ steps:
 - task: DockerInstaller@0
   displayName: Docker Installer
   inputs:
-    dockerVersion: 17.09.0-ce
+    dockerVersion: 20.10.16-ce
     releaseType: stable    
 - task: KubectlInstaller@0
   inputs:
@@ -140,16 +140,30 @@ steps:
     kind --version
     kind delete cluster && kind create cluster
     kubectl version
-    # kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
+    kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
+    kubectl -n kube-system rollout status deploy shifu-crd-system
+    kubectl wait  --for=condition=Ready  deploy/shifu-crd-controller-manager -n shifu-crd-system
+    kubectl run nginx --image=nginx:1.21
+    kubectl wait  --for=condition=Ready  pod/nginx
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
+    kubectl wait  --for=condition=Ready  deploy/deviceshifu-plc-deployment -n deviceshifu
+    kubectl exec -it nginx -- curl deviceshifu-plc/getcontent?rootaddress=Q;echo
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
+    kubectl wait  --for=condition=Ready  deploy/deviceshifu-agv-deployment -n deviceshifu
+    kubectl exec -it nginx -- curl http://deviceshifu-agv/get_position
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
+    kubectl wait  --for=condition=Ready  deploy/deviceshifu-plate-reader-deployment -n deviceshifu
+    kubectl exec -it nginx -- curl http://deviceshifu-plate-reader/get_measurement
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
+    kubectl wait  --for=condition=Ready  deploy/deviceshifu-robot-arm-deployment -n deviceshifu
+    kubectl exec -it nginx -- curl http://deviceshifu-robotarm/get_coordinate
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-thermometer
+    kubectl wait  --for=condition=Ready  deploy/deviceshifu-thermometer-deployment -n deviceshifu
+    kubectl exec -it nginx -- curl http://deviceshifu-thermometer/read_value
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-thermometer
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/hello-world-device/configuration/
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/hello-world-device/configuration/
