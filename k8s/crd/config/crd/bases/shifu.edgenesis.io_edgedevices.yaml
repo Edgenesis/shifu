@@ -72,6 +72,8 @@ spec:
                         type: string
                       CertificateFileName:
                         type: string
+                      ConfigmapName:
+                        type: string
                       ConnectionTimeoutInMilliseconds:
                         format: int64
                         type: integer

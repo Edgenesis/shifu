@@ -10,11 +10,11 @@
     ```
 4. Create a `configmap` to config certificate for OPC UA (Optional, if you do not use certificate authentication, please skip this step)
    ```bash
-   kubectl create configmap edgedevice-opcua-certificate --from-file=your_certificate_file.pem/your_certificate_file.der
+   kubectl create configmap edgedevice-opcua-certificate --from-file=your_certificate_file.pem/your_certificate_file.der --from-file=your_private_key.pem -n deviceshifu
    ```
-   If you don't have a certificate, you can use `generate_certificate.sh` to generate a local certificate for testing
+   If you don't have a certificate, you can use `generate_cert.go` to generate a local certificate for testing
    ```bash
-   bash generate_certificate.sh
+   go run generate_cert.go
    ```
 5. Deploy OPC UA ***deviceShifu***, in `shifu/examples/opcuaDeviceShifu`:
     ```bash

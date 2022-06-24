@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"path"
 	"time"
 
 	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
@@ -123,13 +124,13 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					opcua.SecurityModeString("None"),
 				)
 
-				var authenticationMode = *edgeDevice.Spec.ProtocolSettings.OPCUASetting.AuthenticationMode
-				switch ua.UserTokenTypeFromString(authenticationMode) {
+				var setting = *edgeDevice.Spec.ProtocolSettings.OPCUASetting
+				switch ua.UserTokenTypeFromString(*setting.AuthenticationMode) {
 				case ua.UserTokenTypeIssuedToken:
-					options = append(options, opcua.AuthIssuedToken([]byte(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.IssuedToken)))
+					options = append(options, opcua.AuthIssuedToken([]byte(*setting.IssuedToken)))
 				case ua.UserTokenTypeCertificate:
-					var privateKeyFileName = DEVICE_CONFIGMAP_CERTIFICATE_PATH + "/" + *edgeDevice.Spec.ProtocolSettings.OPCUASetting.PrivateKeyFileName
-					var certificateFileName = DEVICE_CONFIGMAP_CERTIFICATE_PATH + "/" + *edgeDevice.Spec.ProtocolSettings.OPCUASetting.CertificateFileName
+					var privateKeyFileName = path.Join(DEVICE_CONFIGMAP_CERTIFICATE_PATH, *setting.PrivateKeyFileName)
+					var certificateFileName = path.Join(DEVICE_CONFIGMAP_CERTIFICATE_PATH, *setting.CertificateFileName)
 
 					cert, err := tls.LoadX509KeyPair(certificateFileName, privateKeyFileName)
 					if err != nil {
@@ -143,14 +144,14 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					)
 
 				case ua.UserTokenTypeUserName:
-					options = append(options, opcua.AuthUsername(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.Username, *edgeDevice.Spec.ProtocolSettings.OPCUASetting.Password))
+					options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
 				case ua.UserTokenTypeAnonymous:
 					fallthrough
 				default:
 					options = append(options, opcua.AuthAnonymous())
 				}
 
-				options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.AuthenticationMode)))
+				options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*setting.AuthenticationMode)))
 
 				opcuaClient = opcua.NewClient(*edgeDevice.Spec.Address, options...)
 				if err := opcuaClient.Connect(ctx); err != nil {

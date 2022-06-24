@@ -10,11 +10,11 @@
     ```
 4. 配置OPC UA的证书 `configmap` (可选，如果不采用证书认证方式，请跳过此步骤)
    ```bash
-   kubectl create configmap edgedevice-opcua-certificate --from-file=your_certificate_file.pem/your_certificate_file.der
+   kubectl create configmap edgedevice-opcua-certificate --from-file=your_certificate_file.pem/your_certificate_file.der --from-file=your_private_key.pem -n deviceshifu
    ```
-   如果没有证书可以使用 `generate_certificate.sh` 生成一个本地证书以供测试
+   如果没有证书可以使用 `generate_cert.go` 生成一个本地证书以供测试
    ```bash
-   bash generate_certificate.sh
+   go run generate_cert.go
    ```
 5. 从 `shifu/examples/opcuaDeviceShifu`中部署 OPC UA ***deviceShifu***:
     ```bash
