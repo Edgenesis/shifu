@@ -128,23 +128,22 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				case ua.UserTokenTypeIssuedToken:
 					options = append(options, opcua.AuthIssuedToken([]byte(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.IssuedToken)))
 				case ua.UserTokenTypeCertificate:
-					var privateKeyFileName = DEVICE_CONFIGMAP_CERTIFICATE_PATH + "/" + *edgeDevice.Spec.ProtocolSettings.OPCUASetting.CertificateFileName
-					var certificateFileName = DEVICE_CONFIGMAP_CERTIFICATE_PATH + "/" + *edgeDevice.Spec.ProtocolSettings.OPCUASetting.PrivateKeyFileName
+					var privateKeyFileName = DEVICE_CONFIGMAP_CERTIFICATE_PATH + "/" + *edgeDevice.Spec.ProtocolSettings.OPCUASetting.PrivateKeyFileName
+					var certificateFileName = DEVICE_CONFIGMAP_CERTIFICATE_PATH + "/" + *edgeDevice.Spec.ProtocolSettings.OPCUASetting.CertificateFileName
 
-					cert, err := tls.LoadX509KeyPair(privateKeyFileName, certificateFileName)
+					cert, err := tls.LoadX509KeyPair(certificateFileName, privateKeyFileName)
 					if err != nil {
 						log.Fatalf("X509 Certificate Or PrivateKey load Default")
 					}
 
 					options = append(options,
-						opcua.CertificateFile(privateKeyFileName),
-						opcua.PrivateKeyFile(certificateFileName),
+						opcua.CertificateFile(certificateFileName),
+						opcua.PrivateKeyFile(privateKeyFileName),
 						opcua.AuthCertificate(cert.Certificate[0]),
 					)
+
 				case ua.UserTokenTypeUserName:
-					options = append(options,
-						opcua.AuthUsername(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.Username, *edgeDevice.Spec.ProtocolSettings.OPCUASetting.Password),
-					)
+					options = append(options, opcua.AuthUsername(*edgeDevice.Spec.ProtocolSettings.OPCUASetting.Username, *edgeDevice.Spec.ProtocolSettings.OPCUASetting.Password))
 				case ua.UserTokenTypeAnonymous:
 					fallthrough
 				default:
