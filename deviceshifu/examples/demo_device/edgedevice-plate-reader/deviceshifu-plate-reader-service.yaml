@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-plate-reader-deployment
-  name: edgedevice-plate-reader
-  namespace: default
+    app: deviceshifu-plate-reader-deployment
+  name: deviceshifu-plate-reader
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-plate-reader-deployment
+    app: deviceshifu-plate-reader-deployment
   type: LoadBalancer

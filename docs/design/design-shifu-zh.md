@@ -11,7 +11,7 @@
       - [高可用](#高可用)
         - [1. 自我修复](#1-自我修复)
         - [2. 稳定](#2-稳定)
-      - [便携](#便携)
+      - [跨平台](#跨平台)
       - [轻量](#轻量)
       - [可扩展性和可变性](#可扩展性和可变性)
     - [设计非目标](#设计非目标)
@@ -22,10 +22,11 @@
       - [物理组件](#物理组件)
         - [1. ***edgeDevice***](#1-edgedevice)
         - [2. ***edgeNode***](#2-edgenode)
-      - [软件组件](#软件组件)
+      - [软件组件（数据面）](#软件组件数据面)
         - [1. ***shifud***](#1-shifud)
         - [2. ***shifuController***](#2-shifucontroller)
-        - [3. ***deviceShifu***](#3-deviceshifu)
+      - [软件组件（控制面）](#软件组件控制面)
+        - [1. ***deviceShifu***](#1-deviceshifu)
     - [架构图](#架构图)
       - [***deviceShifu*** 的生命周期](#deviceshifu-的生命周期)
         - [1. 设备连接（用户操作不在下图中）](#1-设备连接用户操作不在下图中)
@@ -64,7 +65,7 @@ Shifu 一直会向开发者提供非常易用的 SDK，因为 Shifu 想让开发
 
 拥有简单的架构和逻辑来保持高标准的可读性和可维护性至关重要
 
-易读和易更改的代码可以使开发者来使 ***shifu*** 变得更好甚至创建他们自己版本的 ***shifu***
+易读和易更改的代码可以使开发者来使 ***Shifu*** 变得更好甚至创建他们自己版本的 ***Shifu***
 
 #### 高可用
 
@@ -78,7 +79,7 @@ Shifu 在遇到突发事件时可以自我修复并将自己调整到目标状�
 
 Shifu 目标是达到高可用性并降低运维开销
 
-#### 便携
+#### 跨平台
 
 Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 等
 
@@ -98,7 +99,7 @@ Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 �
 
 #### 100% up-time
 
-***Shifu*** 的设计内置了容错。***Shifu*** 努力达到 >99% 的 up-time，但不是 100%
+***Shifu*** 的设计内置了容错。***Shifu*** 努力达到 >99.9999% 的 up-time，但不是 100%
 
 ## 设计总览
 
@@ -116,7 +117,7 @@ Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 �
 
 ***edgeNode*** 是一个可以连接到多个 ***edgeDevices*** 的 [Kubernetes 节点](https://kubernetes.io/docs/concepts/architecture/nodes/)。默认情况下，所有 Kubernetes 集群中的 worker 节点是 [taint](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) 了 ***edgeNode***。举例，用户可以配置节点作为一个非 ***edgeNode***, 来隔离应用 Pods 和 ***deviceShifu*** Pods
 
-#### 软件组件
+#### 软件组件（控制面）
 
 ##### 1. ***shifud***
 
@@ -126,9 +127,10 @@ Shifu 可以运行在所有主要平台上，包括但不限于 x86/64, ARM64 �
 
 ***shifuController*** 是一个接收 ***shifud*** 发送来的硬件事件，并做出相应动作来管理 ***deviceShifu*** 生命周期的 [Kubernetes controller](https://kubernetes.io/docs/concepts/architecture/controller/)
 
-##### 3. ***deviceShifu***
+#### 软件组件（数据面）
+##### 1. ***deviceShifu***
 
-***deviceShifu*** 是一个 ***edgeDevice*** 的增强的[数字孪生](https://zh.wikipedia.org/wiki/%E6%95%B0%E5%AD%97%E6%98%A0%E5%B0%84)。之所以称其为**增强**是因为它不光是一个 ***edgeDevice*** 的虚拟化表达，更可以将相应的 ***edgeDevice*** 驱动到目标状态。比如如果需要机械手臂来搬运一个箱子，但是当前它的状态为繁忙，***deviceShifu*** 会缓存你的命令并告诉机械手臂当有空时去搬运箱子。
+***deviceShifu*** 是一个 ***edgeDevice*** 的结构性[数字孪生](https://zh.wikipedia.org/wiki/%E6%95%B0%E5%AD%97%E6%98%A0%E5%B0%84)。之所以称其为**结构性**是因为它不光是一个 ***edgeDevice*** 的虚拟化表达，更可以将相应的 ***edgeDevice*** 驱动到目标状态。比如如果需要机械手臂来搬运一个箱子，但是当前它的状态为繁忙，***deviceShifu*** 会缓存你的命令并告诉机械手臂当有空时去搬运箱子。
 
 ***deviceShifu*** 会提供一些通用功能例如 ***edgeDevice*** 的健康状态检查，状态缓存等。通过实现 ***deviceShifu*** 的接口，***edgeDevice*** 可以实现它被设计的所有功能，并且更多！
 

@@ -2,14 +2,14 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-helloworld-deployment
-  name: edgedevice-helloworld-service
-  namespace: default
+    app: deviceshifu-helloworld-deployment
+  name: deviceshifu-helloworld-service
+  namespace: deviceshifu
 spec:
   ports:
     - port: 80
       protocol: TCP
       targetPort: 8080
   selector:
-    app: edgedevice-helloworld-deployment
+    app: deviceshifu-helloworld-deployment
   type: LoadBalancer

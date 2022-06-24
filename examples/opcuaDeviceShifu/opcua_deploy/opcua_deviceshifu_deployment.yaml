@@ -2,18 +2,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-opcua-deployment
-  name: edgedevice-opcua-deployment
-  namespace: default
+    app: deviceshifu-opcua-deployment
+  name: deviceshifu-opcua-deployment
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-opcua-deployment
+      app: deviceshifu-opcua-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-opcua-deployment
+        app: deviceshifu-opcua-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-opcua:v0.0.1
@@ -21,7 +21,7 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         - name: edgedevice-certificate
@@ -33,7 +33,7 @@ spec:
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: opcua-configmap-0.0.1
       - name: edgedevice-certificate
