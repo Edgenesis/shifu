@@ -146,23 +146,23 @@ steps:
     kubectl wait  --for=condition=Available  pod/nginx --timeout=120s
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl wait  --for=condition=Available  deploy/deviceshifu-plc-deployment -n deviceshifu --timeout=120s
-    kubectl exec -it nginx -- curl deviceshifu-plc/getcontent?rootaddress=Q;echo
+    kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-plc/getcontent?rootaddress=Q;echo
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
     kubectl wait  --for=condition=Available  deploy/deviceshifu-agv-deployment -n deviceshifu --timeout=120s
-    kubectl exec -it nginx -- curl http://deviceshifu-agv/get_position
+    kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
     kubectl wait  --for=condition=Available  deploy/deviceshifu-plate-reader-deployment -n deviceshifu --timeout=120s
-    kubectl exec -it nginx -- curl http://deviceshifu-plate-reader/get_measurement
+    kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-plate-reader/get_measurement
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
     kubectl wait  --for=condition=Ready  deploy/deviceshifu-robot-arm-deployment -n deviceshifu --timeout=120s
-    kubectl exec -it nginx -- curl http://deviceshifu-robotarm/get_coordinate
+    kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-robotarm/get_coordinate
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-thermometer
     kubectl wait  --for=condition=Available  deploy/deviceshifu-thermometer-deployment -n deviceshifu --timeout=120s
-    kubectl exec -it nginx -- curl http://deviceshifu-thermometer/read_value
+    kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-thermometer/read_value
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-thermometer
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/hello-world-device/configuration/
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/hello-world-device/configuration/
