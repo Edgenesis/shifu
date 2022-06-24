@@ -40,7 +40,7 @@ steps:
 - task: DockerInstaller@0
   displayName: Docker Installer
   inputs:
-    dockerVersion: 20.10.16-ce
+    dockerVersion: 20.10.9
     releaseType: stable    
 - task: KubectlInstaller@0
   inputs:
