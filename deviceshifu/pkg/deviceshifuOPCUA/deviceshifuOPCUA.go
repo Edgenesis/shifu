@@ -113,15 +113,15 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					log.Fatal("Cannot Get EndPoint Description")
 					return nil, err
 				}
-				ep := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeFromString("None"))
+				ep := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeNone)
 				if ep == nil {
 					log.Fatal("Failed to find suitable endpoint")
 				}
 
 				var options = make([]opcua.Option, 0)
 				options = append(options,
-					opcua.SecurityPolicy("None"),
-					opcua.SecurityModeString("None"),
+					opcua.SecurityPolicy(ua.SecurityPolicyURINone),
+					opcua.SecurityMode(ua.MessageSecurityModeNone),
 				)
 
 				var setting = *edgeDevice.Spec.ProtocolSettings.OPCUASetting
