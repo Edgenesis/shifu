@@ -66,6 +66,7 @@ func main() {
 		} else {
 			template.DNSNames = append(template.DNSNames, h)
 		}
+
 		if uri, err := url.Parse(h); err == nil {
 			template.URIs = append(template.URIs, uri)
 		}
@@ -80,12 +81,15 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to open %s for writing: %s", certFile, err)
 	}
+
 	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
 		log.Fatalf("failed to write data to %s: %s", certFile, err)
 	}
+
 	if err := certOut.Close(); err != nil {
 		log.Fatalf("error closing %s: %s", certFile, err)
 	}
+
 	log.Printf("wrote %s\n", certFile)
 
 	keyOut, err := os.OpenFile(keyFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
@@ -93,14 +97,16 @@ func main() {
 		log.Printf("failed to open %s for writing: %s", keyFile, err)
 		return
 	}
+
 	if err := pem.Encode(keyOut, pemBlockForKey(priv)); err != nil {
 		log.Fatalf("failed to write data to %s: %s", keyFile, err)
 	}
+
 	if err := keyOut.Close(); err != nil {
 		log.Fatalf("error closing %s: %s", keyFile, err)
 	}
-	log.Printf("wrote %s\n", keyFile)
 
+	log.Printf("wrote %s\n", keyFile)
 }
 
 func publicKey(priv interface{}) interface{} {

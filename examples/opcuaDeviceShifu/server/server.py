@@ -41,6 +41,7 @@ async def main():
     else:
         Log("not a valid argument, need to be Certificate/UserName/Anonymous")
         exit()
+
     server.set_security_policy([ua.SecurityPolicyType.NoSecurity],permission_ruleset=SimpleRoleRuleset)
     await server.init()
     server.set_endpoint("opc.tcp://0.0.0.0:4840/freeopcua/server/")

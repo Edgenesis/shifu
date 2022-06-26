@@ -113,12 +113,14 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					log.Fatal("Cannot Get EndPoint Description")
 					return nil, err
 				}
+
 				ep := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeNone)
 				if ep == nil {
 					log.Fatal("Failed to find suitable endpoint")
 				}
 
 				var options = make([]opcua.Option, 0)
+				// TODO  implement different messageSecurityModes
 				options = append(options,
 					opcua.SecurityPolicy(ua.SecurityPolicyURINone),
 					opcua.SecurityMode(ua.MessageSecurityModeNone),
@@ -142,17 +144,18 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 						opcua.PrivateKeyFile(privateKeyFileName),
 						opcua.AuthCertificate(cert.Certificate[0]),
 					)
-
 				case ua.UserTokenTypeUserName:
 					options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
 				case ua.UserTokenTypeAnonymous:
 					fallthrough
 				default:
+					if *setting.AuthenticationMode != "Anonymous" {
+						log.Println("Could not parse your input, you are in Anonymous Mode default")
+					}
 					options = append(options, opcua.AuthAnonymous())
 				}
 
 				options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*setting.AuthenticationMode)))
-
 				opcuaClient = opcua.NewClient(*edgeDevice.Spec.Address, options...)
 				if err := opcuaClient.Connect(ctx); err != nil {
 					log.Fatalf("Unable to connect to OPC UA server, error: %v", err)
