@@ -87,7 +87,7 @@ docker-build: test ## Build docker image with the manager.
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 
-docker-buildx-push-multi-platform:
+docker-buildx-push:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -t ${IMG} . --push
 
 docker-buildx-load:
