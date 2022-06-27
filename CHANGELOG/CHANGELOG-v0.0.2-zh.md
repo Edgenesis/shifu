@@ -1,11 +1,11 @@
 # Changelog since [v0.0.1](https://github.com/Edgenesis/shifu/releases/tag/v0.0.1)
 ## Bug 修复:
 * Delete edgedevice from the name field of all virtual devices / profiles  by @xiaoyu0803 in https://github.com/Edgenesis/shifu/pull/136
-* 
+
 ## 功能 & 增强:
 * Custom Metadata support in EdgeDevice CRD by @tomqin93 in https://github.com/Edgenesis/shifu/pull/143
 * Refactor deviceShifu build and push in Makefile by @tomqin93 in https://github.com/Edgenesis/shifu/pull/144
-* 
+
 ## 文档:
 * Development Guide for Mac and Windows by @tomqin93 in https://github.com/Edgenesis/shifu/pull/121
 * v0.0.1 Changelog by @tomqin93 in https://github.com/Edgenesis/shifu/pull/131
