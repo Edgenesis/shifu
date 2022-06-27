@@ -7,7 +7,7 @@ Hello developers! This guide will help you control the virtual device `demo` loc
 Windows 10
 ```
 
-If you have any problems using this guide and find any bugs, please don't hesitate to open an [issue] in GitHub.
+If you have any problems using this guide and find any bugs, please don't hesitate to open an [issue] in GitHub. The address is : https://github.com/Edgenesis/shifu/issues
 
 # step:
 ## 1. Use `kind` to deploy the cluster locally
