@@ -33,29 +33,29 @@
         - [2. Device operating | TODO: formalize deviceShifu interface](#2-device-operating--todo-formalize-deviceshifu-interface)
         - [3. Device disconnect (user workload not shown in below figure)](#3-device-disconnect-user-workload-not-shown-in-below-figure)
 
-# Shifu high-level design
+# ***Shifu*** high-level design
 
 ## Design principles
 
 ### Human centric
 
-Shifu's foremost job is to make developers and operators happy. Thus all Shifu's designs are human centric. Thus, there are a few design requirements to achieve the human centric goal:
+***Shifu***'s foremost job is to make developers and operators happy. Thus, all ***Shifu***'s designs are human centric. Thus, there are a few design requirements to achieve the human centric goal:
 
 #### 1. Easy to deploy
 
-Shifu can be always be summoned(deployed) by one single line of command.
+***Shifu*** can be always be summoned(deployed) by one single line of command.
 
 #### 2. Plug'n'Play
 
-Shifu should be able to recognize and start providing basic functionalities to the newly added IoT device automagically. Once the developer finishes implementing Shifu's interface, all designed features of the device should be immediately available. The developer can further implement Shifu's interface to create customized features and open up endless possibilities.
+***Shifu*** should be able to recognize and start providing basic functionalities to the newly added IoT device automagically. Once the developer finishes implementing ***Shifu***'s interface, all designed features of the device should be immediately available. The developer can further implement ***Shifu***'s interface to create customized features and open up endless possibilities.
 
 #### 3. Zero maintenance
 
-Shifu aims to achieve zero maintenance. After all, Shifu should be able to take care of himself and make operators' lives easier!
+***Shifu*** aims to achieve zero maintenance. After all, ***Shifu*** should be able to take care of himself and make operators' lives easier!
 
 #### 4. Easy to use SDKs
 
-Shifu will always provide developers with super easy to use SDKs, simple because Shifu wants to make developers happy!
+***Shifu*** will always provide developers with super easy to use SDKs, simple because *Shifu* wants to make developers happy!
 
 ## Design goals and non-goals
 
@@ -68,27 +68,27 @@ An easy-to-read and easy-to-change code base will enable developers to improve *
 
 #### Highly available
 
-Being Shifu, robustness is a must. A highly resilient Shifu is very important to operator's mental health. Who wants to deal with crash loops everyday?
+Being ***Shifu***, robustness is a must. A highly resilient ***Shifu*** is very important to operator's mental health. Who wants to deal with crash loops everyday?
 
 ##### 1. Self healing
 
-Shifu should always be able to heal itself upon unexpected events and drive itself towards goal state.
+***Shifu*** should always be able to heal itself upon unexpected events and drive itself towards goal state.
 
 ##### 2. Stable
 
-Shifu aims to achieve high availability and eliminate your operation costs.
+***Shifu*** aims to achieve high availability and eliminate your operation costs.
 
 #### Cross-Platform
 
-Shifu should be able to run on all major platforms, including but not limited to x86/64, ARM64, etc.
+***Shifu*** should be able to run on all major platforms, including but not limited to x86/64, ARM64, etc.
 
 #### Lightweight
 
-Being an IoT framework running on the edge, Shifu has to be lightweight. Hey Shifu, time to lose some weights!
+Being an IoT framework running on the edge, ***Shifu*** has to be lightweight. Hey Shifu, time to lose some weights!
 
 #### Extensible and flexible
 
-With so many heterogenous IoT devices around the world, Shifu needs to be extensible and flexible to accommodate different scenarios.
+With so many heterogenous IoT devices around the world, ***Shifu*** needs to be extensible and flexible to accommodate different scenarios.
 
 ### Design non-goals
 
@@ -102,7 +102,7 @@ Our first priority is to ensure ***shifu*** runs on Kubernetes smoothly. We migh
 
 ## Design overview
 
-The current version of Shifu resembles a [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/). By leveraging the operator pattern, Shifu automatically gains all the benefits of Kubernetes offers.
+The current version of ***Shifu*** resembles a [Kubernetes Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/operator/). By leveraging the operator pattern, Shifu automatically gains all the benefits of Kubernetes offers.
 
 ### Components
 
@@ -110,7 +110,7 @@ The current version of Shifu resembles a [Kubernetes Operator](https://kubernete
 
 ##### 1. ***edgeDevice*** 
 
-***edgeDevice*** is a physical IoT device managed by Shifu.
+***edgeDevice*** is a physical IoT device managed by ***Shifu***.
 
 ##### 2. ***edgeNode***
 
@@ -140,13 +140,12 @@ The current version of Shifu resembles a [Kubernetes Operator](https://kubernete
 
 ##### 1. Device connect (user workload not shown in below figure)
 
-1. connect: an ***edgeDevice*** physically connects to an ***edgeNode***.
-2. device connect: ***shifud*** detects the newly connected device, and sends the event to ***shifuController***.
-3. create: ***shifuController*** creates a ***deviceShifu*** in ***standalone/swarm mode*** for the ***edgeDevice***
-4. manage: ***deviceShifu*** starts to manage the newly connected ***edgeDevice***.
+1.1 connect: an ***edgeDevice*** physically connects to an ***edgeNode***.  
+1.2 device connect: ***shifud*** detects the newly connected device, and sends the event to ***shifuController***.  
+1.3 create: ***shifuController*** creates a ***deviceShifu*** in ***standalone/swarm mode*** for the ***edgeDevice***.  
+1.4 manage: ***deviceShifu*** starts to manage the newly connected ***edgeDevice***.
 
-Upon an ***edgeDevice*** connects to the ***edgeNode***, Shifu will 
-1. create a ***deviceShifu***, an augmented digital twin of the ***edgeDevice*** to manage it.
+Upon an ***edgeDevice*** connects to the ***edgeNode***, ***Shifu*** will create a ***deviceShifu***, an augmented digital twin of the ***edgeDevice*** to manage it.
 
 [![shifu-device connect](/img/shifu-device-connect.svg)](/img/shifu-device-connect.svg)
 
@@ -158,8 +157,8 @@ During normal operation, ***shifud*** and ***shifuController*** don't do much. U
 
 ##### 3. Device disconnect (user workload not shown in below figure)
 
-1. disconnect: an ***edgeDevice*** physically disconnects to an ***edgeNode***.
-2. device disconnect: ***shifud*** detects the newly disconnected device, and sends the event to ***shifuController***.
-3. delete: ***shifuController*** deletes the ***deviceShifu*** for the ***edgeDevice***. The delete process might take longer due to cleanup.
+3.1 disconnect: an ***edgeDevice*** physically disconnects to an ***edgeNode***.  
+3.2 device disconnect: ***shifud*** detects the newly disconnected device, and sends the event to ***shifuController***.  
+3.3 delete: ***shifuController*** deletes the ***deviceShifu*** for the ***edgeDevice***. The delete process might take longer due to cleanup.
 
 [![shifu-device disconnect](/img/shifu-device-disconnect.svg)](/img/shifu-device-disconnect.svg)
