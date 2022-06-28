@@ -36,7 +36,7 @@ pool:
 steps:
 - task: GoTool@0
   inputs:
-    version: '1.17'
+    version: '1.17.11'
 - task: DockerInstaller@0
   displayName: Docker Installer
   inputs:
@@ -55,7 +55,7 @@ steps:
   inputs:
     command: 'get'
     arguments: '-d'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'    
+    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
 - task: Go@0
   displayName: "go build deviceshifu"
   inputs:
@@ -136,7 +136,8 @@ steps:
   inputs:
     command: 'build'
     workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
-- script: |
+- displayName: "kubectl E2E test"
+  script: |
     kind --version
     kind delete cluster && kind create cluster
     kubectl version
@@ -183,5 +184,3 @@ steps:
     kubectl delete -f $(System.DefaultWorkingDirectory)/examples/socketDeviceShifu/
     kubectl delete pod nginx          
     kubectl delete -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
-  displayName: "kubectl apply$delete" 
-
