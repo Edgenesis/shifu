@@ -137,6 +137,7 @@ steps:
     command: 'build'
     workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
 - script: |
+    set -e
     kind --version
     kind delete cluster && kind create cluster
     kubectl version
