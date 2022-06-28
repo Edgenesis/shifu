@@ -62,13 +62,13 @@ download-demo-files:
 	docker pull edgehub/mockdevice-thermometer:${IMAGE_VERSION}
 	docker pull edgehub/deviceshifu-http-http:${IMAGE_VERSION}
 	docker pull edgehub/edgedevice-controller-multi:${IMAGE_VERSION}
-	docker pull quay.io/brancz/kube-rbac-proxy:v0.8.0
+	docker pull quay.io/brancz/kube-rbac-proxy:v0.12.0
 	docker pull kindest/node:v1.23.4@sha256:0e34f0d0fd448aa2f2819cfd74e99fe5793a6e4938b328f657c8e3f81ee0dfb9
 	docker pull nginx:1.21
 
 compress-demo-files:
 	mkdir -p build_dir
-	docker save quay.io/brancz/kube-rbac-proxy:v0.8.0 | gzip > build_dir/kube-rbac-proxy.tar.gz
+	docker save quay.io/brancz/kube-rbac-proxy:v0.12.0 | gzip > build_dir/kube-rbac-proxy.tar.gz
 	docker save edgehub/mockdevice-agv:${IMAGE_VERSION} | gzip > build_dir/mockdevice-agv.tar.gz
 	docker save edgehub/mockdevice-plate-reader:${IMAGE_VERSION} | gzip > build_dir/mockdevice-plate-reader.tar.gz
 	docker save edgehub/mockdevice-robot-arm:${IMAGE_VERSION} | gzip > build_dir/mockdevice-robot-arm.tar.gz
