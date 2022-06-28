@@ -30,6 +30,9 @@ pr:
     - .github
     - CHANGELOG
 
+variables:
+  tag: 'v0.0.1'
+
 pool:
    vmImage: 'ubuntu-latest'
 
@@ -139,27 +142,31 @@ steps:
 - task: Docker@2
   displayName: Build deviceShifu HTTP2HTTP image
   inputs:
-    repository: edgehub/deviceshifu-http-http:v0.0.1
+    repository: edgehub/deviceshifu-http-http
     command: build
     Dockerfile: deviceshifu/Dockerfile.deviceshifu
+    tags: '$(tag)'
 - task: Docker@2
   displayName: Build deviceShifu HTTP2MQTT image
   inputs:
-    repository: edgehub/deviceshifu-http-mqtt:v0.0.1
+    repository: edgehub/deviceshifu-http-mqtt
     command: build
     Dockerfile: deviceshifu/Dockerfile.deviceshifuMQTT
+    tags: '$(tag)'
 - task: Docker@2
   displayName: Build deviceShifu HTTP2OPCUA image
   inputs:
-    repository: edgehub/deviceshifu-http-opcua:v0.0.1
+    repository: edgehub/deviceshifu-http-opcua
     command: build
     Dockerfile: deviceshifu/Dockerfile.deviceshifuOPCUA
+    tags: '$(tag)'
 - task: Docker@2
   displayName: Build deviceShifu HTTP2Socket image
   inputs:
-    repository: edgehub/deviceshifu-http-socket:v0.0.1
+    repository: edgehub/deviceshifu-http-socket
     command: build
     Dockerfile: deviceshifu/Dockerfile.deviceshifuSocket
+    tags: '$(tag)'
 - script: |
     set -e
     kind --version
