@@ -58,7 +58,13 @@ steps:
   inputs:
     command: 'get'
     arguments: '-d'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
+    workingDirectory: '$(System.DefaultWorkingDirectory)'
+- task: Go@0
+  displayName: "crd go get"
+  inputs:
+    command: 'get'
+    arguments: '-d'
+    workingDirectory: '$(System.DefaultWorkingDirectory)/k8s/crd'
 - task: Go@0
   displayName: "go build deviceshifu"
   inputs:
@@ -139,34 +145,42 @@ steps:
   inputs:
     command: 'build'
     workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
-- task: Docker@2
-  displayName: Build deviceShifu HTTP2HTTP image
-  inputs:
-    repository: edgehub/deviceshifu-http-http
-    command: build
-    Dockerfile: deviceshifu/Dockerfile.deviceshifu
-    tags: '$(tag)'
-- task: Docker@2
-  displayName: Build deviceShifu HTTP2MQTT image
-  inputs:
-    repository: edgehub/deviceshifu-http-mqtt
-    command: build
-    Dockerfile: deviceshifu/Dockerfile.deviceshifuMQTT
-    tags: '$(tag)'
-- task: Docker@2
-  displayName: Build deviceShifu HTTP2OPCUA image
-  inputs:
-    repository: edgehub/deviceshifu-http-opcua
-    command: build
-    Dockerfile: deviceshifu/Dockerfile.deviceshifuOPCUA
-    tags: '$(tag)'
-- task: Docker@2
-  displayName: Build deviceShifu HTTP2Socket image
-  inputs:
-    repository: edgehub/deviceshifu-http-socket
-    command: build
-    Dockerfile: deviceshifu/Dockerfile.deviceshifuSocket
-    tags: '$(tag)'
+- script: |
+    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  displayName: register QEMU for multi-platform Docker build
+# - task: Docker@2
+#   displayName: Build deviceShifu HTTP2HTTP image
+#   inputs:
+#     repository: edgehub/deviceshifu-http-http
+#     command: build
+#     Dockerfile: deviceshifu/Dockerfile.deviceshifu
+#     tags: '$(tag)'
+# - task: Docker@2
+#   displayName: Build deviceShifu HTTP2MQTT image
+#   inputs:
+#     repository: edgehub/deviceshifu-http-mqtt
+#     command: build
+#     Dockerfile: deviceshifu/Dockerfile.deviceshifuMQTT
+#     tags: '$(tag)'
+# - task: Docker@2
+#   displayName: Build deviceShifu HTTP2OPCUA image
+#   inputs:
+#     repository: edgehub/deviceshifu-http-opcua
+#     command: build
+#     Dockerfile: deviceshifu/Dockerfile.deviceshifuOPCUA
+#     tags: '$(tag)'
+# - task: Docker@2
+#   displayName: Build deviceShifu HTTP2Socket image
+#   inputs:
+#     repository: edgehub/deviceshifu-http-socket
+#     command: build
+#     Dockerfile: deviceshifu/Dockerfile.deviceshifuSocket
+#     tags: '$(tag)'
+- script: |
+    set -e
+    docker buildx create --use
+    make buildx-build-image-deviceshifu
+  displayName: "Build Shifu Docker images using Docker BuildX"
 - script: |
     set -e
     kind --version
