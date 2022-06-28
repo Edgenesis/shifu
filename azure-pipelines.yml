@@ -239,7 +239,7 @@ steps:
     kubectl delete -f $(System.DefaultWorkingDirectory)/examples/siemensPLCDeviceShifu/plc-deployment/
     kubectl apply -f $(System.DefaultWorkingDirectory)/examples/socketDeviceShifu/
     kubectl delete -f $(System.DefaultWorkingDirectory)/examples/socketDeviceShifu/
-    kubectl delete pod nginx
+    kubectl delete pod -n deviceshifu nginx
     kubectl delete -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
   displayName: "Shifu demo device E2E test"
 - script: |
