@@ -107,7 +107,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				}
 
 				ctx := context.Background()
-
 				endpoints, err := opcua.GetEndpoints(ctx, *edgeDevice.Spec.Address)
 				if err != nil {
 					log.Fatal("Cannot Get EndPoint Description")
@@ -133,12 +132,10 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				case ua.UserTokenTypeCertificate:
 					var privateKeyFileName = path.Join(DEVICE_CONFIGMAP_CERTIFICATE_PATH, *setting.PrivateKeyFileName)
 					var certificateFileName = path.Join(DEVICE_CONFIGMAP_CERTIFICATE_PATH, *setting.CertificateFileName)
-
 					cert, err := tls.LoadX509KeyPair(certificateFileName, privateKeyFileName)
 					if err != nil {
 						log.Fatalf("X509 Certificate Or PrivateKey load Default")
 					}
-
 					options = append(options,
 						opcua.CertificateFile(certificateFileName),
 						opcua.PrivateKeyFile(privateKeyFileName),
@@ -152,6 +149,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 					if *setting.AuthenticationMode != "Anonymous" {
 						log.Println("Could not parse your input, you are in Anonymous Mode default")
 					}
+
 					options = append(options, opcua.AuthAnonymous())
 				}
 

@@ -29,7 +29,7 @@ async def main():
     if len(sys.argv) >= 2 and sys.argv[1] in ["Certificate","UserName","Anonymous"]:
         if sys.argv[1] == "Certificate":
             cert_user_manager = CertificateUserManager()
-            await cert_user_manager.add_user("../cert.pem", name='test_user')
+            await cert_user_manager.add_user("cert.pem", name='test_user')
             server = Server(user_manager=cert_user_manager)
             server.set_security_IDs(["Basic256Sha256"])
         elif sys.argv[1] == "UserName":

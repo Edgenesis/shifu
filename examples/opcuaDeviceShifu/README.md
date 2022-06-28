@@ -8,7 +8,7 @@
     Endpoints other than open requested but private key and certificate are not set.
     Listening on 0.0.0.0:4840
     ```
-4. Create a `configmap` to config certificate for OPC UA (Optional, if you do not use certificate authentication, please skip this step)
+4. Create a `configmap` to import certificate for OPC UA (Optional, if you do not use certificate authentication, please skip this step)
    ```bash
    kubectl create configmap edgedevice-opcua-certificate --from-file=your_certificate_file.pem/your_certificate_file.der --from-file=your_private_key.pem -n deviceshifu
    ```
