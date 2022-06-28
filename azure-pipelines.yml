@@ -199,7 +199,7 @@ steps:
 - script: |
     set -e
     kubectl run nginx --image=nginx -n deviceshifu
-    kubectl wait --for=condition=Available pod/nginx -n deviceshifu --timeout=600s
+    kubectl wait --for condition=Ready pod/nginx -n deviceshifu --timeout=600s
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl wait --for=condition=Available deploy/plc -n devices --timeout=150s
     kubectl wait --for=condition=Available deploy/deviceshifu-plc-deployment -n deviceshifu --timeout=150s
