@@ -23,4 +23,3 @@ data:
         instruction: getcpuordercode
         initialDelayMs: 1000
         intervalMs: 1000
-
