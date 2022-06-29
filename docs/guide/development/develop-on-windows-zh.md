@@ -7,7 +7,7 @@
 Windows 11 Pro
 ```
 
-如您在使用本指南中有任何的问题以及发现了任何错误请毫不犹豫的在GitHub中建立一个 [issue](https://github.com/Edgenesis/shifu/issues) 。
+如您在使用本指南中有任何的问题以及发现了任何错误请毫不犹豫的在GitHub中建立一个 [issue](https://github.com/Edgenesis/shifu/issues/new) 。
 
 # 步骤:
 ## 1. 搭建环境

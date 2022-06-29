@@ -78,8 +78,8 @@ Whenever ***shifuController*** receives an ***edgeDevice*** connect event, ***sh
 1.2 Compose: Compile all computed info and compose the corresponding ***deviceShifu*** deployment object.
 
 1.3 Create:   
-1.3.1 Create the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
-1.3.2 Expose the newly created ***deviceShifu*** as a Kubernetes Service.
+    1.3.1 Create the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
+    1.3.2 Expose the newly created ***deviceShifu*** as a Kubernetes Service.
 
 1.4 Add: Add the ***edgeDevice*** to ***edgeMap***.
 

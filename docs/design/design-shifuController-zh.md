@@ -89,7 +89,7 @@
 
 2.2 Delete:   
    2.2.1 通过向 ***apiServer*** 提交请求来移除 ***deviceShifu*** 部署。  
-   2.2.2 删除 ***deviceShifu*** 的相关 Kubernetes service.
+   2.2.2 删除 ***deviceShifu*** 的相关 Kubernetes service 。
 
 ### 响应***edgeNode*** 事件
 
@@ -97,7 +97,7 @@
 
 在任何情况下，当 ***shifuController*** 收到 ***edgeNode*** 连接事件时，***shifuController*** 会：  
 
-1.1 Add: 把 ***edgeNode*** 添加到 ***edgeMap***.
+1.1 Add: 把 ***edgeNode*** 添加到 ***edgeMap*** 。
 
 #### 2. 删除 ***edgeNode***
 

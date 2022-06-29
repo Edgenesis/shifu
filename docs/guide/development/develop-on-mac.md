@@ -7,7 +7,7 @@ Welcome developers! This guide will help you on setting up development environme
 MacBook Pro (14-inch, 2021)
 ```
 
-Please submit an [issue](https://github.com/Edgenesis/shifu/issues) to GitHub if you are having issue following this guide/you have noticed anything wrong with this guide.
+Please submit an [issue](https://github.com/Edgenesis/shifu/issues/new) to GitHub if you are having issue following this guide/you have noticed anything wrong with this guide.
 
 # Steps:
 ## 1. Setting up the environment
