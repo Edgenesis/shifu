@@ -140,9 +140,9 @@ The current version of ***Shifu*** resembles a [Kubernetes Operator](https://kub
 
 ##### 1. Device connect (user workload not shown in below figure)
 
-1.1 connect: an ***edgeDevice*** physically connects to an ***edgeNode***.  
-1.2 device connect: ***shifud*** detects the newly connected device, and sends the event to ***shifuController***.  
-1.3 create: ***shifuController*** creates a ***deviceShifu*** in ***standalone/swarm mode*** for the ***edgeDevice***.  
+1.1 connect: an ***edgeDevice*** physically connects to an ***edgeNode***.
+1.2 device connect: ***shifud*** detects the newly connected device, and sends the event to ***shifuController***.
+1.3 create: ***shifuController*** creates a ***deviceShifu*** in ***standalone/swarm mode*** for the ***edgeDevice***.
 1.4 manage: ***deviceShifu*** starts to manage the newly connected ***edgeDevice***.
 
 Upon an ***edgeDevice*** connects to the ***edgeNode***, ***Shifu*** will create a ***deviceShifu***, an augmented digital twin of the ***edgeDevice*** to manage it.
@@ -157,8 +157,8 @@ During normal operation, ***shifud*** and ***shifuController*** don't do much. U
 
 ##### 3. Device disconnect (user workload not shown in below figure)
 
-3.1 disconnect: an ***edgeDevice*** physically disconnects to an ***edgeNode***.  
-3.2 device disconnect: ***shifud*** detects the newly disconnected device, and sends the event to ***shifuController***.  
+3.1 disconnect: an ***edgeDevice*** physically disconnects to an ***edgeNode***.
+3.2 device disconnect: ***shifud*** detects the newly disconnected device, and sends the event to ***shifuController***.
 3.3 delete: ***shifuController*** deletes the ***deviceShifu*** for the ***edgeDevice***. The delete process might take longer due to cleanup.
 
 [![shifu-device disconnect](/img/shifu-device-disconnect.svg)](/img/shifu-device-disconnect.svg)
