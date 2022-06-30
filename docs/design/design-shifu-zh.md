@@ -22,16 +22,13 @@
       - [物理组件](#物理组件)
         - [1. ***edgeDevice***](#1-edgedevice)
         - [2. ***edgeNode***](#2-edgenode)
-      - [软件组件（数据面）](#软件组件数据面)
+      - [软件组件（控制面）](#软件组件控制面)
         - [1. ***shifud***](#1-shifud)
         - [2. ***shifuController***](#2-shifucontroller)
-      - [软件组件（控制面）](#软件组件控制面)
+      - [软件组件（数据面）](#软件组件数据面)
         - [1. ***deviceShifu***](#1-deviceshifu)
     - [架构图](#架构图)
       - [***deviceShifu*** 的生命周期](#deviceshifu-的生命周期)
-        - [1. 设备连接（用户操作不在下图中）](#1-设备连接用户操作不在下图中)
-        - [2. 设备操作 | TODO: 统一 deviceShifu 接口](#2-设备操作--todo-统一-deviceshifu-接口)
-        - [3. 设备断连（用户操作不在下图中）](#3-设备断连用户操作不在下图中)
 
 # Shifu 高层设计
 
