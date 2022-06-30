@@ -61,10 +61,10 @@ Developer should only need to provide necessary information in order for ***shif
 ***deviceDiscoverer*** is a process that continuously scans for device events on ***edgeNode***, including but not limited to network reachability, USB event.
 
 ##### 2. ***deviceVerifier***
-***deviceVerifier*** is a process that interacts with ***edgeDevice*** and tries to populate and verify their metadata to match Kubernetes' ***edgeDevice*** resources
+***deviceVerifier*** is a process that interacts with ***edgeDevice*** and tries to populate and verify their metadata to match Kubernetes' ***edgeDevice*** resources.
 
 ##### 3. ***deviceUpdater***
-***deviceUpdater*** updates ***edgeDevice*** resource to ***kube-apiserver*** based on the ***edgeDevice***'s verification status
+***deviceUpdater*** updates ***edgeDevice*** resource to ***kube-apiserver*** based on the ***edgeDevice***'s verification status.
 
 ### ***shifud*** input & output
 The overall input and output of ***shifud*** can be summarized in the following graph:
@@ -111,8 +111,8 @@ spec:
    MODBUS
    ```
 2. The discovery process depends on the protocol:
-    1. For TCP/IP type of edge devices, ping/TCP connect can be use directly
-    2. For udev/USB type of edge devices, ***deviceDiscoverer*** will utilize Linux's [udev](https://man7.org/linux/man-pages/man7/udev.7.html) tool    
+    1. For TCP/IP type of edge devices, ping/TCP connect can be use directly.
+    2. For udev/USB type of edge devices, ***deviceDiscoverer*** will utilize Linux's [udev](https://man7.org/linux/man-pages/man7/udev.7.html) tool.    
 3. Once the device has been discovered, ***deviceVerifier*** will then start matching the device metatdata with device list through its connection protocol.
     ```
     sample udevadm output:

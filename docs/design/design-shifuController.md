@@ -1,5 +1,5 @@
 # 【WIP】shifuController design
-- [shifuController design](#shifucontroller-design)
+- [【WIP】shifuController design](#wipshifucontroller-design)
   - [Design goals and non-goals](#design-goals-and-non-goals)
     - [Design goals](#design-goals)
       - [low resource consumption](#low-resource-consumption)
@@ -67,37 +67,45 @@ Being the control plane of ***shifu***, ***shifuController*** needs to be highly
 ### On ***edgeDevice*** events
 #### 1. create ***edgeDevice***
 
-Whenever ***shifuController*** receives an ***edgeDevice*** connect event, ***shifuController*** will:
-1. Schedule: Determine where to place the pending ***deviceShifu***. 
-   1. If the ***edgeDevice*** is connected to a specific ***edgeNode***, then the ***deviceShifu*** will be scheduled on that ***edgeNode***.
-   2. If the ***edgeDevice*** is connected to the cluster network, then the ***deviceShifu*** will be scheduled based on below priorities (subject to change):
-      1. Location proximity: If location info is available, then the ***deviceShifu*** will be placed on the ***edgeNode*** closest to the ***edgeDevice***.
-      2. Resource availability: The ***deviceShifu*** will be placed on the ***edgeNode*** with highest available memory.
-2. Compose: Compile all computed info and compose the corresponding ***deviceShifu*** deployment object.
-3. Create: 
-   1. Create the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
-   2. Expose the newly created ***deviceShifu*** as a Kubernetes Service. 
-4. Add: Add the ***edgeDevice*** to ***edgeMap***.
+Whenever ***shifuController*** receives an ***edgeDevice*** connect event, ***shifuController*** will: 
+
+1.1 Schedule: Determine where to place the pending ***deviceShifu***.    
+   1.1.1 If the ***edgeDevice*** is connected to a specific ***edgeNode***, then the ***deviceShifu*** will be scheduled on that ***edgeNode***.  
+   1.1.2 If the ***edgeDevice*** is connected to the cluster network, then the ***deviceShifu*** will be scheduled based on below priorities (subject to change):  
+      a. Location proximity: If location info is available, then the ***deviceShifu*** will be placed on the ***edgeNode*** closest to the ***edgeDevice***.  
+      b. Resource availability: The ***deviceShifu*** will be placed on the ***edgeNode*** with highest available memory.
+
+1.2 Compose: Compile all computed info and compose the corresponding ***deviceShifu*** deployment object.
+
+1.3 Create:   
+    1.3.1 Create the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
+    1.3.2 Expose the newly created ***deviceShifu*** as a Kubernetes Service.
+
+1.4 Add: Add the ***edgeDevice*** to ***edgeMap***.
 
 #### 2. delete ***edgeDevice***
 
-Whenever ***shifuController*** receives an ***edgeDevice*** disconnect event, ***shifuController*** will:
-1. Remove: Remove the ***edgeDevice*** from ***edgeMap***.
-2. Delete: 
-   1. Delete the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
-   2. Delete the ***deviceShifu***'s corresponding Kubernetes service.
+Whenever ***shifuController*** receives an ***edgeDevice*** disconnect event, ***shifuController*** will:  
+
+2.1 Remove: Remove the ***edgeDevice*** from ***edgeMap***.
+
+2.2 Delete:   
+   2.2.1 Delete the ***deviceShifu*** deployment by submitting the request to ***apiServer***.
+   2.2.2 Delete the ***deviceShifu***'s corresponding Kubernetes service.
 
 ### on ***edgeNode*** events
 
 #### 1. create ***edgeNode***
 
 Whenever ***shifuController*** receives an ***edgeNode*** create event, ***shifuController*** will:
-1. Add: Add the ***edgeNode*** to ***edgeMap***.
+
+1.1 Add: Add the ***edgeNode*** to ***edgeMap***.
 
 #### 2. delete ***edgeNode***
 
 Whenever ***shifuController*** receives an ***edgeNode*** delete event, ***shifuController*** will:
-1. Delete: Delete the ***edgeNode*** from ***edgeMap***.
+
+2.1 Delete: Delete the ***edgeNode*** from ***edgeMap***.
 
 ### During normal operation
 
