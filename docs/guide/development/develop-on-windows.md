@@ -96,4 +96,4 @@ GOPROXY=https://goproxy.cn,direct GO111MODULE=on go mod download
 ```
 
 # What's next?
-Follow our [build guide](build-shifu.md) and start building `Shifu`
+Follow our [build guide](build-shifu.md) and start building `Shifu`.

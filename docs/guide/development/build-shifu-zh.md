@@ -51,3 +51,6 @@ make build
 ```sh
 make docker-buildx-load IMG=edgehub/edgedevice-controller-multi:v0.0.1
 ```
+
+# 接下来?
+跟着我们的 [使用指南](use-shifu-zh.md) 来使用 `Shifu` 。

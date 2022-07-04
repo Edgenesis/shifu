@@ -51,3 +51,6 @@ Run the following command, this will build the following ***shifuController*** i
 ```sh
 make docker-buildx-load IMG=edgehub/edgedevice-controller-multi:v0.0.1
 ```
+
+# What's next?
+Follow our [user guide](use-shifu.md) and start using `Shifu`.
