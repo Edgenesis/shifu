@@ -24,6 +24,9 @@ spec:
         - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
+        - name: edgedevice-certificate
+          mountPath: "/etc/edgedevice/certificate"
+          readOnly: true
         env:
         - name: EDGEDEVICE_NAME
           value: "edgedevice-opcua"
@@ -33,4 +36,8 @@ spec:
       - name: deviceshifu-config
         configMap:
           name: opcua-configmap-0.0.1
+      - name: edgedevice-certificate
+        configMap:
+          name: edgedevice-opcua-certificate
+          optional: true
       serviceAccountName: edgedevice-sa
