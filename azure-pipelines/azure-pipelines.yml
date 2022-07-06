@@ -160,19 +160,26 @@ steps:
     -t edgehub/deviceshifu-http-http:$(tag)
   displayName: build edgehub/deviceshifu-http-http
 
-- script: |
-    docker buildx build --platform=linux/amd64 \
-    -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuSocket \
-    --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/edgehub/deviceshifu-http-socket:$(tag)
-  displayName: build edgehub/deviceshifu-http-socket
+# - script: |
+#     docker buildx build --platform=linux/amd64 \
+#     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuSocket \
+#     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+#     -t edgehub/edgehub/deviceshifu-http-socket:$(tag)
+#   displayName: build edgehub/deviceshifu-http-socket
 
-- script: |
-    docker buildx build --platform=linux/amd64 \
-    -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuMQTT \
-    --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/deviceshifu-http-mqtt:$(tag)
-  displayName: build edgehub/deviceshifu-http-mqtt
+# - script: |
+#     docker buildx build --platform=linux/amd64 \
+#     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuMQTT \
+#     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+#     -t edgehub/deviceshifu-http-mqtt:$(tag)
+#   displayName: build edgehub/deviceshifu-http-mqtt
+
+# - script: |
+#     docker buildx build --platform=linux/amd64 \
+#     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuOPCUA \
+#     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+#     -t edgehub/deviceshifu-http-opcua:$(tag)
+#   displayName: build deviceshifu-http-opcua
 
 - script: |
     docker buildx build --platform=linux/amd64 \
@@ -255,7 +262,58 @@ steps:
 - script: |
     set -e
     kind load docker-image edgehub/deviceshifu-http-http:v0.0.1
-    kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
-    kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
-    kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
+    # kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
+    # kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
+    # kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
   displayName: "load Shifu Docker images into Kind cluster"
+
+- script: |
+    set -e
+    kubectl run nginx --image=nginx -n deviceshifu
+    kubectl wait --for condition=Ready pod/nginx -n deviceshifu --timeout=600s
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
+    kubectl wait --for=condition=Available deploy/plc -n devices --timeout=150s
+    kubectl wait --for=condition=Available deploy/deviceshifu-plc-deployment -n deviceshifu --timeout=150s
+    echo "START CURL ==========================================================================="
+    # kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-plc/getcontent?rootaddress=Q;echo
+    kubectl run -it --rm exitcode --image=nginx --restart=Never -- bash -c "curl deviceshifu-plc/getcontent?rootsssaddress=Q;echo"
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
+    kubectl wait --for=condition=Available deploy/deviceshifu-agv-deployment -n deviceshifu --timeout=150s
+    kubectl wait --for=condition=Available deploy/agv -n devices --timeout=150s
+    kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
+    kubectl wait --for=condition=Available deploy/deviceshifu-plate-reader-deployment -n deviceshifu --timeout=150s
+    kubectl wait --for=condition=Available deploy/plate-reader -n devices --timeout=150s
+    kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-plate-reader/get_measurement
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
+    kubectl wait --for=condition=Available deploy/deviceshifu-robotarm-deployment -n deviceshifu --timeout=150s
+    kubectl wait --for=condition=Available deploy/robotarm -n devices --timeout=150s
+    kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-robotarm/get_coordinate
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-thermometer
+    kubectl wait --for=condition=Available deploy/deviceshifu-thermometer-deployment -n deviceshifu --timeout=150s
+    kubectl wait --for=condition=Available deploy/thermometer -n devices --timeout=150s
+    kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-thermometer/read_value
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-thermometer
+    kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/hello-world-device/configuration/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/hello-world-device/configuration/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/mqttDeviceShifu/mqtt_deploy/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/mqttDeviceShifu/mqtt_deploy/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/opcuaDeviceShifu/opcua_deploy/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/opcuaDeviceShifu/opcua_deploy/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/rtspDeviceShifu/camera-deployment/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/rtspDeviceShifu/camera-deployment/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/siemensPLCDeviceShifu/plc-deployment/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/siemensPLCDeviceShifu/plc-deployment/
+    kubectl apply -f $(System.DefaultWorkingDirectory)/examples/socketDeviceShifu/
+    kubectl delete -f $(System.DefaultWorkingDirectory)/examples/socketDeviceShifu/
+    kubectl delete pod -n deviceshifu nginx
+    kubectl delete -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
+  displayName: "Shifu demo device E2E test"
+- script: |
+    set -e
+    kind delete cluster
+  displayName: "delete Kind cluster"
