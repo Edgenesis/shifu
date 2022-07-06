@@ -46,14 +46,6 @@ steps:
   inputs:
     dockerVersion: 20.10.9
     releaseType: stable
-- task: Docker@2
-  displayName: Build deviceShifu HTTP2HTTP image
-  inputs:
-    repository: edgehub/deviceshifu-http-http
-    command: build
-    Dockerfile: deviceshifu/Dockerfile.deviceshifu
-    tags: '$(tag)'
-    arguments: --platform=linux/amd64
 - task: KubectlInstaller@0
   inputs:
      kubectlVersion: latest
@@ -62,6 +54,9 @@ steps:
   inputs:
     command: 'get'
     arguments: 'sigs.k8s.io/kind@v0.14.0'
+- script: |
+    docker buildx build --platform=linux/amd64 -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifu --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) -t edgehub/deviceshifu-http-http:$(tag)
+  displayName: test
 
 # Running and executing codes
 - task: Go@0
@@ -161,14 +156,9 @@ steps:
   displayName: register QEMU for multi-platform Docker build
 
 # build device Docker images
-- task: Docker@2
-  displayName: Build deviceShifu HTTP2HTTP image
-  inputs:
-    repository: edgehub/deviceshifu-http-http
-    command: build
-    Dockerfile: deviceshifu/Dockerfile.deviceshifu
-    tags: '$(tag)'
-    arguments: --platform platform=linux/amd64
+- script: |
+    docker buildx build --platform=linux/amd64 -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifu --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) -t edgehub/deviceshifu-http-http:$(tag)
+  displayName: test
 - task: Docker@2
   displayName: Build deviceShifu HTTP2MQTT image
   inputs:
