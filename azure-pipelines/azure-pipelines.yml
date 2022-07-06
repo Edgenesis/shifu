@@ -160,6 +160,7 @@ steps:
     command: build
     Dockerfile: deviceshifu/Dockerfile.deviceshifu
     tags: '$(tag)'
+    platform: linux/amd64
 - task: Docker@2
   displayName: Build deviceShifu HTTP2MQTT image
   inputs:
