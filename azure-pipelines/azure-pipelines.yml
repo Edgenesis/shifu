@@ -46,6 +46,14 @@ steps:
   inputs:
     dockerVersion: 20.10.9
     releaseType: stable
+- task: Docker@2
+  displayName: Build deviceShifu HTTP2HTTP image
+  inputs:
+    repository: edgehub/deviceshifu-http-http
+    command: build
+    Dockerfile: deviceshifu/Dockerfile.deviceshifu
+    tags: '$(tag)'
+    arguments: --platform linux/amd64
 - task: KubectlInstaller@0
   inputs:
      kubectlVersion: latest
