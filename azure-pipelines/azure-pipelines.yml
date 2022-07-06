@@ -184,7 +184,7 @@ steps:
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
-    --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+    --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
     -t edgehub/edgedevice-controller-multi:$(tag)
   displayName: build edgehub/edgedevice-controller-multi
 
@@ -262,9 +262,9 @@ steps:
 - script: |
     set -e
     kind load docker-image edgehub/deviceshifu-http-http:v0.0.1
-    # kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
-    # kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
-    # kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
+    kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
+    kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
+    kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
   displayName: "load Shifu Docker images into Kind cluster"
 
 - script: |
