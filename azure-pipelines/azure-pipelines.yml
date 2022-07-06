@@ -30,6 +30,9 @@ pr:
     - .github
     - CHANGELOG
 
+variables:
+  tag: 'v0.0.1'
+
 pool:
    vmImage: 'ubuntu-latest'
 
