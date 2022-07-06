@@ -218,7 +218,7 @@ steps:
 
 - script: |
     docker buildx build --platform=linux/amd64 \
-    -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-plc \
+    -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/plc/Dockerfile.mockdevice-plc \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
     -t edgehub/mockdevice-plc:$(tag)
   displayName: build edgehub/mockdevice-plc
@@ -262,10 +262,11 @@ steps:
 - script: |
     set -e
     kind load docker-image edgehub/deviceshifu-http-http:v0.0.1
-    kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
-    kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
-    kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
   displayName: "load Shifu Docker images into Kind cluster"
+
+    # kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
+    # kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
+    # kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
 
 - script: |
     set -e
