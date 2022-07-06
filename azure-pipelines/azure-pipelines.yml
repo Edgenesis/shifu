@@ -203,7 +203,7 @@ steps:
   displayName: build edgehub/mockdevice-robot-arm
 
 - script: |
-    docker buildx build --platform=linux/amd64 
+    docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
     -t edgehub/mockdevice-plate-reader:$(tag)
