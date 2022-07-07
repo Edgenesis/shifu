@@ -47,7 +47,7 @@ steps:
 
 - script: |
     echo $(Build.SourceBranchName)
-    echo $(Build.BuildNumber)
+    echo $(GitVersion.MajorMinorPatch)
   displayName: Acquire the branch name
 # - task: GoTool@0
 #   inputs:
