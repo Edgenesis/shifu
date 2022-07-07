@@ -47,6 +47,7 @@ steps:
 
 - script: |
     echo $(Build.SourceBranchName)
+    echo $(Build.BuildNumber)
   displayName: Acquire the branch name
 # - task: GoTool@0
 #   inputs:
