@@ -34,9 +34,9 @@ pr:
 variables:
 - name: tag
   ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
-    tag: 'latest'
+    value: 'latest'
   ${{ else }}:
-    tag: 'v0.0.1'
+    value: 'v0.0.1'
   
 
 pool:
