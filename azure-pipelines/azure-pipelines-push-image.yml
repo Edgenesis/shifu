@@ -23,7 +23,7 @@ pool:
 
 # Initialization
 steps:
-- ${{ if eq($(Build.SourceBranch), 'main') }}:
+- ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
 - task: SetVariable@1
   inputs:
     name: 'tag'
