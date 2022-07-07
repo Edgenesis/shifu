@@ -24,15 +24,15 @@ pool:
 # Initialization
 steps:
 - ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
-- task: SetVariable@1
-  inputs:
-    name: 'tag'
-    value: 'latest'
+  - task: SetVariable@1
+    inputs:
+      name: 'tag'
+      value: 'latest'
 - ${{ else }}: 
-- task: SetVariable@2
-  inputs:
-    name: 'tag'
-    value: $(Build.SourceBranch#*refs/tags/)
+-   task: SetVariable@2
+    inputs:
+      name: 'tag'
+      value: $(Build.SourceBranch#*refs/tags/)
 
 
 - script: |
