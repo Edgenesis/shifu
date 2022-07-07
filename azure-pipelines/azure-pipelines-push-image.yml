@@ -32,7 +32,12 @@ pr:
 
 
 variables:
-  tag: 'v0.0.1'
+- name: tag
+  ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
+    tag: 'latest'
+  ${{ if ne($(variables['Build.SourceBranchName'], 'main')}}:
+    tag: 'v0.0.1'
+  
 
 pool:
    vmImage: 'ubuntu-latest'
@@ -41,7 +46,7 @@ pool:
 steps:
 
 - script: |
-    echo $(System.PullRequest.SourceBranch)
+    echo variables['Build.SourceBranchName']
   displayName: Acquire the branch name
 # - task: GoTool@0
 #   inputs:
