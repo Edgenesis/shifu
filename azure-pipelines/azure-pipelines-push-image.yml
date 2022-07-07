@@ -35,7 +35,7 @@ variables:
 - name: tag
   ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
     tag: 'latest'
-  ${{ if ne($(variables['Build.SourceBranchName'], 'main')}}:
+  ${{ else }}:
     tag: 'v0.0.1'
   
 
