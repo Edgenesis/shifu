@@ -14,29 +14,8 @@ trigger:
     - .github
     - CHANGELOG
 
-pr:
-  branches:
-    include:
-    - main
-    - releases/*
-  paths:
-    exclude:
-    - docs
-    - examples
-    - img
-    - ./*.md
-    - LICENSE
-    - .devcontainer
-    - .github
-    - CHANGELOG
-
-
 variables:
 - name: tag
-  ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
-    value: 'latest'
-  ${{ else }}:
-    value: 'v0.0.1'
   
 
 pool:
@@ -44,9 +23,23 @@ pool:
 
 # Initialization
 steps:
+- ${{ if eq(Build.SourceBranch, 'main') }}:
+- task: SetVariable@1
+  inputs:
+    name: 'tag'
+    value: 'latest'
+- ${{ else }}: 
+- task: SetVariable@2
+  inputs:
+    name: 'tag'
+    value: ${Build.SourceBranch#*refs/tags/}
+
 
 - script: |
-    echo $(Build.SourceBranch)
+    echo ${Build.SourceBranch#*refs/tags/}
+    git tag --sort=-creatordate
+  displayName: Acquire the branch name
+- script: |
     git tag --sort=-creatordate
   displayName: Acquire the branch name
 # - task: GoTool@0
