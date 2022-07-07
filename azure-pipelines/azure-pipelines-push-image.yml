@@ -15,11 +15,13 @@ trigger:
     - CHANGELOG
 
 variables:
+- name: branchName
+  value: $(Build.SourceBranchName)
 - name: tag
   ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
     value: 'latest'
   ${{ else }}:
-    value: $(Build.SourceBranchName#*refs/)
+    value: $(branchName#*refs/)
   
 
 pool:
