@@ -29,7 +29,7 @@ steps:
       name: 'tag'
       value: 'latest'
 - ${{ else }}: 
--   task: SetVariable@2
+  - task: SetVariable@2
     inputs:
       name: 'tag'
       value: $(Build.SourceBranch#*refs/tags/)
