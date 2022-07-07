@@ -46,7 +46,7 @@ pool:
 steps:
 
 - script: |
-    echo $(Build.SourceBranchName)
+    echo $(Build.SourceBranch)
     git tag --sort=-creatordate
   displayName: Acquire the branch name
 # - task: GoTool@0
