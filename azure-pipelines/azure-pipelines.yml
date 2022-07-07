@@ -55,102 +55,102 @@ steps:
     command: 'get'
     arguments: 'sigs.k8s.io/kind@v0.14.0'
 
-# Running and executing codes
-- task: Go@0
-  displayName: "go get"
-  inputs:
-    command: 'get'
-    arguments: '-d'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
-- task: Go@0
-  displayName: "crd go get"
-  inputs:
-    command: 'get'
-    arguments: '-d'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/k8s/crd'
-- task: Go@0
-  displayName: "go build deviceshifu"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd'
-- task: Go@0
-  displayName: "go build deviceshifuSocket"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdSocket'
-- task: Go@0
-  displayName: "go build deviceshifuMQTT"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdMQTT'
-- task: Go@0
-  displayName: "go build deviceshifuOPCUA"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdOPCUA'
-- task: Go@0
-  displayName: "go test deviceshifu"
-  inputs:
-    command: 'test'
-    arguments: '-v'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
-- task: Go@0
-  displayName: "go test deviceshifuSocket"
-  inputs:
-    command: 'test'
-    arguments: '-v'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuSocket'
-- task: Go@0
-  displayName: "go test deviceshifuMQTT"
-  inputs:
-    command: 'test'
-    arguments: '-v'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuMQTT'
-- task: Go@0
-  displayName: "go test deviceshifuOPCUA"
-  inputs:
-    command: 'test'
-    arguments: '-v'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuOPCUA'
-- task: Go@0
-  displayName: "go build mockdevice agv"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-agv'
-- task: Go@0
-  displayName: "go build mockdevice plate reader"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plate-reader'
-- task: Go@0
-  displayName: "go build mockdevice plc"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plc'
-- task: Go@0
-  displayName: "go build mockdevice robot arm"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-robot-arm'
-- task: Go@0
-  displayName: "go build mockdevice thermometer"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-thermometer'
-- task: Go@0
-  displayName: "go test mockdevice"
-  inputs:
-    command: 'test'
-    arguments: '-v'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice'
-- task: Go@0
-  displayName: "go build http to ssh stub"
-  inputs:
-    command: 'build'
-    workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
-- script: |
-    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-  displayName: register QEMU for multi-platform Docker build
+# # Running and executing codes
+# - task: Go@0
+#   displayName: "go get"
+#   inputs:
+#     command: 'get'
+#     arguments: '-d'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
+# - task: Go@0
+#   displayName: "crd go get"
+#   inputs:
+#     command: 'get'
+#     arguments: '-d'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/k8s/crd'
+# - task: Go@0
+#   displayName: "go build deviceshifu"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd'
+# - task: Go@0
+#   displayName: "go build deviceshifuSocket"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdSocket'
+# - task: Go@0
+#   displayName: "go build deviceshifuMQTT"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdMQTT'
+# - task: Go@0
+#   displayName: "go build deviceshifuOPCUA"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdOPCUA'
+# - task: Go@0
+#   displayName: "go test deviceshifu"
+#   inputs:
+#     command: 'test'
+#     arguments: '-v'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
+# - task: Go@0
+#   displayName: "go test deviceshifuSocket"
+#   inputs:
+#     command: 'test'
+#     arguments: '-v'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuSocket'
+# - task: Go@0
+#   displayName: "go test deviceshifuMQTT"
+#   inputs:
+#     command: 'test'
+#     arguments: '-v'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuMQTT'
+# - task: Go@0
+#   displayName: "go test deviceshifuOPCUA"
+#   inputs:
+#     command: 'test'
+#     arguments: '-v'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuOPCUA'
+# - task: Go@0
+#   displayName: "go build mockdevice agv"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-agv'
+# - task: Go@0
+#   displayName: "go build mockdevice plate reader"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plate-reader'
+# - task: Go@0
+#   displayName: "go build mockdevice plc"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plc'
+# - task: Go@0
+#   displayName: "go build mockdevice robot arm"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-robot-arm'
+# - task: Go@0
+#   displayName: "go build mockdevice thermometer"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-thermometer'
+# - task: Go@0
+#   displayName: "go test mockdevice"
+#   inputs:
+#     command: 'test'
+#     arguments: '-v'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice'
+# - task: Go@0
+#   displayName: "go build http to ssh stub"
+#   inputs:
+#     command: 'build'
+#     workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
+# - script: |
+#     docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+#   displayName: register QEMU for multi-platform Docker build
 
 # build device Docker images
 - script: |
