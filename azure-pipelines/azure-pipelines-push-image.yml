@@ -31,18 +31,18 @@ pr:
     - CHANGELOG
 
 
-- script: |
-    echo $(System.PullRequest.SourceBranch)
-  displayName: Acquire the branch name
-
 variables:
   tag: 'v0.0.1'
 
 pool:
    vmImage: 'ubuntu-latest'
 
-# # Initialization
-# steps:
+# Initialization
+steps:
+
+- script: |
+    echo $(System.PullRequest.SourceBranch)
+  displayName: Acquire the branch name
 # - task: GoTool@0
 #   inputs:
 #     version: '1.17.11'
