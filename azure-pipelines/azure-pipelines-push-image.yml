@@ -47,7 +47,7 @@ steps:
 
 - script: |
     echo $(Build.SourceBranchName)
-    git describe --exact-match $(Build.SourceVersion)
+    git tag --sort=-creatordate
   displayName: Acquire the branch name
 # - task: GoTool@0
 #   inputs:
