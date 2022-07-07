@@ -19,7 +19,7 @@ variables:
   ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
     value: 'latest'
   ${{ else }}:
-    value: $(Build.SourceBranchName#*refs/tags/)
+    value: $(Build.SourceBranchName#*refs/heads/)
   
 
 pool:
@@ -29,7 +29,7 @@ pool:
 steps:
 
 - script: |
-    echo $(Build.SourceBranch)
+    echo $(tag)
     git tag --sort=-creatordate
   displayName: Acquire the branch name
 # - task: GoTool@0
