@@ -23,7 +23,7 @@ pool:
 
 # Initialization
 steps:
-- ${{ if eq(Build.SourceBranch, 'main') }}:
+- ${{ if eq($(Build.SourceBranch), 'main') }}:
 - task: SetVariable@1
   inputs:
     name: 'tag'
@@ -32,11 +32,11 @@ steps:
 - task: SetVariable@2
   inputs:
     name: 'tag'
-    value: ${Build.SourceBranch#*refs/tags/}
+    value: $(Build.SourceBranch#*refs/tags/)
 
 
 - script: |
-    echo ${Build.SourceBranch#*refs/tags/}
+    echo $(Build.SourceBranch#*refs/tags/)
     git tag --sort=-creatordate
   displayName: Acquire the branch name
 - script: |
