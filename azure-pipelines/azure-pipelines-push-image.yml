@@ -47,7 +47,7 @@ steps:
 
 - script: |
     echo $(Build.SourceBranchName)
-    echo $(GitVersion.MajorMinorPatch)
+    git describe --exact-match $(Build.SourceVersion)
   displayName: Acquire the branch name
 # - task: GoTool@0
 #   inputs:
