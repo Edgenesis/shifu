@@ -16,6 +16,10 @@ trigger:
 
 variables:
 - name: tag
+  ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
+    value: 'latest'
+  ${{ else }}:
+    value: $(Build.SourceBranchName#*refs/tags/)
   
 
 pool:
@@ -23,23 +27,9 @@ pool:
 
 # Initialization
 steps:
-- ${{ if eq(variables['Build.SourceBranchName'], 'main') }}:
-  - task: SetVariable@1
-    inputs:
-      name: 'tag'
-      value: 'latest'
-- ${{ else }}: 
-  - task: SetVariable@2
-    inputs:
-      name: 'tag'
-      value: $(Build.SourceBranch#*refs/tags/)
-
 
 - script: |
-    echo $(Build.SourceBranch#*refs/tags/)
-    git tag --sort=-creatordate
-  displayName: Acquire the branch name
-- script: |
+    echo $(Build.SourceBranch)
     git tag --sort=-creatordate
   displayName: Acquire the branch name
 # - task: GoTool@0
