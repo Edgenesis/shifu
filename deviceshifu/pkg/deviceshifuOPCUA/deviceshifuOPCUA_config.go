@@ -47,7 +47,7 @@ type DeviceShifuTelemetry struct {
 }
 
 type DeviceShifuTelemetrySettings struct {
-	DeviceShifuTelemetryUpdateIntervalMiliseconds *int64 `yaml:"telemetryUpdateIntervaInlMiliseconds,omitempty"`
+	DeviceShifuTelemetryUpdateIntervalMiliseconds *int64 `yaml:"telemetryUpdateIntervalInMiliseconds,omitempty"`
 }
 
 type DeviceShifuTelemetries struct {
