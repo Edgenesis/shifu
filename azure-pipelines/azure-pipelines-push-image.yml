@@ -21,7 +21,7 @@ variables:
   ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
     value: 'latest'
   ${{ else }}:
-    value: $(branchName#*refs/)
+    value: $[replace(variables['build.sourcebranchname'], '/refs', '')]
   
 
 pool:
