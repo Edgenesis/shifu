@@ -19,7 +19,7 @@ variables:
   ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
     value: 'latest'
   ${{ else }}:
-    value: $(Build.SourceBranchName#*refs/heads/)
+    value: $(Build.SourceBranchName#*refs/)
   
 
 pool:
