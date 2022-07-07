@@ -46,7 +46,7 @@ pool:
 steps:
 
 - script: |
-    echo $(variables['Build.SourceBranchName'])
+    echo $(Build.SourceBranchName)
   displayName: Acquire the branch name
 # - task: GoTool@0
 #   inputs:
