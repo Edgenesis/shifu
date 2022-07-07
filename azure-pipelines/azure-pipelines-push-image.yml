@@ -2,7 +2,7 @@ trigger:
   branches:
     include:
     - main
-    - refs/tags/{tagname}
+    - refs/tags/*
   paths:
     exclude:
     - docs
