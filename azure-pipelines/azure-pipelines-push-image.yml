@@ -33,6 +33,11 @@ steps:
   inputs:
     dockerVersion: 20.10.9
     releaseType: stable
+- task: Docker@2
+  displayName: Login to DockerHub
+  inputs:
+    command: login
+    containerRegistry: dockerRegistryServiceConnection1
 
 # build device Docker images
 - script: |
