@@ -60,70 +60,70 @@ steps:
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifu \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/deviceshifu-http-http:$(tag)
+    -t edgehub/deviceshifu-http-http:$(tag) --load
   displayName: build edgehub/deviceshifu-http-http
 
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuSocket \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/edgehub/deviceshifu-http-socket:$(tag)
+    -t edgehub/deviceshifu-http-socket:$(tag) --load
   displayName: build edgehub/deviceshifu-http-socket
 
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuMQTT \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/deviceshifu-http-mqtt:$(tag)
+    -t edgehub/deviceshifu-http-mqtt:$(tag) --load
   displayName: build edgehub/deviceshifu-http-mqtt
 
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuOPCUA \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/deviceshifu-http-opcua:$(tag)
+    -t edgehub/deviceshifu-http-opcua:$(tag) --load
   displayName: build deviceshifu-http-opcua
 
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
-    -t edgehub/edgedevice-controller-multi:$(tag)
+    -t edgehub/edgedevice-controller-multi:$(tag) --load
   displayName: build edgehub/edgedevice-controller-multi
 
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/mockdevice-thermometer:$(tag)
+    -t edgehub/mockdevice-thermometer:$(tag) --load
   displayName: build edgehub/mockdevice-thermometer
 
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/mockdevice-robot-arm:$(tag)
+    -t edgehub/mockdevice-robot-arm:$(tag) --load
   displayName: build edgehub/mockdevice-robot-arm
 
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/mockdevice-plate-reader:$(tag)
+    -t edgehub/mockdevice-plate-reader:$(tag) --load
   displayName: build edgehub/mockdevice-plate-reader
 
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/agv/Dockerfile.mockdevice-agv \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/mockdevice-agv:$(tag)
+    -t edgehub/mockdevice-agv:$(tag) --load
   displayName: build edgehub/mockdevice-agv
 
 - script: |
     docker buildx build --platform=linux/amd64 \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/plc/Dockerfile.mockdevice-plc \
     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-    -t edgehub/mockdevice-plc:$(tag)
+    -t edgehub/mockdevice-plc:$(tag) --load
   displayName: build edgehub/mockdevice-plc
 
 # load the images to Kind
