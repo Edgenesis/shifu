@@ -131,6 +131,11 @@ steps:
     set -e
     kind --version
     kind delete cluster && kind create cluster
+    kind load docker-image edgehub/edgedevice-controller-multi:v0.0.1
+    kind load docker-image edgehub/mockdevice-thermometer:v0.0.1
+    kind load docker-image edgehub/mockdevice-plate-reader:v0.0.1
+    kind load docker-image edgehub/mockdevice-agv:v0.0.1
+    kind load docker-image edgehub/mockdevice-plc:v0.0.1
     kind load docker-image edgehub/deviceshifu-http-http:v0.0.1    
     kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
     kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
@@ -147,8 +152,7 @@ steps:
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl wait --for=condition=Available deploy/plc -n devices --timeout=150s
     kubectl wait --for=condition=Available deploy/deviceshifu-plc-deployment -n deviceshifu --timeout=150s
-    echo "START CURL ==========================================================================="
-    # kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-plc/getcontent?rootaddress=Q;echo
+    kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-plc/getcontent?rootsssaddress=Q;echo
     kubectl run -it --rm exitcode --image=nginx --restart=Never -- bash -c "curl deviceshifu-plc/getcontent?rootsssaddress=Q;echo"
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
