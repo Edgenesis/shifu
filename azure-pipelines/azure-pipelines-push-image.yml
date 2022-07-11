@@ -37,7 +37,7 @@ steps:
   displayName: Login to DockerHub
   inputs:
     command: login
-    containerRegistry: dockerRegistryServiceConnection1
+    containerRegistry: dockerhub-connection
 
 # build device Docker images
 - script: |
