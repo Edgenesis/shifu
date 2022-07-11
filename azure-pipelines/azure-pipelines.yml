@@ -131,19 +131,14 @@ steps:
     set -e
     kind --version
     kind delete cluster && kind create cluster
-    kubectl version
-    kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
-    kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
-  displayName: "setup Kind cluster and install Shifu"
-- script: |
-    set -e
     kind load docker-image edgehub/deviceshifu-http-http:v0.0.1    
     kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
     kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
     kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
-  displayName: "load Shifu Docker images into Kind cluster"
-
-
+    kubectl version
+    kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
+    kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
+  displayName: "setup Kind cluster and install Shifu"
 
 - script: |
     set -e
