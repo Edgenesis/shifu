@@ -137,12 +137,13 @@ steps:
   displayName: "setup Kind cluster and install Shifu"
 - script: |
     set -e
-    kind load docker-image edgehub/deviceshifu-http-http:v0.0.1
+    kind load docker-image edgehub/deviceshifu-http-http:v0.0.1    
+    kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
+    kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
+    kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
   displayName: "load Shifu Docker images into Kind cluster"
 
-    # kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
-    # kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
-    # kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
+
 
 - script: |
     set -e
