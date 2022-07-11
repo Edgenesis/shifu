@@ -13,6 +13,7 @@ trigger:
     - .devcontainer
     - .github
     - CHANGELOG
+pr: none
 
 variables:
 - name: tag
@@ -34,6 +35,10 @@ steps:
     releaseType: stable
 
 # build device Docker images
+- script: |
+    docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+  displayName: configure the multiarch
+
 - script: |
     docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifu \
