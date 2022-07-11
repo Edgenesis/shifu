@@ -27,14 +27,6 @@ pool:
 
 # Initialization
 steps:
-
-- script: |
-    echo $(tag)
-    git tag --sort=-creatordate
-  displayName: Acquire the branch name
-# - task: GoTool@0
-#   inputs:
-#     version: '1.17.11'
 - task: DockerInstaller@0
   displayName: Docker Installer
   inputs:
@@ -49,26 +41,26 @@ steps:
     -t edgehub/deviceshifu-http-http:$(tag) --push
   displayName: build edgehub/deviceshifu-http-http
 
-# - script: |
-#     docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-#     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuSocket \
-#     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-#     -t edgehub/edgehub/deviceshifu-http-socket:$(tag) --push
-#   displayName: build edgehub/deviceshifu-http-socket
+- script: |
+    docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+    -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuSocket \
+    --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+    -t edgehub/edgehub/deviceshifu-http-socket:$(tag) --push
+  displayName: build edgehub/deviceshifu-http-socket
 
-# - script: |
-#     docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-#     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuMQTT \
-#     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-#     -t edgehub/deviceshifu-http-mqtt:$(tag) --push
-#   displayName: build edgehub/deviceshifu-http-mqtt
+- script: |
+    docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+    -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuMQTT \
+    --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+    -t edgehub/deviceshifu-http-mqtt:$(tag) --push
+  displayName: build edgehub/deviceshifu-http-mqtt
 
-# - script: |
-#     docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-#     -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuOPCUA \
-#     --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-#     -t edgehub/deviceshifu-http-opcua:$(tag) --push
-#   displayName: build deviceshifu-http-opcua
+- script: |
+    docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+    -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuOPCUA \
+    --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+    -t edgehub/deviceshifu-http-opcua:$(tag) --push
+  displayName: build deviceshifu-http-opcua
 
 - script: |
     docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
