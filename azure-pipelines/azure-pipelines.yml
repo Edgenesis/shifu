@@ -152,7 +152,7 @@ steps:
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl wait --for=condition=Available deploy/plc -n devices --timeout=150s
     kubectl wait --for=condition=Available deploy/deviceshifu-plc-deployment -n deviceshifu --timeout=150s
-    kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-plc/getcontent?rootsssaddress=Q;echo
+    kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-plc/getcontent?rootsssaddress=Q;echo
     kubectl run -it --rm exitcode --image=nginx --restart=Never -- bash -c "curl deviceshifu-plc/getcontent?rootsssaddress=Q;echo"
     kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
     kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
