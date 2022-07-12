@@ -91,6 +91,7 @@ stages:
           workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice'
 
   - job: go_build_test
+    dependsOn: go_code_test
     steps:
       - checkout: none
       - task: Go@0
