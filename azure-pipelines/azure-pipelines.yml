@@ -45,6 +45,7 @@ stages:
         inputs:
           version: '1.17.11'
   - job: go_get
+    dependsOn: go_setup
     steps:
       - task: Go@0
         displayName: "go get"
@@ -53,6 +54,7 @@ stages:
           arguments: '-d'
           workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
   - job: go_code_test
+    dependsOn: go_get
     steps:
       - task: Go@0
         displayName: "go test deviceshifu"
@@ -159,6 +161,7 @@ stages:
           arguments: 'sigs.k8s.io/kind@v0.14.0'
 
   - job: docker_test_build
+    dependsOn: setup_docker_kubectl_kind
     steps:
       - script: |
           docker buildx build --platform=linux/amd64 \
@@ -231,6 +234,7 @@ stages:
         displayName: build edgehub/mockdevice-plc
 
   - job: kind_setup_and_load
+    dependsOn: docker_test_build
     steps:
       - script: |
           set -e
@@ -251,6 +255,7 @@ stages:
         displayName: "setup Kind cluster and install Shifu"
 
   - job: e2e_test_mockdevices_deviceshifu_http2http
+    dependsOn: kind_setup_and_load
     steps:
       - script: |
           set -e
@@ -310,6 +315,7 @@ stages:
         displayName: configure multi-arch and buildx
 
   - job: docker_build_push
+    dependsOn: docker_login_setup_qemu
     steps:
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
