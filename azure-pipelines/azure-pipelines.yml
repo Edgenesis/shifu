@@ -44,20 +44,12 @@ stages:
       - task: GoTool@0
         inputs:
           version: '1.17.11'
-  - job: go_get
-    dependsOn: go_setup
-    steps:
-      - checkout: none
       - task: Go@0
         displayName: "go get"
         inputs:
           command: 'get'
           arguments: '-d'
           workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
-  - job: go_code_test
-    dependsOn: go_get
-    steps:
-      - checkout: none
       - task: Go@0
         displayName: "go test deviceshifu"
         inputs:
@@ -82,18 +74,12 @@ stages:
           command: 'test'
           arguments: '-v'
           workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuOPCUA'
-      
       - task: Go@0
         displayName: "go test mockdevice"
         inputs:
           command: 'test'
           arguments: '-v'
           workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice'
-
-  - job: go_build_test
-    dependsOn: go_code_test
-    steps:
-      - checkout: none
       - task: Go@0
         displayName: "go build deviceshifu"
         inputs:
@@ -164,10 +150,6 @@ stages:
           command: 'get'
           arguments: 'sigs.k8s.io/kind@v0.14.0'
 
-  - job: docker_test_build
-    dependsOn: setup_docker_kubectl_kind
-    steps:
-      - checkout: none
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifu \
