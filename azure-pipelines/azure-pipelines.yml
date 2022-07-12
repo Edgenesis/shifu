@@ -296,7 +296,7 @@ stages:
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuSocket \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/edgehub/deviceshifu-http-socket:$(release_tag) --push
+          -t edgehub/deviceshifu-http-socket:$(release_tag) --push
         displayName: build edgehub/deviceshifu-http-socket
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
