@@ -6,7 +6,7 @@ metadata:
 spec:
   sku: "testSocket" 
   connection: Ethernet
-  address: 192.168.15.248:11122 #change this accordingly
+  address: 172.19.170.158:11122 #change this accordingly
   protocol: Socket
   protocolSettings:
     SocketSetting:
