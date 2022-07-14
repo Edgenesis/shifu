@@ -8,5 +8,6 @@ spec:
   connection: Ethernet
   address: helloworld.devices.svc.cluster.local:11111
   protocol: HTTP
+  defaultTimeout: 6
 status:
   edgedevicephase: "Pending"

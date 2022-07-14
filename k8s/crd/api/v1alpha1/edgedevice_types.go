@@ -67,6 +67,7 @@ type EdgeDeviceSpec struct {
 	Sku              *string            `json:"sku,omitempty"`
 	Connection       *Connection        `json:"connection,omitempty"`
 	Address          *string            `json:"address,omitempty"`
+	DefaultTimeout   *int               `json:"defaultTimeout,omitempty"`
 	Protocol         *Protocol          `json:"protocol,omitempty"`
 	ProtocolSettings *ProtocolSettings  `json:"protocolSettings,omitempty"`
 	CustomMetadata   *map[string]string `json:"customMetadata,omitempty"`

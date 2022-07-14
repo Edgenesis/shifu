@@ -2,11 +2,8 @@ package deviceshifu
 
 import (
 	"context"
-	"errors"
-	"log"
-	"time"
-
 	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
+	"errors"
 	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -14,6 +11,7 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"knative.dev/pkg/configmap"
+	"log"
 )
 
 type DeviceShifuConfig struct {
@@ -142,7 +140,6 @@ func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	crdConfig.APIPath = "/apis"
 	crdConfig.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
-	crdConfig.Timeout = 3 * time.Second
 	exampleRestClient, err := rest.UnversionedRESTClientFor(crdConfig)
 	if err != nil {
 		return nil, err

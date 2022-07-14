@@ -3,10 +3,12 @@ package deviceshifu
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -99,6 +101,11 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		if &edgeDevice.Spec == nil {
 			log.Fatalf("edgeDeviceConfig.Spec is nil")
 			return nil, err
+		}
+
+		if edgeDevice.Spec.DefaultTimeout == nil || *edgeDevice.Spec.DefaultTimeout <= 0 {
+			log.Fatalf("default Timeout must not be 0")
+			return nil, errors.New("defaultTimeout configuration error")
 		}
 
 		// switch for different Shifu Protocols
@@ -216,16 +223,38 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		}
 
 		var resp *http.Response
-		var httpErr error
+		var httpErr, parseErr error
+		var timeout = *handlerEdgeDeviceSpec.DefaultTimeout
 		reqType := r.Method
-
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
+
+		timeoutStr := r.URL.Query().Get("timeout")
+		if timeoutStr != "" {
+			timeout, parseErr = strconv.Atoi(timeoutStr)
+			if parseErr != nil {
+				http.Error(w, parseErr.Error(), http.StatusBadRequest)
+				log.Printf("parameter parsing error" + parseErr.Error())
+				return
+			}
+			r.URL.Query().Del("timeout")
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+		defer func() {
+			cancel()
+		}()
 
 		if reqType == http.MethodGet {
 			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
 
-			resp, httpErr = handlerHTTPClient.Get(httpUri)
+			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpUri, nil)
+			if reqErr != nil {
+				http.Error(w, reqErr.Error(), http.StatusServiceUnavailable)
+				log.Printf("HTTP GET error" + reqErr.Error())
+				return
+			}
 
+			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
 				log.Printf("HTTP GET error" + httpErr.Error())
@@ -242,7 +271,16 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 
 			contentType := r.Header.Get("Content-type")
-			resp, httpErr = handlerHTTPClient.Post(httpUri, contentType, bytes.NewBuffer(requestBody))
+
+			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpUri, bytes.NewBuffer(requestBody))
+			if reqErr != nil {
+				http.Error(w, reqErr.Error(), http.StatusBadRequest)
+				log.Printf("HTTP GET error" + reqErr.Error())
+				return
+			}
+
+			req.Header.Set("Content-type", contentType)
+			resp, httpErr = handlerHTTPClient.Do(req)
 
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
@@ -383,10 +421,23 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 
 	address := *ds.edgeDevice.Spec.Address
 	instruction := *telemetryProperties.DeviceInstructionName
-	resp, err := ds.restClient.Client.Get("http://" + address + "/" + instruction)
-	if err != nil {
-		log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
-		return false, err
+	//resp, err := ds.restClient.Client.Get("http://" + address + "/" + instruction)
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*ds.edgeDevice.Spec.DefaultTimeout)*time.Second)
+	defer func() {
+		cancel()
+	}()
+
+	req, reqErr := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+address+"/"+instruction, nil)
+	if reqErr != nil {
+		log.Printf("error checking telemetry: %v, error: %v", telemetry, reqErr.Error())
+		return false, reqErr
+	}
+
+	resp, httpErr := ds.restClient.Client.Do(req)
+	if httpErr != nil {
+		log.Printf("error checking telemetry: %v, error: %v", telemetry, httpErr.Error())
+		return false, httpErr
 	}
 
 	if resp != nil {
