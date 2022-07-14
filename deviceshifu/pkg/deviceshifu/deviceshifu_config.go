@@ -2,8 +2,10 @@ package deviceshifu
 
 import (
 	"context"
-	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"errors"
+	"log"
+
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -11,12 +13,11 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"knative.dev/pkg/configmap"
-	"log"
 )
 
 type DeviceShifuConfig struct {
 	driverProperties DeviceShifuDriverProperties
-	Instructions     map[string]*DeviceShifuInstruction
+	Instructions     DeviceShifuInstruction
 	Telemetries      map[string]*DeviceShifuTelemetry
 }
 
@@ -27,6 +28,15 @@ type DeviceShifuDriverProperties struct {
 }
 
 type DeviceShifuInstruction struct {
+	Instructions        map[string]*DeviceShifuInstructions `yaml:"instructions"`
+	InstructionSettings *DeviceShifuInstructionSettings     `yaml:"instructionSettings"`
+}
+
+type DeviceShifuInstructionSettings struct {
+	DefaultTimeOut *int `yaml:"defaultTimeOut"`
+}
+
+type DeviceShifuInstructions struct {
 	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
 }
 

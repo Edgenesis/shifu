@@ -8,10 +8,13 @@ data:
     driverSku: PLC
     driverImage: edgenesis/plc:v0.0.1
   instructions: |
-    sendcontent:
-    getcontent:
-    get_status:
-    sendsinglebit:
+    instructionSettings:
+      defaultTimeOut: 8
+    instructions:
+      sendcontent:
+      getcontent:
+      get_status:
+      sendsinglebit:
 # Telemetries are configurable health checks of the EdgeDevice
 # Developer/user can configure certain instructions to be used as health check
 # of the device. In this example, the device_health telemetry is mapped to

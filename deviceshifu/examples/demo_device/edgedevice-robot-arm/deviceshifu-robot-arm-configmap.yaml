@@ -8,8 +8,11 @@ data:
     driverSku: Franka Emika
     driverImage: edgenesis/franka-emika:v0.0.1
   instructions: |
-    get_coordinate:
-    get_status:
+    instructionSettings:
+      defaultTimeOut: 8
+    instructions:
+      get_coordinate:
+      get_status:
 # Telemetries are configurable health checks of the EdgeDevice
 # Developer/user can configure certain instructions to be used as health check
 # of the device. In this example, the device_health telemetry is mapped to

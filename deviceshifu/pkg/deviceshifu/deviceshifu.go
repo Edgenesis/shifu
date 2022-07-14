@@ -34,19 +34,19 @@ type DeviceShifuMetaData struct {
 type DeviceShifuHTTPHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *DeviceShifuInstruction
+	properties     *DeviceShifuInstructions
 }
 
 type DeviceShifuUSBHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *DeviceShifuInstruction
+	properties     *DeviceShifuInstructions
 }
 
 type DeviceShifuHTTPCommandlineHandlerMetadata struct {
 	edgeDeviceSpec  v1alpha1.EdgeDeviceSpec
 	instruction     string
-	properties      *DeviceShifuInstruction
+	properties      *DeviceShifuInstructions
 	driverExecution string
 }
 
@@ -61,6 +61,11 @@ const (
 	DEVICE_NAMESPACE_DEFAULT          string = "default"
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
+	DEVICE_INSTRUCTION_TIMEOUT        string = "timeout"
+)
+
+var (
+	instructionSettings *DeviceShifuInstructionSettings
 )
 
 // This function creates a new Device Shifu based on the configuration
@@ -103,7 +108,9 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			return nil, err
 		}
 
-		if edgeDevice.Spec.DefaultTimeout == nil || *edgeDevice.Spec.DefaultTimeout <= 0 {
+		instructionSettings = deviceShifuConfig.Instructions.InstructionSettings
+
+		if instructionSettings.DefaultTimeOut == nil || *instructionSettings.DefaultTimeOut <= 0 {
 			log.Fatalf("default Timeout must not be 0")
 			return nil, errors.New("defaultTimeout configuration error")
 		}
@@ -111,7 +118,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		// switch for different Shifu Protocols
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
-			for instruction, properties := range deviceShifuConfig.Instructions {
+			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
 				deviceShifuHTTPHandlerMetaData := &DeviceShifuHTTPHandlerMetaData{
 					edgeDevice.Spec,
 					instruction,
@@ -121,7 +128,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		case v1alpha1.ProtocolUSB:
-			for instruction, properties := range deviceShifuConfig.Instructions {
+			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
 				deviceShifuUSBHandlerMetaData := &DeviceShifuUSBHandlerMetaData{
 					edgeDevice.Spec,
 					instruction,
@@ -136,7 +143,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				return nil, fmt.Errorf("driverExecution cannot be empty")
 			}
 
-			for instruction, properties := range deviceShifuConfig.Instructions {
+			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
 				deviceShifuHTTPCommandlineHandlerMetaData := &DeviceShifuHTTPCommandlineHandlerMetadata{
 					edgeDevice.Spec,
 					instruction,
@@ -224,11 +231,12 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		var resp *http.Response
 		var httpErr, parseErr error
-		var timeout = *handlerEdgeDeviceSpec.DefaultTimeout
+		var timeout = *instructionSettings.DefaultTimeOut
+		var requestBody []byte
 		reqType := r.Method
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
-		timeoutStr := r.URL.Query().Get("timeout")
+		timeoutStr := r.URL.Query().Get(DEVICE_INSTRUCTION_TIMEOUT)
 		if timeoutStr != "" {
 			timeout, parseErr = strconv.Atoi(timeoutStr)
 			if parseErr != nil {
@@ -236,41 +244,25 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				log.Printf("parameter parsing error" + parseErr.Error())
 				return
 			}
-			r.URL.Query().Del("timeout")
+
+			r.URL.Query().Del(DEVICE_INSTRUCTION_TIMEOUT)
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
-		defer func() {
-			cancel()
-		}()
-
-		if reqType == http.MethodGet {
-			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
-
-			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpUri, nil)
-			if reqErr != nil {
-				http.Error(w, reqErr.Error(), http.StatusServiceUnavailable)
-				log.Printf("HTTP GET error" + reqErr.Error())
-				return
-			}
-
-			resp, httpErr = handlerHTTPClient.Do(req)
-			if httpErr != nil {
-				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-				log.Printf("HTTP GET error" + httpErr.Error())
-				return
-			}
-		} else if reqType == http.MethodPost {
-			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
-
-			requestBody, parseErr := io.ReadAll(r.Body)
+		switch reqType {
+		case http.MethodPost:
+			requestBody, parseErr = io.ReadAll(r.Body)
 			if parseErr != nil {
 				http.Error(w, "Error on parsing body", http.StatusBadRequest)
 				log.Printf("Error on parsing body" + parseErr.Error())
 				return
 			}
 
-			contentType := r.Header.Get("Content-type")
+			fallthrough
+		case http.MethodGet:
+			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+			defer cancel()
+
+			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
 
 			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpUri, bytes.NewBuffer(requestBody))
 			if reqErr != nil {
@@ -279,15 +271,16 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
-			req.Header.Set("Content-type", contentType)
-			resp, httpErr = handlerHTTPClient.Do(req)
+			copyHeader(req.Header, r.Header)
 
+			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
 				log.Printf("HTTP POST error" + httpErr.Error())
 				return
 			}
-		} else {
+
+		default:
 			http.Error(w, httpErr.Error(), http.StatusBadRequest)
 			log.Println("Request type " + reqType + " is not supported yet!")
 			return
@@ -421,9 +414,10 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 
 	address := *ds.edgeDevice.Spec.Address
 	instruction := *telemetryProperties.DeviceInstructionName
-	//resp, err := ds.restClient.Client.Get("http://" + address + "/" + instruction)
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(*ds.edgeDevice.Spec.DefaultTimeout)*time.Second)
+	timeout := *instructionSettings.DefaultTimeOut
+
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer func() {
 		cancel()
 	}()

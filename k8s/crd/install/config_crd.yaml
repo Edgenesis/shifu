@@ -44,8 +44,6 @@ spec:
                 additionalProperties:
                   type: string
                 type: object
-              defaultTimeout:
-                type: integer
               protocol:
                 description: Protocol specifies the EdgeDevice's communication protocol.
                 type: string
