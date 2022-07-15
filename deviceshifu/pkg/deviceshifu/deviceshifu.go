@@ -233,6 +233,8 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		var httpErr, parseErr error
 		var timeout = *instructionSettings.DefaultTimeoutSeconds
 		var requestBody []byte
+		var ctx context.Context
+		var cancel context.CancelFunc
 		reqType := r.Method
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
@@ -259,7 +261,11 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 			fallthrough
 		case http.MethodGet:
-			ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+			if timeout == 0 {
+				ctx, cancel = context.WithCancel(context.Background())
+			} else {
+				ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+			}
 			defer cancel()
 
 			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
