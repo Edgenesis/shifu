@@ -1,11 +1,9 @@
 package deviceshifuMQTT
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net/http"
 	"strings"
@@ -31,33 +29,10 @@ type DeviceShifuMetaData struct {
 	Namespace      string
 }
 
-type DeviceShifuHTTPHandlerMetaData struct {
-	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
-	instruction    string
-	properties     *DeviceShifuInstruction
-}
-
 type DeviceShifuMQTTHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	// instruction    string
 	// properties     *DeviceShifuInstruction
-}
-
-type DeviceShifuUSBHandlerMetaData struct {
-	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
-	instruction    string
-	properties     *DeviceShifuInstruction
-}
-
-type DeviceShifuHTTPCommandlineHandlerMetadata struct {
-	edgeDeviceSpec  v1alpha1.EdgeDeviceSpec
-	instruction     string
-	properties      *DeviceShifuInstruction
-	driverExecution string
-}
-
-type deviceCommandHandler interface {
-	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
 }
 
 const (
@@ -115,43 +90,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		}
 
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolHTTP:
-			for instruction, properties := range deviceShifuConfig.Instructions {
-				deviceShifuHTTPHandlerMetaData := &DeviceShifuHTTPHandlerMetaData{
-					edgeDevice.Spec,
-					instruction,
-					properties,
-				}
-				handler := DeviceCommandHandlerHTTP{client, deviceShifuHTTPHandlerMetaData}
-				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
-			}
-		case v1alpha1.ProtocolUSB:
-			for instruction, properties := range deviceShifuConfig.Instructions {
-				deviceShifuUSBHandlerMetaData := &DeviceShifuUSBHandlerMetaData{
-					edgeDevice.Spec,
-					instruction,
-					properties,
-				}
-
-				mux.HandleFunc("/"+instruction, deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData))
-			}
-		case v1alpha1.ProtocolHTTPCommandline:
-			driverExecution := deviceShifuConfig.driverProperties.DriverExecution
-			if driverExecution == "" {
-				return nil, fmt.Errorf("driverExecution cannot be empty")
-			}
-
-			for instruction, properties := range deviceShifuConfig.Instructions {
-				deviceShifuHTTPCommandlineHandlerMetaData := &DeviceShifuHTTPCommandlineHandlerMetadata{
-					edgeDevice.Spec,
-					instruction,
-					properties,
-					deviceShifuConfig.driverProperties.DriverExecution,
-				}
-
-				handler := DeviceCommandHandlerHTTPCommandline{client, deviceShifuHTTPCommandlineHandlerMetaData}
-				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
-			}
 		case v1alpha1.ProtocolMQTT:
 			mqttSetting := *edgeDevice.Spec.ProtocolSettings.MQTTSetting
 			var mqttServerAddress string
@@ -232,11 +170,6 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
 }
 
-type DeviceCommandHandlerHTTP struct {
-	client                         *rest.RESTClient
-	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
-}
-
 type DeviceCommandHandlerMQTT struct {
 	// client                         *rest.RESTClient
 	deviceShifuMQTTHandlerMetaData *DeviceShifuMQTTHandlerMetaData
@@ -289,73 +222,6 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 	}
 }
 
-func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		handlerProperties := handler.deviceShifuHTTPHandlerMetaData.properties
-		handlerInstruction := handler.deviceShifuHTTPHandlerMetaData.instruction
-		handlerEdgeDeviceSpec := handler.deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
-		handlerHTTPClient := handler.client.Client
-
-		if handlerProperties != nil {
-			// TODO: handle validation compile
-			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
-			}
-		}
-
-		var resp *http.Response
-		var httpErr error
-		reqType := r.Method
-
-		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
-
-		if reqType == http.MethodGet {
-			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
-
-			resp, httpErr = handlerHTTPClient.Get(httpUri)
-
-			if httpErr != nil {
-				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-				log.Printf("HTTP GET error" + httpErr.Error())
-				return
-			}
-		} else if reqType == http.MethodPost {
-			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
-
-			requestBody, parseErr := io.ReadAll(r.Body)
-			if parseErr != nil {
-				http.Error(w, "Error on parsing body", http.StatusBadRequest)
-				log.Printf("Error on parsing body" + parseErr.Error())
-				return
-			}
-
-			contentType := r.Header.Get("Content-type")
-			resp, httpErr = handlerHTTPClient.Post(httpUri, contentType, bytes.NewBuffer(requestBody))
-
-			if httpErr != nil {
-				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-				log.Printf("HTTP POST error" + httpErr.Error())
-				return
-			}
-		} else {
-			http.Error(w, httpErr.Error(), http.StatusBadRequest)
-			log.Println("Request type " + reqType + " is not supported yet!")
-			return
-		}
-
-		if resp != nil {
-			copyHeader(w.Header(), resp.Header)
-			w.WriteHeader(resp.StatusCode)
-			io.Copy(w, resp.Body)
-			return
-		}
-
-		// TODO: For now, just write tht instruction to the response
-		log.Println("resp is nil")
-		w.Write([]byte(handlerInstruction))
-	}
-}
-
 // HTTP header type:
 // type Header map[string][]string
 func copyHeader(dst, src http.Header) {
@@ -363,12 +229,6 @@ func copyHeader(dst, src http.Header) {
 		for _, value := range headerValueList {
 			dst.Add(header, value)
 		}
-	}
-}
-
-func deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData *DeviceShifuUSBHandlerMetaData) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: handle commands for USB devices
 	}
 }
 
@@ -405,51 +265,6 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 		}
 	}
 	return driverExecution + " --" + instruction + requestStr + flagsStr
-}
-
-type DeviceCommandHandlerHTTPCommandline struct {
-	client                                    *rest.RESTClient
-	deviceShifuHTTPCommandlineHandlerMetadata *DeviceShifuHTTPCommandlineHandlerMetadata
-}
-
-func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		driverExecution := handler.deviceShifuHTTPCommandlineHandlerMetadata.driverExecution
-		handlerProperties := handler.deviceShifuHTTPCommandlineHandlerMetadata.properties
-		handlerInstruction := handler.deviceShifuHTTPCommandlineHandlerMetadata.instruction
-		handlerEdgeDeviceSpec := handler.deviceShifuHTTPCommandlineHandlerMetadata.edgeDeviceSpec
-		handlerHTTPClient := handler.client.Client
-
-		if handlerProperties != nil {
-			// TODO: handle validation compile
-			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
-			}
-		}
-
-		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
-
-		commandString := createHTTPCommandlineRequestString(r, driverExecution, handlerInstruction)
-		postAddressString := "http://" + *handlerEdgeDeviceSpec.Address + "/post"
-		log.Printf("posting '%v' to '%v'", commandString, postAddressString)
-		resp, err := handlerHTTPClient.Post(postAddressString, "text/plain", bytes.NewBuffer([]byte(commandString)))
-
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			log.Printf("HTTP error" + err.Error())
-		}
-
-		if resp != nil {
-			copyHeader(w.Header(), resp.Header)
-			w.WriteHeader(resp.StatusCode)
-			io.Copy(w, resp.Body)
-			return
-		}
-
-		// TODO: For now, just write tht instruction to the response
-		log.Println("resp is nil")
-		w.Write([]byte(handlerInstruction))
-	}
 }
 
 func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {

@@ -6,7 +6,7 @@ metadata:
 spec:
   sku: "testMQTT" 
   connection: Ethernet
-  address: 192.168.62.231:1883 # change this accordingly
+  address: 172.19.162.69:1883 # change this accordingly
   protocol: MQTT
   protocolSettings:
     MQTTSetting:
