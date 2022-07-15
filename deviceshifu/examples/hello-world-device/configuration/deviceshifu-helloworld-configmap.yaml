@@ -11,7 +11,7 @@ data:
 #    available instructions
   instructions: |
     instructionSettings:
-      defaultTimeOut: 8
+      defaultTimeoutSeconds: 8
     instructions:
       hello:
 #    telemetry retrieval methods

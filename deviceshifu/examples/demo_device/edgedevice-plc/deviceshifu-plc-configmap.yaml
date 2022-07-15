@@ -9,7 +9,7 @@ data:
     driverImage: edgenesis/plc:v0.0.1
   instructions: |
     instructionSettings:
-      defaultTimeOut: 8
+      defaultTimeoutSeconds: 8
     instructions:
       sendcontent:
       getcontent:

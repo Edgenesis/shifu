@@ -110,8 +110,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 		instructionSettings = deviceShifuConfig.Instructions.InstructionSettings
 
-		if instructionSettings.DefaultTimeOut == nil || *instructionSettings.DefaultTimeOut <= 0 {
-			log.Fatalf("default Timeout must not be 0")
+		if instructionSettings.DefaultTimeoutSeconds == nil || *instructionSettings.DefaultTimeoutSeconds < 0 {
+			log.Fatalf("defaultTimeoutSeconds must not be negative number")
 			return nil, errors.New("defaultTimeout configuration error")
 		}
 
@@ -231,7 +231,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		var resp *http.Response
 		var httpErr, parseErr error
-		var timeout = *instructionSettings.DefaultTimeOut
+		var timeout = *instructionSettings.DefaultTimeoutSeconds
 		var requestBody []byte
 		reqType := r.Method
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
@@ -263,7 +263,6 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			defer cancel()
 
 			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
-
 			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpUri, bytes.NewBuffer(requestBody))
 			if reqErr != nil {
 				http.Error(w, reqErr.Error(), http.StatusBadRequest)
@@ -279,7 +278,6 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				log.Printf("HTTP POST error" + httpErr.Error())
 				return
 			}
-
 		default:
 			http.Error(w, httpErr.Error(), http.StatusBadRequest)
 			log.Println("Request type " + reqType + " is not supported yet!")
@@ -414,9 +412,7 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 
 	address := *ds.edgeDevice.Spec.Address
 	instruction := *telemetryProperties.DeviceInstructionName
-
-	timeout := *instructionSettings.DefaultTimeOut
-
+	timeout := *instructionSettings.DefaultTimeoutSeconds
 	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 	defer func() {
 		cancel()

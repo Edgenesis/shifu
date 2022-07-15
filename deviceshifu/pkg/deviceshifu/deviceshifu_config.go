@@ -33,7 +33,7 @@ type DeviceShifuInstruction struct {
 }
 
 type DeviceShifuInstructionSettings struct {
-	DefaultTimeOut *int `yaml:"defaultTimeOut"`
+	DefaultTimeoutSeconds *int `yaml:"defaultTimeoutSeconds"`
 }
 
 type DeviceShifuInstructions struct {
