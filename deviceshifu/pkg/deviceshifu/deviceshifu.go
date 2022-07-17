@@ -55,14 +55,14 @@ type deviceCommandHandler interface {
 }
 
 const (
-	DEVICE_IS_HEALTHY_STR             string = "Device is healthy"
-	DEVICE_CONFIGMAP_FOLDER_PATH      string = "/etc/edgedevice/config"
-	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR string = "NULL"
-	DEVICE_NAMESPACE_DEFAULT          string = "default"
-	DEVICE_DEFAULT_PORT_STR           string = ":8080"
-	KUBERNETES_CONFIG_DEFAULT         string = ""
-	DEVICE_INSTRUCTION_TIMEOUT        string = "timeout"
-	DEVICE_DEFAULT_GLOBAL_TIMEOUT     int    = 3
+	DEVICE_IS_HEALTHY_STR                    string = "Device is healthy"
+	DEVICE_CONFIGMAP_FOLDER_PATH             string = "/etc/edgedevice/config"
+	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR        string = "NULL"
+	DEVICE_NAMESPACE_DEFAULT                 string = "default"
+	DEVICE_DEFAULT_PORT_STR                  string = ":8080"
+	KUBERNETES_CONFIG_DEFAULT                string = ""
+	DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR string = "timeout"
+	DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS    int    = 3
 )
 
 var (
@@ -116,9 +116,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		}
 
 		if instructionSettings.DefaultTimeoutSeconds == nil {
-			var defaultTimeoutSeconds = new(int)
-			*defaultTimeoutSeconds = DEVICE_DEFAULT_GLOBAL_TIMEOUT
-			instructionSettings.DefaultTimeoutSeconds = defaultTimeoutSeconds
+			var defaultTimeoutSeconds = DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS
+			instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
 		} else if *instructionSettings.DefaultTimeoutSeconds < 0 {
 			log.Fatalf("defaultTimeoutSeconds must not be negative number")
 			return nil, errors.New("defaultTimeout configuration error")
@@ -250,16 +249,16 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
-		timeoutStr := r.URL.Query().Get(DEVICE_INSTRUCTION_TIMEOUT)
+		timeoutStr := r.URL.Query().Get(DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR)
 		if timeoutStr != "" {
 			timeout, parseErr = strconv.Atoi(timeoutStr)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
-				log.Printf("parameter parsing error" + parseErr.Error())
+				log.Printf("timeout URI parsing error" + parseErr.Error())
 				return
 			}
 
-			r.URL.Query().Del(DEVICE_INSTRUCTION_TIMEOUT)
+			r.URL.Query().Del(DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR)
 		}
 
 		switch reqType {
