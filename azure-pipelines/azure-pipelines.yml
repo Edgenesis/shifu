@@ -34,7 +34,7 @@ variables:
   tag: 'v0.0.1'
 
 pool:
-   vmImage: 'ubuntu-latest'
+    name: Default
 
 stages:
 - stage: go_test_and_build
