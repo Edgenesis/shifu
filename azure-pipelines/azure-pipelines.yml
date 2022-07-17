@@ -139,7 +139,7 @@ stages:
       - task: DockerInstaller@0
         displayName: "Docker Installer"
         inputs:
-          dockerVersion: 20.10.9
+          dockerVersion: 20.10.17
           releaseType: stable
       - task: KubectlInstaller@0
         inputs:
