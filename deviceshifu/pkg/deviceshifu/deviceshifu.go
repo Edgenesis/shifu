@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"k8s.io/client-go/rest"
 )
 
@@ -62,6 +62,7 @@ const (
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 	DEVICE_INSTRUCTION_TIMEOUT        string = "timeout"
+	DEVICE_DEFAULT_GLOBAL_TIMEOUT     int    = 3
 )
 
 var (
@@ -110,7 +111,15 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 		instructionSettings = deviceShifuConfig.Instructions.InstructionSettings
 
-		if instructionSettings.DefaultTimeoutSeconds == nil || *instructionSettings.DefaultTimeoutSeconds < 0 {
+		if instructionSettings == nil {
+			instructionSettings = &DeviceShifuInstructionSettings{}
+		}
+
+		if instructionSettings.DefaultTimeoutSeconds == nil {
+			var defaultTimeoutSeconds = new(int)
+			*defaultTimeoutSeconds = DEVICE_DEFAULT_GLOBAL_TIMEOUT
+			instructionSettings.DefaultTimeoutSeconds = defaultTimeoutSeconds
+		} else if *instructionSettings.DefaultTimeoutSeconds < 0 {
 			log.Fatalf("defaultTimeoutSeconds must not be negative number")
 			return nil, errors.New("defaultTimeout configuration error")
 		}
@@ -229,13 +238,16 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 		}
 
-		var resp *http.Response
-		var httpErr, parseErr error
-		var timeout = *instructionSettings.DefaultTimeoutSeconds
-		var requestBody []byte
-		var ctx context.Context
-		var cancel context.CancelFunc
-		reqType := r.Method
+		var (
+			resp              *http.Response
+			httpErr, parseErr error
+			requestBody       []byte
+			ctx               context.Context
+			cancel            context.CancelFunc
+			timeout           = *instructionSettings.DefaultTimeoutSeconds
+			reqType           = r.Method
+		)
+
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
 		timeoutStr := r.URL.Query().Get(DEVICE_INSTRUCTION_TIMEOUT)
@@ -266,8 +278,8 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			} else {
 				ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
 			}
-			defer cancel()
 
+			defer cancel()
 			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
 			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpUri, bytes.NewBuffer(requestBody))
 			if reqErr != nil {
@@ -277,7 +289,6 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 
 			copyHeader(req.Header, r.Header)
-
 			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)

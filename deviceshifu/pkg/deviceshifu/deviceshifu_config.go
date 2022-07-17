@@ -29,11 +29,11 @@ type DeviceShifuDriverProperties struct {
 
 type DeviceShifuInstruction struct {
 	Instructions        map[string]*DeviceShifuInstructions `yaml:"instructions"`
-	InstructionSettings *DeviceShifuInstructionSettings     `yaml:"instructionSettings"`
+	InstructionSettings *DeviceShifuInstructionSettings     `yaml:"instructionSettings,omitempty"`
 }
 
 type DeviceShifuInstructionSettings struct {
-	DefaultTimeoutSeconds *int `yaml:"defaultTimeoutSeconds"`
+	DefaultTimeoutSeconds *int `yaml:"defaultTimeoutSeconds,omitempty"`
 }
 
 type DeviceShifuInstructions struct {
