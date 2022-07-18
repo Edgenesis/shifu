@@ -10,7 +10,10 @@ data:
     driverImage: helloworld-device:v0.0.1
 #    available instructions
   instructions: |
-    hello:
+    instructionSettings:
+      defaultTimeoutSeconds: 8
+    instructions:
+      hello:
 #    telemetry retrieval methods
 #    in this example, a device_health telemetry is collected by calling hello instruction every 1 second
   telemetries: |
@@ -24,4 +27,3 @@ data:
           instruction: hello
           initialDelayMs: 1000
           intervalMs: 1000
-

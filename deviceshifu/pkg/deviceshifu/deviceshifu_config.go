@@ -4,9 +4,8 @@ import (
 	"context"
 	"errors"
 	"log"
-	"time"
 
-	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -18,7 +17,7 @@ import (
 
 type DeviceShifuConfig struct {
 	driverProperties DeviceShifuDriverProperties
-	Instructions     map[string]*DeviceShifuInstruction
+	Instructions     DeviceShifuInstruction
 	Telemetries      *DeviceShifuTelemetries
 }
 
@@ -29,6 +28,15 @@ type DeviceShifuDriverProperties struct {
 }
 
 type DeviceShifuInstruction struct {
+	Instructions        map[string]*DeviceShifuInstructions `yaml:"instructions"`
+	InstructionSettings *DeviceShifuInstructionSettings     `yaml:"instructionSettings,omitempty"`
+}
+
+type DeviceShifuInstructionSettings struct {
+	DefaultTimeoutSeconds *int `yaml:"defaultTimeoutSeconds,omitempty"`
+}
+
+type DeviceShifuInstructions struct {
 	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
 }
 
@@ -153,7 +161,6 @@ func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	crdConfig.APIPath = "/apis"
 	crdConfig.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
-	crdConfig.Timeout = 3 * time.Second
 	exampleRestClient, err := rest.UnversionedRESTClientFor(crdConfig)
 	if err != nil {
 		return nil, err

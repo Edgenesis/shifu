@@ -42,7 +42,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		"python mock_driver.py",
 	}
 
-	var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
+	var mockDeviceInstructions = map[string]*DeviceShifuInstructions{
 		"get_reading": nil,
 		"get_status":  nil,
 		"set_reading": {
@@ -89,8 +89,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	if !eq {
 		t.Errorf("DriverProperties mismatch")
 	}
-
-	eq = reflect.DeepEqual(mockDeviceInstructions, mockdsc.Instructions)
+	eq = reflect.DeepEqual(mockDeviceInstructions, mockdsc.Instructions.Instructions)
 	if !eq {
 		t.Errorf("Instruction mismatch")
 	}

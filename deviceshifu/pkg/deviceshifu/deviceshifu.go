@@ -8,10 +8,11 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
-	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"k8s.io/client-go/rest"
 )
 
@@ -33,13 +34,13 @@ type DeviceShifuMetaData struct {
 type DeviceShifuHTTPHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *DeviceShifuInstruction
+	properties     *DeviceShifuInstructions
 }
 
 type DeviceShifuHTTPCommandlineHandlerMetadata struct {
 	edgeDeviceSpec  v1alpha1.EdgeDeviceSpec
 	instruction     string
-	properties      *DeviceShifuInstruction
+	properties      *DeviceShifuInstructions
 	driverExecution string
 }
 
@@ -48,15 +49,21 @@ type deviceCommandHandler interface {
 }
 
 const (
-	DEVICE_IS_HEALTHY_STR               string = "Device is healthy"
-	DEVICE_CONFIGMAP_FOLDER_PATH        string = "/etc/edgedevice/config"
-	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR   string = "NULL"
-	DEVICE_NAMESPACE_DEFAULT            string = "default"
-	DEVICE_DEFAULT_PORT_STR             string = ":8080"
-	KUBERNETES_CONFIG_DEFAULT           string = ""
+	DEVICE_IS_HEALTHY_STR                    string = "Device is healthy"
+	DEVICE_CONFIGMAP_FOLDER_PATH             string = "/etc/edgedevice/config"
+	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR        string = "NULL"
+	DEVICE_NAMESPACE_DEFAULT                 string = "default"
+	DEVICE_DEFAULT_PORT_STR                  string = ":8080"
+	KUBERNETES_CONFIG_DEFAULT                string = ""
+	DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR string = "timeout"
+	DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS    int    = 3
 	DEVICE_TELEMETRY_TIMEOUT_MS         int64  = 3000
 	DEVICE_TELEMETRY_UPDATE_INTERVAL_MS int64  = 3000
 	DEVICE_TELEMETRY_INITIAL_DELAY_MS   int64  = 3000
+)
+
+var (
+	instructionSettings *DeviceShifuInstructionSettings
 )
 
 // This function creates a new Device Shifu based on the configuration
@@ -99,10 +106,23 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			return nil, err
 		}
 
+		instructionSettings = deviceShifuConfig.Instructions.InstructionSettings
+		if instructionSettings == nil {
+			instructionSettings = &DeviceShifuInstructionSettings{}
+		}
+
+		if instructionSettings.DefaultTimeoutSeconds == nil {
+			var defaultTimeoutSeconds = DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS
+			instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
+		} else if *instructionSettings.DefaultTimeoutSeconds < 0 {
+			log.Fatalf("defaultTimeoutSeconds must not be negative number")
+			return nil, errors.New("defaultTimeout configuration error")
+		}
+
 		// switch for different Shifu Protocols
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
-			for instruction, properties := range deviceShifuConfig.Instructions {
+			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
 				deviceShifuHTTPHandlerMetaData := &DeviceShifuHTTPHandlerMetaData{
 					edgeDevice.Spec,
 					instruction,
@@ -117,7 +137,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				return nil, fmt.Errorf("driverExecution cannot be empty")
 			}
 
-			for instruction, properties := range deviceShifuConfig.Instructions {
+			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
 				deviceShifuHTTPCommandlineHandlerMetaData := &DeviceShifuHTTPCommandlineHandlerMetadata{
 					edgeDevice.Spec,
 					instruction,
@@ -210,41 +230,64 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 		}
 
-		var resp *http.Response
-		var httpErr error
-		reqType := r.Method
+		var (
+			resp              *http.Response
+			httpErr, parseErr error
+			requestBody       []byte
+			ctx               context.Context
+			cancel            context.CancelFunc
+			timeout           = *instructionSettings.DefaultTimeoutSeconds
+			reqType           = r.Method
+		)
 
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
-		if reqType == http.MethodGet {
-			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
-
-			resp, httpErr = handlerHTTPClient.Get(httpUri)
-
-			if httpErr != nil {
-				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-				log.Printf("HTTP GET error" + httpErr.Error())
+		timeoutStr := r.URL.Query().Get(DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR)
+		if timeoutStr != "" {
+			timeout, parseErr = strconv.Atoi(timeoutStr)
+			if parseErr != nil {
+				http.Error(w, parseErr.Error(), http.StatusBadRequest)
+				log.Printf("timeout URI parsing error" + parseErr.Error())
 				return
 			}
-		} else if reqType == http.MethodPost {
-			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
 
-			requestBody, parseErr := io.ReadAll(r.Body)
+			r.URL.Query().Del(DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR)
+		}
+
+		switch reqType {
+		case http.MethodPost:
+			requestBody, parseErr = io.ReadAll(r.Body)
 			if parseErr != nil {
 				http.Error(w, "Error on parsing body", http.StatusBadRequest)
 				log.Printf("Error on parsing body" + parseErr.Error())
 				return
 			}
 
-			contentType := r.Header.Get("Content-type")
-			resp, httpErr = handlerHTTPClient.Post(httpUri, contentType, bytes.NewBuffer(requestBody))
+			fallthrough
+		case http.MethodGet:
+			if timeout == 0 {
+				ctx, cancel = context.WithCancel(context.Background())
+			} else {
+				ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+			}
 
+			defer cancel()
+			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
+			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpUri, bytes.NewBuffer(requestBody))
+			if reqErr != nil {
+				http.Error(w, reqErr.Error(), http.StatusBadRequest)
+				log.Printf("HTTP GET error" + reqErr.Error())
+				return
+			}
+
+			copyHeader(req.Header, r.Header)
+			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
 				log.Printf("HTTP POST error" + httpErr.Error())
 				return
 			}
-		} else {
+		default:
 			http.Error(w, httpErr.Error(), http.StatusBadRequest)
 			log.Println("Request type " + reqType + " is not supported yet!")
 			return

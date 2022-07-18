@@ -8,8 +8,11 @@ data:
     driverSku: Thermometer
     driverImage: edgenesis/thermometer:v0.0.1
   instructions: |
-    get_status:
-    read_value:
+    instructionSettings:
+      defaultTimeoutSeconds: 8
+    instructions:
+      get_status:
+      read_value:
   telemetries: |
     telemetries:
       device_health:
