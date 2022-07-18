@@ -1,6 +1,6 @@
 module github.com/edgenesis/shifu
 
-go 1.17
+go 1.18
 
 replace edgenesis.io/shifu/k8s/crd => ./k8s/crd
 
@@ -12,8 +12,8 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.1
 	github.com/gopcua/opcua v0.3.5
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/apimachinery v0.24.2
-	k8s.io/client-go v0.24.2
+	k8s.io/apimachinery v0.24.3
+	k8s.io/client-go v0.24.3
 	knative.dev/pkg v0.0.0-20210915055909-d8349b0909c4
 )
 
@@ -42,7 +42,7 @@ require (
 	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.24.2 // indirect
+	k8s.io/api v0.24.3 // indirect
 	k8s.io/klog/v2 v2.60.1 // indirect
 	k8s.io/utils v0.0.0-20220210201930-3a6ce19ff2f9 // indirect
 	sigs.k8s.io/controller-runtime v0.12.3 // indirect
