@@ -19,7 +19,7 @@ import (
 type DeviceShifuConfig struct {
 	driverProperties DeviceShifuDriverProperties
 	Instructions     map[string]*DeviceShifuInstruction
-	Telemetries      map[string]*DeviceShifuTelemetry
+	Telemetries      *DeviceShifuTelemetries
 }
 
 type DeviceShifuDriverProperties struct {
@@ -49,8 +49,17 @@ type DeviceShifuMQTTReturnBody struct {
 	MQTTTimestamp string `json:"mqtt_receive_timestamp"`
 }
 
+type DeviceShifuTelemetrySettings struct {
+	DeviceShifuTelemetryUpdateIntervalMiliseconds *int64 `yaml:"telemetryUpdateIntervalInMiliseconds,omitempty"`
+}
+
 type DeviceShifuTelemetry struct {
 	DeviceShifuTelemetryProperties DeviceShifuTelemetryProperties `yaml:"properties,omitempty"`
+}
+
+type DeviceShifuTelemetries struct {
+	DeviceShifuTelemetrySettings *DeviceShifuTelemetrySettings    `yaml:"telemetrySettings,omitempty"`
+	DeviceShifuTelemetries       map[string]*DeviceShifuTelemetry `yaml:"telemetries,omitempty"`
 }
 
 type EdgeDeviceConfig struct {

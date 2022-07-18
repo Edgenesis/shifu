@@ -275,37 +275,30 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 // TODO: update configs
 // TODO: update status based on telemetry
 
-func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryProperties DeviceShifuTelemetryProperties) (bool, error) {
+func (ds *DeviceShifu) collectMQTTTelemetry(telemetry string, settings DeviceShifuTelemetrySettings) (bool, error) {
 	if ds.edgeDevice.Spec.Address == nil {
 		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
 	}
 
-	if telemetryProperties.DeviceInstructionName == nil {
+	if settings.DeviceShifuTelemetryUpdateIntervalMiliseconds == nil {
 		return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.Name, telemetry)
 	}
 
-	address := *ds.edgeDevice.Spec.Address
-	instruction := *telemetryProperties.DeviceInstructionName
-	resp, err := ds.restClient.Client.Get("http://" + address + "/" + instruction)
-	if err != nil {
-		log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
-		return false, err
-	}
+	nowTime := time.Now()
 
-	if resp != nil {
-		if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
-			return true, nil
-		}
+	if nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Seconds() < float64(*settings.DeviceShifuTelemetryUpdateIntervalMiliseconds) {
+		return true, nil
 	}
 
 	return false, nil
 }
 
-func (ds *DeviceShifu) collectHTTPTelemetries() error {
+func (ds *DeviceShifu) collectMQTTTelemetries() error {
 	telemetryOK := true
-	telemetries := ds.deviceShifuConfig.Telemetries
-	for telemetry, telemetryProperties := range telemetries {
-		status, err := ds.collectHTTPTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
+	telemetries := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetries
+	telemetriesSettings := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
+	for telemetry := range telemetries {
+		status, err := ds.collectMQTTTelemetry(telemetry, *telemetriesSettings)
 		log.Printf("Status is: %v", status)
 		if err != nil {
 			log.Printf("Error is: %v", err.Error())
@@ -333,7 +326,7 @@ func (ds *DeviceShifu) telemetryCollection() error {
 	if ds.edgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
-			ds.collectHTTPTelemetries()
+			ds.collectMQTTTelemetries()
 		default:
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
 			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
