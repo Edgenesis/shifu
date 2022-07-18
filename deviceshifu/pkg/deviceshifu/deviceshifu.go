@@ -57,9 +57,9 @@ const (
 	KUBERNETES_CONFIG_DEFAULT                string = ""
 	DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR string = "timeout"
 	DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS    int    = 3
-	DEVICE_TELEMETRY_TIMEOUT_MS         int64  = 3000
-	DEVICE_TELEMETRY_UPDATE_INTERVAL_MS int64  = 3000
-	DEVICE_TELEMETRY_INITIAL_DELAY_MS   int64  = 3000
+	DEVICE_TELEMETRY_TIMEOUT_MS              int64  = 3000
+	DEVICE_TELEMETRY_UPDATE_INTERVAL_MS      int64  = 3000
+	DEVICE_TELEMETRY_INITIAL_DELAY_MS        int64  = 3000
 )
 
 var (
@@ -425,7 +425,6 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 	}
 
 	defer cancel()
-
 	address := *ds.edgeDevice.Spec.Address
 	instruction := *telemetryProperties.DeviceInstructionName
 	req, ReqErr := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+address+"/"+instruction, nil)
@@ -549,10 +548,10 @@ func (ds *DeviceShifu) CheckConfig() error {
 	var dsTelemetrySettings = ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
 
 	if initial := dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds; initial == nil {
-		var telemetryInitialDelayInMilliseconds = DEVICE_TELEMETRY_UPDATE_INTERVAL_MS
+		var telemetryInitialDelayInMilliseconds = DEVICE_TELEMETRY_INITIAL_DELAY_MS
 		dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds = &telemetryInitialDelayInMilliseconds
 	} else if *initial < 0 {
-		return errors.New("error deviceShifuTelemetryTimeout mustn't be negative number")
+		return errors.New("error deviceShifuTelemetryInitialDelay mustn't be negative number")
 	}
 
 	if timeout := dsTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds; timeout == nil {
@@ -566,7 +565,7 @@ func (ds *DeviceShifu) CheckConfig() error {
 		var telemetryUpdateIntervalInMilliseconds = DEVICE_TELEMETRY_UPDATE_INTERVAL_MS
 		dsTelemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = &telemetryUpdateIntervalInMilliseconds
 	} else if *interval < 0 {
-		return errors.New("error deviceShifuTelemetryTimeout mustn't be negative number")
+		return errors.New("error deviceShifuTelemetryInterval mustn't be negative number")
 	}
 
 	return nil
