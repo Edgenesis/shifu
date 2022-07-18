@@ -104,7 +104,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		}
 
 		instructionSettings = deviceShifuConfig.Instructions.InstructionSettings
-
 		if instructionSettings == nil {
 			instructionSettings = &DeviceShifuInstructionSettings{}
 		}
