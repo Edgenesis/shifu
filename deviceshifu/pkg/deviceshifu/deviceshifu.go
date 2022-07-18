@@ -37,12 +37,6 @@ type DeviceShifuHTTPHandlerMetaData struct {
 	properties     *DeviceShifuInstructions
 }
 
-type DeviceShifuUSBHandlerMetaData struct {
-	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
-	instruction    string
-	properties     *DeviceShifuInstructions
-}
-
 type DeviceShifuHTTPCommandlineHandlerMetadata struct {
 	edgeDeviceSpec  v1alpha1.EdgeDeviceSpec
 	instruction     string
@@ -134,16 +128,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				}
 				handler := DeviceCommandHandlerHTTP{client, deviceShifuHTTPHandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
-			}
-		case v1alpha1.ProtocolUSB:
-			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
-				deviceShifuUSBHandlerMetaData := &DeviceShifuUSBHandlerMetaData{
-					edgeDevice.Spec,
-					instruction,
-					properties,
-				}
-
-				mux.HandleFunc("/"+instruction, deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData))
 			}
 		case v1alpha1.ProtocolHTTPCommandline:
 			driverExecution := deviceShifuConfig.driverProperties.DriverExecution
@@ -320,12 +304,6 @@ func copyHeader(dst, src http.Header) {
 		for _, value := range headerValueList {
 			dst.Add(header, value)
 		}
-	}
-}
-
-func deviceCommandHandlerUSB(deviceShifuUSBHandlerMetaData *DeviceShifuUSBHandlerMetaData) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		// TODO: handle commands for USB devices
 	}
 }
 
