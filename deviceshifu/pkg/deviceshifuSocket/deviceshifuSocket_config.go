@@ -18,7 +18,7 @@ import (
 
 type DeviceShifuConfig struct {
 	driverProperties DeviceShifuDriverProperties
-	Instructions     map[string]*DeviceShifuInstruction
+	Instructions     DeviceShifuInstruction
 	Telemetries      *DeviceShifuTelemetries
 }
 

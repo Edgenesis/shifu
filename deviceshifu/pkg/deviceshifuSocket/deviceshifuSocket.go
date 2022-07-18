@@ -34,7 +34,7 @@ type DeviceShifuMetaData struct {
 type DeviceShifuSocketHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *DeviceShifuInstruction
+	properties     *DeviceShifuInstructions
 	connection     *net.Conn
 }
 
@@ -133,7 +133,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			}
 
 			log.Printf("Connected to '%v'\n", *edgeDevice.Spec.Address)
-			for instruction, properties := range deviceShifuConfig.Instructions {
+			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
 				deviceShifuSocketHandlerMetaData := &DeviceShifuSocketHandlerMetaData{
 					edgeDevice.Spec,
 					instruction,
