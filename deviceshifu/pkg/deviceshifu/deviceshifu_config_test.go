@@ -95,7 +95,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		t.Errorf("Instruction mismatch")
 	}
 
-	eq = reflect.DeepEqual(mockDeviceTelemetries, mockdsc.Telemetries)
+	eq = reflect.DeepEqual(mockDeviceTelemetries, mockdsc.Telemetries.DeviceShifuTelemetries)
 	if !eq {
 		t.Errorf("Telemetries mismatch")
 	}
