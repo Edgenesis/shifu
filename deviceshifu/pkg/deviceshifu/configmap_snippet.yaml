@@ -4,15 +4,18 @@ data:
     driverImage: edgenesis/mockdevice:v0.0.1
     driverExecution: python mock_driver.py
   instructions: |
-    get_reading:
-    get_status:
-    set_reading:
-      argumentPropertyList:
-      - valueType: "Int32"
-        readWrite: "W"
-        defaultValue: null
-    start:
-    stop:
+    instructionSetting:
+      defaultTimeoutSeconds:4
+    instructions:
+      get_reading:
+      get_status:
+      set_reading:
+        argumentPropertyList:
+        - valueType: "Int32"
+          readWrite: "W"
+          defaultValue: null
+      start:
+      stop:
   telemetries: |
     device_health:
       properties:
