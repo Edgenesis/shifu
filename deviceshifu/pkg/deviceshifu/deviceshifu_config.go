@@ -19,7 +19,7 @@ import (
 type DeviceShifuConfig struct {
 	driverProperties DeviceShifuDriverProperties
 	Instructions     map[string]*DeviceShifuInstruction
-	Telemetries      map[string]*DeviceShifuTelemetry
+	Telemetries      *DeviceShifuTelemetries
 }
 
 type DeviceShifuDriverProperties struct {
@@ -42,6 +42,17 @@ type DeviceShifuTelemetryProperties struct {
 	DeviceInstructionName *string `yaml:"instruction"`
 	InitialDelayMs        *int    `yaml:"initialDelayMs,omitempty"`
 	IntervalMs            *int    `yaml:"intervalMs,omitempty"`
+}
+
+type DeviceShifuTelemetrySettings struct {
+	DeviceShifuTelemetryUpdateIntervalInMilliseconds *int64 `yaml:"telemetryUpdateIntervalInMilliseconds,omitempty"`
+	DeviceShifuTelemetryTimeoutInMilliseconds        *int64 `yaml:"telemetryTimeoutInMilliseconds,omitempty"`
+	DeviceShifuTelemetryInitialDelayInMilliseconds   *int64 `yaml:"telemetryInitialDelayInMilliseconds,omitempty"`
+}
+
+type DeviceShifuTelemetries struct {
+	DeviceShifuTelemetrySettings *DeviceShifuTelemetrySettings    `yaml:"telemetrySettings,omitempty"`
+	DeviceShifuTelemetries       map[string]*DeviceShifuTelemetry `yaml:"telemetries,omitempty"`
 }
 
 type DeviceShifuTelemetry struct {

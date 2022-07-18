@@ -17,8 +17,9 @@ data:
 # of the device. In this example, the device_health telemetry is mapped to
 # "get_status" instruction, executed every 1000 ms
   telemetries: |
-    device_health:
-      properties:
-        instruction: get_status
-        initialDelayMs: 1000
-        intervalMs: 1000
+    telemetries:
+      device_health:
+        properties:
+          instruction: get_status
+          initialDelayMs: 1000
+          intervalMs: 1000

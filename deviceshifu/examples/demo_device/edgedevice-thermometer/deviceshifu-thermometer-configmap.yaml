@@ -11,8 +11,9 @@ data:
     get_status:
     read_value:
   telemetries: |
-    device_health:
-      properties:
-        instruction: get_status
-        initialDelayMs: 1000
-        intervalMs: 1000
+    telemetries:
+      device_health:
+        properties:
+          instruction: get_status
+          initialDelayMs: 1000
+          intervalMs: 1000

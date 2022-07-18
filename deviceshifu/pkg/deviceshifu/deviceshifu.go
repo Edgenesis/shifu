@@ -3,6 +3,7 @@ package deviceshifu
 import (
 	"bytes"
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -47,12 +48,15 @@ type deviceCommandHandler interface {
 }
 
 const (
-	DEVICE_IS_HEALTHY_STR             string = "Device is healthy"
-	DEVICE_CONFIGMAP_FOLDER_PATH      string = "/etc/edgedevice/config"
-	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR string = "NULL"
-	DEVICE_NAMESPACE_DEFAULT          string = "default"
-	DEVICE_DEFAULT_PORT_STR           string = ":8080"
-	KUBERNETES_CONFIG_DEFAULT         string = ""
+	DEVICE_IS_HEALTHY_STR               string = "Device is healthy"
+	DEVICE_CONFIGMAP_FOLDER_PATH        string = "/etc/edgedevice/config"
+	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR   string = "NULL"
+	DEVICE_NAMESPACE_DEFAULT            string = "default"
+	DEVICE_DEFAULT_PORT_STR             string = ":8080"
+	KUBERNETES_CONFIG_DEFAULT           string = ""
+	DEVICE_TELEMETRY_TIMEOUT_MS         int64  = 3000
+	DEVICE_TELEMETRY_UPDATE_INTERVAL_MS int64  = 3000
+	DEVICE_TELEMETRY_INITIAL_DELAY_MS   int64  = 3000
 )
 
 // This function creates a new Device Shifu based on the configuration
@@ -124,6 +128,9 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				handler := DeviceCommandHandlerHTTPCommandline{client, deviceShifuHTTPCommandlineHandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
+		default:
+			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
+			return nil, errors.New("wrong protocol not supported in deviceShifu")
 		}
 	}
 
@@ -138,6 +145,10 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		deviceShifuConfig: deviceShifuConfig,
 		edgeDevice:        edgeDevice,
 		restClient:        client,
+	}
+	if err := ds.CheckConfig(); err != nil {
+		log.Println(err)
+		return ds, err
 	}
 
 	ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
@@ -359,9 +370,28 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 		return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.Name, telemetry)
 	}
 
+	var (
+		ctx     context.Context
+		cancel  context.CancelFunc
+		timeout = *ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds
+	)
+	if timeout == 0 {
+		ctx, cancel = context.WithCancel(context.TODO())
+	} else {
+		ctx, cancel = context.WithTimeout(context.TODO(), time.Duration(timeout)*time.Millisecond)
+	}
+
+	defer cancel()
+
 	address := *ds.edgeDevice.Spec.Address
 	instruction := *telemetryProperties.DeviceInstructionName
-	resp, err := ds.restClient.Client.Get("http://" + address + "/" + instruction)
+	req, ReqErr := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+address+"/"+instruction, nil)
+	if ReqErr != nil {
+		log.Printf("error checking telemetry: %v, error: %v", telemetry, ReqErr.Error())
+		return false, ReqErr
+	}
+
+	resp, err := ds.restClient.Client.Do(req)
 	if err != nil {
 		log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
 		return false, err
@@ -377,9 +407,11 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 }
 
 func (ds *DeviceShifu) collectHTTPTelemetries() error {
+	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
+
 	telemetryOK := true
 	telemetries := ds.deviceShifuConfig.Telemetries
-	for telemetry, telemetryProperties := range telemetries {
+	for telemetry, telemetryProperties := range telemetries.DeviceShifuTelemetries {
 		status, err := ds.collectHTTPTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
 		log.Printf("Status is: %v", status)
 		if err != nil {
@@ -399,25 +431,6 @@ func (ds *DeviceShifu) collectHTTPTelemetries() error {
 	}
 
 	return nil
-}
-
-func (ds *DeviceShifu) telemetryCollection() error {
-	// TODO: handle interval for different telemetries
-	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
-
-	if ds.edgeDevice.Spec.Protocol != nil {
-		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolHTTP:
-			ds.collectHTTPTelemetries()
-		default:
-			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
-			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
-		}
-
-		return nil
-	}
-
-	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
 }
 
 func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
@@ -457,16 +470,19 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 }
 
 func (ds *DeviceShifu) StartTelemetryCollection() error {
+	var telemetrySettings = ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
+
 	log.Println("Wait 5 seconds before updating status")
-	time.Sleep(5 * time.Second)
+	time.Sleep(time.Duration(*telemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds) * time.Millisecond)
+
 	for {
-		ds.telemetryCollection()
-		time.Sleep(5 * time.Second)
+		ds.collectHTTPTelemetries()
+		time.Sleep(time.Duration(*telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds) * time.Millisecond)
 	}
 }
 
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceShifu %s started\n", ds.Name)
+	log.Printf("deviceShifu %s started\n", ds.Name)
 
 	go ds.startHttpServer(stopCh)
 	go ds.StartTelemetryCollection()
@@ -479,6 +495,36 @@ func (ds *DeviceShifu) Stop() error {
 		return err
 	}
 
-	fmt.Printf("deviceShifu %s's http server stopped\n", ds.Name)
+	log.Printf("deviceShifu %s's http server stopped\n", ds.Name)
+	return nil
+}
+
+func (ds *DeviceShifu) CheckConfig() error {
+	if ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings == nil {
+		ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
+	}
+	var dsTelemetrySettings = ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
+
+	if initial := dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds; initial == nil {
+		var telemetryInitialDelayInMilliseconds = DEVICE_TELEMETRY_UPDATE_INTERVAL_MS
+		dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds = &telemetryInitialDelayInMilliseconds
+	} else if *initial < 0 {
+		return errors.New("error deviceShifuTelemetryTimeout mustn't be negative number")
+	}
+
+	if timeout := dsTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds; timeout == nil {
+		var telemetryTimeoutInMilliseconds = DEVICE_TELEMETRY_TIMEOUT_MS
+		dsTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds = &telemetryTimeoutInMilliseconds
+	} else if *timeout < 0 {
+		return errors.New("error deviceShifuTelemetryTimeout mustn't be negative number")
+	}
+
+	if interval := dsTelemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds; interval == nil {
+		var telemetryUpdateIntervalInMilliseconds = DEVICE_TELEMETRY_UPDATE_INTERVAL_MS
+		dsTelemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = &telemetryUpdateIntervalInMilliseconds
+	} else if *interval < 0 {
+		return errors.New("error deviceShifuTelemetryTimeout mustn't be negative number")
+	}
+
 	return nil
 }
