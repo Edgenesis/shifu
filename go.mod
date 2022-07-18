@@ -1,6 +1,6 @@
 module github.com/edgenesis/shifu
 
-go 1.17
+go 1.18
 
 replace edgenesis.io/shifu/k8s/crd => ./k8s/crd
 

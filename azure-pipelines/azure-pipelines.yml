@@ -43,7 +43,7 @@ stages:
     steps:
       - task: GoTool@0
         inputs:
-          version: '1.17.11'
+          version: '1.18.4'
       - task: Go@0
         displayName: "go get"
         inputs:
