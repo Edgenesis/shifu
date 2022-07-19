@@ -58,8 +58,7 @@ type DeviceShifuTelemetry struct {
 }
 
 type DeviceShifuTelemetries struct {
-	DeviceShifuTelemetrySettings *DeviceShifuTelemetrySettings    `yaml:"telemetrySettings,omitempty"`
-	DeviceShifuTelemetries       map[string]*DeviceShifuTelemetry `yaml:"telemetries,omitempty"`
+	DeviceShifuTelemetrySettings *DeviceShifuTelemetrySettings `yaml:"telemetrySettings,omitempty"`
 }
 
 type EdgeDeviceConfig struct {

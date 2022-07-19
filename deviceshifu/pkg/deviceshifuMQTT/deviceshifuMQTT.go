@@ -43,7 +43,7 @@ const (
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 	MQTT_DATA_ENDPOINT                string = "mqtt_data"
-	DEFAULT_UPDATE_INTERVAL           int    = 3000
+	DEFAULT_UPDATE_INTERVAL_MS        int    = 3000
 )
 
 var (
@@ -282,12 +282,12 @@ func (ds *DeviceShifu) collectMQTTTelemetry(telemetrySettings DeviceShifuTelemet
 	}
 
 	if telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds == nil {
-		*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds = int64(DEFAULT_UPDATE_INTERVAL)
+		*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds = int64(DEFAULT_UPDATE_INTERVAL_MS)
 	}
 
 	nowTime := time.Now()
 
-	if nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Seconds() < float64(*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds) {
+	if float64(nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Milliseconds()) < float64(*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds) {
 		return true, nil
 	}
 
@@ -323,7 +323,7 @@ func (ds *DeviceShifu) telemetryCollection() error {
 
 	if ds.edgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolHTTP:
+		case v1alpha1.ProtocolMQTT:
 			ds.collectMQTTTelemetries()
 		default:
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
@@ -373,11 +373,15 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 }
 
 func (ds *DeviceShifu) StartTelemetryCollection() error {
-	log.Println("Wait 5 seconds before updating status")
-	time.Sleep(5 * time.Second)
+	waitTime := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds
+	if waitTime == nil {
+		*waitTime = int64(DEFAULT_UPDATE_INTERVAL_MS)
+	}
+	time.Sleep(time.Duration(*waitTime) * time.Millisecond)
+	log.Printf("start telemetry collection in %d ms\n", *waitTime)
 	for {
 		ds.telemetryCollection()
-		time.Sleep(5 * time.Second)
+		time.Sleep(time.Duration(*waitTime) * time.Millisecond)
 	}
 }
 
