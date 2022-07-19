@@ -43,7 +43,7 @@ const (
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 	MQTT_DATA_ENDPOINT                string = "mqtt_data"
-	DEFAULT_UPDATE_INTERVAL_MS        int    = 3000
+	DEFAULT_UPDATE_INTERVAL_MS        int64  = 3000
 )
 
 var (
@@ -286,8 +286,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry(telemetrySettings DeviceShifuTelemet
 	}
 
 	nowTime := time.Now()
-
-	if float64(nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Milliseconds()) < float64(*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds) {
+	if int64(nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds {
 		return true, nil
 	}
 
@@ -298,7 +297,6 @@ func (ds *DeviceShifu) collectMQTTTelemetries() error {
 	telemetryOK := true
 	telemetriesSettings := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
 	status, err := ds.collectMQTTTelemetry(*telemetriesSettings)
-	log.Printf("Status is: %v", status)
 	if err != nil {
 		log.Printf("Error is: %v", err.Error())
 		telemetryOK = false
@@ -377,6 +375,7 @@ func (ds *DeviceShifu) StartTelemetryCollection() error {
 	if waitTime == nil {
 		*waitTime = int64(DEFAULT_UPDATE_INTERVAL_MS)
 	}
+
 	time.Sleep(time.Duration(*waitTime) * time.Millisecond)
 	log.Printf("start telemetry collection in %d ms\n", *waitTime)
 	for {
