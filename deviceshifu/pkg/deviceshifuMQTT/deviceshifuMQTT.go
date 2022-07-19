@@ -282,7 +282,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry(telemetrySettings DeviceShifuTelemet
 	}
 
 	if telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds == nil {
-		*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds = int64(DEFAULT_UPDATE_INTERVAL_MS)
+		*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds = DEFAULT_UPDATE_INTERVAL_MS
 	}
 
 	nowTime := time.Now()
