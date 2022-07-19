@@ -296,7 +296,7 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 // TODO: update configs
 // TODO: update status based on telemetry
 
-func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryProperties DeviceShifuTelemetryProperties) (bool, error) {
+func (ds *DeviceShifu) collectSocketTelemetry(telemetry string, telemetryProperties DeviceShifuTelemetryProperties) (bool, error) {
 	if ds.edgeDevice.Spec.Address == nil {
 		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
 	}
@@ -304,6 +304,7 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 	if telemetryProperties.DeviceInstructionName == nil {
 		return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.Name, telemetry)
 	}
+
 	var (
 		ctx     context.Context
 		cancel  context.CancelFunc
@@ -339,11 +340,11 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 	return false, nil
 }
 
-func (ds *DeviceShifu) collectHTTPTelemetries() error {
+func (ds *DeviceShifu) collectSocketTelemetries() error {
 	telemetryOK := true
 	telemetries := ds.deviceShifuConfig.Telemetries
 	for telemetry, telemetryProperties := range telemetries.DeviceShifuTelemetries {
-		status, err := ds.collectHTTPTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
+		status, err := ds.collectSocketTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
 		log.Printf("Status is: %v", status)
 		if err != nil {
 			log.Printf("Error is: %v", err.Error())
@@ -405,7 +406,7 @@ func (ds *DeviceShifu) StartTelemetryCollection() error {
 	log.Println("Wait Milliseconds before updating status")
 	time.Sleep(time.Duration(*telemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds) * time.Millisecond)
 	for {
-		ds.collectHTTPTelemetries()
+		ds.collectSocketTelemetries()
 		time.Sleep(time.Duration(*telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds) * time.Millisecond)
 	}
 }
