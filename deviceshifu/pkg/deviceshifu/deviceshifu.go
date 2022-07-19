@@ -514,7 +514,7 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 func (ds *DeviceShifu) StartTelemetryCollection() error {
 	var telemetrySettings = ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
 
-	log.Println("Wait 5 seconds before updating status")
+	log.Println("Waiting before updating status")
 	time.Sleep(time.Duration(*telemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds) * time.Millisecond)
 
 	for {
