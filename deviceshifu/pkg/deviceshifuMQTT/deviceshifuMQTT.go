@@ -43,6 +43,7 @@ const (
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 	MQTT_DATA_ENDPOINT                string = "mqtt_data"
+	DEFAULT_UPDATE_INTERVAL           int    = 3000
 )
 
 var (
@@ -275,18 +276,18 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 // TODO: update configs
 // TODO: update status based on telemetry
 
-func (ds *DeviceShifu) collectMQTTTelemetry(telemetry string, settings DeviceShifuTelemetrySettings) (bool, error) {
+func (ds *DeviceShifu) collectMQTTTelemetry(telemetrySettings DeviceShifuTelemetrySettings) (bool, error) {
 	if ds.edgeDevice.Spec.Address == nil {
 		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
 	}
 
-	if settings.DeviceShifuTelemetryUpdateIntervalMiliseconds == nil {
-		return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.Name, telemetry)
+	if telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds == nil {
+		*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds = int64(DEFAULT_UPDATE_INTERVAL)
 	}
 
 	nowTime := time.Now()
 
-	if nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Seconds() < float64(*settings.DeviceShifuTelemetryUpdateIntervalMiliseconds) {
+	if nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Seconds() < float64(*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds) {
 		return true, nil
 	}
 
@@ -295,19 +296,16 @@ func (ds *DeviceShifu) collectMQTTTelemetry(telemetry string, settings DeviceShi
 
 func (ds *DeviceShifu) collectMQTTTelemetries() error {
 	telemetryOK := true
-	telemetries := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetries
 	telemetriesSettings := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
-	for telemetry := range telemetries {
-		status, err := ds.collectMQTTTelemetry(telemetry, *telemetriesSettings)
-		log.Printf("Status is: %v", status)
-		if err != nil {
-			log.Printf("Error is: %v", err.Error())
-			telemetryOK = false
-		}
+	status, err := ds.collectMQTTTelemetry(*telemetriesSettings)
+	log.Printf("Status is: %v", status)
+	if err != nil {
+		log.Printf("Error is: %v", err.Error())
+		telemetryOK = false
+	}
 
-		if !status && telemetryOK {
-			telemetryOK = false
-		}
+	if !status && telemetryOK {
+		telemetryOK = false
 	}
 
 	if telemetryOK {

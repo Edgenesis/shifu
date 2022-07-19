@@ -16,14 +16,3 @@ data:
   telemetries: |
     telemetrySettings:
       telemetryUpdateIntervalInMiliseconds: 1000
-    telemetries:
-      device_health:
-        properties:
-          instruction: get_status
-          initialDelayMs: 1000
-          intervalMs: 1000
-      get_reading:
-        properties:
-          instruction: get_reading
-          initialDelayMs: 1000
-          intervalMs: 1000
