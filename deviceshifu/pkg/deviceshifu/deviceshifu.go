@@ -34,13 +34,13 @@ type DeviceShifuMetaData struct {
 type DeviceShifuHTTPHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *DeviceShifuInstructions
+	properties     *DeviceShifuInstruction
 }
 
 type DeviceShifuHTTPCommandlineHandlerMetadata struct {
 	edgeDeviceSpec  v1alpha1.EdgeDeviceSpec
 	instruction     string
-	properties      *DeviceShifuInstructions
+	properties      *DeviceShifuInstruction
 	driverExecution string
 }
 
