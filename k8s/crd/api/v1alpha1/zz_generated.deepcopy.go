@@ -198,6 +198,36 @@ func (in *OPCUASetting) DeepCopyInto(out *OPCUASetting) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.AuthenticationMode != nil {
+		in, out := &in.AuthenticationMode, &out.AuthenticationMode
+		*out = new(string)
+		**out = **in
+	}
+	if in.CertificateFileName != nil {
+		in, out := &in.CertificateFileName, &out.CertificateFileName
+		*out = new(string)
+		**out = **in
+	}
+	if in.PrivateKeyFileName != nil {
+		in, out := &in.PrivateKeyFileName, &out.PrivateKeyFileName
+		*out = new(string)
+		**out = **in
+	}
+	if in.ConfigmapName != nil {
+		in, out := &in.ConfigmapName, &out.ConfigmapName
+		*out = new(string)
+		**out = **in
+	}
+	if in.IssuedToken != nil {
+		in, out := &in.IssuedToken, &out.IssuedToken
+		*out = new(string)
+		**out = **in
+	}
+	if in.SecurityPolicy != nil {
+		in, out := &in.SecurityPolicy, &out.SecurityPolicy
+		*out = new(string)
+		**out = **in
+	}
 	if in.Username != nil {
 		in, out := &in.Username, &out.Username
 		*out = new(string)
