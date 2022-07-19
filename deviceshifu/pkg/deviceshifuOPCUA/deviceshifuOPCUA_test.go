@@ -56,7 +56,9 @@ func TestStart(t *testing.T) {
 
 	mockds.Start(wait.NeverStop)
 
-	mockds.Stop()
+	if err := mockds.Stop(); err != nil {
+		log.Printf("Error stopping mock deviceShifu, error: %v", err.Error())
+	}
 }
 
 func TestDeviceHealthHandler(t *testing.T) {
@@ -83,12 +85,17 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("cannot read HTTP body, error: %v", err.Error())
+	}
 
 	if string(body) != DEVICE_IS_HEALTHY_STR {
 		t.Errorf("%+v", body)
 	}
 
-	mockds.Stop()
+	if err := mockds.Stop(); err != nil {
+		log.Printf("Error stopping mock deviceShifu, error: %v", err.Error())
+	}
 
 	// cleanup
 	t.Cleanup(func() {

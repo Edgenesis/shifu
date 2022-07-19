@@ -37,10 +37,6 @@ type DeviceShifuOPCUAHandlerMetaData struct {
 	properties     *DeviceShifuInstructionProperty
 }
 
-type deviceCommandHandler interface {
-	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
-}
-
 const (
 	DEVICE_IS_HEALTHY_STR                       string = "Device is healthy"
 	DEVICE_CONFIGMAP_FOLDER_PATH                string = "/etc/edgedevice/config"
@@ -88,11 +84,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
 			log.Fatalf("Error retrieving EdgeDevice")
-			return nil, err
-		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
 			return nil, err
 		}
 
@@ -192,8 +183,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 }
 
 // deviceHealthHandler writes the status as healthy
-func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
+func deviceHealthHandler(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, DEVICE_IS_HEALTHY_STR)
 }
 
 type DeviceCommandHandlerOPCUA struct {
@@ -251,9 +242,11 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 	}
 }
 
-func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
+func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) {
 	fmt.Printf("deviceShifu %s's http server started\n", ds.Name)
-	return ds.server.ListenAndServe()
+	if err := ds.server.ListenAndServe(); err != nil {
+		log.Fatalf("Cannot start deviceShifu server, error: %v", err.Error())
+	}
 }
 
 func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string) (string, error) {
@@ -293,7 +286,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 		return err
 	}
 
-	log.Printf(fmt.Sprint(resp.Results[0].Value.Value()))
+	log.Println(fmt.Sprint(resp.Results[0].Value.Value()))
 
 	return nil
 }
@@ -310,7 +303,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry(telemetry string, telemetryProperti
 	instruction := *telemetryProperties.DeviceInstructionName
 	nodeID, err := ds.getOPCUANodeIDFromInstructionName(instruction)
 	if err != nil {
-		log.Printf(err.Error())
+		log.Println(err.Error())
 		return false, err
 	}
 
@@ -322,7 +315,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry(telemetry string, telemetryProperti
 	return true, nil
 }
 
-func (ds *DeviceShifu) collectOPCUATelemetries() error {
+func (ds *DeviceShifu) collectOPCUATelemetries() {
 	telemetryOK := true
 	telemetries := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetries
 	for telemetry, telemetryProperties := range telemetries {
@@ -333,7 +326,7 @@ func (ds *DeviceShifu) collectOPCUATelemetries() error {
 		}
 
 		log.Printf("Status is: %v", status)
-		if status == EDGEDEVICE_STATUS_FAIL && telemetryOK {
+		if !status && telemetryOK {
 			telemetryOK = false
 		}
 	}
@@ -343,11 +336,9 @@ func (ds *DeviceShifu) collectOPCUATelemetries() error {
 	} else {
 		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 	}
-
-	return nil
 }
 
-func (ds *DeviceShifu) telemetryCollection() error {
+func (ds *DeviceShifu) telemetryCollection() {
 	// TODO: handle interval for different telemetries
 	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
 
@@ -359,11 +350,7 @@ func (ds *DeviceShifu) telemetryCollection() error {
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
 			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 		}
-
-		return nil
 	}
-
-	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
 }
 
 func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
@@ -402,7 +389,7 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 	}
 }
 
-func (ds *DeviceShifu) StartTelemetryCollection() error {
+func (ds *DeviceShifu) StartTelemetryCollection() {
 	log.Println("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
 	telemetryUpdateIntervalMiliseconds := DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS

@@ -12,10 +12,10 @@ func main() {
 	namespace := os.Getenv("EDGEDEVICE_NAMESPACE")
 
 	deviceShifuMetadata := &deviceshifuMQTT.DeviceShifuMetaData{
-		deviceName,
-		deviceshifuMQTT.DEVICE_CONFIGMAP_FOLDER_PATH,
-		deviceshifuMQTT.KUBERNETES_CONFIG_DEFAULT,
-		namespace,
+		Name:           deviceName,
+		ConfigFilePath: deviceshifuMQTT.DEVICE_CONFIGMAP_FOLDER_PATH,
+		KubeConfigPath: deviceshifuMQTT.KUBERNETES_CONFIG_DEFAULT,
+		Namespace:      namespace,
 	}
 
 	ds, err := deviceshifuMQTT.New(deviceShifuMetadata)
@@ -23,9 +23,7 @@ func main() {
 		panic(err.Error())
 	}
 
-	if err := ds.Start(wait.NeverStop); err != nil {
-		panic(err.Error())
-	}
+	ds.Start(wait.NeverStop)
 
 	select {}
 }

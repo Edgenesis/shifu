@@ -144,7 +144,10 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 }
 
 func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
-	v1alpha1.AddToScheme(scheme.Scheme)
+	if err := v1alpha1.AddToScheme(scheme.Scheme); err != nil {
+		log.Printf("Error add to scheme for v1alpha1 client, error: %v", err.Error())
+	}
+
 	crdConfig := config
 	crdConfig.ContentConfig.GroupVersion = &schema.GroupVersion{Group: v1alpha1.GroupVersion.Group, Version: v1alpha1.GroupVersion.Version}
 	crdConfig.APIPath = "/apis"

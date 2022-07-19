@@ -32,7 +32,10 @@ func TestStart(t *testing.T) {
 		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
 	}
 
-	mockds.Stop()
+	if err := mockds.Stop(); err != nil {
+		log.Printf("Error stopping mock deviceShifu, error: %v", err.Error())
+	}
+
 	time.Sleep(1 * time.Second)
 }
 
@@ -60,12 +63,18 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("error reading body from response, error: %v", err.Error())
+	}
 
 	if string(body) != DEVICE_IS_HEALTHY_STR {
 		t.Errorf("%+v", body)
 	}
 
-	mockds.Stop()
+	if err := mockds.Stop(); err != nil {
+		log.Printf("Error stopping mock deviceShifu, error: %v", err.Error())
+	}
+
 	time.Sleep(1 * time.Second)
 }
 
@@ -148,6 +157,9 @@ func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint 
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		log.Printf("error reading body from response, error: %v", err.Error())
+	}
 
 	if string(body) != instruction {
 		fmt.Printf("Body: '%+v' does not match instruction: '%v'\n", string(body), instruction)

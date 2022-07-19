@@ -12,10 +12,10 @@ func main() {
 	namespace := os.Getenv("EDGEDEVICE_NAMESPACE")
 
 	deviceShifuMetadata := &deviceshifuOPCUA.DeviceShifuMetaData{
-		deviceName,
-		deviceshifuOPCUA.DEVICE_CONFIGMAP_FOLDER_PATH,
-		deviceshifuOPCUA.KUBERNETES_CONFIG_DEFAULT,
-		namespace,
+		Name:           deviceName,
+		ConfigFilePath: deviceshifuOPCUA.DEVICE_CONFIGMAP_FOLDER_PATH,
+		KubeConfigPath: deviceshifuOPCUA.KUBERNETES_CONFIG_DEFAULT,
+		Namespace:      namespace,
 	}
 
 	ds, err := deviceshifuOPCUA.New(deviceShifuMetadata)

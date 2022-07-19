@@ -44,10 +44,6 @@ type DeviceShifuHTTPCommandlineHandlerMetadata struct {
 	driverExecution string
 }
 
-type deviceCommandHandler interface {
-	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
-}
-
 const (
 	DEVICE_IS_HEALTHY_STR                    string = "Device is healthy"
 	DEVICE_CONFIGMAP_FOLDER_PATH             string = "/etc/edgedevice/config"
@@ -95,11 +91,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
 			log.Fatalf("Error retrieving EdgeDevice")
-			return nil, err
-		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
 			return nil, err
 		}
 
@@ -167,7 +158,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 // deviceHealthHandler writes the status as healthy
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
+	fmt.Fprint(w, DEVICE_IS_HEALTHY_STR)
 }
 
 type DeviceCommandHandlerHTTP struct {
@@ -240,8 +231,6 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				log.Printf("timeout URI parsing error" + parseErr.Error())
 				return
 			}
-
-			r.URL.Query().Del(DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR)
 		}
 
 		switch reqType {
@@ -286,13 +275,21 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		if resp != nil {
 			copyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
-			io.Copy(w, resp.Body)
+			_, err := io.Copy(w, resp.Body)
+			if err != nil {
+				log.Printf("Error io Copy device response to deviceShifu response, error: %v", err.Error())
+			}
+
 			return
 		}
 
 		// TODO: For now, just write tht instruction to the response
 		log.Println("resp is nil")
-		w.Write([]byte(handlerInstruction))
+		_, err := w.Write([]byte(handlerInstruction))
+		if err != nil {
+			log.Println("Failed to write instruction to response")
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		}
 	}
 }
 
@@ -376,19 +373,29 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		if resp != nil {
 			copyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
-			io.Copy(w, resp.Body)
+			_, err := io.Copy(w, resp.Body)
+			if err != nil {
+				log.Printf("Error io Copy device response to deviceShifu response, error: %v", err.Error())
+			}
+
 			return
 		}
 
 		// TODO: For now, just write tht instruction to the response
 		log.Println("resp is nil")
-		w.Write([]byte(handlerInstruction))
+		_, err = w.Write([]byte(handlerInstruction))
+		if err != nil {
+			log.Println("Failed to write instruction to response")
+			http.Error(w, err.Error(), http.StatusServiceUnavailable)
+		}
 	}
 }
 
-func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
+func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) {
 	fmt.Printf("deviceShifu %s's http server started\n", ds.Name)
-	return ds.server.ListenAndServe()
+	if err := ds.server.ListenAndServe(); err != nil {
+		log.Fatalf("Error starting deviceShifu HTTP server, error: %v", err.Error())
+	}
 }
 
 // TODO: update configs
@@ -432,7 +439,7 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 	return false, nil
 }
 
-func (ds *DeviceShifu) collectHTTPTelemetries() error {
+func (ds *DeviceShifu) collectHTTPTelemetries() {
 	telemetryOK := true
 	telemetries := ds.deviceShifuConfig.Telemetries
 	for telemetry, telemetryProperties := range telemetries {
@@ -453,11 +460,9 @@ func (ds *DeviceShifu) collectHTTPTelemetries() error {
 	} else {
 		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 	}
-
-	return nil
 }
 
-func (ds *DeviceShifu) telemetryCollection() error {
+func (ds *DeviceShifu) telemetryCollection() {
 	// TODO: handle interval for different telemetries
 	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
 
@@ -469,11 +474,7 @@ func (ds *DeviceShifu) telemetryCollection() error {
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
 			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 		}
-
-		return nil
 	}
-
-	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
 }
 
 func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
@@ -512,7 +513,7 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 	}
 }
 
-func (ds *DeviceShifu) StartTelemetryCollection() error {
+func (ds *DeviceShifu) StartTelemetryCollection() {
 	log.Println("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
 	for {
@@ -521,13 +522,11 @@ func (ds *DeviceShifu) StartTelemetryCollection() error {
 	}
 }
 
-func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
+func (ds *DeviceShifu) Start(stopCh <-chan struct{}) {
 	fmt.Printf("deviceShifu %s started\n", ds.Name)
 
 	go ds.startHttpServer(stopCh)
 	go ds.StartTelemetryCollection()
-
-	return nil
 }
 
 func (ds *DeviceShifu) Stop() error {

@@ -84,11 +84,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			return nil, err
 		}
 
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
-			return nil, err
-		}
-
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
 			mqttSetting := *edgeDevice.Spec.ProtocolSettings.MQTTSetting
@@ -107,7 +102,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 			opts := mqtt.NewClientOptions()
 			opts.AddBroker(fmt.Sprintf("tcp://%s", mqttServerAddress))
-			opts.SetClientID(*&edgeDeviceConfig.deviceName)
+			opts.SetClientID(edgeDeviceConfig.deviceName)
 			opts.SetDefaultPublishHandler(messagePubHandler)
 			opts.OnConnect = connectHandler
 			opts.OnConnectionLost = connectLostHandler
@@ -166,8 +161,8 @@ func sub(client mqtt.Client, topic string) {
 	log.Printf("Subscribed to topic: %s", topic)
 }
 
-func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
+func deviceHealthHandler(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, DEVICE_IS_HEALTHY_STR)
 }
 
 type DeviceCommandHandlerMQTT struct {
@@ -212,23 +207,15 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 
 			w.WriteHeader(http.StatusOK)
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(returnMessage)
+			if err := json.NewEncoder(w).Encode(returnMessage); err == nil {
+				http.Error(w, "Failed to encode JSON, error: "+err.Error(), http.StatusBadRequest)
+			}
 		} else {
 			http.Error(w, "must be GET method", http.StatusBadRequest)
 			log.Println("Request type " + reqType + " is not supported yet!")
 			return
 		}
 
-	}
-}
-
-// HTTP header type:
-// type Header map[string][]string
-func copyHeader(dst, src http.Header) {
-	for header, headerValueList := range src {
-		for _, value := range headerValueList {
-			dst.Add(header, value)
-		}
 	}
 }
 
@@ -267,9 +254,11 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
-func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
+func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) {
 	fmt.Printf("deviceShifu %s's http server started\n", ds.Name)
-	return ds.server.ListenAndServe()
+	if err := ds.server.ListenAndServe(); err != nil {
+		log.Fatalf("Error starting deviceShifu HTTP server, error: %v", err.Error())
+	}
 }
 
 // TODO: update configs
@@ -301,7 +290,7 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 	return false, nil
 }
 
-func (ds *DeviceShifu) collectHTTPTelemetries() error {
+func (ds *DeviceShifu) collectHTTPTelemetries() {
 	telemetryOK := true
 	telemetries := ds.deviceShifuConfig.Telemetries
 	for telemetry, telemetryProperties := range telemetries {
@@ -322,11 +311,9 @@ func (ds *DeviceShifu) collectHTTPTelemetries() error {
 	} else {
 		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 	}
-
-	return nil
 }
 
-func (ds *DeviceShifu) telemetryCollection() error {
+func (ds *DeviceShifu) telemetryCollection() {
 	// TODO: handle interval for different telemetries
 	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
 
@@ -338,11 +325,7 @@ func (ds *DeviceShifu) telemetryCollection() error {
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
 			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 		}
-
-		return nil
 	}
-
-	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
 }
 
 func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
@@ -381,7 +364,7 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 	}
 }
 
-func (ds *DeviceShifu) StartTelemetryCollection() error {
+func (ds *DeviceShifu) StartTelemetryCollection() {
 	log.Println("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
 	for {
@@ -390,13 +373,11 @@ func (ds *DeviceShifu) StartTelemetryCollection() error {
 	}
 }
 
-func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
+func (ds *DeviceShifu) Start(stopCh <-chan struct{}) {
 	fmt.Printf("deviceShifu %s started\n", ds.Name)
 
 	go ds.startHttpServer(stopCh)
 	go ds.StartTelemetryCollection()
-
-	return nil
 }
 
 func (ds *DeviceShifu) Stop() error {

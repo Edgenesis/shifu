@@ -12,10 +12,10 @@ func main() {
 	namespace := os.Getenv("EDGEDEVICE_NAMESPACE")
 
 	deviceShifuMetadata := &deviceshifu.DeviceShifuMetaData{
-		deviceName,
-		deviceshifu.DEVICE_CONFIGMAP_FOLDER_PATH,
-		deviceshifu.KUBERNETES_CONFIG_DEFAULT,
-		namespace,
+		Name:           deviceName,
+		ConfigFilePath: deviceshifu.DEVICE_CONFIGMAP_FOLDER_PATH,
+		KubeConfigPath: deviceshifu.KUBERNETES_CONFIG_DEFAULT,
+		Namespace:      namespace,
 	}
 
 	ds, err := deviceshifu.New(deviceShifuMetadata)
@@ -23,9 +23,6 @@ func main() {
 		panic(err.Error())
 	}
 
-	if err := ds.Start(wait.NeverStop); err != nil {
-		panic(err.Error())
-	}
-
+	ds.Start(wait.NeverStop)
 	select {}
 }

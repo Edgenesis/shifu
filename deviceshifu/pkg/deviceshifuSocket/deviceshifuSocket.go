@@ -38,10 +38,6 @@ type DeviceShifuSocketHandlerMetaData struct {
 	connection     *net.Conn
 }
 
-type deviceCommandHandler interface {
-	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
-}
-
 const (
 	DEVICE_IS_HEALTHY_STR             string = "Device is healthy"
 	DEVICE_CONFIGMAP_FOLDER_PATH      string = "/etc/edgedevice/config"
@@ -83,11 +79,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
 			log.Fatalf("Error retrieving EdgeDevice")
-			return nil, err
-		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
 			return nil, err
 		}
 
@@ -142,8 +133,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	return ds, nil
 }
 
-func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
+func deviceHealthHandler(w http.ResponseWriter, _ *http.Request) {
+	fmt.Fprint(w, DEVICE_IS_HEALTHY_STR)
 }
 
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
@@ -170,16 +161,6 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 	return "http://" + address + "/" + handlerInstruction + queryStr
 }
 
-// HTTP header type:
-// type Header map[string][]string
-func copyHeader(dst, src http.Header) {
-	for header, headerValueList := range src {
-		for _, value := range headerValueList {
-			dst.Add(header, value)
-		}
-	}
-}
-
 func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSocketHandlerMetaData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
@@ -202,11 +183,18 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 		command := socketRequest.Command
 		timeout := socketRequest.Timeout
 		if timeout != 0 {
-			(*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
+			if err := (*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second)); err != nil {
+				log.Printf("Error setting deadline to socket connection, error: %v", err.Error())
+			}
 		}
 
 		log.Printf("Sending %v", []byte(command+"\n"))
-		(*connection).Write([]byte(command + "\n"))
+		_, err = (*connection).Write([]byte(command + "\n"))
+		if err != nil {
+			log.Printf("Failed to Write to Socket, current command: %v", command)
+			http.Error(w, "Failed to Write to Socket, error: "+err.Error(), http.StatusBadRequest)
+		}
+
 		message, err := bufio.NewReader(*connection).ReadString('\n')
 		if err != nil {
 			log.Printf("Failed to ReadString from Socket, current message: %v", message)
@@ -220,7 +208,9 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(returnMessage)
+		if err := json.NewEncoder(w).Encode(returnMessage); err == nil {
+			http.Error(w, "Failed to encode JSON, error: "+err.Error(), http.StatusBadRequest)
+		}
 	}
 }
 
@@ -259,9 +249,11 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
-func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
+func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) {
 	fmt.Printf("deviceShifu %s's http server started\n", ds.Name)
-	return ds.server.ListenAndServe()
+	if err := ds.server.ListenAndServe(); err != nil {
+		log.Fatalf("Cannot start deviceShifu server, error: %v", err.Error())
+	}
 }
 
 // TODO: update configs
@@ -293,7 +285,7 @@ func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryPropertie
 	return false, nil
 }
 
-func (ds *DeviceShifu) collectHTTPTelemetries() error {
+func (ds *DeviceShifu) collectHTTPTelemetries() {
 	telemetryOK := true
 	telemetries := ds.deviceShifuConfig.Telemetries
 	for telemetry, telemetryProperties := range telemetries {
@@ -314,11 +306,9 @@ func (ds *DeviceShifu) collectHTTPTelemetries() error {
 	} else {
 		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 	}
-
-	return nil
 }
 
-func (ds *DeviceShifu) telemetryCollection() error {
+func (ds *DeviceShifu) telemetryCollection() {
 	// TODO: handle interval for different telemetries
 	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
 
@@ -330,11 +320,7 @@ func (ds *DeviceShifu) telemetryCollection() error {
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
 			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
 		}
-
-		return nil
 	}
-
-	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
 }
 
 func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
@@ -373,7 +359,7 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 	}
 }
 
-func (ds *DeviceShifu) StartTelemetryCollection() error {
+func (ds *DeviceShifu) StartTelemetryCollection() {
 	log.Println("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
 	for {
