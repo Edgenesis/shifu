@@ -272,11 +272,13 @@ func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 	if ds.edgeDevice.Spec.Address == nil {
 		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
 	}
+	
 	conn, err := net.Dial("tcp", *ds.edgeDevice.Spec.Address)
 	if err != nil {
 		log.Printf("error checking telemetry: error: %v", err.Error())
 		return false, err
 	}
+
 	defer conn.Close()
 	return true, nil
 }

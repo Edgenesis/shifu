@@ -40,8 +40,8 @@ type DeviceShifuInstructionProperty struct {
 
 type DeviceShifuTelemetryProperties struct {
 	DeviceInstructionName *string `yaml:"instruction"`
-	InitialDelayMs        *int    `yaml:"initialDelayMs,omitempty"`
-	IntervalMs            *int    `yaml:"intervalMs,omitempty"`
+	InitialDelayMs        *int64  `yaml:"initialDelayMs,omitempty"`
+	IntervalMs            *int64  `yaml:"intervalMs,omitempty"`
 }
 
 type DeviceShifuTelemetry struct {
