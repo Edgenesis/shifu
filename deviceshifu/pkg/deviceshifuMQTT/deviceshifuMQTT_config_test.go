@@ -29,11 +29,9 @@ type ConfigMapData struct {
 
 func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
-		TelemetryInstructionNameGetStatus  string = "get_status"
-		TelemetryInstructionNameGetReading string = "get_reading"
-		InstructionValueTypeInt32          string = "Int32"
-		InstructionReadWriteW              string = "W"
-		TelemetryMs1000                    int    = 1000
+		InstructionValueTypeInt32 string = "Int32"
+		InstructionReadWriteW     string = "W"
+		TelemetrySettingInterval  int64  = 1000
 	)
 
 	var mockDeviceDriverProperties = DeviceShifuDriverProperties{
@@ -58,20 +56,9 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		"stop":  nil,
 	}
 
-	var mockDeviceTelemetries = map[string]*DeviceShifuTelemetry{
-		"device_health": {
-			DeviceShifuTelemetryProperties{
-				DeviceInstructionName: &TelemetryInstructionNameGetStatus,
-				InitialDelayMs:        &TelemetryMs1000,
-				IntervalMs:            &TelemetryMs1000,
-			},
-		},
-		"get_reading": {
-			DeviceShifuTelemetryProperties{
-				DeviceInstructionName: &TelemetryInstructionNameGetReading,
-				InitialDelayMs:        &TelemetryMs1000,
-				IntervalMs:            &TelemetryMs1000,
-			},
+	var mockDeviceTelemetries = &DeviceShifuTelemetries{
+		DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
+			DeviceShifuTelemetryUpdateIntervalMiliseconds: &TelemetrySettingInterval,
 		},
 	}
 
@@ -95,7 +82,8 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		t.Errorf("Instruction mismatch")
 	}
 
-	eq = reflect.DeepEqual(mockDeviceTelemetries, mockdsc.Telemetries)
+	eq = reflect.DeepEqual(mockDeviceTelemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds,
+		mockdsc.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds)
 	if !eq {
 		t.Errorf("Telemetries mismatch")
 	}

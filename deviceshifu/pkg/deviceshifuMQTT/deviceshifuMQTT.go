@@ -43,6 +43,7 @@ const (
 	DEVICE_DEFAULT_PORT_STR           string = ":8080"
 	KUBERNETES_CONFIG_DEFAULT         string = ""
 	MQTT_DATA_ENDPOINT                string = "mqtt_data"
+	DEFAULT_UPDATE_INTERVAL_MS        int64  = 3000
 )
 
 var (
@@ -275,46 +276,34 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 // TODO: update configs
 // TODO: update status based on telemetry
 
-func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryProperties DeviceShifuTelemetryProperties) (bool, error) {
+func (ds *DeviceShifu) collectMQTTTelemetry(telemetrySettings DeviceShifuTelemetrySettings) (bool, error) {
 	if ds.edgeDevice.Spec.Address == nil {
 		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
 	}
 
-	if telemetryProperties.DeviceInstructionName == nil {
-		return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.Name, telemetry)
+	if telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds == nil {
+		*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds = DEFAULT_UPDATE_INTERVAL_MS
 	}
 
-	address := *ds.edgeDevice.Spec.Address
-	instruction := *telemetryProperties.DeviceInstructionName
-	resp, err := ds.restClient.Client.Get("http://" + address + "/" + instruction)
-	if err != nil {
-		log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
-		return false, err
-	}
-
-	if resp != nil {
-		if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
-			return true, nil
-		}
+	nowTime := time.Now()
+	if int64(nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds {
+		return true, nil
 	}
 
 	return false, nil
 }
 
-func (ds *DeviceShifu) collectHTTPTelemetries() error {
+func (ds *DeviceShifu) collectMQTTTelemetries() error {
 	telemetryOK := true
-	telemetries := ds.deviceShifuConfig.Telemetries
-	for telemetry, telemetryProperties := range telemetries {
-		status, err := ds.collectHTTPTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
-		log.Printf("Status is: %v", status)
-		if err != nil {
-			log.Printf("Error is: %v", err.Error())
-			telemetryOK = false
-		}
+	telemetriesSettings := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
+	status, err := ds.collectMQTTTelemetry(*telemetriesSettings)
+	if err != nil {
+		log.Printf("Error is: %v", err.Error())
+		telemetryOK = false
+	}
 
-		if !status && telemetryOK {
-			telemetryOK = false
-		}
+	if !status && telemetryOK {
+		telemetryOK = false
 	}
 
 	if telemetryOK {
@@ -332,8 +321,8 @@ func (ds *DeviceShifu) telemetryCollection() error {
 
 	if ds.edgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolHTTP:
-			ds.collectHTTPTelemetries()
+		case v1alpha1.ProtocolMQTT:
+			ds.collectMQTTTelemetries()
 		default:
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
 			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
@@ -382,11 +371,16 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 }
 
 func (ds *DeviceShifu) StartTelemetryCollection() error {
-	log.Println("Wait 5 seconds before updating status")
-	time.Sleep(5 * time.Second)
+	waitTime := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds
+	if waitTime == nil {
+		*waitTime = int64(DEFAULT_UPDATE_INTERVAL_MS)
+	}
+
+	time.Sleep(time.Duration(*waitTime) * time.Millisecond)
+	log.Printf("start telemetry collection in %d ms\n", *waitTime)
 	for {
 		ds.telemetryCollection()
-		time.Sleep(5 * time.Second)
+		time.Sleep(time.Duration(*waitTime) * time.Millisecond)
 	}
 }
 
