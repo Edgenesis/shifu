@@ -34,6 +34,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		InstructionValueTypeInt32          string = "Int32"
 		InstructionReadWriteW              string = "W"
 		TelemetryMs1000                    int    = 1000
+		TelemetryMs1000Int64               int64  = 1000
 	)
 
 	var mockDeviceDriverProperties = DeviceShifuDriverProperties{
@@ -58,19 +59,24 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		"stop":  nil,
 	}
 
-	var mockDeviceTelemetries = map[string]*DeviceShifuTelemetry{
-		"device_health": {
-			DeviceShifuTelemetryProperties{
-				DeviceInstructionName: &TelemetryInstructionNameGetStatus,
-				InitialDelayMs:        &TelemetryMs1000,
-				IntervalMs:            &TelemetryMs1000,
-			},
+	var mockDeviceTelemetries = &DeviceShifuTelemetries{
+		DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
+			DeviceShifuTelemetryUpdateIntervalMiliseconds: &TelemetryMs1000Int64,
 		},
-		"get_reading": {
-			DeviceShifuTelemetryProperties{
-				DeviceInstructionName: &TelemetryInstructionNameGetReading,
-				InitialDelayMs:        &TelemetryMs1000,
-				IntervalMs:            &TelemetryMs1000,
+		DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
+			"device_health": {
+				DeviceShifuTelemetryProperties{
+					DeviceInstructionName: &TelemetryInstructionNameGetStatus,
+					InitialDelayMs:        &TelemetryMs1000,
+					IntervalMs:            &TelemetryMs1000,
+				},
+			},
+			"get_reading": {
+				DeviceShifuTelemetryProperties{
+					DeviceInstructionName: &TelemetryInstructionNameGetReading,
+					InitialDelayMs:        &TelemetryMs1000,
+					IntervalMs:            &TelemetryMs1000,
+				},
 			},
 		},
 	}

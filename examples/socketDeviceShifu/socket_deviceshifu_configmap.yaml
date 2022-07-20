@@ -10,4 +10,6 @@ data:
   instructions: |
     cmd:
   telemetries: |
+    telemetrySettings:
+      telemetryUpdateIntervalInMiliseconds: 1000
    
