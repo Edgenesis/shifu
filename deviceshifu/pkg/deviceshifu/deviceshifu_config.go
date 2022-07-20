@@ -17,8 +17,8 @@ import (
 
 type DeviceShifuConfig struct {
 	driverProperties DeviceShifuDriverProperties
-	Instructions     DeviceShifuInstruction
-	Telemetries      map[string]*DeviceShifuTelemetry
+	Instructions     DeviceShifuInstructions
+	Telemetries      DeviceShifuTelemetries
 }
 
 type DeviceShifuDriverProperties struct {
@@ -27,16 +27,16 @@ type DeviceShifuDriverProperties struct {
 	DriverExecution string `yaml:"driverExecution"`
 }
 
-type DeviceShifuInstruction struct {
-	Instructions        map[string]*DeviceShifuInstructions `yaml:"instructions"`
-	InstructionSettings *DeviceShifuInstructionSettings     `yaml:"instructionSettings,omitempty"`
+type DeviceShifuInstructions struct {
+	Instructions        map[string]*DeviceShifuInstruction `yaml:"instructions"`
+	InstructionSettings *DeviceShifuInstructionSettings    `yaml:"instructionSettings,omitempty"`
 }
 
 type DeviceShifuInstructionSettings struct {
 	DefaultTimeoutSeconds *int `yaml:"defaultTimeoutSeconds,omitempty"`
 }
 
-type DeviceShifuInstructions struct {
+type DeviceShifuInstruction struct {
 	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
 }
 
@@ -50,6 +50,17 @@ type DeviceShifuTelemetryProperties struct {
 	DeviceInstructionName *string `yaml:"instruction"`
 	InitialDelayMs        *int    `yaml:"initialDelayMs,omitempty"`
 	IntervalMs            *int    `yaml:"intervalMs,omitempty"`
+}
+
+type DeviceShifuTelemetrySettings struct {
+	DeviceShifuTelemetryUpdateIntervalInMilliseconds *int64 `yaml:"telemetryUpdateIntervalInMilliseconds,omitempty"`
+	DeviceShifuTelemetryTimeoutInMilliseconds        *int64 `yaml:"telemetryTimeoutInMilliseconds,omitempty"`
+	DeviceShifuTelemetryInitialDelayInMilliseconds   *int64 `yaml:"telemetryInitialDelayInMilliseconds,omitempty"`
+}
+
+type DeviceShifuTelemetries struct {
+	DeviceShifuTelemetrySettings *DeviceShifuTelemetrySettings    `yaml:"telemetrySettings,omitempty"`
+	DeviceShifuTelemetries       map[string]*DeviceShifuTelemetry `yaml:"telemetries,omitempty"`
 }
 
 type DeviceShifuTelemetry struct {

@@ -17,8 +17,13 @@ data:
 #    telemetry retrieval methods
 #    in this example, a device_health telemetry is collected by calling hello instruction every 1 second
   telemetries: |
-    device_health:
-      properties:
-        instruction: hello
-        initialDelayMs: 1000
-        intervalMs: 1000
+    telemetrySettings:
+      telemetryUpdateIntervalInMilliseconds: 6000
+      telemetryTimeoutInMilliseconds: 3000
+      telemetryInitialDelayInMilliseconds: 7000
+    telemetries:
+      device_health:
+        properties:
+          instruction: hello
+          initialDelayMs: 1000
+          intervalMs: 1000
