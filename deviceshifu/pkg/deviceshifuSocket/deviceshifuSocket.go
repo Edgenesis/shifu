@@ -269,13 +269,15 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 // TODO: update status based on telemetry
 
 func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
+	if ds.edgeDevice.Spec.Address == nil {
+		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
+	}
 	conn, err := net.Dial("tcp", *ds.edgeDevice.Spec.Address)
 	if err != nil {
-		log.Printf("collectSocketTelemetry returns %v,%v", false, err.Error())
+		log.Printf("error checking telemetry: error: %v", err.Error())
 		return false, err
 	}
 	defer conn.Close()
-	log.Printf("collectSocketTelemetry returns %v,%v", true, nil)
 	return true, nil
 }
 
