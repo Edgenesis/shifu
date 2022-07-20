@@ -56,11 +56,9 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		"stop":  nil,
 	}
 
-	var mockDeviceTelemetries = map[string]*DeviceShifuTelemetries{
-		"telemetrySettings": {
-			DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-				DeviceShifuTelemetryUpdateIntervalMiliseconds: &TelemetrySettingInterval,
-			},
+	var mockDeviceTelemetries = &DeviceShifuTelemetries{
+		DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
+			DeviceShifuTelemetryUpdateIntervalMiliseconds: &TelemetrySettingInterval,
 		},
 	}
 
@@ -84,7 +82,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		t.Errorf("Instruction mismatch")
 	}
 
-	eq = reflect.DeepEqual(mockDeviceTelemetries["telemetrySettings"].DeviceShifuTelemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds,
+	eq = reflect.DeepEqual(mockDeviceTelemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds,
 		mockdsc.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds)
 	if !eq {
 		t.Errorf("Telemetries mismatch")
