@@ -31,7 +31,8 @@ pr:
     - CHANGELOG
 
 variables:
-  tag: 'v0.0.3'
+  $tags = git tag --sort=-creatordate
+  $tag = $tags[0]
 
 pool:
    vmImage: 'ubuntu-latest'
@@ -178,8 +179,8 @@ stages:
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
-          -t edgehub/edgedevice-controller:$(tag) --load
-        displayName: build edgehub/edgedevice-controller
+          -t edgehub/shifu-controller:$(tag) --load
+        displayName: build edgehub/shifu-controller
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
@@ -215,7 +216,7 @@ stages:
           set -e
           kind --version
           kind delete cluster && kind create cluster
-          kind load docker-image edgehub/edgedevice-controller:$(tag)
+          kind load docker-image edgehub/shifu-controller:$(tag)
           kind load docker-image edgehub/mockdevice-thermometer:$(tag)
           kind load docker-image edgehub/mockdevice-plate-reader:$(tag)
           kind load docker-image edgehub/mockdevice-agv:$(tag)
@@ -314,8 +315,8 @@ stages:
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
-          -t edgehub/edgedevice-controller:$(release_tag) --push
-        displayName: build edgehub/edgedevice-controller
+          -t edgehub/shifu-controller:$(release_tag) --push
+        displayName: build edgehub/shifu-controller
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \

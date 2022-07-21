@@ -1,5 +1,9 @@
 package main
 
+/*
+This Tool is to modify all deployment.yaml's image's oldTag to newTag in the workDirectory,
+arg: [1] workDirectory [2] oldTag [3] newTag
+*/
 import (
 	"bufio"
 	"io"
@@ -15,11 +19,13 @@ func main() {
 	if len(args) < 3 {
 		log.Fatalf("few parameters")
 	}
+
 	path, oldTag, newTag := args[1], args[2], args[3]
 	files, err := traverseDir(path)
 	if err != nil {
 		log.Fatalf("err cannot get all deployment.yaml file! %v", err)
 	}
+
 	err = updateTag(files, oldTag, newTag)
 	if err != nil {
 		log.Fatalf("err make an error during update Tag! %v", err)
@@ -33,9 +39,11 @@ func traverseDir(workPath string) ([]string, error) {
 		files = append(files, path)
 		return nil
 	})
+
 	if err != nil {
 		return nil, err
 	}
+
 	for _, file := range files {
 		if path.Ext(file) == ".yaml" {
 			filename := path.Base(file)
@@ -44,6 +52,7 @@ func traverseDir(workPath string) ([]string, error) {
 			}
 		}
 	}
+
 	return yamls, nil
 }
 
@@ -60,6 +69,7 @@ func updateTag(files []string, oldTag string, newTag string) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -74,18 +84,22 @@ func replaceTag(file *os.File, oldTag string, newTag string) error {
 		out.Flush()
 		file.Close()
 	}()
+
 	for {
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
 				return nil
 			}
+
 			log.Printf("cannot read file %s %v", file.Name(), err)
 			return err
 		}
+
 		if strings.Contains(line, "image") && strings.Contains(line, "deviceshifu") && strings.Contains(line, oldTag) {
 			line = strings.Replace(line, oldTag, newTag, 1)
 		}
+
 		context += line
 	}
 	return nil
