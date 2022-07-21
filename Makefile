@@ -1,5 +1,5 @@
 PROJECT_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
-IMAGE_VERSION = v0.0.2
+IMAGE_VERSION = $(shell cat version.txt)
 
 buildx-push-image-deviceshifu-http-http:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu \
@@ -133,5 +133,5 @@ clean-images:
 	docker rmi $(shell sudo docker images | grep 'edgehub')
 
 tag:
-	go run test/tag.go ${PROJECT_ROOT} ${IMAGE_VERSION} $(VERSION)
+	go run tools/tag.go ${PROJECT_ROOT} ${IMAGE_VERSION} $(VERSION)
 	cd k8s/crd/ && (make generate-controller-yaml IMG=edgehub/edgedevice-controller-multi:$(VERSION) generate-install-yaml)
