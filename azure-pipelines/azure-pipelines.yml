@@ -42,7 +42,7 @@ stages:
   - job: go_setup
     steps:
       - script: |
-          tag=`git tag --sort=-creatordate | head -n 1`
+          export tag=`git tag --sort=-creatordate | head -n 1`
       - task: GoTool@0
         inputs:
           version: '1.18.4'
