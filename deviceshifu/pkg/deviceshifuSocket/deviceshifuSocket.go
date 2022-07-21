@@ -43,12 +43,13 @@ type deviceCommandHandler interface {
 }
 
 const (
-	DEVICE_IS_HEALTHY_STR             string = "Device is healthy"
-	DEVICE_CONFIGMAP_FOLDER_PATH      string = "/etc/edgedevice/config"
-	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR string = "NULL"
-	DEVICE_NAMESPACE_DEFAULT          string = "default"
-	DEVICE_DEFAULT_PORT_STR           string = ":8080"
-	KUBERNETES_CONFIG_DEFAULT         string = ""
+	DEVICE_IS_HEALTHY_STR                       string = "Device is healthy"
+	DEVICE_CONFIGMAP_FOLDER_PATH                string = "/etc/edgedevice/config"
+	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR           string = "NULL"
+	DEVICE_NAMESPACE_DEFAULT                    string = "default"
+	DEVICE_DEFAULT_PORT_STR                     string = ":8080"
+	DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS int64  = 1000
+	KUBERNETES_CONFIG_DEFAULT                   string = ""
 )
 
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
@@ -267,46 +268,32 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 // TODO: update configs
 // TODO: update status based on telemetry
 
-func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryProperties DeviceShifuTelemetryProperties) (bool, error) {
+func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 	if ds.edgeDevice.Spec.Address == nil {
 		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
 	}
-
-	if telemetryProperties.DeviceInstructionName == nil {
-		return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.Name, telemetry)
-	}
-
-	address := *ds.edgeDevice.Spec.Address
-	instruction := *telemetryProperties.DeviceInstructionName
-	resp, err := ds.restClient.Client.Get("http://" + address + "/" + instruction)
+	
+	conn, err := net.Dial("tcp", *ds.edgeDevice.Spec.Address)
 	if err != nil {
-		log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
+		log.Printf("error checking telemetry: error: %v", err.Error())
 		return false, err
 	}
 
-	if resp != nil {
-		if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
-			return true, nil
-		}
-	}
-
-	return false, nil
+	defer conn.Close()
+	return true, nil
 }
 
-func (ds *DeviceShifu) collectHTTPTelemetries() error {
+func (ds *DeviceShifu) collectSocketTelemetries() error {
 	telemetryOK := true
-	telemetries := ds.deviceShifuConfig.Telemetries
-	for telemetry, telemetryProperties := range telemetries {
-		status, err := ds.collectHTTPTelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
-		log.Printf("Status is: %v", status)
-		if err != nil {
-			log.Printf("Error is: %v", err.Error())
-			telemetryOK = false
-		}
+	status, err := ds.collectSocketTelemetry()
+	log.Printf("Status is: %v", status)
+	if err != nil {
+		log.Printf("Error is: %v", err.Error())
+		telemetryOK = false
+	}
 
-		if !status && telemetryOK {
-			telemetryOK = false
-		}
+	if !status && telemetryOK {
+		telemetryOK = false
 	}
 
 	if telemetryOK {
@@ -324,8 +311,8 @@ func (ds *DeviceShifu) telemetryCollection() error {
 
 	if ds.edgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolHTTP:
-			ds.collectHTTPTelemetries()
+		case v1alpha1.ProtocolSocket:
+			ds.collectSocketTelemetries()
 		default:
 			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
 			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
@@ -376,9 +363,27 @@ func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevice
 func (ds *DeviceShifu) StartTelemetryCollection() error {
 	log.Println("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
+	telemetryUpdateIntervalMiliseconds := DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS
+
+	if ds.
+		deviceShifuConfig.
+		Telemetries.
+		DeviceShifuTelemetrySettings != nil &&
+		ds.
+			deviceShifuConfig.
+			Telemetries.
+			DeviceShifuTelemetrySettings.
+			DeviceShifuTelemetryUpdateIntervalMiliseconds != nil {
+		telemetryUpdateIntervalMiliseconds = *ds.
+			deviceShifuConfig.
+			Telemetries.
+			DeviceShifuTelemetrySettings.
+			DeviceShifuTelemetryUpdateIntervalMiliseconds
+	}
+
 	for {
 		ds.telemetryCollection()
-		time.Sleep(5 * time.Second)
+		time.Sleep(time.Duration(telemetryUpdateIntervalMiliseconds) * time.Millisecond)
 	}
 }
 
