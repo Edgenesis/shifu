@@ -138,7 +138,7 @@ stages:
   - job: setup_docker_kubectl_kind
     steps:
       - script: |
-          tag=(git tag --sort=-creatordate | head -n 1)
+          tag=(shell git tag --sort=-creatordate | head -n 1)
           echo $tag
         displayName: setTag
       - task: DockerInstaller@0
