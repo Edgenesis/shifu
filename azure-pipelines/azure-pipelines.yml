@@ -31,7 +31,7 @@ pr:
     - CHANGELOG
 
 variables:
-  tag:script: export tag=`git tag --sort=-creatordate | head -n 1`
+  tag:script: git tag --sort=-creatordate | head -n 1
 
 pool:
    vmImage: 'ubuntu-latest'
