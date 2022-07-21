@@ -68,7 +68,6 @@ func replaceTag(file *os.File, oldTag string, newTag string) error {
 	reader := bufio.NewReader(file)
 	out := bufio.NewWriter(file)
 	defer func() {
-		log.Printf(context)
 		file.Truncate(0)
 		file.Seek(0, 0)
 		out.WriteString(context)
@@ -79,7 +78,6 @@ func replaceTag(file *os.File, oldTag string, newTag string) error {
 		line, err := reader.ReadString('\n')
 		if err != nil {
 			if err == io.EOF {
-				log.Println("finished !")
 				return nil
 			}
 			log.Printf("cannot read file %s %v", file.Name(), err)
@@ -87,7 +85,6 @@ func replaceTag(file *os.File, oldTag string, newTag string) error {
 		}
 		if strings.Contains(line, "image") && strings.Contains(line, "deviceshifu") && strings.Contains(line, oldTag) {
 			line = strings.Replace(line, oldTag, newTag, 1)
-			log.Println(line)
 		}
 		context += line
 	}
