@@ -31,8 +31,12 @@ pr:
     - CHANGELOG
 
 variables:
-  $tags = git tag --sort=-creatordate
-  $tag = $tags[0]
+  tag: 'v0.0.1'
+
+steps:
+  - script: |
+      $tags = git tag --sort=-creatordate
+      $tag = $tags[0]
 
 pool:
    vmImage: 'ubuntu-latest'
