@@ -32,8 +32,7 @@ pr:
 
 variables:
   name: tag
-  value: script:｜
-    git tag --sort=-creatordate | head -n 1
+  value: 
 
 pool:
    vmImage: 'ubuntu-latest'
@@ -138,6 +137,10 @@ stages:
   jobs:
   - job: setup_docker_kubectl_kind
     steps:
+      - script: |
+          tag=(git tag --sort=-creatordate | head -n 1)
+          echo $tag
+        displayName: setTag
       - task: DockerInstaller@0
         displayName: "Docker Installer"
         inputs:
@@ -153,6 +156,7 @@ stages:
           arguments: 'sigs.k8s.io/kind@v0.14.0'
 
       - script: |
+          echo $tag
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifu \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
