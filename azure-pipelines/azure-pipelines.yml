@@ -31,7 +31,7 @@ pr:
     - CHANGELOG
 
 variables:
-  tag: 'v0.0.1'
+  tag: 'v0.0.3'
 
 pool:
    vmImage: 'ubuntu-latest'
@@ -215,15 +215,15 @@ stages:
           set -e
           kind --version
           kind delete cluster && kind create cluster
-          kind load docker-image edgehub/edgedevice-controller:v0.0.1
-          kind load docker-image edgehub/mockdevice-thermometer:v0.0.1
-          kind load docker-image edgehub/mockdevice-plate-reader:v0.0.1
-          kind load docker-image edgehub/mockdevice-agv:v0.0.1
-          kind load docker-image edgehub/mockdevice-plc:v0.0.1
-          kind load docker-image edgehub/deviceshifu-http-http:v0.0.1    
-          kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
-          kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
-          kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
+          kind load docker-image edgehub/edgedevice-controller:$(tag)
+          kind load docker-image edgehub/mockdevice-thermometer:$(tag)
+          kind load docker-image edgehub/mockdevice-plate-reader:$(tag)
+          kind load docker-image edgehub/mockdevice-agv:$(tag)
+          kind load docker-image edgehub/mockdevice-plc:$(tag)
+          kind load docker-image edgehub/deviceshifu-http-http:$(tag)   
+          kind load docker-image edgehub/deviceshifu-http-mqtt:$(tag)
+          kind load docker-image edgehub/deviceshifu-http-opcua:$(tag)
+          kind load docker-image edgehub/deviceshifu-http-socket:$(tag)
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
           kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
