@@ -33,11 +33,6 @@ pr:
 variables:
   tag: 'v0.0.1'
 
-steps:
-  - script: |
-      $tags = git tag --sort=-creatordate
-      $tag = $tags[0]
-
 pool:
    vmImage: 'ubuntu-latest'
 
@@ -46,6 +41,7 @@ stages:
   jobs:
   - job: go_setup
     steps:
+      
       - task: GoTool@0
         inputs:
           version: '1.18.4'
@@ -136,6 +132,10 @@ stages:
           command: 'build'
           workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
 
+      - script: |
+          $tags = git tag --sort=-creatordate
+          $tag = $tags[0]
+          
 - stage: docker_build_and_kind_e2e_test
   condition: succeeded()
   jobs:
