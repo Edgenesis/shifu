@@ -31,7 +31,7 @@ pr:
     - CHANGELOG
 
 variables:
-  tag: 'v0.0.1'
+  tag:script: export tag=`git tag --sort=-creatordate | head -n 1`
 
 pool:
    vmImage: 'ubuntu-latest'
@@ -41,8 +41,6 @@ stages:
   jobs:
   - job: go_setup
     steps:
-      - script: |
-          export tag=`git tag --sort=-creatordate | head -n 1`
       - task: GoTool@0
         inputs:
           version: '1.18.4'
