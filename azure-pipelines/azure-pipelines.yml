@@ -138,9 +138,9 @@ stages:
   - job: setup_docker_kubectl_kind
     steps:
       - script: |
-          tag=(shell cat version.txt)
+          tag=`git describe --tags` && echo "##vso[task.setvariable variable=tag]$tag"
           echo $tag
-        displayName: setTag
+        displayName: Set the tag name as an environment variable
       - task: DockerInstaller@0
         displayName: "Docker Installer"
         inputs:
