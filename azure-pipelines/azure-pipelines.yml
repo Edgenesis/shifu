@@ -178,8 +178,8 @@ stages:
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
-          -t edgehub/edgedevice-controller-multi:$(tag) --load
-        displayName: build edgehub/edgedevice-controller-multi
+          -t edgehub/edgedevice-controller:$(tag) --load
+        displayName: build edgehub/edgedevice-controller
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
@@ -215,7 +215,7 @@ stages:
           set -e
           kind --version
           kind delete cluster && kind create cluster
-          kind load docker-image edgehub/edgedevice-controller-multi:v0.0.1
+          kind load docker-image edgehub/edgedevice-controller:v0.0.1
           kind load docker-image edgehub/mockdevice-thermometer:v0.0.1
           kind load docker-image edgehub/mockdevice-plate-reader:v0.0.1
           kind load docker-image edgehub/mockdevice-agv:v0.0.1
@@ -314,8 +314,8 @@ stages:
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
-          -t edgehub/edgedevice-controller-multi:$(release_tag) --push
-        displayName: build edgehub/edgedevice-controller-multi
+          -t edgehub/edgedevice-controller:$(release_tag) --push
+        displayName: build edgehub/edgedevice-controller
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
