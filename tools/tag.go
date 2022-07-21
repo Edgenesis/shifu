@@ -63,6 +63,7 @@ func updateTag(files []string, oldTag string, newTag string) error {
 			log.Printf("err cannot open file %s %v", file, err)
 			return err
 		}
+
 		err = replaceTag(file, oldTag, newTag)
 		if err != nil {
 			log.Printf("err file %s cannot modify %v", file.Name(), err)
