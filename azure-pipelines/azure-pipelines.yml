@@ -41,7 +41,8 @@ stages:
   jobs:
   - job: go_setup
     steps:
-      
+      - script: |
+          tag=`git tag --sort=-creatordate | head -n 1`
       - task: GoTool@0
         inputs:
           version: '1.18.4'
@@ -131,10 +132,6 @@ stages:
         inputs:
           command: 'build'
           workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
-
-      - script: |
-          $tag=`git tag --sort=-creatordate | head -n 1`
-
 
 - stage: docker_build_and_kind_e2e_test
   condition: succeeded()
