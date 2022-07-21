@@ -32,8 +32,8 @@ pr:
 
 variables:
   name: tag
-  value: $(shell git tag --sort=creatordate | head -n 1)
-  
+  value: script:｜
+    git tag --sort=-creatordate | head -n 1
 
 pool:
    vmImage: 'ubuntu-latest'
@@ -43,10 +43,6 @@ stages:
   jobs:
   - job: go_setup
     steps:
-      - task: Bash@3
-        inputs:
-           script: ｜
-              echo $(tag)
       - task: GoTool@0
         inputs:
           version: '1.18.4'
