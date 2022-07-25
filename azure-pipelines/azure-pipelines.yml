@@ -31,7 +31,8 @@ pr:
     - CHANGELOG
 
 variables:
-  tag: 'v0.0.1'
+  name: tag
+  value: 
 
 pool:
    vmImage: 'ubuntu-latest'
@@ -136,6 +137,9 @@ stages:
   jobs:
   - job: setup_docker_kubectl_kind
     steps:
+      - script: |
+          tag=`git tag --sort=-creatordate | head -n 1` && echo "##vso[task.setvariable variable=tag]$tag"
+        displayName: Set the tag name as an environment variable
       - task: DockerInstaller@0
         displayName: "Docker Installer"
         inputs:
@@ -151,6 +155,7 @@ stages:
           arguments: 'sigs.k8s.io/kind@v0.14.0'
 
       - script: |
+          echo $tag
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifu \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
@@ -178,8 +183,8 @@ stages:
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
-          -t edgehub/edgedevice-controller-multi:$(tag) --load
-        displayName: build edgehub/edgedevice-controller-multi
+          -t edgehub/shifu-controller:$(tag) --load
+        displayName: build edgehub/shifu-controller
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
@@ -215,15 +220,15 @@ stages:
           set -e
           kind --version
           kind delete cluster && kind create cluster
-          kind load docker-image edgehub/edgedevice-controller-multi:v0.0.1
-          kind load docker-image edgehub/mockdevice-thermometer:v0.0.1
-          kind load docker-image edgehub/mockdevice-plate-reader:v0.0.1
-          kind load docker-image edgehub/mockdevice-agv:v0.0.1
-          kind load docker-image edgehub/mockdevice-plc:v0.0.1
-          kind load docker-image edgehub/deviceshifu-http-http:v0.0.1    
-          kind load docker-image edgehub/deviceshifu-http-mqtt:v0.0.1
-          kind load docker-image edgehub/deviceshifu-http-opcua:v0.0.1
-          kind load docker-image edgehub/deviceshifu-http-socket:v0.0.1
+          kind load docker-image edgehub/shifu-controller:$(tag)
+          kind load docker-image edgehub/mockdevice-thermometer:$(tag)
+          kind load docker-image edgehub/mockdevice-plate-reader:$(tag)
+          kind load docker-image edgehub/mockdevice-agv:$(tag)
+          kind load docker-image edgehub/mockdevice-plc:$(tag)
+          kind load docker-image edgehub/deviceshifu-http-http:$(tag)   
+          kind load docker-image edgehub/deviceshifu-http-mqtt:$(tag)
+          kind load docker-image edgehub/deviceshifu-http-opcua:$(tag)
+          kind load docker-image edgehub/deviceshifu-http-socket:$(tag)
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
           kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
@@ -314,8 +319,8 @@ stages:
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
-          -t edgehub/edgedevice-controller-multi:$(release_tag) --push
-        displayName: build edgehub/edgedevice-controller-multi
+          -t edgehub/shifu-controller:$(release_tag) --push
+        displayName: build edgehub/shifu-controller
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
