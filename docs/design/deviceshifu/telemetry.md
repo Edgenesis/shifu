@@ -32,14 +32,14 @@ Telemetry Settings should consist the following configurable options:
 2. `telemetryTimeoutInMilliseconds` (optionalm, default to `3000`ms)  
   This specifies the default timeout for all configured telemetries in milliseconds.
 
-3. `telemetryMode` (optional, default to `passive`)  
+3. `defaultMode` (optional, default to `passive`)  
   This specifies the polling mode for telemetries.  
-  `passive`  
+  **passive**  
   By default this will be `passive` and `deviceShifu` will not act on the result data besides updating the `EdgeDevice`'s status based on the return code/status.  
-  `active`  
+  **active**  
   If `active` is specified, then each telemetry result will be posted to the endpoint specified `telemetryDefaultActiveEndpoint` via the default north-bound protocol for the specific ***deviceShifu***.
 
-4. `telemetryDefaultActiveEndpoint` (optional if `telemetryMode` is `passive`, required for `telemetryMode: active`)  
+4. `defaultEndpoint` (optional if `telemetryMode` is `passive`, required for `telemetryMode: active`)  
   This specifies the default posting endpoint for telemetries configured.
 
 #### Telemetries
@@ -50,7 +50,11 @@ Telemetries are configured method used by ***deviceShifu*** to query its connect
 
 Telemetry properties are configurable property for each telemetry, it should consists the following:
 
-1. `telemetryActiveEndpoint` (optional if you would like to use `telemetryDefaultActiveEndpoint`, else it will post the specified telemetry's result to the configured endpoint)  
+1. `mode` (optional if you would like to use `defaultMode` and its , else it will post the specified telemetry's result to the configured endpoint)  
+
+2. `activeSettings` (optional if you would like to use the global related settings)
+
+   2.1  `endpoint` (optional if you would like to use the global `defaultEndpoint`)
 
 ## Examples
 
@@ -62,20 +66,27 @@ With the following configuration:
 telemetrySettings:
   telemetryUpdateIntervalInMilliseconds: 6000
   telemetryTimeoutInMilliseconds: 3000
-  telemetryDefaultActiveEndpoint: 8.8.8.8
-  telemetryMode: active
+  defaultMode: active
+  defaultEndpoint: 8.8.8.8
 telemetries:
   device_health:
     properties:
       instruction: hello
-      telemetryActiveEndpoint: 1.2.3.4:8081/api3
+      activeSettings:
+        endpoint: 1.2.3.4:8081/api3
   device_health2:
     properties:
+      mode: passive
       instruction: hello2
+  device_health3:
+    properties:
+      instruction: hello3
 ```
 
-the ***deviceShifu*** will have two telemetries:
+this ***deviceShifu*** will have the following telemetries:
 
-1. query `EdgeDevice` using the `hello` instruction every `6` seconds, with a timeout of `3` seconds and push the result using the north-bound protocol of the ***deviceShifu*** to `1.2.3.4:8081/api3`
+1. *device_health*: query `EdgeDevice` using the `hello` instruction every `6` seconds, with a timeout of `3` seconds and push the result using the north-bound protocol of the ***deviceShifu*** to `1.2.3.4:8081/api3`.
 
-2. query `EdgeDevice` using the `hello2` instruction every `6` seconds, with a timeout of `3` seconds and push the result using the north-bound protocol of the ***deviceShifu*** to `8.8.8.8`
+2. *device_health2*: query `EdgeDevice` using the `hello2` instruction every `6` seconds, with a timeout of `3` seconds and do nothing.
+
+3. *device_health3*: query `EdgeDevice` using the `hello3` instruction every `6` seconds, with a timeout of `3` seconds and push the result using the north-bound protocol of the ***deviceShifu*** to `8.8.8.8`.
