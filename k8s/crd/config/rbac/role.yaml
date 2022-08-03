@@ -31,3 +31,29 @@ rules:
   - get
   - patch
   - update
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservices/status
+  verbs:
+  - get
+  - patch
+  - update
