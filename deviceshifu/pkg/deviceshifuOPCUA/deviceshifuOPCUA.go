@@ -4,37 +4,28 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"log"
 	"net/http"
 	"path"
 	"time"
 
-	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
 	"k8s.io/client-go/rest"
 )
 
 type DeviceShifu struct {
-	Name              string
-	server            *http.Server
-	deviceShifuConfig *DeviceShifuConfig
-	edgeDevice        *v1alpha1.EdgeDevice
-	restClient        *rest.RESTClient
+	base              *deviceshifubase.DeviceShifuBase
+	opcuaInstructions *OPCUAInstructions
 	opcuaClient       *opcua.Client
-}
-
-type DeviceShifuMetaData struct {
-	Name           string
-	ConfigFilePath string
-	KubeConfigPath string
-	Namespace      string
 }
 
 type DeviceShifuOPCUAHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *DeviceShifuInstructionProperty
+	properties     *OPCUAInstructionProperty
 }
 
 type deviceCommandHandler interface {
@@ -42,21 +33,12 @@ type deviceCommandHandler interface {
 }
 
 const (
-	DEVICE_IS_HEALTHY_STR                       string = "Device is healthy"
-	DEVICE_CONFIGMAP_FOLDER_PATH                string = "/etc/edgedevice/config"
-	DEVICE_CONFIGMAP_CERTIFICATE_PATH           string = "/etc/edgedevice/certificate"
-	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR           string = "NULL"
-	DEVICE_NAMESPACE_DEFAULT                    string = "default"
-	DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS        int64  = 3000
-	DEVICE_DEFAULT_PORT_STR                     string = ":8080"
-	DEVICE_DEFAULT_REQUEST_TIMEOUT_MS           int64  = 1000
-	DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS int64  = 1000
-	EDGEDEVICE_STATUS_FAIL                      bool   = false
-	KUBERNETES_CONFIG_DEFAULT                   string = ""
+	DEVICE_CONFIGMAP_CERTIFICATE_PATH string = "/etc/edgedevice/certificate"
+	EDGEDEVICE_STATUS_FAIL            bool   = false
 )
 
 // This function creates a new Device Shifu based on the configuration
-func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
+func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
 	if deviceShifuMetadata.Name == "" {
 		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
 	}
@@ -65,7 +47,12 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		return nil, fmt.Errorf("DeviceShifu's namespace can't be empty\n")
 	}
 
-	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
+	deviceShifuConfig, err := deviceshifubase.NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
+	if err != nil {
+		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+	}
+
+	ocupaInstructions, err := NewOPCUAInstructions(deviceShifuMetadata.ConfigFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
 	}
@@ -78,14 +65,14 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 	client := &rest.RESTClient{}
 	var opcuaClient *opcua.Client
 
-	if deviceShifuMetadata.KubeConfigPath != DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
-		edgeDeviceConfig := &EdgeDeviceConfig{
-			deviceShifuMetadata.Namespace,
-			deviceShifuMetadata.Name,
-			deviceShifuMetadata.KubeConfigPath,
+	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
+		edgeDeviceConfig := &deviceshifubase.EdgeDeviceConfig{
+			NameSpace:      deviceShifuMetadata.Namespace,
+			DeviceName:     deviceShifuMetadata.Name,
+			KubeconfigPath: deviceShifuMetadata.KubeConfigPath,
 		}
 
-		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
+		edgeDevice, client, err = deviceshifubase.NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
 			log.Fatalf("Error retrieving EdgeDevice")
 			return nil, err
@@ -99,11 +86,11 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		// switch for different Shifu Protocols
 		switch protocol := *edgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolOPCUA:
-			for instruction, properties := range deviceShifuConfig.Instructions {
+			for instruction, properties := range ocupaInstructions.Instructions {
 				deviceShifuOPCUAHandlerMetaData := &DeviceShifuOPCUAHandlerMetaData{
 					edgeDevice.Spec,
 					instruction,
-					properties.DeviceShifuInstructionProperties,
+					properties.OPCUAInstructionProperties,
 				}
 
 				ctx := context.Background()
@@ -161,7 +148,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 
 				var handler DeviceCommandHandlerOPCUA
 				if edgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds == nil {
-					timeout := DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS
+					timeout := deviceshifubase.DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS
 					handler = DeviceCommandHandlerOPCUA{opcuaClient, &timeout, deviceShifuOPCUAHandlerMetaData}
 				} else {
 					timeout := edgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds
@@ -173,27 +160,32 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		}
 	}
 
-	ds := &DeviceShifu{
+	dsbase := &deviceshifubase.DeviceShifuBase{
 		Name: deviceShifuMetadata.Name,
-		server: &http.Server{
-			Addr:         DEVICE_DEFAULT_PORT_STR,
+		Server: &http.Server{
+			Addr:         deviceshifubase.DEVICE_DEFAULT_PORT_STR,
 			Handler:      mux,
 			ReadTimeout:  60 * time.Second,
 			WriteTimeout: 60 * time.Second,
 		},
-		deviceShifuConfig: deviceShifuConfig,
-		edgeDevice:        edgeDevice,
-		restClient:        client,
+		DeviceShifuConfig: deviceShifuConfig,
+		EdgeDevice:        edgeDevice,
+		RestClient:        client,
+	}
+
+	ds := &DeviceShifu{
+		base:              dsbase,
+		opcuaInstructions: ocupaInstructions,
 		opcuaClient:       opcuaClient,
 	}
 
-	ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
+	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil
 }
 
 // deviceHealthHandler writes the status as healthy
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
+	fmt.Fprintf(w, deviceshifubase.DEVICE_IS_HEALTHY_STR)
 }
 
 type DeviceCommandHandlerOPCUA struct {
@@ -252,13 +244,13 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 }
 
 func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceShifu %s's http server started\n", ds.Name)
-	return ds.server.ListenAndServe()
+	fmt.Printf("deviceShifu %s's http server started\n", ds.base.Name)
+	return ds.base.Server.ListenAndServe()
 }
 
 func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string) (string, error) {
-	if instructionProperties, exists := ds.deviceShifuConfig.Instructions[instructionName]; exists {
-		return instructionProperties.DeviceShifuInstructionProperties.OPCUANodeID, nil
+	if instructionProperties, exists := ds.opcuaInstructions.Instructions[instructionName]; exists {
+		return instructionProperties.OPCUAInstructionProperties.OPCUANodeID, nil
 	}
 
 	return "", fmt.Errorf("Instruction %v not found in list of deviceShifu instructions", instructionName)
@@ -279,7 +271,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 	}
 
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(DEVICE_DEFAULT_REQUEST_TIMEOUT_MS)*time.Millisecond)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(deviceshifubase.DEVICE_DEFAULT_REQUEST_TIMEOUT_MS)*time.Millisecond)
 	defer cancel()
 
 	resp, err := ds.opcuaClient.ReadWithContext(ctx, req)
@@ -298,149 +290,47 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 	return nil
 }
 
-func (ds *DeviceShifu) collectOPCUATelemetry(telemetry string, telemetryProperties DeviceShifuTelemetryProperties) (bool, error) {
-	if ds.edgeDevice.Spec.Address == nil {
-		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
-	}
+func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
+	if ds.base.EdgeDevice.Spec.Protocol != nil {
+		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
+		case v1alpha1.ProtocolOPCUA:
+			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
+			for telemetry, telemetryProperties := range telemetries {
+				if ds.base.EdgeDevice.Spec.Address == nil {
+					return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
+				}
 
-	if telemetryProperties.DeviceInstructionName == nil {
-		return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.Name, telemetry)
-	}
+				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
+					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+				}
 
-	instruction := *telemetryProperties.DeviceInstructionName
-	nodeID, err := ds.getOPCUANodeIDFromInstructionName(instruction)
-	if err != nil {
-		log.Printf(err.Error())
-		return false, err
-	}
+				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
+				nodeID, err := ds.getOPCUANodeIDFromInstructionName(instruction)
+				if err != nil {
+					log.Printf(err.Error())
+					return false, err
+				}
 
-	if err = ds.requestOPCUANodeID(nodeID); err != nil {
-		log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
-		return false, err
+				if err = ds.requestOPCUANodeID(nodeID); err != nil {
+					log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
+					return false, err
+				}
+
+			}
+		default:
+			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
+			return false, nil
+		}
 	}
 
 	return true, nil
+
 }
 
-func (ds *DeviceShifu) collectOPCUATelemetries() error {
-	telemetryOK := true
-	telemetries := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetries
-	for telemetry, telemetryProperties := range telemetries {
-		status, err := ds.collectOPCUATelemetry(telemetry, telemetryProperties.DeviceShifuTelemetryProperties)
-		if err != nil {
-			log.Printf("Error is: %v", err.Error())
-			telemetryOK = false
-		}
-
-		log.Printf("Status is: %v", status)
-		if status == EDGEDEVICE_STATUS_FAIL && telemetryOK {
-			telemetryOK = false
-		}
-	}
-
-	if telemetryOK {
-		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceRunning)
-	} else {
-		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
-	}
-
-	return nil
-}
-
-func (ds *DeviceShifu) telemetryCollection() error {
-	// TODO: handle interval for different telemetries
-	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
-
-	if ds.edgeDevice.Spec.Protocol != nil {
-		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolOPCUA:
-			ds.collectOPCUATelemetries()
-		default:
-			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
-			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
-		}
-
-		return nil
-	}
-
-	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
-}
-
-func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
-	log.Printf("updating device %v status to: %v\n", ds.Name, edPhase)
-	currEdgeDevice := &v1alpha1.EdgeDevice{}
-	err := ds.restClient.Get().
-		Namespace(ds.edgeDevice.Namespace).
-		Resource(EDGEDEVICE_RESOURCE_STR).
-		Name(ds.Name).
-		Do(context.TODO()).
-		Into(currEdgeDevice)
-
-	if err != nil {
-		log.Printf("Unable to update status, error: %v", err.Error())
-		return
-	}
-
-	if currEdgeDevice.Status.EdgeDevicePhase == nil {
-		edgeDeviceStatus := v1alpha1.EdgeDevicePending
-		currEdgeDevice.Status.EdgeDevicePhase = &edgeDeviceStatus
-	} else {
-		*currEdgeDevice.Status.EdgeDevicePhase = edPhase
-	}
-
-	putResult := &v1alpha1.EdgeDevice{}
-	err = ds.restClient.Put().
-		Namespace(ds.edgeDevice.Namespace).
-		Resource(EDGEDEVICE_RESOURCE_STR).
-		Name(ds.Name).
-		Body(currEdgeDevice).
-		Do(context.TODO()).
-		Into(putResult)
-
-	if err != nil {
-		log.Printf("Unable to update status, error: %v", err)
-	}
-}
-
-func (ds *DeviceShifu) StartTelemetryCollection() error {
-	log.Println("Wait 5 seconds before updating status")
-	time.Sleep(5 * time.Second)
-	telemetryUpdateIntervalMiliseconds := DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS
-
-	if ds.
-		deviceShifuConfig.
-		Telemetries.
-		DeviceShifuTelemetrySettings != nil &&
-		ds.
-			deviceShifuConfig.
-			Telemetries.
-			DeviceShifuTelemetrySettings.
-			DeviceShifuTelemetryUpdateIntervalMiliseconds != nil {
-		telemetryUpdateIntervalMiliseconds = *ds.
-			deviceShifuConfig.
-			Telemetries.
-			DeviceShifuTelemetrySettings.
-			DeviceShifuTelemetryUpdateIntervalMiliseconds
-	}
-
-	for {
-		ds.telemetryCollection()
-		time.Sleep(time.Duration(telemetryUpdateIntervalMiliseconds) * time.Millisecond)
-	}
-}
-
-func (ds *DeviceShifu) Start(stopCh <-chan struct{}) {
-	fmt.Printf("deviceShifu %s started\n", ds.Name)
-
-	go ds.startHttpServer(stopCh)
-	go ds.StartTelemetryCollection()
+func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
+	return ds.base.Start(stopCh, ds.collectOPCUATelemetry)
 }
 
 func (ds *DeviceShifu) Stop() error {
-	if err := ds.server.Shutdown(context.TODO()); err != nil {
-		return err
-	}
-
-	fmt.Printf("deviceShifu %s's http server stopped\n", ds.Name)
-	return nil
+	return ds.base.Stop()
 }

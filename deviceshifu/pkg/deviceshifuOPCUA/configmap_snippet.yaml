@@ -3,7 +3,7 @@ data:
     driverSku: Edgenesis Mock Device
     driverImage: edgenesis/mockdevice:v0.0.1
     driverExecution: python mock_driver.py
-  instructions: |
+  opcuaInstructions: |
     get_value:
       instructionProperties:
         OPCUANodeID: "ns=2;i=2"
@@ -15,7 +15,7 @@ data:
         OPCUANodeID: "i=2261"
   telemetries: |
     telemetrySettings:
-      telemetryUpdateIntervalInMiliseconds: 1000
+      telemetryUpdateIntervalInMilliseconds: 1000
     telemetries:
       device_health:
         properties:
