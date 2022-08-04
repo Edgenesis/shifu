@@ -12,7 +12,6 @@ import (
 	"time"
 
 	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
-	"k8s.io/client-go/rest"
 )
 
 type DeviceShifu struct {
@@ -32,50 +31,18 @@ type deviceCommandHandler interface {
 }
 
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
-	if deviceShifuMetadata.Name == "" {
-		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
-	}
-
-	if deviceShifuMetadata.ConfigFilePath == "" {
-		deviceShifuMetadata.ConfigFilePath = deviceshifubase.DEVICE_CONFIGMAP_FOLDER_PATH
-	}
-
-	deviceShifuConfig, err := deviceshifubase.NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
+	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+		return nil, err
 	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", deviceHealthHandler)
-	mux.HandleFunc("/", instructionNotFoundHandler)
-
-	edgeDevice := &v1alpha1.EdgeDevice{}
-	client := &rest.RESTClient{}
 	var socketConnection net.Conn
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
-		edgeDeviceConfig := &deviceshifubase.EdgeDeviceConfig{
-			NameSpace:      deviceShifuMetadata.Namespace,
-			DeviceName:     deviceShifuMetadata.Name,
-			KubeconfigPath: deviceShifuMetadata.KubeConfigPath,
-		}
-
-		edgeDevice, client, err = deviceshifubase.NewEdgeDevice(edgeDeviceConfig)
-		if err != nil {
-			log.Fatalf("Error retrieving EdgeDevice")
-			return nil, err
-		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
-			return nil, err
-		}
-
-		switch protocol := *edgeDevice.Spec.Protocol; protocol {
+		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolSocket:
 			// Open the connection:
-			connectionType := edgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
-			encoding := edgeDevice.Spec.ProtocolSettings.SocketSetting.Encoding
+			connectionType := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
+			encoding := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.Encoding
 			if connectionType == nil || *connectionType != "tcp" {
 				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
 			}
@@ -85,15 +52,15 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				return nil, fmt.Errorf("Encoding error")
 			}
 
-			socketConnection, err := net.Dial(*connectionType, *edgeDevice.Spec.Address)
+			socketConnection, err := net.Dial(*connectionType, *base.EdgeDevice.Spec.Address)
 			if err != nil {
-				return nil, fmt.Errorf("Cannot connect to %v", *edgeDevice.Spec.Address)
+				return nil, fmt.Errorf("Cannot connect to %v", *base.EdgeDevice.Spec.Address)
 			}
 
-			log.Printf("Connected to '%v'\n", *edgeDevice.Spec.Address)
-			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
+			log.Printf("Connected to '%v'\n", *base.EdgeDevice.Spec.Address)
+			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
 				deviceShifuSocketHandlerMetaData := &DeviceShifuSocketHandlerMetaData{
-					edgeDevice.Spec,
+					base.EdgeDevice.Spec,
 					instruction,
 					properties,
 					&socketConnection,
@@ -104,31 +71,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		}
 	}
 
-	dsbase := &deviceshifubase.DeviceShifuBase{
-		Name: deviceShifuMetadata.Name,
-		Server: &http.Server{
-			Addr:         deviceshifubase.DEVICE_DEFAULT_PORT_STR,
-			Handler:      mux,
-			ReadTimeout:  60 * time.Second,
-			WriteTimeout: 60 * time.Second,
-		},
-		DeviceShifuConfig: deviceShifuConfig,
-		EdgeDevice:        edgeDevice,
-		RestClient:        client,
-	}
-
-	ds := &DeviceShifu{base: dsbase, socketConnection: &socketConnection}
+	ds := &DeviceShifu{base: base, socketConnection: &socketConnection}
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil
-}
-
-func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, deviceshifubase.DEVICE_IS_HEALTHY_STR)
-}
-
-func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Error: Device instruction does not exist!")
-	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
 func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {

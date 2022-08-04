@@ -13,7 +13,6 @@ import (
 	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
-	"k8s.io/client-go/rest"
 )
 
 type DeviceShifu struct {
@@ -39,62 +38,34 @@ const (
 
 // This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
-	if deviceShifuMetadata.Name == "" {
-		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
-	}
-
 	if deviceShifuMetadata.Namespace == "" {
 		return nil, fmt.Errorf("DeviceShifu's namespace can't be empty\n")
 	}
 
-	deviceShifuConfig, err := deviceshifubase.NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
+	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+		return nil, err
 	}
 
 	ocupaInstructions, err := NewOPCUAInstructions(deviceShifuMetadata.ConfigFilePath)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
 	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", deviceHealthHandler)
-	mux.HandleFunc("/", instructionNotFoundHandler)
-
-	edgeDevice := &v1alpha1.EdgeDevice{}
-	client := &rest.RESTClient{}
 	var opcuaClient *opcua.Client
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
-		edgeDeviceConfig := &deviceshifubase.EdgeDeviceConfig{
-			NameSpace:      deviceShifuMetadata.Namespace,
-			DeviceName:     deviceShifuMetadata.Name,
-			KubeconfigPath: deviceShifuMetadata.KubeConfigPath,
-		}
-
-		edgeDevice, client, err = deviceshifubase.NewEdgeDevice(edgeDeviceConfig)
-		if err != nil {
-			log.Fatalf("Error retrieving EdgeDevice")
-			return nil, err
-		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
-			return nil, err
-		}
-
 		// switch for different Shifu Protocols
-		switch protocol := *edgeDevice.Spec.Protocol; protocol {
+		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolOPCUA:
 			for instruction, properties := range ocupaInstructions.Instructions {
 				deviceShifuOPCUAHandlerMetaData := &DeviceShifuOPCUAHandlerMetaData{
-					edgeDevice.Spec,
+					base.EdgeDevice.Spec,
 					instruction,
 					properties.OPCUAInstructionProperties,
 				}
 
 				ctx := context.Background()
-				endpoints, err := opcua.GetEndpoints(ctx, *edgeDevice.Spec.Address)
+				endpoints, err := opcua.GetEndpoints(ctx, *base.EdgeDevice.Spec.Address)
 				if err != nil {
 					log.Fatal("Cannot Get EndPoint Description")
 					return nil, err
@@ -112,7 +83,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 					opcua.SecurityMode(ua.MessageSecurityModeNone),
 				)
 
-				var setting = *edgeDevice.Spec.ProtocolSettings.OPCUASetting
+				var setting = *base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting
 				switch ua.UserTokenTypeFromString(*setting.AuthenticationMode) {
 				case ua.UserTokenTypeIssuedToken:
 					options = append(options, opcua.AuthIssuedToken([]byte(*setting.IssuedToken)))
@@ -141,17 +112,17 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				}
 
 				options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*setting.AuthenticationMode)))
-				opcuaClient = opcua.NewClient(*edgeDevice.Spec.Address, options...)
+				opcuaClient = opcua.NewClient(*base.EdgeDevice.Spec.Address, options...)
 				if err := opcuaClient.Connect(ctx); err != nil {
 					log.Fatalf("Unable to connect to OPC UA server, error: %v", err)
 				}
 
 				var handler DeviceCommandHandlerOPCUA
-				if edgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds == nil {
+				if base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds == nil {
 					timeout := deviceshifubase.DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS
 					handler = DeviceCommandHandlerOPCUA{opcuaClient, &timeout, deviceShifuOPCUAHandlerMetaData}
 				} else {
-					timeout := edgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds
+					timeout := base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds
 					handler = DeviceCommandHandlerOPCUA{opcuaClient, timeout, deviceShifuOPCUAHandlerMetaData}
 				}
 
@@ -160,21 +131,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		}
 	}
 
-	dsbase := &deviceshifubase.DeviceShifuBase{
-		Name: deviceShifuMetadata.Name,
-		Server: &http.Server{
-			Addr:         deviceshifubase.DEVICE_DEFAULT_PORT_STR,
-			Handler:      mux,
-			ReadTimeout:  60 * time.Second,
-			WriteTimeout: 60 * time.Second,
-		},
-		DeviceShifuConfig: deviceShifuConfig,
-		EdgeDevice:        edgeDevice,
-		RestClient:        client,
-	}
-
 	ds := &DeviceShifu{
-		base:              dsbase,
+		base:              base,
 		opcuaInstructions: ocupaInstructions,
 		opcuaClient:       opcuaClient,
 	}
@@ -183,20 +141,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	return ds, nil
 }
 
-// deviceHealthHandler writes the status as healthy
-func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, deviceshifubase.DEVICE_IS_HEALTHY_STR)
-}
-
 type DeviceCommandHandlerOPCUA struct {
 	client                          *opcua.Client
 	timeout                         *int64
 	deviceShifuOPCUAHandlerMetaData *DeviceShifuOPCUAHandlerMetaData
-}
-
-func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Error: Device instruction does not exist!")
-	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
 func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {

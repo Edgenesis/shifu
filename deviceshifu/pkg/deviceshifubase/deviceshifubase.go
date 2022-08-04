@@ -54,6 +54,71 @@ const (
 	DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS       int    = 3
 )
 
+func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.ServeMux, error) {
+	if deviceShifuMetadata.Name == "" {
+		return nil, nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
+	}
+
+	if deviceShifuMetadata.ConfigFilePath == "" {
+		deviceShifuMetadata.ConfigFilePath = DEVICE_CONFIGMAP_FOLDER_PATH
+	}
+
+	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
+	if err != nil {
+		return nil, nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/health", deviceHealthHandler)
+	mux.HandleFunc("/", instructionNotFoundHandler)
+
+	edgeDevice := &v1alpha1.EdgeDevice{}
+	client := &rest.RESTClient{}
+
+	if deviceShifuMetadata.KubeConfigPath != DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
+		edgeDeviceConfig := &EdgeDeviceConfig{
+			NameSpace:      deviceShifuMetadata.Namespace,
+			DeviceName:     deviceShifuMetadata.Name,
+			KubeconfigPath: deviceShifuMetadata.KubeConfigPath,
+		}
+
+		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
+		if err != nil {
+			log.Fatalf("Error retrieving EdgeDevice")
+			return nil, nil, err
+		}
+
+		if &edgeDevice.Spec == nil {
+			log.Fatalf("edgeDeviceConfig.Spec is nil")
+			return nil, nil, err
+		}
+	}
+
+	base := &DeviceShifuBase{
+		Name: deviceShifuMetadata.Name,
+		Server: &http.Server{
+			Addr:         DEVICE_DEFAULT_PORT_STR,
+			Handler:      mux,
+			ReadTimeout:  60 * time.Second,
+			WriteTimeout: 60 * time.Second,
+		},
+		DeviceShifuConfig: deviceShifuConfig,
+		EdgeDevice:        edgeDevice,
+		RestClient:        client,
+	}
+
+	return base, mux, nil
+}
+
+func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
+}
+
+func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
+	log.Printf("Error: Device instruction does not exist!")
+	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
+}
+
 func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
 	log.Printf("updating device %v status to: %v\n", ds.Name, edPhase)
 	currEdgeDevice := &v1alpha1.EdgeDevice{}
@@ -145,7 +210,7 @@ func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {
 func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	log.Println("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
-	telemetryUpdateIntervalMiliseconds := DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS
+	telemetryUpdateIntervalInMilliseconds := DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS
 
 	if ds.
 		DeviceShifuConfig.
@@ -156,7 +221,7 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 			Telemetries.
 			DeviceShifuTelemetrySettings.
 			DeviceShifuTelemetryUpdateIntervalInMilliseconds != nil {
-		telemetryUpdateIntervalMiliseconds = *ds.
+		telemetryUpdateIntervalInMilliseconds = *ds.
 			DeviceShifuConfig.
 			Telemetries.
 			DeviceShifuTelemetrySettings.
@@ -165,7 +230,7 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 
 	for {
 		ds.telemetryCollection(fn)
-		time.Sleep(time.Duration(telemetryUpdateIntervalMiliseconds) * time.Millisecond)
+		time.Sleep(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond)
 	}
 }
 

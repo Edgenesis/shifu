@@ -11,7 +11,6 @@ import (
 
 	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"k8s.io/client-go/rest"
 )
 
 type DeviceShifu struct {
@@ -35,47 +34,15 @@ var (
 )
 
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
-	if deviceShifuMetadata.Name == "" {
-		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
-	}
-
-	if deviceShifuMetadata.ConfigFilePath == "" {
-		deviceShifuMetadata.ConfigFilePath = deviceshifubase.DEVICE_CONFIGMAP_FOLDER_PATH
-	}
-
-	deviceShifuConfig, err := deviceshifubase.NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
+	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+		return nil, err
 	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", deviceHealthHandler)
-	mux.HandleFunc("/", instructionNotFoundHandler)
-
-	edgeDevice := &v1alpha1.EdgeDevice{}
-	client := &rest.RESTClient{}
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
-		edgeDeviceConfig := &deviceshifubase.EdgeDeviceConfig{
-			NameSpace:      deviceShifuMetadata.Namespace,
-			DeviceName:     deviceShifuMetadata.Name,
-			KubeconfigPath: deviceShifuMetadata.KubeConfigPath,
-		}
-
-		edgeDevice, client, err = deviceshifubase.NewEdgeDevice(edgeDeviceConfig)
-		if err != nil {
-			log.Fatalf("Error retrieving EdgeDevice")
-			return nil, err
-		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
-			return nil, err
-		}
-
-		switch protocol := *edgeDevice.Spec.Protocol; protocol {
+		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
-			mqttSetting := *edgeDevice.Spec.ProtocolSettings.MQTTSetting
+			mqttSetting := *base.EdgeDevice.Spec.ProtocolSettings.MQTTSetting
 			var mqttServerAddress string
 			if mqttSetting.MQTTTopic == nil || *mqttSetting.MQTTTopic == "" {
 				return nil, fmt.Errorf("MQTT Topic cannot be empty")
@@ -84,14 +51,14 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
 				// return nil, fmt.Errorf("MQTT server cannot be empty")
 				log.Println("MQTT Server Address is empty, use address instead")
-				mqttServerAddress = *edgeDevice.Spec.Address
+				mqttServerAddress = *base.EdgeDevice.Spec.Address
 			} else {
 				mqttServerAddress = *mqttSetting.MQTTServerAddress
 			}
 
 			opts := mqtt.NewClientOptions()
 			opts.AddBroker(fmt.Sprintf("tcp://%s", mqttServerAddress))
-			opts.SetClientID(*&edgeDeviceConfig.DeviceName)
+			opts.SetClientID(*&base.EdgeDevice.Name)
 			opts.SetDefaultPublishHandler(messagePubHandler)
 			opts.OnConnect = connectHandler
 			opts.OnConnectionLost = connectLostHandler
@@ -103,28 +70,14 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			sub(client, *mqttSetting.MQTTTopic)
 
 			deviceShifuMQTTHandlerMetaData := &DeviceShifuMQTTHandlerMetaData{
-				edgeDevice.Spec,
+				base.EdgeDevice.Spec,
 			}
 
 			handler := DeviceCommandHandlerMQTT{deviceShifuMQTTHandlerMetaData}
 			mux.HandleFunc("/"+MQTT_DATA_ENDPOINT, handler.commandHandleFunc())
 		}
 	}
-
-	dsbase := &deviceshifubase.DeviceShifuBase{
-		Name: deviceShifuMetadata.Name,
-		Server: &http.Server{
-			Addr:         deviceshifubase.DEVICE_DEFAULT_PORT_STR,
-			Handler:      mux,
-			ReadTimeout:  60 * time.Second,
-			WriteTimeout: 60 * time.Second,
-		},
-		DeviceShifuConfig: deviceShifuConfig,
-		EdgeDevice:        edgeDevice,
-		RestClient:        client,
-	}
-
-	ds := &DeviceShifu{base: dsbase}
+	ds := &DeviceShifu{base: base}
 
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil

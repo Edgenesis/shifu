@@ -44,45 +44,18 @@ var (
 
 // This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
-	if deviceShifuMetadata.Name == "" {
-		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
-	}
-
 	if deviceShifuMetadata.Namespace == "" {
 		return nil, fmt.Errorf("DeviceShifu's namespace can't be empty\n")
 	}
 
-	deviceShifuConfig, err := deviceshifubase.NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
+	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+		return nil, err
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", deviceHealthHandler)
-	mux.HandleFunc("/", instructionNotFoundHandler)
-
-	edgeDevice := &v1alpha1.EdgeDevice{}
-	client := &rest.RESTClient{}
-
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
-		edgeDeviceConfig := &deviceshifubase.EdgeDeviceConfig{
-			deviceShifuMetadata.Namespace,
-			deviceShifuMetadata.Name,
-			deviceShifuMetadata.KubeConfigPath,
-		}
 
-		edgeDevice, client, err = deviceshifubase.NewEdgeDevice(edgeDeviceConfig)
-		if err != nil {
-			log.Fatalf("Error retrieving EdgeDevice")
-			return nil, err
-		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
-			return nil, err
-		}
-
-		instructionSettings = deviceShifuConfig.Instructions.InstructionSettings
+		instructionSettings = base.DeviceShifuConfig.Instructions.InstructionSettings
 		if instructionSettings == nil {
 			instructionSettings = &deviceshifubase.DeviceShifuInstructionSettings{}
 		}
@@ -96,32 +69,32 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		}
 
 		// switch for different Shifu Protocols
-		switch protocol := *edgeDevice.Spec.Protocol; protocol {
+		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
-			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
+			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
 				deviceShifuHTTPHandlerMetaData := &DeviceShifuHTTPHandlerMetaData{
-					edgeDevice.Spec,
+					base.EdgeDevice.Spec,
 					instruction,
 					properties,
 				}
-				handler := DeviceCommandHandlerHTTP{client, deviceShifuHTTPHandlerMetaData}
+				handler := DeviceCommandHandlerHTTP{base.RestClient, deviceShifuHTTPHandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		case v1alpha1.ProtocolHTTPCommandline:
-			driverExecution := deviceShifuConfig.DriverProperties.DriverExecution
+			driverExecution := base.DeviceShifuConfig.DriverProperties.DriverExecution
 			if driverExecution == "" {
 				return nil, fmt.Errorf("driverExecution cannot be empty")
 			}
 
-			for instruction, properties := range deviceShifuConfig.Instructions.Instructions {
+			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
 				deviceShifuHTTPCommandlineHandlerMetaData := &DeviceShifuHTTPCommandlineHandlerMetadata{
-					edgeDevice.Spec,
+					base.EdgeDevice.Spec,
 					instruction,
 					properties,
-					deviceShifuConfig.DriverProperties.DriverExecution,
+					base.DeviceShifuConfig.DriverProperties.DriverExecution,
 				}
 
-				handler := DeviceCommandHandlerHTTPCommandline{client, deviceShifuHTTPCommandlineHandlerMetaData}
+				handler := DeviceCommandHandlerHTTPCommandline{base.RestClient, deviceShifuHTTPCommandlineHandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		default:
@@ -130,20 +103,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		}
 	}
 
-	dsbase := &deviceshifubase.DeviceShifuBase{
-		Name: deviceShifuMetadata.Name,
-		Server: &http.Server{
-			Addr:         deviceshifubase.DEVICE_DEFAULT_PORT_STR,
-			Handler:      mux,
-			ReadTimeout:  60 * time.Second,
-			WriteTimeout: 60 * time.Second,
-		},
-		DeviceShifuConfig: deviceShifuConfig,
-		EdgeDevice:        edgeDevice,
-		RestClient:        client,
-	}
-
-	ds := &DeviceShifu{base: dsbase}
+	ds := &DeviceShifu{base: base}
 
 	if err := ds.base.ValidateTelemetryConfig(); err != nil {
 		log.Println(err)
