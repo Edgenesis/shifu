@@ -52,6 +52,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 					DefaultValue: nil,
 				},
 			},
+			nil,
 		},
 		"start": nil,
 		"stop":  nil,

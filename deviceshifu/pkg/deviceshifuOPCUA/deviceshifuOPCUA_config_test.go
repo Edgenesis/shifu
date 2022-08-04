@@ -23,7 +23,7 @@ var MOCK_DEVICE_CONFIG_FOLDER = path.Join("etc", "edgedevice", "config")
 type ConfigMapData struct {
 	Data struct {
 		DriverProperties string `yaml:"driverProperties"`
-		Instructions     string `yaml:"opcuaInstructions"`
+		Instructions     string `yaml:"instructions"`
 		Telemetries      string `yaml:"telemetries"`
 	} `yaml:"data"`
 }
@@ -89,7 +89,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	mockintructions, err := NewOPCUAInstructions(MOCK_DEVICE_CONFIG_FOLDER)
+	mockintructions := CreateOPCUAInstructions(&mockdsc.Instructions)
 
 	eq := reflect.DeepEqual(mockDeviceDriverProperties, mockdsc.DriverProperties)
 	if !eq {
@@ -122,7 +122,7 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 
 	var MOCK_DEVICE_CONFIG_MAPPING = map[string]string{
 		path.Join(MOCK_DEVICE_CONFIG_FOLDER, deviceshifubase.CM_DRIVERPROPERTIES_STR): cmData.Data.DriverProperties,
-		path.Join(MOCK_DEVICE_CONFIG_FOLDER, OPCUA_INSTRUCTIONS_STR):                  cmData.Data.Instructions,
+		path.Join(MOCK_DEVICE_CONFIG_FOLDER, deviceshifubase.CM_INSTRUCTIONS_STR):     cmData.Data.Instructions,
 		path.Join(MOCK_DEVICE_CONFIG_FOLDER, deviceshifubase.CM_TELEMETRIES_STR):      cmData.Data.Telemetries,
 	}
 

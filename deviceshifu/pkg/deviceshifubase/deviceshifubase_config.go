@@ -38,6 +38,7 @@ type DeviceShifuInstructionSettings struct {
 
 type DeviceShifuInstruction struct {
 	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
+	DeviceShifuProtocolProperties    map[string]string                `yaml:"protocolPropertyList,omitempty"`
 }
 
 type DeviceShifuInstructionProperty struct {

@@ -47,7 +47,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, err
 	}
 
-	ocupaInstructions, err := NewOPCUAInstructions(deviceShifuMetadata.ConfigFilePath)
+	opcuaInstructions := CreateOPCUAInstructions(&base.DeviceShifuConfig.Instructions)
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
 	}
@@ -57,11 +57,11 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		// switch for different Shifu Protocols
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolOPCUA:
-			for instruction, properties := range ocupaInstructions.Instructions {
+			for instruction, properties := range opcuaInstructions.Instructions {
 				deviceShifuOPCUAHandlerMetaData := &DeviceShifuOPCUAHandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
-					properties.OPCUAInstructionProperties,
+					properties.OPCUAInstructionProperty,
 				}
 
 				ctx := context.Background()
@@ -133,7 +133,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 	ds := &DeviceShifu{
 		base:              base,
-		opcuaInstructions: ocupaInstructions,
+		opcuaInstructions: opcuaInstructions,
 		opcuaClient:       opcuaClient,
 	}
 
@@ -198,7 +198,7 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 
 func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string) (string, error) {
 	if instructionProperties, exists := ds.opcuaInstructions.Instructions[instructionName]; exists {
-		return instructionProperties.OPCUAInstructionProperties.OPCUANodeID, nil
+		return instructionProperties.OPCUAInstructionProperty.OPCUANodeID, nil
 	}
 
 	return "", fmt.Errorf("Instruction %v not found in list of deviceShifu instructions", instructionName)
