@@ -37,9 +37,10 @@ kind: TelemetryService
 metadata:
   name: push-endpoint-1
 spec:
-  serviceType: HTTP
-  serviceSettings: 
-    - url: 1.2.3.4:1234/api1
+  type: HTTP
+  address: 1.2.3.4:1234/api1
+  serviceSettings:
+    HTTPSettings:
       username: admin
       password: password
 ```
