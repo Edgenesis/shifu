@@ -23,19 +23,33 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// HTTPSetting defines HTTP specific settings when connecting to an EdgeDevice
+type HTTPSetting struct {
+	Username *string `json:"username,omitempty"`
+	Password *string `json:"password,omitempty"`
+}
+
+// ProtocolSettings defines protocol settings when connecting to an EdgeDevice
+type ServiceSettings struct {
+	HTTPSetting *HTTPSetting `json:"HTTPSetting,omitempty"`
+}
+
 // TelemetryServiceSpec defines the desired state of TelemetryService
 type TelemetryServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	// Foo is an example field of TelemetryService. Edit telemetryservice_types.go to remove/update
-	Foo string `json:"foo,omitempty"`
+	Type            *string            `json:"type,omitempty"`
+	Address         *string            `json:"address,omitempty"`
+	ServiceSettings *ServiceSettings   `json:"serviceSettings,omitempty"`
+	CustomMetadata  *map[string]string `json:"customMetadata,omitempty"`
 }
 
 // TelemetryServiceStatus defines the observed state of TelemetryService
 type TelemetryServiceStatus struct {
 	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
+	TelemetryServicePhase *EdgeDevicePhase `json:"telemetryservicephase,omitempty"`
 }
 
 //+kubebuilder:object:root=true

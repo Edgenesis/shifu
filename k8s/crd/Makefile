@@ -45,7 +45,7 @@ kube-builder-create-api-edgedevice:
 
 download: controller-gen kustomize
 
-generate-controller-yaml: kustomize manifests
+generate-controller-yaml: kustomize manifests generate fmt vet
 	$(KUSTOMIZE) build config/crd > install/config_crd.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default > install/config_default.yaml

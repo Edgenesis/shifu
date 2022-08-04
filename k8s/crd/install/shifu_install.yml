@@ -159,13 +159,37 @@ spec:
           spec:
             description: TelemetryServiceSpec defines the desired state of TelemetryService
             properties:
-              foo:
-                description: Foo is an example field of TelemetryService. Edit telemetryservice_types.go
-                  to remove/update
+              address:
+                type: string
+              customMetadata:
+                additionalProperties:
+                  type: string
+                type: object
+              serviceSettings:
+                description: ProtocolSettings defines protocol settings when connecting
+                  to an EdgeDevice
+                properties:
+                  HTTPSetting:
+                    description: HTTPSetting defines HTTP specific settings when connecting
+                      to an EdgeDevice
+                    properties:
+                      password:
+                        type: string
+                      username:
+                        type: string
+                    type: object
+                type: object
+              type:
                 type: string
             type: object
           status:
             description: TelemetryServiceStatus defines the observed state of TelemetryService
+            properties:
+              telemetryservicephase:
+                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
+                  of cluster Important: Run "make" to regenerate code after modifying
+                  this file'
+                type: string
             type: object
         type: object
     served: true
@@ -475,6 +499,30 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
   name: edgedevice-clusterrole
+subjects:
+- kind: ServiceAccount
+  name: edgedevice-sa
+  namespace: deviceshifu
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: edgedevice-telemetryservice-clusterrole
+rules:
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservice
+  verbs: ["get", "update"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: edgedevice-telemetryservice-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: edgedevice-telemetryservice-clusterrole
 subjects:
 - kind: ServiceAccount
   name: edgedevice-sa

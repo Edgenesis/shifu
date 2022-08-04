@@ -47,10 +47,9 @@ type TelemetryServiceReconciler struct {
 // For more details, check Reconcile and its Result here:
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 func (r *TelemetryServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+	rlog := log.FromContext(ctx)
 
-	// TODO(user): your logic here
-	ts := v1alpha1.TelemetryService{}
+	ts := &v1alpha1.TelemetryService{}
 	if err := r.Get(ctx, req.NamespacedName, ts); err != nil {
 		rlog.Error(err, "Unable to fetch TelemetryService")
 		// we'll ignore not-found errors, since they can't be fixed by an immediate
