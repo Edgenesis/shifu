@@ -24,7 +24,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
 
-	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
+	v1alpha1 "edgenesis.io/shifu/api/v1alpha1"
 )
 
 // TelemetryServiceReconciler reconciles a TelemetryService object
