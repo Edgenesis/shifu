@@ -2,39 +2,27 @@ package deviceshifuSocket
 
 import (
 	"bufio"
-	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 	"time"
 
-	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
-	"k8s.io/client-go/rest"
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 )
 
 type DeviceShifu struct {
-	Name              string
-	server            *http.Server
-	deviceShifuConfig *DeviceShifuConfig
-	edgeDevice        *v1alpha1.EdgeDevice
-	restClient        *rest.RESTClient
-	socketConnection  *net.Conn
-}
-
-type DeviceShifuMetaData struct {
-	Name           string
-	ConfigFilePath string
-	KubeConfigPath string
-	Namespace      string
+	base             *deviceshifubase.DeviceShifuBase
+	socketConnection *net.Conn
 }
 
 type DeviceShifuSocketHandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *DeviceShifuInstruction
+	properties     *deviceshifubase.DeviceShifuInstruction
 	connection     *net.Conn
 }
 
@@ -42,61 +30,19 @@ type deviceCommandHandler interface {
 	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
 }
 
-const (
-	DEVICE_IS_HEALTHY_STR                       string = "Device is healthy"
-	DEVICE_CONFIGMAP_FOLDER_PATH                string = "/etc/edgedevice/config"
-	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR           string = "NULL"
-	DEVICE_NAMESPACE_DEFAULT                    string = "default"
-	DEVICE_DEFAULT_PORT_STR                     string = ":8080"
-	DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS int64  = 1000
-	KUBERNETES_CONFIG_DEFAULT                   string = ""
-)
-
-func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
-	if deviceShifuMetadata.Name == "" {
-		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
-	}
-
-	if deviceShifuMetadata.ConfigFilePath == "" {
-		deviceShifuMetadata.ConfigFilePath = DEVICE_CONFIGMAP_FOLDER_PATH
-	}
-
-	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
+func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
+	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+		return nil, err
 	}
-
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", deviceHealthHandler)
-	mux.HandleFunc("/", instructionNotFoundHandler)
-
-	edgeDevice := &v1alpha1.EdgeDevice{}
-	client := &rest.RESTClient{}
 	var socketConnection net.Conn
 
-	if deviceShifuMetadata.KubeConfigPath != DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
-		edgeDeviceConfig := &EdgeDeviceConfig{
-			deviceShifuMetadata.Namespace,
-			deviceShifuMetadata.Name,
-			deviceShifuMetadata.KubeConfigPath,
-		}
-
-		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
-		if err != nil {
-			log.Fatalf("Error retrieving EdgeDevice")
-			return nil, err
-		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
-			return nil, err
-		}
-
-		switch protocol := *edgeDevice.Spec.Protocol; protocol {
+	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
+		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolSocket:
 			// Open the connection:
-			connectionType := edgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
-			encoding := edgeDevice.Spec.ProtocolSettings.SocketSetting.Encoding
+			connectionType := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
+			encoding := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.Encoding
 			if connectionType == nil || *connectionType != "tcp" {
 				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
 			}
@@ -106,15 +52,15 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 				return nil, fmt.Errorf("Encoding error")
 			}
 
-			socketConnection, err := net.Dial(*connectionType, *edgeDevice.Spec.Address)
+			socketConnection, err := net.Dial(*connectionType, *base.EdgeDevice.Spec.Address)
 			if err != nil {
-				return nil, fmt.Errorf("Cannot connect to %v", *edgeDevice.Spec.Address)
+				return nil, fmt.Errorf("Cannot connect to %v", *base.EdgeDevice.Spec.Address)
 			}
 
-			log.Printf("Connected to '%v'\n", *edgeDevice.Spec.Address)
-			for instruction, properties := range deviceShifuConfig.Instructions {
+			log.Printf("Connected to '%v'\n", *base.EdgeDevice.Spec.Address)
+			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
 				deviceShifuSocketHandlerMetaData := &DeviceShifuSocketHandlerMetaData{
-					edgeDevice.Spec,
+					base.EdgeDevice.Spec,
 					instruction,
 					properties,
 					&socketConnection,
@@ -125,31 +71,9 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 		}
 	}
 
-	ds := &DeviceShifu{
-		Name: deviceShifuMetadata.Name,
-		server: &http.Server{
-			Addr:         DEVICE_DEFAULT_PORT_STR,
-			Handler:      mux,
-			ReadTimeout:  60 * time.Second,
-			WriteTimeout: 60 * time.Second,
-		},
-		deviceShifuConfig: deviceShifuConfig,
-		edgeDevice:        edgeDevice,
-		restClient:        client,
-		socketConnection:  &socketConnection,
-	}
-
-	ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
+	ds := &DeviceShifu{base: base, socketConnection: &socketConnection}
+	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil
-}
-
-func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
-}
-
-func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Error: Device instruction does not exist!")
-	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
 func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
@@ -261,146 +185,41 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 }
 
 func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceShifu %s's http server started\n", ds.Name)
-	return ds.server.ListenAndServe()
+	fmt.Printf("deviceShifu %s's http server started\n", ds.base.Name)
+	return ds.base.Server.ListenAndServe()
 }
 
 // TODO: update configs
 // TODO: update status based on telemetry
 
 func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
-	if ds.edgeDevice.Spec.Address == nil {
-		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
-	}
-	
-	conn, err := net.Dial("tcp", *ds.edgeDevice.Spec.Address)
-	if err != nil {
-		log.Printf("error checking telemetry: error: %v", err.Error())
-		return false, err
+	if ds.base.EdgeDevice.Spec.Address == nil {
+		return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
 	}
 
-	defer conn.Close()
+	if ds.base.EdgeDevice.Spec.Protocol != nil {
+		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
+		case v1alpha1.ProtocolSocket:
+			conn, err := net.Dial("tcp", *ds.base.EdgeDevice.Spec.Address)
+			if err != nil {
+				log.Printf("error checking telemetry: error: %v", err.Error())
+				return false, err
+			}
+
+			defer conn.Close()
+			return true, nil
+		default:
+			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
+			return false, nil
+		}
+	}
 	return true, nil
 }
 
-func (ds *DeviceShifu) collectSocketTelemetries() error {
-	telemetryOK := true
-	status, err := ds.collectSocketTelemetry()
-	log.Printf("Status is: %v", status)
-	if err != nil {
-		log.Printf("Error is: %v", err.Error())
-		telemetryOK = false
-	}
-
-	if !status && telemetryOK {
-		telemetryOK = false
-	}
-
-	if telemetryOK {
-		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceRunning)
-	} else {
-		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
-	}
-
-	return nil
-}
-
-func (ds *DeviceShifu) telemetryCollection() error {
-	// TODO: handle interval for different telemetries
-	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
-
-	if ds.edgeDevice.Spec.Protocol != nil {
-		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolSocket:
-			ds.collectSocketTelemetries()
-		default:
-			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
-			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
-		}
-
-		return nil
-	}
-
-	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
-}
-
-func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
-	log.Printf("updating device %v status to: %v\n", ds.Name, edPhase)
-	currEdgeDevice := &v1alpha1.EdgeDevice{}
-	err := ds.restClient.Get().
-		Namespace(ds.edgeDevice.Namespace).
-		Resource(EDGEDEVICE_RESOURCE_STR).
-		Name(ds.Name).
-		Do(context.TODO()).
-		Into(currEdgeDevice)
-
-	if err != nil {
-		log.Printf("Unable to update status, error: %v", err.Error())
-		return
-	}
-
-	if currEdgeDevice.Status.EdgeDevicePhase == nil {
-		edgeDeviceStatus := v1alpha1.EdgeDevicePending
-		currEdgeDevice.Status.EdgeDevicePhase = &edgeDeviceStatus
-	} else {
-		*currEdgeDevice.Status.EdgeDevicePhase = edPhase
-	}
-
-	putResult := &v1alpha1.EdgeDevice{}
-	err = ds.restClient.Put().
-		Namespace(ds.edgeDevice.Namespace).
-		Resource(EDGEDEVICE_RESOURCE_STR).
-		Name(ds.Name).
-		Body(currEdgeDevice).
-		Do(context.TODO()).
-		Into(putResult)
-
-	if err != nil {
-		log.Printf("Unable to update status, error: %v", err)
-	}
-}
-
-func (ds *DeviceShifu) StartTelemetryCollection() error {
-	log.Println("Wait 5 seconds before updating status")
-	time.Sleep(5 * time.Second)
-	telemetryUpdateIntervalMiliseconds := DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS
-
-	if ds.
-		deviceShifuConfig.
-		Telemetries.
-		DeviceShifuTelemetrySettings != nil &&
-		ds.
-			deviceShifuConfig.
-			Telemetries.
-			DeviceShifuTelemetrySettings.
-			DeviceShifuTelemetryUpdateIntervalMiliseconds != nil {
-		telemetryUpdateIntervalMiliseconds = *ds.
-			deviceShifuConfig.
-			Telemetries.
-			DeviceShifuTelemetrySettings.
-			DeviceShifuTelemetryUpdateIntervalMiliseconds
-	}
-
-	for {
-		ds.telemetryCollection()
-		time.Sleep(time.Duration(telemetryUpdateIntervalMiliseconds) * time.Millisecond)
-	}
-}
-
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceShifu %s started\n", ds.Name)
-
-	go ds.startHttpServer(stopCh)
-	go ds.StartTelemetryCollection()
-
-	return nil
+	return ds.base.Start(stopCh, ds.collectSocketTelemetry)
 }
 
 func (ds *DeviceShifu) Stop() error {
-	if err := ds.server.Shutdown(context.TODO()); err != nil {
-		return err
-	}
-
-	fmt.Printf("deviceShifu %s's http server stopped\n", ds.Name)
-	return nil
+	return ds.base.Stop()
 }

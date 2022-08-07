@@ -1,11 +1,9 @@
-package deviceshifu
+package deviceshifubase
 
 import (
 	"context"
-	"errors"
-	"log"
-
 	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
+	"errors"
 	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -13,12 +11,14 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"knative.dev/pkg/configmap"
+	"log"
+	"time"
 )
 
 type DeviceShifuConfig struct {
-	driverProperties DeviceShifuDriverProperties
+	DriverProperties DeviceShifuDriverProperties
 	Instructions     DeviceShifuInstructions
-	Telemetries      DeviceShifuTelemetries
+	Telemetries      *DeviceShifuTelemetries
 }
 
 type DeviceShifuDriverProperties struct {
@@ -38,6 +38,7 @@ type DeviceShifuInstructionSettings struct {
 
 type DeviceShifuInstruction struct {
 	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
+	DeviceShifuProtocolProperties    map[string]string                `yaml:"protocolPropertyList,omitempty"`
 }
 
 type DeviceShifuInstructionProperty struct {
@@ -68,17 +69,10 @@ type DeviceShifuTelemetry struct {
 }
 
 type EdgeDeviceConfig struct {
-	nameSpace      string
-	deviceName     string
-	kubeconfigPath string
+	NameSpace      string
+	DeviceName     string
+	KubeconfigPath string
 }
-
-const (
-	CM_DRIVERPROPERTIES_STR = "driverProperties"
-	CM_INSTRUCTIONS_STR     = "instructions"
-	CM_TELEMETRIES_STR      = "telemetries"
-	EDGEDEVICE_RESOURCE_STR = "edgedevices"
-)
 
 // Read the configuration under the path directory and return configuration
 func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
@@ -93,7 +87,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 
 	dsc := &DeviceShifuConfig{}
 	if driverProperties, ok := cfg[CM_DRIVERPROPERTIES_STR]; ok {
-		err := yaml.Unmarshal([]byte(driverProperties), &dsc.driverProperties)
+		err := yaml.Unmarshal([]byte(driverProperties), &dsc.DriverProperties)
 		if err != nil {
 			log.Fatalf("Error parsing %v from ConfigMap, error: %v", CM_DRIVERPROPERTIES_STR, err)
 			return nil, err
@@ -123,8 +117,8 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 	var config *rest.Config
 	var err error
 
-	if edgeDeviceConfig.kubeconfigPath != "" {
-		config, err = clientcmd.BuildConfigFromFlags("", edgeDeviceConfig.kubeconfigPath)
+	if edgeDeviceConfig.KubeconfigPath != "" {
+		config, err = clientcmd.BuildConfigFromFlags("", edgeDeviceConfig.KubeconfigPath)
 	} else {
 		config, err = rest.InClusterConfig()
 	}
@@ -142,9 +136,9 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 
 	ed := &v1alpha1.EdgeDevice{}
 	err = client.Get().
-		Namespace(edgeDeviceConfig.nameSpace).
+		Namespace(edgeDeviceConfig.NameSpace).
 		Resource(EDGEDEVICE_RESOURCE_STR).
-		Name(edgeDeviceConfig.deviceName).
+		Name(edgeDeviceConfig.DeviceName).
 		Do(context.TODO()).
 		Into(ed)
 	if err != nil {
@@ -161,6 +155,7 @@ func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	crdConfig.APIPath = "/apis"
 	crdConfig.NegotiatedSerializer = serializer.NewCodecFactory(scheme.Scheme)
 	crdConfig.UserAgent = rest.DefaultKubernetesUserAgent()
+	crdConfig.Timeout = 3 * time.Second
 	exampleRestClient, err := rest.UnversionedRESTClientFor(crdConfig)
 	if err != nil {
 		return nil, err

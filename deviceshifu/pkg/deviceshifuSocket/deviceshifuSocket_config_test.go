@@ -1,6 +1,7 @@
 package deviceshifuSocket
 
 import (
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"io/ioutil"
 	"log"
 	"os"
@@ -29,34 +30,35 @@ type ConfigMapData struct {
 
 func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
-		InstructionValueTypeInt32 string = "Int32"
-		InstructionReadWriteW     string = "W"
-		TelemetryMs1000Int64      int64  = 1000
+		InstructionValueTypeInt32       = "Int32"
+		InstructionReadWriteW           = "W"
+		TelemetryMs1000Int64      int64 = 1000
 	)
 
-	var mockDeviceDriverProperties = DeviceShifuDriverProperties{
+	var mockDeviceDriverProperties = deviceshifubase.DeviceShifuDriverProperties{
 		"Edgenesis Mock Device",
 		"edgenesis/mockdevice:v0.0.1",
 		"python mock_driver.py",
 	}
 
-	var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
+	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
 		"set_reading": {
-			[]DeviceShifuInstructionProperty{
+			[]deviceshifubase.DeviceShifuInstructionProperty{
 				{
 					ValueType:    InstructionValueTypeInt32,
 					ReadWrite:    InstructionReadWriteW,
 					DefaultValue: nil,
 				},
 			},
+			nil,
 		},
 		"start": nil,
 		"stop":  nil,
 	}
 
-	var mockDeviceTelemetries = &DeviceShifuTelemetries{
-		DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-			DeviceShifuTelemetryUpdateIntervalMiliseconds: &TelemetryMs1000Int64,
+	var mockDeviceTelemetries = &deviceshifubase.DeviceShifuTelemetries{
+		DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
+			DeviceShifuTelemetryUpdateIntervalInMilliseconds: &TelemetryMs1000Int64,
 		},
 	}
 
@@ -65,17 +67,17 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		t.Errorf(err.Error())
 	}
 
-	mockdsc, err := NewDeviceShifuConfig(MOCK_DEVICE_CONFIG_FOLDER)
+	mockdsc, err := deviceshifubase.NewDeviceShifuConfig(MOCK_DEVICE_CONFIG_FOLDER)
 	if err != nil {
 		t.Errorf(err.Error())
 	}
 
-	eq := reflect.DeepEqual(mockDeviceDriverProperties, mockdsc.driverProperties)
+	eq := reflect.DeepEqual(mockDeviceDriverProperties, mockdsc.DriverProperties)
 	if !eq {
 		t.Errorf("DriverProperties mismatch")
 	}
 
-	eq = reflect.DeepEqual(mockDeviceInstructions, mockdsc.Instructions)
+	eq = reflect.DeepEqual(mockDeviceInstructions, mockdsc.Instructions.Instructions)
 	if !eq {
 		t.Errorf("Instruction mismatch")
 	}
@@ -100,9 +102,9 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 	}
 
 	var MOCK_DEVICE_CONFIG_MAPPING = map[string]string{
-		path.Join(MOCK_DEVICE_CONFIG_FOLDER, CM_DRIVERPROPERTIES_STR): cmData.Data.DriverProperties,
-		path.Join(MOCK_DEVICE_CONFIG_FOLDER, CM_INSTRUCTIONS_STR):     cmData.Data.Instructions,
-		path.Join(MOCK_DEVICE_CONFIG_FOLDER, CM_TELEMETRIES_STR):      cmData.Data.Telemetries,
+		path.Join(MOCK_DEVICE_CONFIG_FOLDER, deviceshifubase.CM_DRIVERPROPERTIES_STR): cmData.Data.DriverProperties,
+		path.Join(MOCK_DEVICE_CONFIG_FOLDER, deviceshifubase.CM_INSTRUCTIONS_STR):     cmData.Data.Instructions,
+		path.Join(MOCK_DEVICE_CONFIG_FOLDER, deviceshifubase.CM_TELEMETRIES_STR):      cmData.Data.Telemetries,
 	}
 
 	err = os.MkdirAll(MOCK_DEVICE_CONFIG_FOLDER, os.ModePerm)

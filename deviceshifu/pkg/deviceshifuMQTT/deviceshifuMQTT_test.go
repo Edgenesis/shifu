@@ -2,6 +2,7 @@ package deviceshifuMQTT
 
 import (
 	"fmt"
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"io"
 	"log"
 	"net/http"
@@ -16,10 +17,10 @@ import (
 )
 
 func TestStart(t *testing.T) {
-	deviceShifuMetadata := &DeviceShifuMetaData{
+	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		"TestStart",
 		"etc/edgedevice/config",
-		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
 		"",
 	}
 
@@ -37,10 +38,10 @@ func TestStart(t *testing.T) {
 }
 
 func TestDeviceHealthHandler(t *testing.T) {
-	deviceShifuMetadata := &DeviceShifuMetaData{
+	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		"TestStartHttpServer",
 		"etc/edgedevice/config",
-		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
 		"",
 	}
 
@@ -61,7 +62,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
-	if string(body) != DEVICE_IS_HEALTHY_STR {
+	if string(body) != deviceshifubase.DEVICE_IS_HEALTHY_STR {
 		t.Errorf("%+v", body)
 	}
 

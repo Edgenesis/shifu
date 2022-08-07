@@ -1,32 +1,20 @@
 package deviceshifuMQTT
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"log"
 	"net/http"
 	"strings"
 	"time"
 
-	v1alpha1 "edgenesis.io/shifu/k8s/crd/api/v1alpha1"
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"k8s.io/client-go/rest"
 )
 
 type DeviceShifu struct {
-	Name              string
-	server            *http.Server
-	deviceShifuConfig *DeviceShifuConfig
-	edgeDevice        *v1alpha1.EdgeDevice
-	restClient        *rest.RESTClient
-}
-
-type DeviceShifuMetaData struct {
-	Name           string
-	ConfigFilePath string
-	KubeConfigPath string
-	Namespace      string
+	base *deviceshifubase.DeviceShifuBase
 }
 
 type DeviceShifuMQTTHandlerMetaData struct {
@@ -36,14 +24,8 @@ type DeviceShifuMQTTHandlerMetaData struct {
 }
 
 const (
-	DEVICE_IS_HEALTHY_STR             string = "Device is healthy"
-	DEVICE_CONFIGMAP_FOLDER_PATH      string = "/etc/edgedevice/config"
-	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR string = "NULL"
-	DEVICE_NAMESPACE_DEFAULT          string = "default"
-	DEVICE_DEFAULT_PORT_STR           string = ":8080"
-	KUBERNETES_CONFIG_DEFAULT         string = ""
-	MQTT_DATA_ENDPOINT                string = "mqtt_data"
-	DEFAULT_UPDATE_INTERVAL_MS        int64  = 3000
+	MQTT_DATA_ENDPOINT         string = "mqtt_data"
+	DEFAULT_UPDATE_INTERVAL_MS int64  = 3000
 )
 
 var (
@@ -51,48 +33,16 @@ var (
 	MQTT_MESSAGE_RECEIVE_TIMESTAMP time.Time
 )
 
-func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
-	if deviceShifuMetadata.Name == "" {
-		return nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
-	}
-
-	if deviceShifuMetadata.ConfigFilePath == "" {
-		deviceShifuMetadata.ConfigFilePath = DEVICE_CONFIGMAP_FOLDER_PATH
-	}
-
-	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
+func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
+	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+		return nil, err
 	}
 
-	mux := http.NewServeMux()
-	mux.HandleFunc("/health", deviceHealthHandler)
-	mux.HandleFunc("/", instructionNotFoundHandler)
-
-	edgeDevice := &v1alpha1.EdgeDevice{}
-	client := &rest.RESTClient{}
-
-	if deviceShifuMetadata.KubeConfigPath != DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
-		edgeDeviceConfig := &EdgeDeviceConfig{
-			deviceShifuMetadata.Namespace,
-			deviceShifuMetadata.Name,
-			deviceShifuMetadata.KubeConfigPath,
-		}
-
-		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
-		if err != nil {
-			log.Fatalf("Error retrieving EdgeDevice")
-			return nil, err
-		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
-			return nil, err
-		}
-
-		switch protocol := *edgeDevice.Spec.Protocol; protocol {
+	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
+		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
-			mqttSetting := *edgeDevice.Spec.ProtocolSettings.MQTTSetting
+			mqttSetting := *base.EdgeDevice.Spec.ProtocolSettings.MQTTSetting
 			var mqttServerAddress string
 			if mqttSetting.MQTTTopic == nil || *mqttSetting.MQTTTopic == "" {
 				return nil, fmt.Errorf("MQTT Topic cannot be empty")
@@ -101,14 +51,14 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
 				// return nil, fmt.Errorf("MQTT server cannot be empty")
 				log.Println("MQTT Server Address is empty, use address instead")
-				mqttServerAddress = *edgeDevice.Spec.Address
+				mqttServerAddress = *base.EdgeDevice.Spec.Address
 			} else {
 				mqttServerAddress = *mqttSetting.MQTTServerAddress
 			}
 
 			opts := mqtt.NewClientOptions()
 			opts.AddBroker(fmt.Sprintf("tcp://%s", mqttServerAddress))
-			opts.SetClientID(*&edgeDeviceConfig.deviceName)
+			opts.SetClientID(*&base.EdgeDevice.Name)
 			opts.SetDefaultPublishHandler(messagePubHandler)
 			opts.OnConnect = connectHandler
 			opts.OnConnectionLost = connectLostHandler
@@ -120,28 +70,16 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifu, error) {
 			sub(client, *mqttSetting.MQTTTopic)
 
 			deviceShifuMQTTHandlerMetaData := &DeviceShifuMQTTHandlerMetaData{
-				edgeDevice.Spec,
+				base.EdgeDevice.Spec,
 			}
 
 			handler := DeviceCommandHandlerMQTT{deviceShifuMQTTHandlerMetaData}
 			mux.HandleFunc("/"+MQTT_DATA_ENDPOINT, handler.commandHandleFunc())
 		}
 	}
+	ds := &DeviceShifu{base: base}
 
-	ds := &DeviceShifu{
-		Name: deviceShifuMetadata.Name,
-		server: &http.Server{
-			Addr:         DEVICE_DEFAULT_PORT_STR,
-			Handler:      mux,
-			ReadTimeout:  60 * time.Second,
-			WriteTimeout: 60 * time.Second,
-		},
-		deviceShifuConfig: deviceShifuConfig,
-		edgeDevice:        edgeDevice,
-		restClient:        client,
-	}
-
-	ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
+	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil
 }
 
@@ -168,7 +106,7 @@ func sub(client mqtt.Client, topic string) {
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
+	fmt.Fprintf(w, deviceshifubase.DEVICE_IS_HEALTHY_STR)
 }
 
 type DeviceCommandHandlerMQTT struct {
@@ -269,135 +207,44 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 }
 
 func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceShifu %s's http server started\n", ds.Name)
-	return ds.server.ListenAndServe()
+	fmt.Printf("deviceShifu %s's http server started\n", ds.base.Name)
+	return ds.base.Server.ListenAndServe()
 }
 
 // TODO: update configs
 // TODO: update status based on telemetry
 
-func (ds *DeviceShifu) collectMQTTTelemetry(telemetrySettings DeviceShifuTelemetrySettings) (bool, error) {
-	if ds.edgeDevice.Spec.Address == nil {
-		return false, fmt.Errorf("Device %v does not have an address", ds.Name)
-	}
+func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 
-	if telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds == nil {
-		*telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds = DEFAULT_UPDATE_INTERVAL_MS
-	}
+	if ds.base.EdgeDevice.Spec.Protocol != nil {
+		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
+		case v1alpha1.ProtocolMQTT:
+			telemetrySettings := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
+			if ds.base.EdgeDevice.Spec.Address == nil {
+				return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
+			}
 
-	nowTime := time.Now()
-	if int64(nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds {
-		return true, nil
+			if telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds == nil {
+				*telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = DEFAULT_UPDATE_INTERVAL_MS
+			}
+
+			nowTime := time.Now()
+			if int64(nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
+				return true, nil
+			}
+		default:
+			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
+			return false, nil
+		}
 	}
 
 	return false, nil
 }
 
-func (ds *DeviceShifu) collectMQTTTelemetries() error {
-	telemetryOK := true
-	telemetriesSettings := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
-	status, err := ds.collectMQTTTelemetry(*telemetriesSettings)
-	if err != nil {
-		log.Printf("Error is: %v", err.Error())
-		telemetryOK = false
-	}
-
-	if !status && telemetryOK {
-		telemetryOK = false
-	}
-
-	if telemetryOK {
-		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceRunning)
-	} else {
-		ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
-	}
-
-	return nil
-}
-
-func (ds *DeviceShifu) telemetryCollection() error {
-	// TODO: handle interval for different telemetries
-	log.Printf("deviceShifu %s's telemetry collection started\n", ds.Name)
-
-	if ds.edgeDevice.Spec.Protocol != nil {
-		switch protocol := *ds.edgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolMQTT:
-			ds.collectMQTTTelemetries()
-		default:
-			log.Printf("EdgeDevice protocol %v not supported in deviceShifu\n", protocol)
-			ds.updateEdgeDeviceResourcePhase(v1alpha1.EdgeDeviceFailed)
-		}
-
-		return nil
-	}
-
-	return fmt.Errorf("EdgeDevice %v has no telemetry field in configuration\n", ds.Name)
-}
-
-func (ds *DeviceShifu) updateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
-	log.Printf("updating device %v status to: %v\n", ds.Name, edPhase)
-	currEdgeDevice := &v1alpha1.EdgeDevice{}
-	err := ds.restClient.Get().
-		Namespace(ds.edgeDevice.Namespace).
-		Resource(EDGEDEVICE_RESOURCE_STR).
-		Name(ds.Name).
-		Do(context.TODO()).
-		Into(currEdgeDevice)
-
-	if err != nil {
-		log.Printf("Unable to update status, error: %v", err.Error())
-		return
-	}
-
-	if currEdgeDevice.Status.EdgeDevicePhase == nil {
-		edgeDeviceStatus := v1alpha1.EdgeDevicePending
-		currEdgeDevice.Status.EdgeDevicePhase = &edgeDeviceStatus
-	} else {
-		*currEdgeDevice.Status.EdgeDevicePhase = edPhase
-	}
-
-	putResult := &v1alpha1.EdgeDevice{}
-	err = ds.restClient.Put().
-		Namespace(ds.edgeDevice.Namespace).
-		Resource(EDGEDEVICE_RESOURCE_STR).
-		Name(ds.Name).
-		Body(currEdgeDevice).
-		Do(context.TODO()).
-		Into(putResult)
-
-	if err != nil {
-		log.Printf("Unable to update status, error: %v", err)
-	}
-}
-
-func (ds *DeviceShifu) StartTelemetryCollection() error {
-	waitTime := ds.deviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryUpdateIntervalMiliseconds
-	if waitTime == nil {
-		*waitTime = int64(DEFAULT_UPDATE_INTERVAL_MS)
-	}
-
-	time.Sleep(time.Duration(*waitTime) * time.Millisecond)
-	log.Printf("start telemetry collection in %d ms\n", *waitTime)
-	for {
-		ds.telemetryCollection()
-		time.Sleep(time.Duration(*waitTime) * time.Millisecond)
-	}
-}
-
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceShifu %s started\n", ds.Name)
-
-	go ds.startHttpServer(stopCh)
-	go ds.StartTelemetryCollection()
-
-	return nil
+	return ds.base.Start(stopCh, ds.collectMQTTTelemetry)
 }
 
 func (ds *DeviceShifu) Stop() error {
-	if err := ds.server.Shutdown(context.TODO()); err != nil {
-		return err
-	}
-
-	fmt.Printf("deviceShifu %s's http server stopped\n", ds.Name)
-	return nil
+	return ds.base.Stop()
 }
