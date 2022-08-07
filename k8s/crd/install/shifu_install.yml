@@ -436,7 +436,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: edgehub/edgedevice-controller-multi:v0.0.1
+        image: edgehub/shifu-controller:v0.0.4
         livenessProbe:
           httpGet:
             path: /healthz
@@ -512,7 +512,7 @@ rules:
 - apiGroups:
   - shifu.edgenesis.io
   resources:
-  - telemetryservice
+  - telemetryservices
   verbs: ["get", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

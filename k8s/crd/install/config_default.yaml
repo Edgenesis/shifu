@@ -436,7 +436,7 @@ spec:
         - --leader-elect
         command:
         - /manager
-        image: edgehub/edgedevice-controller-multi:v0.0.1
+        image: edgehub/shifu-controller:v0.0.4
         livenessProbe:
           httpGet:
             path: /healthz

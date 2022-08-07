@@ -46,7 +46,7 @@ rules:
 - apiGroups:
   - shifu.edgenesis.io
   resources:
-  - telemetryservice
+  - telemetryservices
   verbs: ["get", "update"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1

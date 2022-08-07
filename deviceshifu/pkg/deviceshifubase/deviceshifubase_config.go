@@ -2,8 +2,11 @@ package deviceshifubase
 
 import (
 	"context"
-	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"errors"
+	"log"
+	"time"
+
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/runtime/serializer"
@@ -11,8 +14,6 @@ import (
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 	"knative.dev/pkg/configmap"
-	"log"
-	"time"
 )
 
 type DeviceShifuConfig struct {
@@ -47,16 +48,24 @@ type DeviceShifuInstructionProperty struct {
 	DefaultValue interface{} `yaml:"defaultValue"`
 }
 
+type DeviceShifuTelemetryPushSettings struct {
+	DeviceShifuTelemetryCollectionService *string `yaml:"telemetryCollectionService,omitempty"`
+	DeviceShifuTelemetryPushToServer      *bool   `yaml:"pushToServer,omitempty"`
+}
+
 type DeviceShifuTelemetryProperties struct {
-	DeviceInstructionName *string `yaml:"instruction"`
-	InitialDelayMs        *int    `yaml:"initialDelayMs,omitempty"`
-	IntervalMs            *int    `yaml:"intervalMs,omitempty"`
+	DeviceInstructionName *string                           `yaml:"instruction"`
+	InitialDelayMs        *int                              `yaml:"initialDelayMs,omitempty"`
+	IntervalMs            *int                              `yaml:"intervalMs,omitempty"`
+	PushSettings          *DeviceShifuTelemetryPushSettings `yaml:"pushSettings,omitempty"`
 }
 
 type DeviceShifuTelemetrySettings struct {
-	DeviceShifuTelemetryUpdateIntervalInMilliseconds *int64 `yaml:"telemetryUpdateIntervalInMilliseconds,omitempty"`
-	DeviceShifuTelemetryTimeoutInMilliseconds        *int64 `yaml:"telemetryTimeoutInMilliseconds,omitempty"`
-	DeviceShifuTelemetryInitialDelayInMilliseconds   *int64 `yaml:"telemetryInitialDelayInMilliseconds,omitempty"`
+	DeviceShifuTelemetryUpdateIntervalInMilliseconds *int64  `yaml:"telemetryUpdateIntervalInMilliseconds,omitempty"`
+	DeviceShifuTelemetryTimeoutInMilliseconds        *int64  `yaml:"telemetryTimeoutInMilliseconds,omitempty"`
+	DeviceShifuTelemetryInitialDelayInMilliseconds   *int64  `yaml:"telemetryInitialDelayInMilliseconds,omitempty"`
+	DeviceShifuTelemetryDefaultPushToServer          *bool   `yaml:"defaultPushToServer,omitempty"`
+	DeviceShifuTelemetryDefaultCollectionService     *string `yaml:"defaultTelemetryCollectionService,omitempty"`
 }
 
 type DeviceShifuTelemetries struct {

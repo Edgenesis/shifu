@@ -91,7 +91,10 @@ docker-buildx-push:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -t ${IMG} . --push
 
 docker-buildx-load:
-	docker buildx build --platform=linux/amd64 -t ${IMG} . --load
+	docker buildx build --platform=linux/$(shell go env GOARCH) -t ${IMG} . --load
+
+docker-buildx-kind-load:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -t ${IMG} . --load && kind load docker-image ${IMG}
 
 ##@ Deployment
 

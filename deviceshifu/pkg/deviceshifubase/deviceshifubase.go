@@ -2,13 +2,14 @@ package deviceshifubase
 
 import (
 	"context"
-	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"errors"
 	"fmt"
-	"k8s.io/client-go/rest"
 	"log"
 	"net/http"
 	"time"
+
+	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
+	"k8s.io/client-go/rest"
 )
 
 type DeviceShifuBase struct {
@@ -38,6 +39,7 @@ const (
 	CM_INSTRUCTIONS_STR                                = "instructions"
 	CM_TELEMETRIES_STR                                 = "telemetries"
 	EDGEDEVICE_RESOURCE_STR                            = "edgedevices"
+	TELEMETRYCOLLECTIONSERVICE_RESOURCE_STR            = "telemetryservices"
 	DEVICE_TELEMETRY_TIMEOUT_MS                 int64  = 3000
 	DEVICE_TELEMETRY_UPDATE_INTERVAL_MS         int64  = 3000
 	DEVICE_TELEMETRY_INITIAL_DELAY_MS           int64  = 3000
@@ -52,6 +54,10 @@ const (
 	KUBERNETES_CONFIG_DEFAULT                   string = ""
 	DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR    string = "timeout"
 	DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS       int    = 3
+)
+
+var (
+	TelemetryCollectionServiceMap map[string]string
 )
 
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.ServeMux, error) {
@@ -211,6 +217,11 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	log.Println("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
 	telemetryUpdateIntervalInMilliseconds := DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS
+	var err error
+	TelemetryCollectionServiceMap, err = getTelemetryCollectionServiceMap(ds)
+	if err != nil {
+		return fmt.Errorf("error generating TelemetryCollectionServiceMap, error: %v", err.Error())
+	}
 
 	if ds.
 		DeviceShifuConfig.

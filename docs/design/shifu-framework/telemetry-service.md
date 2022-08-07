@@ -31,7 +31,7 @@ A `TelemetryService` object consists following configuration:
 ## Example
 
 ```yaml
----telemetry_service.yaml
+--- #telemetry_service.yaml
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: TelemetryService
 metadata:
@@ -40,7 +40,7 @@ spec:
   type: HTTP
   address: 1.2.3.4:1234/api1
   serviceSettings:
-    HTTPSettings:
+    HTTPSetting:
       username: admin
       password: password
 ```
