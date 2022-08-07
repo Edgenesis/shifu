@@ -1,6 +1,7 @@
 package deviceshifuOPCUA
 
 import (
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"io"
 	"log"
 	"net/http"
@@ -12,11 +13,11 @@ import (
 )
 
 func TestNew(t *testing.T) {
-	deviceShifuMetadata := &DeviceShifuMetaData{
-		"TestStartHttpServer",
-		"etc/edgedevice/config",
-		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"TestStartHttpServerNamespace",
+	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
+		Name:           "TestStartHttpServer",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		Namespace:      "TestStartHttpServerNamespace",
 	}
 
 	_, err := New(deviceShifuMetadata)
@@ -26,11 +27,10 @@ func TestNew(t *testing.T) {
 }
 
 func TestDeviceShifuEmptyNamespace(t *testing.T) {
-	deviceShifuMetadata := &DeviceShifuMetaData{
-		"TestDeviceShifuEmptyNamespace",
-		"etc/edgedevice/config",
-		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"",
+	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
+		Name:           "TestDeviceShifuEmptyNamespace",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
 	}
 
 	_, err := New(deviceShifuMetadata)
@@ -42,11 +42,11 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 }
 
 func TestStart(t *testing.T) {
-	deviceShifuMetadata := &DeviceShifuMetaData{
-		"TestStart",
-		"etc/edgedevice/config",
-		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"TestStartNamespace",
+	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
+		Name:           "TestStart",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		Namespace:      "TestStartNamespace",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
@@ -60,11 +60,11 @@ func TestStart(t *testing.T) {
 }
 
 func TestDeviceHealthHandler(t *testing.T) {
-	deviceShifuMetadata := &DeviceShifuMetaData{
-		"TestStartHttpServer",
-		"etc/edgedevice/config",
-		DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		"TestStartHttpServerNamespace",
+	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
+		Name:           "TestStartHttpServer",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		Namespace:      "TestStartHttpServerNamespace",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
@@ -84,7 +84,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 
-	if string(body) != DEVICE_IS_HEALTHY_STR {
+	if string(body) != deviceshifubase.DEVICE_IS_HEALTHY_STR {
 		t.Errorf("%+v", body)
 	}
 

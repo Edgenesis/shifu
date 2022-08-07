@@ -4,18 +4,19 @@ data:
     driverImage: edgenesis/mockdevice:v0.0.1
     driverExecution: python mock_driver.py
   instructions: |
-    get_value:
-      instructionProperties:
-        OPCUANodeID: "ns=2;i=2"
-    get_time:
-      instructionProperties:
-        OPCUANodeID: "i=2258"
-    get_server:
-      instructionProperties:
-        OPCUANodeID: "i=2261"
+    instructions:
+      get_value:
+        protocolPropertyList:
+          OPCUANodeID: "ns=2;i=2"
+      get_time:
+        protocolPropertyList:
+          OPCUANodeID: "i=2258"
+      get_server:
+        protocolPropertyList:
+          OPCUANodeID: "i=2261"
   telemetries: |
     telemetrySettings:
-      telemetryUpdateIntervalInMiliseconds: 1000
+      telemetryUpdateIntervalInMilliseconds: 1000
     telemetries:
       device_health:
         properties:
