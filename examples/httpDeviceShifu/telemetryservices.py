@@ -2,13 +2,21 @@ from flask import Flask, request, make_response
 
 app = Flask(__name__)
 
-@app.route('/endpoint1')
+@app.route('/endpoint1', methods=['POST'])
 def endpoint1():
-    print("from endpoint1: " + request.data)
+    print("from endpoint1:")
+    print(request.data)
+    response = make_response("status api", 200)
+    response.mimetype = "text/plain"
+    return response
 
-@app.route('/api1')
+@app.route('/api1', methods=['POST'])
 def api1():
-    print("from api1: " + request.data)
+    print("from api1:")
+    print(request.data)
+    response = make_response("status api", 200)
+    response.mimetype = "text/plain"
+    return response
 
 @app.route('/status')
 def status():

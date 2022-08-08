@@ -334,6 +334,7 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 // TODO: update configs
 
 func (ds *DeviceShifu) collectHTTPTelemtries() (bool, error) {
+	telemetryCollectionResult := false
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
@@ -380,7 +381,8 @@ func (ds *DeviceShifu) collectHTTPTelemtries() (bool, error) {
 							deviceshifubase.PushToHTTPTelemetryCollectionService(protocol, resp, telemetryCollectionService)
 						}
 
-						return true, nil
+						telemetryCollectionResult = true
+						continue
 					}
 				}
 
@@ -391,7 +393,8 @@ func (ds *DeviceShifu) collectHTTPTelemtries() (bool, error) {
 			return false, nil
 		}
 	}
-	return false, nil
+
+	return telemetryCollectionResult, nil
 }
 
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
