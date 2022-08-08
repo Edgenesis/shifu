@@ -11,40 +11,17 @@ Shifu is a [Kubernetes](https://k8s.io) native framework designed to abstract ou
 
 ## Why use Shifu?
 
-- Shifu let you manage and control your IoT devices extremely easily. Whenever you connect your device, Shifu will recognize it and spawn an augmented digital twin called ***deviceShifu*** for it. 
-- ***deviceShifu*** provides you with a high-level abstraction to interact with your device. 
-  - By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything its designed for, and much more! For example, your device's state can be rolled back with a single line of command. (If physically permitted, of course.) 
-  - Shifu is able to abstract ***deviceShifu*** horizontally (grouping, batch execute) and vertically (layers, allow high level command to be executed. e.g.: `factory start`). For example, we can group ***deviceShifu*** of machines into a ***factoryShifu***, and then high-level commands like `factory start` will make the whole factory start manufacturing.
-- A simulation feature which allows developer to simulate a scenario before actually running will be available later.
-
-## Shifu and Thing
-
-Shifu utilized the Web of Things (WoT)' conception of [Thing](https://www.w3.org/TR/wot-thing-description/) to describe a device to be connected. 
-- Within the Shifu framework, user can connect a device to the framework by simply creating a configuration about the device. After the connection is established, Shifu will automatically start managing the device. 
-- Shifu will need 3 types of descriptions: 
-  - the connection type and driver, which is the "property" of the device; 
-  - the available instructions, which is the "actions" or "services" of the device;
-  - the telemetries we expect to get from the device for monitoring, which is the "events" of the device.
+- Shifu let you manage and control your IoT device extremely easily through ***deviceShifu***, a digital twin for your device.
+- ***deviceShifu*** provides you with a high-level abstraction to interact with your device. By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything its designed for, and much more! For example, you can have your device actively push its telemetries to any endpoint of your choice.
 
 ## How to use Shifu?
-
-Currently, Shifu runs on [Kubernetes](https://k8s.io). We will provide more deployment methods including standalone deployment in the future.
-
-### [Install](docs/guide/install.md) Shifu on Kubernetes cluster
-
----
+Please refer to [shifu doc](https://shifu.run/docs/).
 
 ### Demo:
-We prepared a demo for developers to intuitively show how `Shifu` is able to create and manage digital twins of any physical devices in real world.
-- [Quick Start Guide with Demo](docs/guide/quick-start-demo.md)
-- [Online interactive Demo (Katacoda)](https://www.katacoda.com/xqin/scenarios/shifu-demo)
+We have prepared a demo for developers to intuitively show how `Shifu` is able to create and manage digital twins of any physical devices in real world.
+- [Shifu Demo](https://demo.shifu.run/)
 
 # Our Roadmap
-## Protocols
-### Supported
-- HTTP
-- Driver implementation w/ command line execution
-- ... More on the way
 ## Features
 ### Supported
 - Telemetry collection: shifu supports periodic collection of any telemetries from device. What telemetries to collect, how to collect, how frequent is the collection are all customizable in one single configuration file.
@@ -67,9 +44,9 @@ If you want more features/protocols supported, please open an issue [here](https
 | By      | Protocol                                     | Features                                                 |
 |---------|----------------------------------------------|---------------------------------------------------------|
 | Q1 2022 | HTTP<br>Driver w/ command line | telemetry<br>command proxy<br>CRD integration |
-| Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7<br>OPC UA | state machine<br>shifu portal(frontend) |
-| Q3 2022 | ONVIF | abstraction<br>[shifuController](docs/design/design-shifuController.md)<br>[shifud](docs/design/design-shifud.md) |
-| Q4 2022 | gRPC | simulation |
+| Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7<br>OPC UA | state machine |
+| Q3 2022 | ONVIF | shifu portal(frontend) |
+| Q4 2022 | gRPC | abstraction<br>[shifuController](docs/design/design-shifuController.md)<br>[shifud](docs/design/design-shifud.md)<br>simulation |
 
 # Shifu's vision
 
