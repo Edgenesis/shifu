@@ -45,7 +45,7 @@ kube-builder-create-api-edgedevice:
 
 download: controller-gen kustomize
 
-generate-controller-yaml: kustomize manifests
+generate-controller-yaml: kustomize manifests generate fmt vet
 	$(KUSTOMIZE) build config/crd > install/config_crd.yaml
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default > install/config_default.yaml
@@ -91,7 +91,10 @@ docker-buildx-push:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -t ${IMG} . --push
 
 docker-buildx-load:
-	docker buildx build --platform=linux/amd64 -t ${IMG} . --load
+	docker buildx build --platform=linux/$(shell go env GOARCH) -t ${IMG} . --load
+
+docker-buildx-kind-load:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -t ${IMG} . --load && kind load docker-image ${IMG}
 
 ##@ Deployment
 

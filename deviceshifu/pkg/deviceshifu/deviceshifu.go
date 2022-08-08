@@ -5,13 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 
 	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 	"k8s.io/client-go/rest"
@@ -219,7 +220,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
-			copyHeader(req.Header, r.Header)
+			deviceshifubase.CopyHeader(req.Header, r.Header)
 			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
@@ -233,7 +234,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		}
 
 		if resp != nil {
-			copyHeader(w.Header(), resp.Header)
+			deviceshifubase.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 			io.Copy(w, resp.Body)
 			return
@@ -242,16 +243,6 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		// TODO: For now, just write tht instruction to the response
 		log.Println("resp is nil")
 		w.Write([]byte(handlerInstruction))
-	}
-}
-
-// HTTP header type:
-// type Header map[string][]string
-func copyHeader(dst, src http.Header) {
-	for header, headerValueList := range src {
-		for _, value := range headerValueList {
-			dst.Add(header, value)
-		}
 	}
 }
 
@@ -323,7 +314,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		}
 
 		if resp != nil {
-			copyHeader(w.Header(), resp.Header)
+			deviceshifubase.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 			io.Copy(w, resp.Body)
 			return
@@ -341,54 +332,9 @@ func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
 }
 
 // TODO: update configs
-// TODO: update status based on telemetry
-
-func (ds *DeviceShifu) collectHTTPTelemetry(telemetry string, telemetryProperties deviceshifubase.DeviceShifuTelemetryProperties) (bool, error) {
-	if ds.base.EdgeDevice.Spec.Address == nil {
-		return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
-	}
-
-	if telemetryProperties.DeviceInstructionName == nil {
-		return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
-	}
-
-	var (
-		ctx     context.Context
-		cancel  context.CancelFunc
-		timeout = *ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds
-	)
-
-	if timeout == 0 {
-		ctx, cancel = context.WithCancel(context.TODO())
-	} else {
-		ctx, cancel = context.WithTimeout(context.TODO(), time.Duration(timeout)*time.Millisecond)
-	}
-
-	defer cancel()
-	address := *ds.base.EdgeDevice.Spec.Address
-	instruction := *telemetryProperties.DeviceInstructionName
-	req, ReqErr := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+address+"/"+instruction, nil)
-	if ReqErr != nil {
-		log.Printf("error checking telemetry: %v, error: %v", telemetry, ReqErr.Error())
-		return false, ReqErr
-	}
-
-	resp, err := ds.base.RestClient.Client.Do(req)
-	if err != nil {
-		log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
-		return false, err
-	}
-
-	if resp != nil {
-		if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
 
 func (ds *DeviceShifu) collectHTTPTelemtries() (bool, error) {
+	telemetryCollectionResult := false
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
@@ -431,7 +377,12 @@ func (ds *DeviceShifu) collectHTTPTelemtries() (bool, error) {
 
 				if resp != nil {
 					if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
-						return true, nil
+						if telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]; exist {
+							deviceshifubase.PushToHTTPTelemetryCollectionService(protocol, resp, telemetryCollectionService)
+						}
+
+						telemetryCollectionResult = true
+						continue
 					}
 				}
 
@@ -442,7 +393,8 @@ func (ds *DeviceShifu) collectHTTPTelemtries() (bool, error) {
 			return false, nil
 		}
 	}
-	return false, nil
+
+	return telemetryCollectionResult, nil
 }
 
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {

@@ -1,0 +1,22 @@
+--- #telemetry_service.yaml
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: TelemetryService
+metadata:
+  name: push-endpoint-1
+  namespace: devices
+spec:
+  type: HTTP
+  address: http://192.168.15.48:12345/endpoint1
+  serviceSettings:
+    HTTPSetting:
+      username: admin
+      password: password
+--- #telemetry_service2.yaml
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: TelemetryService
+metadata:
+  name: push-endpoint-2
+  namespace: devices
+spec:
+  type: HTTP
+  address: http://192.168.15.48:12345/api1

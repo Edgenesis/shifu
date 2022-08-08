@@ -13,4 +13,13 @@ resources:
   kind: EdgeDevice
   path: edgenesis.io/shifu/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: edgenesis.io
+  group: shifu
+  kind: TelemetryService
+  path: edgenesis.io/shifu/api/v1alpha1
+  version: v1alpha1
 version: "3"

@@ -1,13 +1,14 @@
 package deviceshifu
 
 import (
-	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"reflect"
 	"testing"
+
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 
 	"gopkg.in/yaml.v3"
 )
@@ -30,31 +31,37 @@ type ConfigMapData struct {
 
 func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
-		TelemetryInstructionNameGetStatus  = "get_status"
-		TelemetryInstructionNameGetReading = "get_reading"
-		InstructionValueTypeInt32          = "Int32"
-		InstructionReadWriteW              = "W"
-		TelemetryMs1000                    = 1000
+		TelemetryInstructionNameGetStatus         = "get_status"
+		TelemetryInstructionNameGetReading        = "get_reading"
+		InstructionValueTypeInt32                 = "Int32"
+		InstructionReadWriteW                     = "W"
+		TelemetryMs1000                           = 1000
+		TelemetryMs3000                           = int64(3000)
+		TelemetryMs6000                           = int64(6000)
+		TelemetrySettingsDefaultPushToServer      = true
+		TelemetrySettingsDefaultCollectionService = "push-endpoint-1"
+		TelemetrySettingsPushToServerFalse        = false
+		TelmeetrySettingsCollectionService2       = "push-endpoint-2"
 	)
 
 	var mockDeviceDriverProperties = deviceshifubase.DeviceShifuDriverProperties{
-		"Edgenesis Mock Device",
-		"edgenesis/mockdevice:v0.0.1",
-		"python mock_driver.py",
+		DriverSku:       "Edgenesis Mock Device",
+		DriverImage:     "edgenesis/mockdevice:v0.0.1",
+		DriverExecution: "python mock_driver.py",
 	}
 
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
 		"get_reading": nil,
 		"get_status":  nil,
 		"set_reading": {
-			[]deviceshifubase.DeviceShifuInstructionProperty{
+			DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
 				{
 					ValueType:    InstructionValueTypeInt32,
 					ReadWrite:    InstructionReadWriteW,
 					DefaultValue: nil,
 				},
 			},
-			nil,
+			DeviceShifuProtocolProperties: nil,
 		},
 		"start": nil,
 		"stop":  nil,
@@ -62,19 +69,40 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 
 	var mockDeviceTelemetries = map[string]*deviceshifubase.DeviceShifuTelemetry{
 		"device_health": {
-			deviceshifubase.DeviceShifuTelemetryProperties{
+			DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
 				DeviceInstructionName: &TelemetryInstructionNameGetStatus,
 				InitialDelayMs:        &TelemetryMs1000,
 				IntervalMs:            &TelemetryMs1000,
+				PushSettings: &deviceshifubase.DeviceShifuTelemetryPushSettings{
+					DeviceShifuTelemetryCollectionService: &TelmeetrySettingsCollectionService2,
+				},
 			},
 		},
 		"get_reading": {
-			deviceshifubase.DeviceShifuTelemetryProperties{
+			DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
 				DeviceInstructionName: &TelemetryInstructionNameGetReading,
 				InitialDelayMs:        &TelemetryMs1000,
 				IntervalMs:            &TelemetryMs1000,
 			},
 		},
+		"device_health2": {
+			DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
+				DeviceInstructionName: &TelemetryInstructionNameGetReading,
+				InitialDelayMs:        &TelemetryMs1000,
+				IntervalMs:            &TelemetryMs1000,
+				PushSettings: &deviceshifubase.DeviceShifuTelemetryPushSettings{
+					DeviceShifuTelemetryPushToServer: &TelemetrySettingsPushToServerFalse,
+				},
+			},
+		},
+	}
+
+	var mockDeviceTelemetrySettings = deviceshifubase.DeviceShifuTelemetrySettings{
+		DeviceShifuTelemetryUpdateIntervalInMilliseconds: &TelemetryMs6000,
+		DeviceShifuTelemetryTimeoutInMilliseconds:        &TelemetryMs3000,
+		DeviceShifuTelemetryInitialDelayInMilliseconds:   nil,
+		DeviceShifuTelemetryDefaultPushToServer:          &TelemetrySettingsDefaultPushToServer,
+		DeviceShifuTelemetryDefaultCollectionService:     &TelemetrySettingsDefaultCollectionService,
 	}
 
 	err := GenerateConfigMapFromSnippet(MOCK_DEVICE_CM_STR, MOCK_DEVICE_CONFIG_FOLDER)
@@ -91,9 +119,15 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	if !eq {
 		t.Errorf("DriverProperties mismatch")
 	}
+
 	eq = reflect.DeepEqual(mockDeviceInstructions, mockdsc.Instructions.Instructions)
 	if !eq {
 		t.Errorf("Instruction mismatch")
+	}
+
+	eq = reflect.DeepEqual(&mockDeviceTelemetrySettings, mockdsc.Telemetries.DeviceShifuTelemetrySettings)
+	if !eq {
+		t.Errorf("TelemetrySettings mismatch")
 	}
 
 	eq = reflect.DeepEqual(mockDeviceTelemetries, mockdsc.Telemetries.DeviceShifuTelemetries)
