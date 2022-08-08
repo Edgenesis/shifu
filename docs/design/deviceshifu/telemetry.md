@@ -76,7 +76,8 @@ telemetries:
         telemetryCollectionService: push-endpoint-2
   device_health2:
     properties:
-      pushToServer: false
+      pushSettings:
+        pushToServer: false
       instruction: hello2
   device_health3:
     properties:
@@ -91,10 +92,11 @@ apiVersion: shifu.edgenesis.io/v1alpha1
 kind: TelemetryService
 metadata:
   name: push-endpoint-1
+  namespace: devices
 spec:
   service:
-    - protocol: HTTP
-      url: 1.2.3.4:1234/api1
+    type: HTTP
+    address: 1.2.3.4:8081/api
 ```
 
 this ***deviceShifu*** will have the following telemetries:
