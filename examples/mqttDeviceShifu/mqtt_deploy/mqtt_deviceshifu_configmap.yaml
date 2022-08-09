@@ -10,6 +10,7 @@ data:
   instructions: |
     
   telemetries: |
-    device_health:
-      properties:
+    telemetries:
+      device_health:
+        properties:
 

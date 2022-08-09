@@ -8,15 +8,16 @@ data:
     driverSku: Test OPC UA Server
     driverImage: 
   instructions: |
-    get_value:
-      instructionProperties:
-        OPCUANodeID: "ns=2;i=2"
-    get_time:
-      instructionProperties:
-        OPCUANodeID: "i=2258"
-    get_server:
-      instructionProperties:
-        OPCUANodeID: "i=2261"
+    instructions:
+      get_value:
+        instructionProperties:
+          OPCUANodeID: "ns=2;i=2"
+      get_time:
+        instructionProperties:
+          OPCUANodeID: "i=2258"
+      get_server:
+        instructionProperties:
+          OPCUANodeID: "i=2261"
   telemetries: |
     telemetrySettings:
       telemetryUpdateIntervalInMiliseconds: 1000

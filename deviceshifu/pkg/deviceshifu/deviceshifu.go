@@ -190,8 +190,6 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				log.Printf("timeout URI parsing error" + parseErr.Error())
 				return
 			}
-
-			r.URL.Query().Del(deviceshifubase.DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR)
 		}
 
 		switch reqType {

@@ -11,15 +11,17 @@ data:
     driverExecution: " "
 #    available instructions
   instructions: |
-    sendsinglebit:
-    sendcontent:
-    getcontent:
-    getcpuordercode:
+    instructions:
+      sendsinglebit:
+      sendcontent:
+      getcontent:
+      getcpuordercode:
 #    telemetry retrieval methods
 #    in this example, a device_health telemetry is collected by calling hello instruction every 1 second
   telemetries: |
-    device_health:
-      properties:
-        instruction: getcpuordercode
-        initialDelayMs: 1000
-        intervalMs: 1000
+    telemetries:
+      device_health:
+        properties:
+          instruction: getcpuordercode
+          initialDelayMs: 1000
+          intervalMs: 1000
