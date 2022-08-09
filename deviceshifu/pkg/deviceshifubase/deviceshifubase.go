@@ -54,6 +54,7 @@ const (
 	KUBERNETES_CONFIG_DEFAULT                   string = ""
 	DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR    string = "timeout"
 	DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS       int    = 3
+	DEFAULT_HTTP_SERVER_TIMEOUT_SECONDS         int    = 0
 )
 
 var (
@@ -105,8 +106,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 		Server: &http.Server{
 			Addr:         DEVICE_DEFAULT_PORT_STR,
 			Handler:      mux,
-			ReadTimeout:  60 * time.Second,
-			WriteTimeout: 60 * time.Second,
+			ReadTimeout:  time.Duration(DEFAULT_HTTP_SERVER_TIMEOUT_SECONDS) * time.Second,
+			WriteTimeout: time.Duration(DEFAULT_HTTP_SERVER_TIMEOUT_SECONDS) * time.Second,
 		},
 		DeviceShifuConfig: deviceShifuConfig,
 		EdgeDevice:        edgeDevice,
