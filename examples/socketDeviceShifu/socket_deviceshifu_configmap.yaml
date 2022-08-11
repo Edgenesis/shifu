@@ -8,7 +8,8 @@ data:
     driverSku: testSocket
     driverImage: 
   instructions: |
-    cmd:
+    instructions:
+      cmd:
   telemetries: |
     telemetrySettings:
       telemetryUpdateIntervalInMiliseconds: 1000

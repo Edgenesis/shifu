@@ -4,12 +4,13 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"log"
 	"net"
 	"net/http"
-	"strings"
 	"time"
+
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
+	"github.com/edgenesis/shifu/deviceshifu/pkg/utils"
 
 	"edgenesis.io/shifu/k8s/crd/api/v1alpha1"
 )
@@ -76,37 +77,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	return ds, nil
 }
 
-func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
-
-	queryStr := "?"
-
-	for queryName, queryValues := range r.URL.Query() {
-		for _, queryValue := range queryValues {
-			queryStr += queryName + "=" + queryValue + "&"
-		}
-	}
-
-	queryStr = strings.TrimSuffix(queryStr, "&")
-
-	if queryStr == "?" {
-		return "http://" + address + "/" + handlerInstruction
-	}
-
-	return "http://" + address + "/" + handlerInstruction + queryStr
-}
-
-// HTTP header type:
-// type Header map[string][]string
-func copyHeader(dst, src http.Header) {
-	for header, headerValueList := range src {
-		for _, value := range headerValueList {
-			dst.Add(header, value)
-		}
-	}
-}
-
 func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSocketHandlerMetaData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		params := utils.ParseAllParams(r.URL.String())
+
 		headerContentType := r.Header.Get("Content-Type")
 		if headerContentType != "application/json" {
 			http.Error(w, "content-type is not application/json", http.StatusBadRequest)
@@ -132,14 +106,21 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 
 		log.Printf("Sending %v", []byte(command+"\n"))
 		(*connection).Write([]byte(command + "\n"))
-		message, err := bufio.NewReader(*connection).ReadString('\n')
+
+		var message []byte
+		if end, exists := params["end"]; exists {
+			message, err = bufio.NewReader(*connection).ReadBytes(end[0])
+		} else {
+			message, err = bufio.NewReader(*connection).ReadBytes('\n')
+		}
+
 		if err != nil {
 			log.Printf("Failed to ReadString from Socket, current message: %v", message)
 			http.Error(w, "Failed to read message from socket, error: "+err.Error(), http.StatusBadRequest)
 		}
 
 		returnMessage := DeviceShifuSocketReturnBody{
-			Message: message,
+			Message: string(message),
 			Status:  http.StatusOK,
 		}
 
@@ -147,41 +128,6 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(returnMessage)
 	}
-}
-
-// this function gathers the instruction name and its arguments from user input via HTTP and create the direct call command
-// "flags_no_parameter" is a special key where it contains all flags
-// e.g.:
-// if we have localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2
-// and our driverExecution is "/usr/local/bin/python /usr/src/driver/python-car-driver.py"
-// then we will get this command string:
-// /usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency
-// which is exactly what we need to run if we are operating directly on the device
-func createHTTPCommandlineRequestString(r *http.Request, driverExecution string, instruction string) string {
-	values := r.URL.Query()
-	requestStr := ""
-	flagsStr := ""
-	for parameterName, parameterValues := range values {
-		if parameterName == "flags_no_parameter" {
-			if len(parameterValues) == 1 {
-				flagsStr = " " + strings.Replace(parameterValues[0], ",", " ", -1)
-			} else {
-				for _, parameterValue := range parameterValues {
-					flagsStr += " " + parameterValue
-				}
-			}
-		} else {
-			if len(parameterValues) < 1 {
-				continue
-			}
-
-			requestStr += " " + parameterName + "="
-			for _, parameterValue := range parameterValues {
-				requestStr += parameterValue
-			}
-		}
-	}
-	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
 func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
