@@ -117,7 +117,7 @@ def getCameraInfoWithAuth(s, ip, auth):
                 print("{} failed".format(type(auth)))
     except Exception as e:
         result = None
-        print("error trying {}, {}".format(type(auth), error))
+        print("error trying {}, {}".format(type(auth), e))
     
     return result
 
