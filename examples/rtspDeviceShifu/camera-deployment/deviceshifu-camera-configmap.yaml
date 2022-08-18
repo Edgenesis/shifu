@@ -9,6 +9,8 @@ data:
     driverImage: edgenesis/camera-python:v0.0.1
   instructions: |
     instructions:
+    instructionSettings:
+      defaultTimeoutSeconds: 0
       capture:
       info:
       stream:
