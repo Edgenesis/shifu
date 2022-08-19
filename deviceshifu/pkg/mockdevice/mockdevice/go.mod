@@ -2,7 +2,7 @@ module edgenesis.io/shifu/deviceshifu/pkg/mockdevice/mockdevice
 
 go 1.18
 
-require k8s.io/apimachinery v0.24.3
+require k8s.io/apimachinery v0.24.4
 
 require (
 	github.com/go-logr/logr v1.2.3 // indirect
