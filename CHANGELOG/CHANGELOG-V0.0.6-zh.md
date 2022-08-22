@@ -6,12 +6,12 @@
 * 修复了变量名称 by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/203
 * 修复了readme by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/211
 
-## Features & Enhancement
+## 功能 & 增强
 * 更新了 auto_assign.yml by @tomqin93 in https://github.com/Edgenesis/shifu/pull/201
 * 将 k8s.io/client-go 的版本从 0.24.3 提升到了 0.24.4 by @dependabot in https://github.com/Edgenesis/shifu/pull/206
 * 将 k8s.io/apimachinery 的版本从 0.24.3 提升到了 0.24.4 in /deviceshifu/pkg/mockdevice/mockdevice by @dependabot in https://github.com/Edgenesis/shifu/pull/207
 
-## Docs
+## 文档
 
 * 在README中增加了logo by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/208
 * 改进了 README by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/209
