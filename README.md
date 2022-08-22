@@ -24,18 +24,18 @@
 
 ## Start ***Shifu***
 
-### Demo
-
-[***Shifu*** Demo](https://demo.shifu.run/) will intuitively show how ***Shifu*** creates and manages digital twins of any physical device in the real world.
-
 ### Installation
 
-***Shifu*** provides `shifu_install.yml`. Use a single command to install ***Shifu*** in your cluster:
+***Shifu*** provides `shifu_install.yml`. If you have started a Kubernetes cluster, use the command `kubectl aply` to install ***Shifu*** in your cluster:
 
 ```sh
 cd shifu
 kubectl apply -f k8s/crd/install/shifu_install.yml
 ```
+
+### Demo
+
+If you are not familiar with Kubernetes, we provide [***Shifu*** Demo](https://demo.shifu.run/), which will intuitively show how ***Shifu*** creates and manages digital twins of any physical device in the real world.
 
 ### Documentation
 
@@ -45,14 +45,12 @@ See documentation on <https://shifu.run/en/docs/>.
 
 Check the Markdown files in [`docs/`](./docs/) to learn about the [design](./docs/design/) and [development guides](./docs/guide/) of ***Shifu***.
 
-# ***Shifu***'s Roadmap
+# ***Shifu***'s Milestone
 
-## Features
-
-- supported
+- features supported
     - **Telemetry collection**: ***Shifu*** supports the collection of telemetry from devices on a regular basis. What telemetry to collect, how to collect, how frequently to collect are all customizable in one single configuration file.
     - **Integration with Kubernetes with CRD**: ***Shifu*** allows any type or form of configuration for your devices.
-- not yet supported
+- features not yet supported
     - Automatic ***deviceShifu*** creation
     - [Declarative API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
     - [Advanced ***shifuController***](docs/design/design-shifuController.md)
@@ -60,8 +58,6 @@ Check the Markdown files in [`docs/`](./docs/) to learn about the [design](./doc
     - ***deviceShifu*** grouping
     - Abstraction
     - Simulation
-
-## Milestone
 
 | By | Protocols | Features |
 | --- | --- | --- |

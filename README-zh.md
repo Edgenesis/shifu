@@ -24,18 +24,18 @@
 
 ## 开始使用 ***Shifu***
 
-### 演示
-
-[***Shifu*** Demo](https://demo.shifu.run/) 可以直观的体验 ***Shifu*** 如何通过数字孪生来连接和管理实体设备。
-
 ### 安装
 
-***Shifu*** 提供了`shifu_install.yml`文件，一条命令即可安装至集群：
+***Shifu*** 提供了`shifu_install.yml`文件。在已有Kubernetes集群的情况下，使用`kubectl apply`命令即可安装至集群：
 
 ```sh
 cd shifu
 kubectl apply -f k8s/crd/install/shifu_install.yml
 ```
+
+### 演示
+
+如果您不熟悉Kubernetes，我们准备了 [***Shifu*** Demo](https://demo.shifu.run/)。您可以直观的体验 ***Shifu*** 如何通过数字孪生来连接和管理实体设备。
 
 ### 使用文档
 
@@ -45,14 +45,12 @@ kubectl apply -f k8s/crd/install/shifu_install.yml
 
 查看 [`docs/`](./docs/) 下的 Markdown文件 来了解 ***Shifu*** 的 [设计细节](./docs/design/) 和 [开发指南](./docs/guide/)。
 
-## ***Shifu*** 路线图
+## ***Shifu*** 里程碑
 
-### 功能
-
-- 已支持
+- 已支持功能
     - **Telemetry 收集**：***Shifu*** 可以定期收集设备的监测数据。监测数据的种类、收集的方式以及收集的频率都可以由用户在配置文件中自由设置。
     - **和 Kubernetes 通过 CRD 整合**：***Shifu*** 可以支持对任何设备进行任何形式的配置。
-- 尚未支持
+- 尚未支持功能
     - 自动生成 ***deviceShifu***
     - [声明式 API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
     - [高级 ***shifuController***](docs/design/design-shifuController-zh.md)
@@ -60,8 +58,6 @@ kubectl apply -f k8s/crd/install/shifu_install.yml
     - 设备分组
     - 多层封装
     - 仿真
-
-### 里程碑
 
 | 时间 | 协议 | 功能 |
 | --- | --- | --- |
