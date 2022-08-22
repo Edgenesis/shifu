@@ -39,11 +39,11 @@ kubectl apply -f k8s/crd/install/shifu_install.yml
 
 ### 使用文档
 
-在 <https://shifu.run/docs/> 查看 ***Shifu*** 的使用文档。
+请在 <https://shifu.run/docs/> 查看 ***Shifu*** 的使用文档。
 
 ## 深入理解 ***Shifu***
 
-查看 [`docs/`](./docs/) 下的Markdown文件来了解 ***Shifu*** 的 [设计细节](./docs/design/) 和 [开发指南](./docs/guide/)。
+查看 [`docs/`](./docs/) 下的 Markdown文件 来了解 ***Shifu*** 的 [设计细节](./docs/design/) 和 [开发指南](./docs/guide/)。
 
 ## ***Shifu*** 路线图
 
@@ -55,7 +55,7 @@ kubectl apply -f k8s/crd/install/shifu_install.yml
 - 尚未支持
     - 自动生成 ***deviceShifu***
     - [声明式 API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
-    - [高级的 ***Shifu*** 控制器](docs/design/design-shifuController-zh.md)
+    - [高级 ***shifuController***](docs/design/design-shifuController-zh.md)
     - [***shifud***](docs/design/design-shifud-zh.md)
     - 设备分组
     - 多层封装
@@ -65,28 +65,28 @@ kubectl apply -f k8s/crd/install/shifu_install.yml
 
 | 时间 | 协议 | 功能 |
 | --- | --- | --- |
-| Q1 2022 | HTTP<br>命令行驱动 | 监测<br>命令代理<br>CRD 整合 |
-| Q2 2022 | MQTT<br>TCP Socket<br>RTSP<br>Siemens S7<br>OPC UA | 状态机<br>***Shifu*** portal（前端） |
-| Q3 2022 | ONVIF | ***Shifu*** 前端 |
-| Q4 2022 | gRPC | ***Shifu*** 抽象<br>[***shifuController***](docs/design/design-shifuController-zh.md)<br>[***shifud***](docs/design/design-shifud-zh.md)<br>仿真 |
+| Q1 2022 | HTTP <br> 命令行驱动 | 监测 <br> 命令代理 <br> CRD 整合 |
+| Q2 2022 | MQTT <br> TCP Socket <br> RTSP <br> Siemens S7 <br> OPC UA | 状态机 |
+| Q3 2022 | ONVIF | ***Shifu Cloud*** |
+| Q4 2022 | gRPC | ***Shifu*** 抽象 <br> [***shifuController***](docs/design/design-shifuController-zh.md) <br> [***shifud***](docs/design/design-shifud-zh.md) <br> 仿真 |
 
-如果您想要 ***Shifu*** 添加更多的功能和支持更多的协议，请 [新建Issue](https://github.com/Edgenesis/shifu/issues)！
+如果您想要 ***Shifu*** 添加更多的功能和支持更多的协议，请 [新建 Issue](https://github.com/Edgenesis/shifu/issues)！
 
 ## ***Shifu*** 愿景
 
 ### 让开发者和运维人员再次开心
 
-开发者和维护人员应将100%的精力聚焦在发明创造上，而不是修补基础设施以及重复造轮子。身为开发者和运维人员本身，***Shifu*** 的作者们深刻理解您的痛点！所以我们发自内心地想帮您解决掉底层的问题，让开发者和运维人员再次开心！
+开发者和维护人员应100%聚焦在发明创造上，而不是修补基础设施以及重复造轮子。身为开发者和运维人员本身，***Shifu*** 的作者们深刻理解您的痛点！所以我们发自内心地想帮您解决掉底层的问题，让开发者和运维人员再次开心！
 
 ### 软件定义世界
 
-如果每一个IoT设备都有一个 ***deviceShifu***，我们就可以借助软件来管理我们周围的世界。在一个软件定义的世界 (Software Define World, SDW) 中，所有东西都是智能的。您周围的一切会自动改变，进而更好的服务您。因为归根到底，科技以人为本。
+如果每一个IoT设备都有一个 ***deviceShifu***，我们就可以借助软件来管理我们周围的世界。在一个软件定义的世界 (Software Define World) 中，所有东西都是智能的。您周围的一切会自动改变，进而更好的服务您。因为归根到底，科技以人为本。
 
 ## 社区
 
 ### 贡献
 
-***Shifu*** 欢迎您 [新建Issue](https://github.com/Edgenesis/shifu/issues/new) 或 [提交PR](https://github.com/Edgenesis/shifu/pulls)。
+***Shifu*** 欢迎您 [新建 Issue](https://github.com/Edgenesis/shifu/issues/new) 或 [提交 PR](https://github.com/Edgenesis/shifu/pulls)。
 
 ### 联系我们
 
