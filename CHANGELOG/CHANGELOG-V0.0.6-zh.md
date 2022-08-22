@@ -2,7 +2,7 @@
 
 ## Bug修复
 * 修复了examples里的说明 by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/199
-* 修复了issue #202: 相机在无超时停止录影 by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/204
+* 修复了issue #202: 相机在无超时的情况下停止录影 by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/204
 * 修复了变量名称 by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/203
 * 修复了readme by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/211
 
