@@ -76,7 +76,7 @@ kubectl apply -f k8s/crd/install/shifu_install.yml
 
 ### 软件定义世界
 
-如果每一个IoT设备都有一个 ***deviceShifu***，我们就可以借助软件来管理我们周围的世界。在一个软件定义的世界 (Software Define World) 中，所有东西都是智能的。您周围的一切会自动改变，进而更好的服务您。因为归根到底，科技以人为本。
+如果每一个IoT设备都有一个 ***deviceShifu***，我们就可以借助软件来管理我们周围的世界。在一个软件定义的世界 (Software Define World) 中，所有东西都是智能的。您周围的一切会自动改变，进而更好地服务您；因为归根到底，科技以人为本。
 
 ## 社区
 
