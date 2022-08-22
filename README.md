@@ -76,7 +76,7 @@ Developers and operators should focus entirely on using their creativity to make
 
 ## Software-Defined World
 
-If every IoT device has a ***Shifu*** with it, we can leverage software to manage our surroundings, and make the whole world software defined. In a software-defined world, everything is intelligent, and the world around you will automatically change itself to serve your needs. After all, all the technology we built is designed to serve human beings. 
+If every IoT device has a ***deviceShifu*** with it, we can leverage software to manage our surroundings, and make the whole world software defined. In a software-defined world, everything is intelligent, and the world around you will automatically change itself to serve your needs -- after all, all the technology we built is designed to serve human beings.
 
 # Community 
 
