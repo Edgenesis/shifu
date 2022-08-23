@@ -22,9 +22,11 @@
 
 ***deviceShifu*** provides you with a high-level abstraction to interact with your device. By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything it is designed for, and much more! For example, you can have your device actively push its telemetry to any endpoint of your choice.
 
-## Start ***Shifu***
+## Get started
 
 ### Installation
+
+#### If you have a running Kubernetes cluster
 
 ***Shifu*** provides `shifu_install.yml`. If you have started a Kubernetes cluster, use the command `kubectl aply` to install ***Shifu*** in your cluster:
 
@@ -33,18 +35,20 @@ cd shifu
 kubectl apply -f k8s/crd/install/shifu_install.yml
 ```
 
-### Demo
+#### If you don't have a running Kubernetes cluster
 
-If you are not familiar with Kubernetes, we provide [***Shifu*** Demo](https://demo.shifu.run/), which will intuitively show how ***Shifu*** creates and manages digital twins of any physical device in the real world.
+If you are not familiar with Kubernetes, then please try out [***Shifu*** Demo](https://demo.shifu.run/). It will intuitively show how ***Shifu*** creates and manages digital twins of any physical device in the real world.
 
 ### Documentation
 
-See documentation on <https://shifu.run/en/docs/>.
+Please refer to the documentation on [Shifu Docs](https://shifu.run/en/docs/).
 
-## Look into ***Shifu***
+#### ***Shifu*** design doc
+Please refer to [design docs](./docs/design/) to learn about ***Shifu***'s design.
 
-Check the Markdown files in [`docs/`](./docs/) to learn about the [design](./docs/design/) and [development guides](./docs/guide/) of ***Shifu***.
+#### ***Shifu*** development doc
 
+Please refer to [development guides](./docs/guide/) to start contributing!
 # ***Shifu***'s Milestone
 
 - features supported
