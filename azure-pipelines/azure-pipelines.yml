@@ -182,7 +182,7 @@ stages:
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/pkg/k8s/crd/" $(System.DefaultWorkingDirectory)/pkg/k8s/crd/ \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/shifu-controller:$(tag) --load
         displayName: build edgehub/shifu-controller
       - script: |
