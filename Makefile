@@ -2,7 +2,7 @@ PROJECT_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 IMAGE_VERSION = $(shell cat version.txt)
 
 buildx-push-image-deviceshifu-http-http:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifu \
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuHTTP \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-http:${IMAGE_VERSION} --push
 
