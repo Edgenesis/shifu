@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"testing"
-	"time"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -43,7 +42,7 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 
 func TestStart(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		Name:           "TestStart",
+		Name:           "TestStartOPCUA",
 		ConfigFilePath: "etc/edgedevice/config",
 		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
 		Namespace:      "TestStartNamespace",
@@ -54,14 +53,18 @@ func TestStart(t *testing.T) {
 		t.Errorf("Failed creating new deviceshifu")
 	}
 
-	mockds.Start(wait.NeverStop)
+	if err := mockds.Start(wait.NeverStop); err != nil {
+		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
+	}
 
-	mockds.Stop()
+	if err := mockds.Stop(); err != nil {
+		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
+	}
 }
 
 func TestDeviceHealthHandler(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		Name:           "TestStartHttpServer",
+		Name:           "TestStartHttpServerOPCUA",
 		ConfigFilePath: "etc/edgedevice/config",
 		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
 		Namespace:      "TestStartHttpServerNamespace",
@@ -72,23 +75,28 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("Failed creating new deviceshifu")
 	}
 
-	go mockds.startHttpServer(wait.NeverStop)
+	if err := mockds.Start(wait.NeverStop); err != nil {
+		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
+	}
 
-	time.Sleep(1 * time.Second)
-
-	resp, err := http.Get("http://127.0.0.1:8080/health")
+	resp, err := http.Get("http://localhost:8080/health")
 	if err != nil {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("unable to read response body, error: %v", err.Error())
+	}
 
 	if string(body) != deviceshifubase.DEVICE_IS_HEALTHY_STR {
 		t.Errorf("%+v", body)
 	}
 
-	mockds.Stop()
+	if err := mockds.Stop(); err != nil {
+		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
+	}
 
 	// cleanup
 	t.Cleanup(func() {
