@@ -1,8 +1,6 @@
 package deviceshifuMQTT
 
 import (
-	"fmt"
-	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"io"
 	"log"
 	"net/http"
@@ -11,7 +9,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
-	"time"
+
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -33,8 +32,9 @@ func TestStart(t *testing.T) {
 		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
 	}
 
-	mockds.Stop()
-	time.Sleep(1 * time.Second)
+	if err := mockds.Stop(); err != nil {
+		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
+	}
 }
 
 func TestDeviceHealthHandler(t *testing.T) {
@@ -50,24 +50,28 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("Failed creating new deviceShifu")
 	}
 
-	go mockds.startHttpServer(wait.NeverStop)
+	if err := mockds.Start(wait.NeverStop); err != nil {
+		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
+	}
 
-	time.Sleep(1 * time.Second)
-
-	resp, err := http.Get("http://127.0.0.1:8080/health")
+	resp, err := http.Get("http://localhost:8080/health")
 	if err != nil {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("unable to read response body, error: %v", err.Error())
+	}
 
 	if string(body) != deviceshifubase.DEVICE_IS_HEALTHY_STR {
 		t.Errorf("%+v", body)
 	}
 
-	mockds.Stop()
-	time.Sleep(1 * time.Second)
+	if err := mockds.Stop(); err != nil {
+		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
+	}
 }
 
 func TestCreateHTTPCommandlineRequestString(t *testing.T) {
@@ -138,23 +142,4 @@ func TestCreateHTTPUriStringNoQuery(t *testing.T) {
 			log.Fatal(err)
 		}
 	})
-}
-
-func CheckSimpleInstructionHandlerHttpResponse(instruction string, httpEndpoint string) bool {
-	resp, err := http.Get(httpEndpoint + "/" + instruction)
-	if err != nil {
-		log.Fatalf("HTTP GET returns an error %v", err.Error())
-		return false
-	}
-
-	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-
-	if string(body) != instruction {
-		fmt.Printf("Body: '%+v' does not match instruction: '%v'\n", string(body), instruction)
-		// TODO: for now return true since we don't have a test device
-		return true
-	}
-
-	return true
 }

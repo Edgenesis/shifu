@@ -1,6 +1,6 @@
 # This is a basic workflow to help you get started with Actions
 
-name: Test Code Coverage
+name: CI
 
 # Controls when the workflow will run
 on:
@@ -34,6 +34,7 @@ jobs:
       - name: Codecov
         uses: codecov/codecov-action@v3.1.0
         with:
+            files: ./coverage.out,./k8s/crd/coverage.out
             name: codecov-umbrella
             fail_ci_if_error: true
             verbose: true
