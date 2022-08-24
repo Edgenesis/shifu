@@ -60,7 +60,7 @@ func updateTag(files []string, oldTag string, newTag string) error {
 	for _, filePath := range files {
 		file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0755)
 		if err != nil {
-			log.Printf("err cannot open file %s %v", file, err)
+			log.Printf("err cannot open file %s %v", file.Name(), err)
 			return err
 		}
 
