@@ -70,7 +70,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 	time.Sleep(1 * time.Second)
 
-	resp, err := http.Get("http://127.0.0.1:8080/health")
+	resp, err := http.Get("http://localhost:8080/health")
 	if err != nil {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
