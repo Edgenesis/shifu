@@ -28,9 +28,9 @@ jobs:
         with:
           go-version: '1.18'
       - name: Run coverage deviceShifu
-        run: go test -race -coverprofile=coverage.out -covermode=atomic ./..
+        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
       - name: Run coverage CRD
-        run: (cd k8s/crd && go test -race -coverprofile=coverage.out -covermode=atomic ./..)
+        run: (cd k8s/crd && go test -race -coverprofile=coverage.out -covermode=atomic ./...)
       - name: Codecov
         uses: codecov/codecov-action@v3.1.0
         with:
