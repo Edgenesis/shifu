@@ -9,9 +9,8 @@ ENV GOPRIVATE=github.com/Edgenesis
 
 COPY go.mod go.mod
 COPY go.sum go.sum
-COPY pkg/deviceshifu deviceshifu
-COPY cmde/k8s k8s
-COPY deviceshifu deviceshifu
+COPY pkg/deviceshifu pkg/deviceshifu
+COPY pkg/k8s pkg/k8s
 
 RUN go mod download
 
@@ -20,7 +19,7 @@ ARG TARGETOS
 ARG TARGETARCH
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/mockdevice-plc \
-    /shifu/deviceshifu/pkg/mockdevice/mockdevice-plc/mockdevice-plc.go
+    /shifu/pkg/deviceshifu/mockdevice/mockdevice-plc/mockdevice-plc.go
 
 FROM edgehub/distroless-static:nonroot
 WORKDIR /
