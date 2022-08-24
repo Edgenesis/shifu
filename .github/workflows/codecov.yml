@@ -29,12 +29,12 @@ jobs:
           go-version: '1.18'
       - name: Run coverage deviceShifu
         run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
-      - name: Run coverage CRD
-        run: (cd k8s/crd && go test -race -coverprofile=coverage.out -covermode=atomic ./...)
+      # - name: Run coverage CRD
+      #   run: (cd k8s/crd && go test -race -coverprofile=coverage.out -covermode=atomic ./...)
       - name: Codecov
         uses: codecov/codecov-action@v3.1.0
         with:
-            files: ./coverage.out,./k8s/crd/coverage.out
+            files: ./coverage.out
             name: codecov-umbrella
             fail_ci_if_error: true
             verbose: true
