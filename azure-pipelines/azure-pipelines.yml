@@ -316,6 +316,7 @@ stages:
           -t edgehub/deviceshifu-http-opcua:$(release_tag) --push
         displayName: build deviceshifu-http-opcua
       - script: |
+          ls &&
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
