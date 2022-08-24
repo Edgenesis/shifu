@@ -1,0 +1,10 @@
+apiVersion: rbac.authorization.api.io/v1
+kind: ClusterRole
+metadata:
+  name: edgedevice-mockdevice-clusterrole
+rules:
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - edgedevices
+  verbs: ["get", "update"]

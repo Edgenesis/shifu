@@ -11,19 +11,19 @@ Navigate to `Shifu`'s root directory, use the following commands to build differ
 
 For `HTTP to HTTP` ***deviceShifu***:
 ```sh
-CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-http deviceshifu/cmd/main.go
+CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-http cmd/deviceshifu/cmdHTTP/main.go
 ```
 For `HTTP to Socket` ***deviceShifu***:
 ```sh
-CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-socket deviceshifu/cmd/cmdSocket/main.go
+CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-socket cmd/deviceshifu/cmdSocket/main.go
 ```
 For `HTTP to MQTT` ***deviceShifu***:
 ```sh
-CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-mqtt deviceshifu/cmd/cmdMQTT/main.go
+CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-mqtt cmd/deviceshifu/cmdMQTT/main.go
 ```
 For `HTTP to OPC UA` ***deviceShifu***:
 ```sh
-CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-opcua deviceshifu/cmd/cmdOPCUA/main.go
+CGO_ENABLED=0 GOOS=$(go env GOOS) GOARCH=$(go env GOARCH) go build -a -o output/deviceshifu-http-opcua cmd/deviceshifu/cmdOPCUA/main.go
 ```
 
 ### 2. Build ***deviceShifu*** `Docker` images:

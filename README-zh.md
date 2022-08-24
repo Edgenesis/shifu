@@ -30,7 +30,7 @@
 
 ```sh
 cd shifu
-kubectl apply -f k8s/crd/install/shifu_install.yml
+kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 ```
 
 ### 演示

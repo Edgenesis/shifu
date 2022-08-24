@@ -2,22 +2,22 @@ PROJECT_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 IMAGE_VERSION = $(shell cat version.txt)
 
 buildx-push-image-deviceshifu-http-http:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu \
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifu \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-http:${IMAGE_VERSION} --push
 
 buildx-push-image-deviceshifu-http-mqtt:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuMQTT \
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuMQTT \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-mqtt:${IMAGE_VERSION} --push
 
 buildx-push-image-deviceshifu-http-socket:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuSocket \
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuSocket \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-socket:${IMAGE_VERSION} --push
 
 buildx-push-image-deviceshifu-http-opcua:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuOPCUA \
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuOPCUA \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --push
 
@@ -29,22 +29,22 @@ buildx-push-image-deviceshifu: \
 	buildx-push-image-deviceshifu-http-opcua
 
 buildx-build-image-deviceshifu-http-http:
-	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifu \
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuHTTP \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-http:${IMAGE_VERSION} --load
 
 buildx-build-image-deviceshifu-http-mqtt:
-	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuMQTT \
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuMQTT \
 	 	--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-mqtt:${IMAGE_VERSION} --load
 
 buildx-build-image-deviceshifu-http-socket:
-	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuSocket \
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuSocket \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-socket:${IMAGE_VERSION} --load
 
 buildx-build-image-deviceshifu-http-opcua:
-	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/deviceshifu/Dockerfile.deviceshifuOPCUA \
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuOPCUA \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --load
 
@@ -103,17 +103,17 @@ buildx-push-deviceshifu-demo-image:
 
 .PHONY: build-image-mockdevices
 build-image-mockdevices:
-	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-thermometer:${IMAGE_VERSION}
-	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-robot-arm:${IMAGE_VERSION}
-	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-plate-reader:${IMAGE_VERSION}
-	docker build -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/agv/Dockerfile.mockdevice-agv --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-agv:${IMAGE_VERSION}
+	docker build -f ${PROJECT_ROOT}/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-thermometer:${IMAGE_VERSION}
+	docker build -f ${PROJECT_ROOT}/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-robot-arm:${IMAGE_VERSION}
+	docker build -f ${PROJECT_ROOT}/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-plate-reader:${IMAGE_VERSION}
+	docker build -f ${PROJECT_ROOT}/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-agv:${IMAGE_VERSION}
 
 .PHONY: buildx-push-image-mockdevices
 buildx-push-image-mockdevices:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-thermometer-multi:${IMAGE_VERSION} --push
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-robot-arm-multi:${IMAGE_VERSION} --push
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-plate-reader-multi:${IMAGE_VERSION} --push
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/deviceshifu/examples/mockdevice/agv/Dockerfile.mockdevice-agv --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-agv-multi:${IMAGE_VERSION} --push
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-thermometer-multi:${IMAGE_VERSION} --push
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-robot-arm-multi:${IMAGE_VERSION} --push
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-plate-reader-multi:${IMAGE_VERSION} --push
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} -t edgehub/mockdevice-agv-multi:${IMAGE_VERSION} --push
 
 
 docker-push-image-deviceshifu:
@@ -134,4 +134,4 @@ clean-images:
 
 tag:
 	go run tools/tag.go ${PROJECT_ROOT} ${IMAGE_VERSION} $(VERSION)
-	cd k8s/crd/ && (make generate-controller-yaml IMG=edgehub/shifu-controller:$(VERSION) generate-install-yaml)
+	cd pkg/k8s/crd/ && (make generate-controller-yaml IMG=edgehub/shifu-controller:$(VERSION) generate-install-yaml)

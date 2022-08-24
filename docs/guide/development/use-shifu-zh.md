@@ -25,7 +25,7 @@ kubectl get pods -A
 3. 将`shifu`部署到`k8s`集群中。
 在`shifu`根目录中运行以下命令将`shifu`部署到集群中：
 ```shell
-kubectl apply -f k8s/crd/install/shifu_install.yml
+kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 ```
 
 4. 确认`shifu`已经被加入到`k8s`集群中。
@@ -37,7 +37,7 @@ kubectl get pods -A
 5. 生成`demo`设备的数字孪生。
 在`shifu`根目录中运行以下命令创建`demo`设备的数字孪生：
 ```shell
-kubectl apply -f deviceshifu/examples/demo_device/edgedevice-agv/
+kubectl apply -f examples/deviceshifu/demo_device/edgedevice-agv/
 ```
 
 6. 部署与运行`nginx`应用。
