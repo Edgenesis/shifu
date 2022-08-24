@@ -1,13 +1,14 @@
 package deviceshifuMQTT
 
 import (
-	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"reflect"
 	"testing"
+
+	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
 
 	"gopkg.in/yaml.v3"
 )
@@ -36,23 +37,23 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	)
 
 	var mockDeviceDriverProperties = deviceshifubase.DeviceShifuDriverProperties{
-		"Edgenesis Mock Device",
-		"edgenesis/mockdevice:v0.0.1",
-		"python mock_driver.py",
+		DriverSku:       "Edgenesis Mock Device",
+		DriverImage:     "edgenesis/mockdevice:v0.0.1",
+		DriverExecution: "python mock_driver.py",
 	}
 
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
 		"get_reading": nil,
 		"get_status":  nil,
 		"set_reading": {
-			[]deviceshifubase.DeviceShifuInstructionProperty{
+			DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
 				{
 					ValueType:    InstructionValueTypeInt32,
 					ReadWrite:    InstructionReadWriteW,
 					DefaultValue: nil,
 				},
 			},
-			nil,
+			DeviceShifuProtocolProperties: nil,
 		},
 		"start": nil,
 		"stop":  nil,
