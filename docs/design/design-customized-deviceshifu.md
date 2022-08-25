@@ -53,14 +53,14 @@ root@nginx:/# curl http://deviceshifu-test.deviceshifu.svc.cluster.local/1800085
         "name":"大气温度",
         "val":"37",
         "unit":"℃",
-        exception:"温度过高"
+        "exception":"温度过高"
     },
     {
         "code":"20990922009",
         "name":"大气湿度",
         "val":"35",
         "unit":"",
-        exception:"湿度过高"
+        "exception":"湿度过高"
     }]
 }
 ```
