@@ -16,7 +16,7 @@ spec:
         app: plc
     spec:
       containers:
-      - image: edgehub/mockdevice-plc:v0.0.1
+      - image: edgehub/mockdevice-plc:v0.0.6
         name: plc
         ports:
         - containerPort: 11111

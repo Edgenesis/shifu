@@ -16,7 +16,7 @@ spec:
         app: plate-reader
     spec:
       containers:
-      - image: edgehub/mockdevice-plate-reader:v0.0.1
+      - image: edgehub/mockdevice-plate-reader:v0.0.6
         name: plate-reader
         ports:
         - containerPort: 11111
