@@ -9,7 +9,7 @@
 本示例需要安装 [Go](https://golang.org/dl/), [Docker](https://docs.docker.com/get-docker/), [kind](https://kubernetes.io/docs/tasks/tools/), [kubectl](https://kubernetes.io/docs/tasks/tools/) 和 [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)。
 
 ### 1. 运行 *Shifu* 并连接一个简单的温度计
-在 `shifu/deviceshifu/examples/demo_device` 路径中已经有一个演示温度计的 deployment 配置。该温度计会上报一个整数代表当前温度，它拥有一个 `read_value` API 来汇报这个数值。
+在 `shifu/examples/deviceshifu/demo_device` 路径中已经有一个演示温度计的 deployment 配置。该温度计会上报一个整数代表当前温度，它拥有一个 `read_value` API 来汇报这个数值。
 
 在 `shifu` 根目录下，运行下面两条命令来运行 *shifu* 和演示温度计的 *deviceShifu*：
 

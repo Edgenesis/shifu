@@ -10,7 +10,7 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
         if [ "$1" == "apply" ]; then
                 kubectl config set-context --current --namespace=default
         fi
-        kubectl "$1" -f k8s/crd/install/shifu_install.yml
+        kubectl "$1" -f pkg/k8s/crd/install/shifu_install.yml
 else
         echo "not a valid argument, need to be apply/delete"
         exit 0

@@ -11,9 +11,9 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
                 (cd k8s/crd && make install)
                 (cd k8s/crd && make deploy IMG=edgehub/shifu-controller:v0.0.1)
                 kubectl config set-context --current --namespace=default
-                kubectl "$1" -f k8s/crd/config/samples/shifu_v1alpha1_edgedevice.yaml
+                kubectl "$1" -f pkg/k8s/crd/config/samples/shifu_v1alpha1_edgedevice.yaml
         else
-                kubectl "$1" -f k8s/crd/config/samples/shifu_v1alpha1_edgedevice.yaml
+                kubectl "$1" -f pkg/k8s/crd/config/samples/shifu_v1alpha1_edgedevice.yaml
         fi
         kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-serviceaccount.yaml
         kubectl "$1" -f deviceshifu/examples/mockdevice/test-edgedevice-mockdevice-clusterrole.yaml

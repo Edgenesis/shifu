@@ -8,11 +8,11 @@
 2. 执行安装命令:
    ```
    cd shifu
-   kubectl apply -f k8s/crd/install/shifu_install.yml
+   kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
    ```
 
 ### 卸载：
 1. 执行卸载命令:
    ``` 
-   kubectl delete -f k8s/crd/install/shifu_install.yml
+   kubectl delete -f pkg/k8s/crd/install/shifu_install.yml
    ```

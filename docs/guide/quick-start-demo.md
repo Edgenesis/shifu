@@ -40,7 +40,7 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
 
 3. **Start demo deviceShifu (digital twins):**
     
-    In directory deviceshifu/examples/demo_device, we have 4 mock devices for shifu to create a ***deviceShifu*** (digital twin) for each; all devices have a `get_status` instruction which returns the current status of the device, such like Busy, Error, Idle, etc.
+    In directory examples/deviceshifu/demo_device, we have 4 mock devices for shifu to create a ***deviceShifu*** (digital twin) for each; all devices have a `get_status` instruction which returns the current status of the device, such like Busy, Error, Idle, etc.
     Besides `get_status`, each mock device has its own instruction:
     * **thermometer**: a thermometer which reports a temperature, it has an instruction `read_value` which returns the temperature value read from the thermometer
     * **agv**: an automated guided vehicle, it has two instructions, it has an instruction `get_position` which returns the position of the vehicle in the x-y coordinate

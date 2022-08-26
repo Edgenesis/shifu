@@ -18,7 +18,7 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
                 kind load docker-image edgehub/mockdevice-thermometer:v0.0.1
                 kind load docker-image edgehub/deviceshifu-http-http:v0.0.1
                 kind load docker-image edgehub/edgedevice-controller-multi:v0.0.1
-                kubectl apply -f k8s/crd/install/shifu_install.yml
+                kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
         else
                 kind delete cluster
                 docker rmi $(docker images | grep 'edgehub/mockdevice' | awk '{print $3}')

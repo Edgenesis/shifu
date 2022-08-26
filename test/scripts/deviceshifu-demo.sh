@@ -7,7 +7,7 @@ usage ()
 }
 
 if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
-        kubectl "$1" -f deviceshifu/examples/demo_device/$2
+        kubectl "$1" -f examples/deviceshifu/demo_device/$2
 else
         echo "not a valid argument, need to be apply/delete"
         exit 0
