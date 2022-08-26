@@ -50,7 +50,7 @@ stages:
         inputs:
           command: 'get'
           arguments: '-d'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuHTTP'
       - task: Go@0
         displayName: "go test deviceshifuHTTP"
         inputs:
