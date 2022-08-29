@@ -17,9 +17,10 @@ limitations under the License.
 package controllers
 
 import (
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"path/filepath"
 	"testing"
+
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -53,7 +54,7 @@ var _ = BeforeSuite(func() {
 
 	By("bootstrapping test environment")
 	testEnv = &envtest.Environment{
-		CRDDirectoryPaths:     []string{filepath.Join("..", "config", "edgedevice", "bases")},
+		CRDDirectoryPaths:     []string{filepath.Join("..", "crd", "config", "edgedevice", "bases")},
 		ErrorIfCRDPathMissing: true,
 	}
 
