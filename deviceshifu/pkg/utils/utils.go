@@ -15,7 +15,11 @@ func ParseAllParams(url string) map[string]string {
 
 	for _, item := range params {
 		info := strings.Split(item, "=")
-		result[info[0]] = info[1]
+		if len(info) == 1 {
+			result[info[0]] = ""
+		} else {
+			result[info[0]] = info[1]
+		}
 	}
 
 	return result

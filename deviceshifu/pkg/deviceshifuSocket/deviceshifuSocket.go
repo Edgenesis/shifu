@@ -31,6 +31,10 @@ type deviceCommandHandler interface {
 	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
 }
 
+const (
+	DEFAULT_SEND_END_CHAR = "\n"
+)
+
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
 	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 	if err != nil {
@@ -100,15 +104,22 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 		connection := deviceShifuSocketHandlerMetaData.connection
 		command := socketRequest.Command
 		timeout := socketRequest.Timeout
+
+		if startEnd, exists := params["sendEnd"]; exists {
+			command += startEnd
+		} else {
+			command += DEFAULT_SEND_END_CHAR
+		}
+
 		if timeout != 0 {
 			(*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
 		}
 
-		log.Printf("Sending %v", []byte(command+"\n"))
-		(*connection).Write([]byte(command + "\n"))
+		log.Printf("Sending %v", []byte(command))
+		(*connection).Write([]byte(command))
 
 		var message []byte
-		if end, exists := params["end"]; exists {
+		if end, exists := params["receivedEnd"]; exists {
 			message, err = bufio.NewReader(*connection).ReadBytes(end[0])
 		} else {
 			message, err = bufio.NewReader(*connection).ReadBytes('\n')
