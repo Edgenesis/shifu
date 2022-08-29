@@ -40,7 +40,7 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
 
 3. **Start demo deviceShifu (digital twins):**
     
-    In directory deviceshifu/examples/demo_device, we have 4 mock devices for shifu to create a ***deviceShifu*** (digital twin) for each; all devices have a `get_status` instruction which returns the current status of the device, such like Busy, Error, Idle, etc.
+    In directory examples/deviceshifu/demo_device, we have 4 mock devices for shifu to create a ***deviceShifu*** (digital twin) for each; all devices have a `get_status` instruction which returns the current status of the device, such like Busy, Error, Idle, etc.
     Besides `get_status`, each mock device has its own instruction:
     * **thermometer**: a thermometer which reports a temperature, it has an instruction `read_value` which returns the temperature value read from the thermometer
     * **agv**: an automated guided vehicle, it has two instructions, it has an instruction `get_position` which returns the position of the vehicle in the x-y coordinate
@@ -49,10 +49,10 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
 
     Start the deviceShifu for all 4 devices:
     ```
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-agv
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-robot-arm
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-plate-reader
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-thermometer
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-agv
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-robot-arm
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-plate-reader
     ```
     We should have the following pods running in devices namespace:
     ```
@@ -75,11 +75,11 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
     As the pod IPs are not routable, we can run a simple nginx server, and `kubectl exec` into the nginx pod. 
     A nginx is provided within the container, so we can just start the pod:
     ```
-    kubectl run nginx --image=nginx:1.21
+    kubectl run nginx --image=nginx:1.21 -n deviceshifu
     ```
     Then we are able to get into the shell of the nginx server:
     ```
-    kubectl exec -it nginx -- bash
+    kubectl -n deviceshifu exec -it nginx -- bash
     ```
     After that, we can call each deviceShifu's instructions on those mock devices and see the return value.
     Each deviceShifu has its instructions defined in the configmap file.

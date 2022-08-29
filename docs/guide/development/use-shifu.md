@@ -25,7 +25,7 @@ kubectl get pods -A
 3. Deploy `shifu` to the `k8s` cluster.
 Run the following command in `shifu` directory to deploy `shifu` to the cluster:
 ```shell
-kubectl apply -f k8s/crd/install/shifu_install.yml
+kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 ```
 
 4. Confirm that `shifu` has been added to the `k8s` cluster.
@@ -37,7 +37,7 @@ kubectl get pods -A
 5. Generate a digital twin of the `demo` device.
 Run the following command in `shifu` directory to create a digital twin of the `demo` device:
 ```shell
-kubectl apply -f deviceshifu/examples/demo_device/edgedevice-agv/
+kubectl apply -f examples/deviceshifu/demo_device/edgedevice-agv/
 ```
 
 6. Deploy and run the `nginx` application.

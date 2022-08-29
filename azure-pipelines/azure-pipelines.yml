@@ -50,87 +50,87 @@ stages:
         inputs:
           command: 'get'
           arguments: '-d'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuHTTP'
       - task: Go@0
-        displayName: "go test deviceshifu"
+        displayName: "go test deviceshifuHTTP"
         inputs:
           command: 'test'
           arguments: '-v'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifu'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuHTTP'
       - task: Go@0
         displayName: "go test deviceshifuSocket"
         inputs:
           command: 'test'
           arguments: '-v'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuSocket'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuSocket'
       - task: Go@0
         displayName: "go test deviceshifuMQTT"
         inputs:
           command: 'test'
           arguments: '-v'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuMQTT'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuMQTT'
       - task: Go@0
         displayName: "go test deviceshifuOPCUA"
         inputs:
           command: 'test'
           arguments: '-v'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/deviceshifuOPCUA'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuOPCUA'
       - task: Go@0
         displayName: "go test mockdevice"
         inputs:
           command: 'test'
           arguments: '-v'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice'
       - task: Go@0
-        displayName: "go build deviceshifu"
+        displayName: "go build deviceshifuHTTP"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdHTTP'
       - task: Go@0
         displayName: "go build deviceshifuSocket"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdSocket'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdSocket'
       - task: Go@0
         displayName: "go build deviceshifuMQTT"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdMQTT'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdMQTT'
       - task: Go@0
         displayName: "go build deviceshifuOPCUA"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/cmd/cmdOPCUA'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdOPCUA'
       - task: Go@0
         displayName: "go build mockdevice agv"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-agv'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-agv'
       - task: Go@0
         displayName: "go build mockdevice plate reader"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plate-reader'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-plate-reader'
       - task: Go@0
         displayName: "go build mockdevice plc"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-plc'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-plc'
       - task: Go@0
         displayName: "go build mockdevice robot arm"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-robot-arm'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-robot-arm'
       - task: Go@0
         displayName: "go build mockdevice thermometer"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/deviceshifu/pkg/mockdevice/mockdevice-thermometer'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-thermometer'
       - task: Go@0
         displayName: "go build http to ssh stub"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/driver_util'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/driver_util'
 
 - stage: docker_build_and_kind_e2e_test
   condition: succeeded()
@@ -157,61 +157,61 @@ stages:
       - script: |
           echo $tag
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifu \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuHTTP \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-http:$(tag) --load
         displayName: build edgehub/deviceshifu-http-http
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuSocket \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuSocket \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-socket:$(tag) --load
         displayName: build edgehub/deviceshifu-http-socket
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuMQTT \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuMQTT \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-mqtt:$(tag) --load
         displayName: build edgehub/deviceshifu-http-mqtt
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuOPCUA \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuOPCUA \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-opcua:$(tag) --load
         displayName: build deviceshifu-http-opcua
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
+          -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/shifu-controller:$(tag) --load
         displayName: build edgehub/shifu-controller
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-thermometer:$(tag) --load
         displayName: build edgehub/mockdevice-thermometer
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-robot-arm:$(tag) --load
         displayName: build edgehub/mockdevice-robot-arm
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-plate-reader:$(tag) --load
         displayName: build edgehub/mockdevice-plate-reader
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/agv/Dockerfile.mockdevice-agv \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-agv:$(tag) --load
         displayName: build edgehub/mockdevice-agv
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/plc/Dockerfile.mockdevice-plc \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plc/Dockerfile.mockdevice-plc \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-plc:$(tag) --load
         displayName: build edgehub/mockdevice-plc
@@ -230,7 +230,7 @@ stages:
           kind load docker-image edgehub/deviceshifu-http-opcua:$(tag)
           kind load docker-image edgehub/deviceshifu-http-socket:$(tag)
           kubectl version
-          kubectl apply -f $(System.DefaultWorkingDirectory)/k8s/crd/install/shifu_install.yml
+          kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
           kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
         displayName: "setup Kind cluster and install Shifu"
 
@@ -238,31 +238,31 @@ stages:
           set -e
           kubectl run nginx --image=nginx -n deviceshifu
           kubectl wait --for condition=Ready pod/nginx -n deviceshifu --timeout=600s
-          kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plc
           kubectl wait --for=condition=Available deploy/plc -n devices --timeout=150s
           kubectl wait --for=condition=Available deploy/deviceshifu-plc-deployment -n deviceshifu --timeout=150s
           sleep 5
           kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-plc/getcontent?rootsssaddress=Q;echo
-          kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plc
-          kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plc
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-agv
           kubectl wait --for=condition=Available deploy/deviceshifu-agv-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=condition=Available deploy/agv -n devices --timeout=150s
           sleep 5
           kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
-          kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-agv
-          kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-agv
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plate-reader
           kubectl wait --for=condition=Available deploy/deviceshifu-plate-reader-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=condition=Available deploy/plate-reader -n devices --timeout=150s
           sleep 5
           kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-plate-reader/get_measurement
-          kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-plate-reader
-          kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plate-reader
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-robot-arm
           kubectl wait --for=condition=Available deploy/deviceshifu-robotarm-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=condition=Available deploy/robotarm -n devices --timeout=150s
           sleep 5    
           kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-robotarm/get_coordinate
-          kubectl delete -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-robot-arm
-          kubectl apply -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/demo_device/edgedevice-thermometer
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-robot-arm
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-thermometer
           kubectl wait --for=condition=Available deploy/deviceshifu-thermometer-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=condition=Available deploy/thermometer -n devices --timeout=150s
           sleep 5    
@@ -293,61 +293,64 @@ stages:
 
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifu \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuHTTP \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-http:$(release_tag) --push
         displayName: build edgehub/deviceshifu-http-http
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuSocket \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuSocket \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-socket:$(release_tag) --push
         displayName: build edgehub/deviceshifu-http-socket
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuMQTT \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuMQTT \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-mqtt:$(release_tag) --push
         displayName: build edgehub/deviceshifu-http-mqtt
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/Dockerfile.deviceshifuOPCUA \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuOPCUA \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-opcua:$(release_tag) --push
         displayName: build deviceshifu-http-opcua
       - script: |
+          ls && pwd
+        displayName: get current directory
+      - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/k8s/crd/Dockerfile \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)/k8s/crd/" $(System.DefaultWorkingDirectory)/k8s/crd/ \
+          -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/shifu-controller:$(release_tag) --push
         displayName: build edgehub/shifu-controller
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-thermometer:$(release_tag) --push
         displayName: build edgehub/mockdevice-thermometer
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-robot-arm:$(release_tag) --push
         displayName: build edgehub/mockdevice-robot-arm
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-plate-reader:$(release_tag) --push
         displayName: build edgehub/mockdevice-plate-reader 
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/agv/Dockerfile.mockdevice-agv \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-agv:$(release_tag) --push
         displayName: build edgehub/mockdevice-agv
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/deviceshifu/examples/mockdevice/plc/Dockerfile.mockdevice-plc \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plc/Dockerfile.mockdevice-plc \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-plc:$(release_tag) --push
         displayName: build edgehub/mockdevice-plc
