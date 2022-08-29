@@ -75,11 +75,11 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
     As the pod IPs are not routable, we can run a simple nginx server, and `kubectl exec` into the nginx pod. 
     A nginx is provided within the container, so we can just start the pod:
     ```
-    kubectl run nginx --image=nginx:1.21
+    kubectl run nginx --image=nginx:1.21 -n deviceshifu
     ```
     Then we are able to get into the shell of the nginx server:
     ```
-    kubectl exec -it nginx -- bash
+    kubectl -n deviceshifu exec -it nginx -- bash
     ```
     After that, we can call each deviceShifu's instructions on those mock devices and see the return value.
     Each deviceShifu has its instructions defined in the configmap file.

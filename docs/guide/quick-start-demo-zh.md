@@ -79,11 +79,11 @@
     如果要和deviceShifu直接交互，我们可以运行一个简易nginx服务，并通过命令 `kubectl exec`来进入Pods里。
     本演示提供了一个nginx镜像，我们可以直接运行该Pod：
     ```
-    kubectl run nginx --image=nginx:1.21
+    kubectl run nginx --image=nginx:1.21 -n deviceshifu
     ```
     通过命令来进入nginx Pod的命令行：
     ```
-    kubectl exec -it nginx -- bash
+    kubectl -n deviceshifu exec -it nginx -- bash
     ```
     之后，我们可以呼叫每一个deviceShifu内置的命令来查看返回值（每一个deviceShifu的命令定义在该设备的ConfigMap文件中）。
     注意，以下返回值均为随机产生：
