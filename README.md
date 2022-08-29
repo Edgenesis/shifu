@@ -3,6 +3,7 @@
 [中文](README-zh.md) | English
 
 [![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/shifu-build-muiltistage?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=19&branchName=main)
+[![codecov](https://codecov.io/gh/Edgenesis/shifu/branch/main/graph/badge.svg?token=OX2UN22O3Z)](https://codecov.io/gh/Edgenesis/shifu)
 
 </div>
 
@@ -91,3 +92,7 @@ Welcome to [open an issue](https://github.com/Edgenesis/shifu/issues/new) or [cr
 - WeChat
     - Donoteattoomuchla 
     - if7369
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
