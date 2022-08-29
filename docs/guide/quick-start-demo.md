@@ -49,10 +49,10 @@ As long as you have [Docker](https://docs.docker.com/get-docker/) installed, you
 
     Start the deviceShifu for all 4 devices:
     ```
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-agv
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-robot-arm
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-plate-reader
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-thermometer
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-agv
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-robot-arm
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-plate-reader
     ```
     We should have the following pods running in devices namespace:
     ```

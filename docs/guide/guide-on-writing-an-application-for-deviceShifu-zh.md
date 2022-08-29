@@ -13,9 +13,9 @@
 
 在 `shifu` 根目录下，运行下面两条命令来运行 *shifu* 和演示温度计的 *deviceShifu*：
 
-```
-./test/scripts/deviceshifu-setup.sh apply applicationDemo          # setup and start shifu services for this demo
-./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer    # connect fake thermometer to shifu
+```bash
+./test/scripts/deviceshifu-setup.sh apply         # setup and start shifu services for this demo
+kubectl apply -f examples/deviceshifu/demo_device/edgedevice-thermometer    # connect fake thermometer to shifu
 ```
 ### 2. 温度检测程序
 本应用会通过 HTTP 请求来和 *deviceShifu* 交互，每两秒检测 `read_value` 节点来获取温度计 *deviceShifu* 的读数。
@@ -92,7 +92,7 @@ kind load docker-image high-temperature-detector:v0.0.1
 
 之后运行容器 Pod：
 ```
-kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1
+kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1 -n deviceshifu
 ```
 
 ### 5. 检查应用输出

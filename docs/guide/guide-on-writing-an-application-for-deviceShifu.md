@@ -11,9 +11,9 @@ The following example requires [Go](https://golang.org/dl/), [Docker](https://do
 The deployment config for a fake thermometer which produces a integer value representing the temperature read should be already in the `shifu/examples/deviceshifu/demo_device` directory.\
 The device driver has an API `read_value` which returns such integer value.
 Under `shifu` root directory, we can run the following two commands to have *shifu* and the fake thermometer *deviceShifu* ready:
-```
-./test/scripts/deviceshifu-setup.sh apply applicationDemo          # setup and start shifu services for this demo
-./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer    # connect fake thermometer to shifu
+```bash
+./test/scripts/deviceshifu-setup.sh apply         # setup and start shifu services for this demo
+kubectl apply -f examples/deviceshifu/demo_device/edgedevice-thermometer    # connect fake thermometer to shifu
 ```
 ### 2. High temperature detector application
 The application interacts with *deviceShifu* via HTTP requests.\
@@ -90,7 +90,7 @@ kind load docker-image high-temperature-detector:v0.0.1
 ```
 Then we can apply the manifest and start the application pod:
 ```
-kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1
+kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1 -n deviceshifu
 ```
 
 ### 5. Check the application output
