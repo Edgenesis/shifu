@@ -21,7 +21,7 @@ ARG TARGETARCH
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/deviceshifu cmd/deviceshifu/cmdSocket/main.go
 
-FROM edgehub/distroless-static:nonroot
+FROM gcr.io/distroless/static-debian11
 WORKDIR /
 COPY --from=builder /output/deviceshifu deviceshifu
 
