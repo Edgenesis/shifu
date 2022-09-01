@@ -94,9 +94,8 @@ metadata:
   name: push-endpoint-1
   namespace: devices
 spec:
-  service:
-    type: HTTP
-    address: 1.2.3.4:8081/api
+  type: HTTP
+  address: 1.2.3.4:8081/api
 ```
 
 this ***deviceShifu*** will have the following telemetries:

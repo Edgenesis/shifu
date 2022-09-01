@@ -85,13 +85,13 @@ data:
     driverImage: 
   instructions: |
     get_value:
-      instructionProperties:
+      protocolPropertyList:
         OPCUANodeID: "ns=2;i=2"
     get_time:
-      instructionProperties:
+      protocolPropertyList:
         OPCUANodeID: "i=2258"
     get_server:
-      instructionProperties:
+      protocolPropertyList:
         OPCUANodeID: "i=2261"
   telemetries: |
     device_health:
