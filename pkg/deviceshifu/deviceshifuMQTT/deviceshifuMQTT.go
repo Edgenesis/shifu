@@ -3,12 +3,13 @@ package deviceshifuMQTT
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"log"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -224,8 +225,9 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
 			}
 
-			if telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds == nil {
-				*telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = DEFAULT_UPDATE_INTERVAL_MS
+			if interval := telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds; interval == nil {
+				var telemetryUpdateIntervalInMilliseconds = DEFAULT_UPDATE_INTERVAL_MS
+				telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = &telemetryUpdateIntervalInMilliseconds
 			}
 
 			nowTime := time.Now()
