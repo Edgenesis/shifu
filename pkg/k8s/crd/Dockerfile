@@ -1,7 +1,6 @@
 # Build the manager binary
 FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder
 
-ENV GOPROXY=https://goproxy.cn,direct
 ENV GO111MODULE=on
 ENV GOPRIVATE=github.com/Edgenesis
 
