@@ -1,7 +1,6 @@
 # Build the manager binary
 FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder
 
-ENV GOPROXY=https://goproxy.cn,direct
 ENV GO111MODULE=on
 ENV GOPRIVATE=github.com/Edgenesis
 
@@ -26,7 +25,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o manager main.
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM edgehub/distroless-static:nonroot
+FROM gcr.io/distroless/static-debian11
 WORKDIR /
 COPY --from=builder /workspace/manager .
 USER 65532:65532
