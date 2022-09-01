@@ -1,12 +1,13 @@
 package deviceshifuOPCUA
 
 import (
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"io"
 	"log"
-	"net/http"
 	"os"
 	"testing"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -79,7 +80,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
 	}
 
-	resp, err := http.Get("http://localhost:8080/health")
+	resp, err := utils.RetryAndGetHTTP("http://localhost:8080/health", 3)
 	if err != nil {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}

@@ -3,10 +3,11 @@ package deviceshifubase
 import (
 	"context"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 )
 
 // HTTP header type:
@@ -45,6 +46,10 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, e
 	defaultTelemetryCollectionService := ""
 	defaultTelemetryServiceAddress := ""
 	telemetries := ds.DeviceShifuConfig.Telemetries
+	if telemetries.DeviceShifuTelemetrySettings == nil {
+		telemetries.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
+	}
+
 	if telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryDefaultPushToServer != nil {
 		defaultPushToServer = *telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryDefaultPushToServer
 	}
