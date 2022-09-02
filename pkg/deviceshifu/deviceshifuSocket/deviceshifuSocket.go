@@ -126,7 +126,7 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 		connection := deviceShifuSocketHandlerMetaData.connection
 		command := socketRequest.Command
 		timeout := socketRequest.Timeout
-		if timeout >= 0 {
+		if timeout > 0 {
 			(*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
 		}
 
