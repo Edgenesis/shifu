@@ -26,19 +26,21 @@ root@nginx:/# curl http://deviceshifu-test.deviceshifu.svc.cluster.local/1800085
     "statusCode": "200",
     "message":"success",
     "entity":[{
+        "deviceId":"20990922009",
         "datatime":"2022-06-30 07:55:51",
         "eUnit":"℃",
-        "eValue":"19.9",
+        "eValue":"37",
         "eKey":"e3",
-        "eName":"大气温度",
+        "eName":"atmosphere temperature",
         "eNum":"101"
     },
     {
+        "deviceId":"20990922009",
         "datatime":"2022-06-30 07:55:51",
         "eUnit":"%RH",
-        "eValue":"88.2",
+        "eValue":"88",
         "eKey":"e4",
-        "eName":"大气湿度",
+        "eName":"atmosphere humidity",
         "eNum":"102"
     }]
 }
@@ -50,17 +52,17 @@ root@nginx:/# curl http://deviceshifu-test.deviceshifu.svc.cluster.local/1800085
 {
     [{
         "code":"20990922009",
-        "name":"大气温度",
+        "name":"atmosphere temperature",
         "val":"37",
         "unit":"℃",
-        "exception":"温度过高"
+        "exception":"temperature is too high"
     },
     {
         "code":"20990922009",
-        "name":"大气湿度",
-        "val":"35",
+        "name":"atmosphere humidity",
+        "val":"88",
         "unit":"",
-        "exception":"湿度过高"
+        "exception":"humidity is too high"
     }]
 }
 ```
@@ -86,12 +88,14 @@ flowchart LR
     devgd-->devcd
 ```
 
+## Implementation
+By default, `deviceShifu` will provide raw data from actual device to the applications.
 
-Give driver developers a SDK to work with deviceShifu.
+To make `deviceShifu` able to "translate" the raw data to a more application-friendly format as well as filter out unneeded data, we can use the SDK to modify `deviceShifu` files, for example, we have:
 
-`deviceShifu.py` developers should edit this file in the following steps:
+`deviceShifu.py` where developers can edit this file in the following steps:
 
-1. create a handler function, such as `func_a`.
+1. create a handler function, such as `check_regular_measurement_exception`.
 2. register the handler function by editing `register_handlers`.
 
 ```python
@@ -100,16 +104,46 @@ class DeviceShifu():
         self.register_handlers()
 
     def register_handlers(self):
-        self.register_handler(self.func_a)
-        self.register_handler(self.func_b)
+        self.register_handler(self.translate_data_from_sensor_a)
 
     def start(self):
 
     # User defined callback handler functions
     # To debug, simply print to stdout and access from kubectl logs (we should have shifuctl too!)
-    def func_a(self, raw_data):
+    def translate_data_from_sensor_a(raw_data):
+        new_data = []
+        raw_loaded = json.load(raw_data)
+        # translate the raw data to new data
 
-    def func_b(self, raw_data):
+        entities = raw_loaded["entity"]
+        for i in range(len(entities)):
+            new_data_entry = {"code": entities[i]["deviceId"],
+                            "name": entities[i]["eName"],
+                            "val": entities[i]["eValue"],
+                            "unit": entities[i]["eUnit"],
+                            "exception": check_regular_measurement_exception(entities[i]["eName"], entities[i]["eValue"])}
+            new_data.append(new_data_entry)
+        return new_data
+
+```
+and we can have helper and constants like this:
+```python
+    TEMPERATURE_MEASUREMENT = "atmosphere temperature"
+    HUMIDITY_MEASUREMENT = "atmosphere humidity"
+
+
+    def check_regular_measurement_exception(measurement_name, measurement_value):
+        exception_message = ""
+        if measurement_name == TEMPERATURE_MEASUREMENT:
+            if int(measurement_value) > 35:
+                exception_message = "temperature is too high"
+        elif measurement_name == HUMIDITY_MEASUREMENT:
+            if int(measurement_value) > 60:
+                exception_message = "humidity is too high"
+
+        return exception_message
+
+
 ```
 
 `deviceShifu.py` developers shouldn't edit this file.
