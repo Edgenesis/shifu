@@ -12,6 +12,12 @@ sequenceDiagram
     cd->>cd: parse raw data via handler function
     cd->>application: parsed data
 ```
+## Internal data flow
+```mermaid
+  flowchart LR
+    IoT-device --> |raw data|deviceShifu-data-receiver-->deviceShifu-data-handler-->deviceShifu-data-sender-->|app-friendly data|application
+
+```
 
 Examples:
 
