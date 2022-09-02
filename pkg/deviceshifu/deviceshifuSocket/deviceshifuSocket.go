@@ -4,13 +4,14 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"log"
 	"net"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 )
 
 type DeviceShifu struct {
@@ -125,7 +126,7 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 		connection := deviceShifuSocketHandlerMetaData.connection
 		command := socketRequest.Command
 		timeout := socketRequest.Timeout
-		if timeout != 0 {
+		if timeout > 0 {
 			(*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
 		}
 

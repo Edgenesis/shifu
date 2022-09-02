@@ -5,14 +5,15 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"io"
 	"log"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/client-go/rest"
 )
@@ -202,7 +203,9 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 			fallthrough
 		case http.MethodGet:
-			if timeout == 0 {
+			// for shifu.cloud timeout=0 is emptyomit
+			// for hikivison's rtsp stream need never timeout
+			if timeout <= 0 {
 				ctx, cancel = context.WithCancel(context.Background())
 			} else {
 				ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)

@@ -8,9 +8,9 @@ data:
     driverSku: HikVision
     driverImage: edgenesis/camera-python:v0.0.1
   instructions: |
-    instructions:
     instructionSettings:
       defaultTimeoutSeconds: 0
+    instructions:
       capture:
       info:
       stream:
