@@ -15,7 +15,7 @@ sequenceDiagram
 ## Internal data flow
 ```mermaid
   flowchart LR
-    IoT-device --> |raw data|deviceShifu-data-receiver-->deviceShifu-data-handler-->deviceShifu-data-sender-->|app-friendly data|application
+    IoT-device --> |raw data|deviceShifu-data-adapter-->deviceShifu-data-handler-->deviceShifu-data-sender-->|app-friendly data|application
 
 ```
 
@@ -95,7 +95,8 @@ flowchart LR
 ```
 
 ## Implementation
-By default, `deviceShifu` will provide raw data from actual device to the applications.
+
+By default, `deviceShifu` will provide raw data from physical device to the applications.
 
 To make `deviceShifu` able to "translate" the raw data to a more application-friendly format as well as filter out unneeded data, we can use the SDK to modify `deviceShifu` files, for example, we have:
 
@@ -159,3 +160,13 @@ def main():
     ds = DeviceShifu()
     ds.start()
 ```
+
+## Internal structure of data
+`deviceShifu`'s handling of data is collapsed into generally 4 components: data-adapter, data-handler, data-provider, data-cache:
+
+1. **data-adapter** is responsible for receiving data from physical device. `deviceShifu` loads the driver and enables the data flow from physical device to data-adapter.
+2. **data-handler** has custom-implemented handlers that process the data in action.
+3. **data-provider** is the portal for actively sending data to applications or for applications to ask for data.
+4. **data-cache** is cutsomizable to store data used very frequently.
+
+
