@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-mqtt-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-mqtt:v0.0.6
+      - image: edgehub/deviceshifu-http-mqtt:v0.0.7
         name: deviceshifu-http
         ports:
         - containerPort: 8080

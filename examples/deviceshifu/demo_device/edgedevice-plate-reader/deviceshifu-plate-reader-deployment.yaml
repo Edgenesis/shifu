@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-plate-reader-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-http:v0.0.6
+      - image: edgehub/deviceshifu-http-http:v0.0.7
         name: deviceshifu-http
         ports:
         - containerPort: 8080
