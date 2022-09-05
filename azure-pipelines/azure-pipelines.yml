@@ -196,6 +196,7 @@ stages:
           kind load docker-image edgehub/shifu-controller:$(tag)
           kind load docker-image edgehub/mockdevice-thermometer:$(tag)
           kind load docker-image edgehub/mockdevice-plate-reader:$(tag)
+          kind load docker-image edgehub/mockdevice-robot-arm:$(tag)
           kind load docker-image edgehub/mockdevice-agv:$(tag)
           kind load docker-image edgehub/mockdevice-plc:$(tag)
           kind load docker-image edgehub/deviceshifu-http-http:$(tag)   
