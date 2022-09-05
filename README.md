@@ -40,7 +40,7 @@ If you are not familiar with Kubernetes, we provide [***Shifu*** Demo](https://d
 
 ### Documentation
 
-See documentation on <https://shifu.run/>.
+See documentation on <https://shifu.run/docs/>.
 
 ## Look into ***Shifu***
 
