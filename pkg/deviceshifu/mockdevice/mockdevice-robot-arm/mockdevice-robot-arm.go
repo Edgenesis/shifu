@@ -12,11 +12,11 @@ import (
 )
 
 func main() {
-	available_funcs := []string{
+	availableFuncs := []string{
 		"get_coordinate",
 		"get_status",
 	}
-	mockdevice.StartMockDevice(available_funcs, instructionHandler)
+	mockdevice.StartMockDevice(availableFuncs, instructionHandler)
 }
 
 func instructionHandler(functionName string) http.HandlerFunc {
@@ -34,7 +34,7 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			fmt.Fprintf(w, "xpos: %v, ypos: %v, zpos: %v", xpos, ypos, zpos)
 		case "get_status":
 			rand.Seed(time.Now().UnixNano())
-			fmt.Fprintf(w, mockdevice.STATUS_STR_LIST[(rand.Intn(len(mockdevice.STATUS_STR_LIST)))])
+			fmt.Fprintf(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}
 }

@@ -13,7 +13,7 @@ import (
 func TestStartMockDevice(t *testing.T) {
 	os.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
 	os.Setenv("MOCKDEVICE_PORT", "12345")
-	available_funcs := []string{
+	availableFuncs := []string{
 		"get_position",
 		"get_status",
 	}
@@ -28,7 +28,7 @@ func TestStartMockDevice(t *testing.T) {
 		}
 	}
 
-	go StartMockDevice(available_funcs, instructionHandler)
+	go StartMockDevice(availableFuncs, instructionHandler)
 
 	time.Sleep(1 * time.Second)
 	resp, err := http.Get("http://localhost:12345/get_status")

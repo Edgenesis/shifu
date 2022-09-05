@@ -1,9 +1,10 @@
 package main
 
 import (
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifuHTTP"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"os"
+
+	deviceshifuhttp "github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifuHTTP"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -14,12 +15,12 @@ func main() {
 
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		Name:           deviceName,
-		ConfigFilePath: deviceshifubase.DEVICE_CONFIGMAP_FOLDER_PATH,
-		KubeConfigPath: deviceshifubase.KUBERNETES_CONFIG_DEFAULT,
+		ConfigFilePath: deviceshifubase.DeviceConfigmapFolderPath,
+		KubeConfigPath: deviceshifubase.KubernetesConfigDefault,
 		Namespace:      namespace,
 	}
 
-	ds, err := deviceshifuHTTP.New(deviceShifuMetadata)
+	ds, err := deviceshifuhttp.New(deviceShifuMetadata)
 	if err != nil {
 		panic(err.Error())
 	}

@@ -94,12 +94,14 @@ type EdgeDeviceStatus struct {
 type Connection string
 
 const (
+	// ConnectionEthernet String
 	ConnectionEthernet Connection = "Ethernet"
 )
 
 // Protocol specifies the EdgeDevice's communication protocol.
 type Protocol string
 
+// Protocol String
 const (
 	ProtocolHTTP            Protocol = "HTTP"
 	ProtocolHTTPCommandline Protocol = "HTTPCommandline"

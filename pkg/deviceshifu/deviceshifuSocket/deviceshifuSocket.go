@@ -1,4 +1,4 @@
-package deviceshifuSocket
+package deviceshifusocket
 
 import (
 	"bufio"
@@ -14,12 +14,14 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 )
 
+// DeviceShifu deviceshifu and socketConnection for Socket
 type DeviceShifu struct {
 	base             *deviceshifubase.DeviceShifuBase
 	socketConnection *net.Conn
 }
 
-type DeviceShifuSocketHandlerMetaData struct {
+// HandlerMetaData MetaData for Socket Handler
+type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
 	properties     *deviceshifubase.DeviceShifuInstruction
@@ -30,6 +32,7 @@ type deviceCommandHandler interface {
 	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
 }
 
+// New new socket deviceshifu
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
 	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 	if err != nil {
@@ -37,7 +40,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	}
 	var socketConnection net.Conn
 
-	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
+	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolSocket:
 			// Open the connection:
@@ -59,14 +62,14 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 			log.Printf("Connected to '%v'\n", *base.EdgeDevice.Spec.Address)
 			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
-				deviceShifuSocketHandlerMetaData := &DeviceShifuSocketHandlerMetaData{
+				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
 					properties,
 					&socketConnection,
 				}
 
-				mux.HandleFunc("/"+instruction, deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData))
+				mux.HandleFunc("/"+instruction, deviceCommandHandlerSocket(HandlerMetaData))
 			}
 		}
 	}
@@ -76,7 +79,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	return ds, nil
 }
 
-func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
+func createURIFromRequest(address string, handlerInstruction string, r *http.Request) string {
 
 	queryStr := "?"
 
@@ -105,7 +108,7 @@ func copyHeader(dst, src http.Header) {
 	}
 }
 
-func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSocketHandlerMetaData) http.HandlerFunc {
+func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
 		if headerContentType != "application/json" {
@@ -114,7 +117,7 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 			return
 		}
 
-		var socketRequest DeviceShifuSocketRequestBody
+		var socketRequest RequestBody
 		err := json.NewDecoder(r.Body).Decode(&socketRequest)
 		if err != nil {
 			log.Printf("error decode: %v", socketRequest)
@@ -123,7 +126,7 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 		}
 
 		log.Printf("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
-		connection := deviceShifuSocketHandlerMetaData.connection
+		connection := HandlerMetaData.connection
 		command := socketRequest.Command
 		timeout := socketRequest.Timeout
 		if timeout > 0 {
@@ -138,7 +141,7 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 			http.Error(w, "Failed to read message from socket, error: "+err.Error(), http.StatusBadRequest)
 		}
 
-		returnMessage := DeviceShifuSocketReturnBody{
+		returnMessage := ReturnBody{
 			Message: message,
 			Status:  http.StatusOK,
 		}
@@ -184,7 +187,7 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
-func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
+func (ds *DeviceShifu) startHTTPServer(stopCh <-chan struct{}) error {
 	fmt.Printf("deviceshifu %s's http server started\n", ds.base.Name)
 	return ds.base.Server.ListenAndServe()
 }
@@ -216,10 +219,12 @@ func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 	return true, nil
 }
 
+// Start start socket telemetry
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	return ds.base.Start(stopCh, ds.collectSocketTelemetry)
 }
 
+// Stop stop http server
 func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
 }

@@ -10,7 +10,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 )
 
-// HTTP header type:
+// CopyHeader HTTP header type:
 // type Header map[string][]string
 func CopyHeader(dst, src http.Header) {
 	for header, headerValueList := range src {
@@ -20,9 +20,10 @@ func CopyHeader(dst, src http.Header) {
 	}
 }
 
+// PushToHTTPTelemetryCollectionService push telemetry data to Collection Service
 func PushToHTTPTelemetryCollectionService(telemetryServiceProtocol v1alpha1.Protocol,
 	message *http.Response, telemetryCollectionService string) {
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(DEVICE_TELEMETRY_TIMEOUT_MS)*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(DeviceTelemetryTimeoutInMS)*time.Millisecond)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, telemetryCollectionService, message.Body)
 	if err != nil {
@@ -65,7 +66,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, e
 		var telemetryService v1alpha1.TelemetryService
 		if err := ds.RestClient.Get().
 			Namespace(ds.EdgeDevice.Namespace).
-			Resource(TELEMETRYCOLLECTIONSERVICE_RESOURCE_STR).
+			Resource(TelemetryCollectionServiceResourceStr).
 			Name(defaultTelemetryCollectionService).
 			Do(context.TODO()).
 			Into(&telemetryService); err != nil {
@@ -94,7 +95,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, e
 				var telemetryService v1alpha1.TelemetryService
 				if err := ds.RestClient.Get().
 					Namespace(ds.EdgeDevice.Namespace).
-					Resource(TELEMETRYCOLLECTIONSERVICE_RESOURCE_STR).
+					Resource(TelemetryCollectionServiceResourceStr).
 					Name(*pushSettings.DeviceShifuTelemetryCollectionService).
 					Do(context.TODO()).
 					Into(&telemetryService); err != nil {

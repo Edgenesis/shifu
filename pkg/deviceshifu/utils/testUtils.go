@@ -6,6 +6,7 @@ import (
 	"time"
 )
 
+// RetryAndGetHTTP Send Http Get pre Second success or untill retries is reached
 func RetryAndGetHTTP(url string, retries int) (*http.Response, error) {
 	var (
 		err      error
@@ -16,7 +17,7 @@ func RetryAndGetHTTP(url string, retries int) (*http.Response, error) {
 		response, err = http.Get(url)
 		if err != nil {
 			log.Println(err)
-			retries -= 1
+			retries--
 			time.Sleep(time.Second * 1)
 			continue
 		}

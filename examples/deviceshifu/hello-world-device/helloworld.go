@@ -5,7 +5,7 @@ import (
 	"net/http"
 )
 
-func process_hello(w http.ResponseWriter, req *http.Request) {
+func processHello(w http.ResponseWriter, req *http.Request) {
 	fmt.Fprintln(w, "Hello_world from device via shifu!")
 }
 
@@ -18,7 +18,7 @@ func headers(w http.ResponseWriter, req *http.Request) {
 }
 
 func main() {
-	http.HandleFunc("/hello", process_hello)
+	http.HandleFunc("/hello", processHello)
 	http.HandleFunc("/headers", headers)
 
 	http.ListenAndServe(":11111", nil)

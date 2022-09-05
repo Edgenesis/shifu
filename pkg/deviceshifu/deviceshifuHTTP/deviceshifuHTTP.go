@@ -1,4 +1,4 @@
-package deviceshifuHTTP
+package deviceshifuhttp
 
 import (
 	"bytes"
@@ -18,17 +18,20 @@ import (
 	"k8s.io/client-go/rest"
 )
 
+// DeviceShifuHTTP deviceshifu for HTTP
 type DeviceShifuHTTP struct {
 	base *deviceshifubase.DeviceShifuBase
 }
 
-type DeviceShifuHTTPHandlerMetaData struct {
+// HandlerMetaData MetaData for HTTPhandler
+type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
 	properties     *deviceshifubase.DeviceShifuInstruction
 }
 
-type DeviceShifuHTTPCommandlineHandlerMetadata struct {
+//CommandlineHandlerMetadata MetaData for HTTPCommandline handler
+type CommandlineHandlerMetadata struct {
 	edgeDeviceSpec  v1alpha1.EdgeDeviceSpec
 	instruction     string
 	properties      *deviceshifubase.DeviceShifuInstruction
@@ -43,10 +46,10 @@ var (
 	instructionSettings *deviceshifubase.DeviceShifuInstructionSettings
 )
 
-// This function creates a new Device Shifu based on the configuration
+//New This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifuHTTP, error) {
 	if deviceShifuMetadata.Namespace == "" {
-		return nil, fmt.Errorf("DeviceShifuHTTP's namespace can't be empty\n")
+		return nil, fmt.Errorf("DeviceShifuHTTP's namespace can't be empty")
 	}
 
 	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
@@ -54,7 +57,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, err
 	}
 
-	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
+	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 
 		instructionSettings = base.DeviceShifuConfig.Instructions.InstructionSettings
 		if instructionSettings == nil {
@@ -62,7 +65,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		}
 
 		if instructionSettings.DefaultTimeoutSeconds == nil {
-			var defaultTimeoutSeconds = deviceshifubase.DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS
+			var defaultTimeoutSeconds = deviceshifubase.DeviceDefaultGolbalTimeoutInSeconds
 			instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
 		} else if *instructionSettings.DefaultTimeoutSeconds < 0 {
 			log.Fatalf("defaultTimeoutSeconds must not be negative number")
@@ -73,12 +76,12 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
 			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
-				deviceShifuHTTPHandlerMetaData := &DeviceShifuHTTPHandlerMetaData{
+				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
 					properties,
 				}
-				handler := DeviceCommandHandlerHTTP{base.RestClient, deviceShifuHTTPHandlerMetaData}
+				handler := DeviceCommandHandlerHTTP{base.RestClient, HandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		case v1alpha1.ProtocolHTTPCommandline:
@@ -88,14 +91,14 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 
 			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
-				deviceShifuHTTPCommandlineHandlerMetaData := &DeviceShifuHTTPCommandlineHandlerMetadata{
+				CommandlineHandlerMetadata := &CommandlineHandlerMetadata{
 					base.EdgeDevice.Spec,
 					instruction,
 					properties,
 					base.DeviceShifuConfig.DriverProperties.DriverExecution,
 				}
 
-				handler := DeviceCommandHandlerHTTPCommandline{base.RestClient, deviceShifuHTTPCommandlineHandlerMetaData}
+				handler := DeviceCommandHandlerHTTPCommandline{base.RestClient, CommandlineHandlerMetadata}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		default:
@@ -117,12 +120,13 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 // deviceHealthHandler writes the status as healthy
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, deviceshifubase.DEVICE_IS_HEALTHY_STR)
+	fmt.Fprintf(w, deviceshifubase.DeviceIsHealthyStr)
 }
 
+// DeviceCommandHandlerHTTP handler for http
 type DeviceCommandHandlerHTTP struct {
-	client                         *rest.RESTClient
-	deviceShifuHTTPHandlerMetaData *DeviceShifuHTTPHandlerMetaData
+	client          *rest.RESTClient
+	HandlerMetaData *HandlerMetaData
 }
 
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
@@ -136,7 +140,7 @@ func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 // and our address is http://localhost:8088 and instruction is start
 // then we will get this URL string:
 // http://localhost:8088/start?time=10:00:00&target=machine1&target=machine2
-func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
+func createURIFromRequest(address string, handlerInstruction string, r *http.Request) string {
 
 	queryStr := "?"
 
@@ -155,12 +159,12 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 	return "http://" + address + "/" + handlerInstruction + queryStr
 }
 
-// This function executes the instruction by requesting the url returned by createUriFromRequest
+// This function executes the instruction by requesting the url returned by createURIFromRequest
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handlerProperties := handler.deviceShifuHTTPHandlerMetaData.properties
-		handlerInstruction := handler.deviceShifuHTTPHandlerMetaData.instruction
-		handlerEdgeDeviceSpec := handler.deviceShifuHTTPHandlerMetaData.edgeDeviceSpec
+		handlerProperties := handler.HandlerMetaData.properties
+		handlerInstruction := handler.HandlerMetaData.instruction
+		handlerEdgeDeviceSpec := handler.HandlerMetaData.edgeDeviceSpec
 		handlerHTTPClient := handler.client.Client
 
 		if handlerProperties != nil {
@@ -182,7 +186,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
-		timeoutStr := r.URL.Query().Get(deviceshifubase.DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR)
+		timeoutStr := r.URL.Query().Get(deviceshifubase.DevuceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
 			timeout, parseErr = strconv.Atoi(timeoutStr)
 			if parseErr != nil {
@@ -212,8 +216,8 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 
 			defer cancel()
-			httpUri := createUriFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
-			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpUri, bytes.NewBuffer(requestBody))
+			httpURL := createURIFromRequest(*handlerEdgeDeviceSpec.Address, handlerInstruction, r)
+			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpURL, bytes.NewBuffer(requestBody))
 			if reqErr != nil {
 				http.Error(w, reqErr.Error(), http.StatusBadRequest)
 				log.Printf("HTTP GET error" + reqErr.Error())
@@ -281,17 +285,18 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
+// DeviceCommandHandlerHTTPCommandline handler for http commandline
 type DeviceCommandHandlerHTTPCommandline struct {
-	client                                    *rest.RESTClient
-	deviceShifuHTTPCommandlineHandlerMetadata *DeviceShifuHTTPCommandlineHandlerMetadata
+	client                     *rest.RESTClient
+	CommandlineHandlerMetadata *CommandlineHandlerMetadata
 }
 
 func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		driverExecution := handler.deviceShifuHTTPCommandlineHandlerMetadata.driverExecution
-		handlerProperties := handler.deviceShifuHTTPCommandlineHandlerMetadata.properties
-		handlerInstruction := handler.deviceShifuHTTPCommandlineHandlerMetadata.instruction
-		handlerEdgeDeviceSpec := handler.deviceShifuHTTPCommandlineHandlerMetadata.edgeDeviceSpec
+		driverExecution := handler.CommandlineHandlerMetadata.driverExecution
+		handlerProperties := handler.CommandlineHandlerMetadata.properties
+		handlerInstruction := handler.CommandlineHandlerMetadata.instruction
+		handlerEdgeDeviceSpec := handler.CommandlineHandlerMetadata.edgeDeviceSpec
 		handlerHTTPClient := handler.client.Client
 
 		if handlerProperties != nil {
@@ -326,7 +331,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 	}
 }
 
-func (ds *DeviceShifuHTTP) startHttpServer(stopCh <-chan struct{}) error {
+func (ds *DeviceShifuHTTP) startHTTPServer(stopCh <-chan struct{}) error {
 	fmt.Printf("deviceshifu %s's http server started\n", ds.base.Name)
 	return ds.base.Server.ListenAndServe()
 }
@@ -397,10 +402,12 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 	return telemetryCollectionResult, nil
 }
 
+// Start start http telemetry
 func (ds *DeviceShifuHTTP) Start(stopCh <-chan struct{}) error {
 	return ds.base.Start(stopCh, ds.collectHTTPTelemtries)
 }
 
+// Stop stop http server
 func (ds *DeviceShifuHTTP) Stop() error {
 	return ds.base.Stop()
 }

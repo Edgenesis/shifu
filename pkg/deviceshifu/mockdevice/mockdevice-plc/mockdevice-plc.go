@@ -2,17 +2,18 @@ package main
 
 import (
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
-	"k8s.io/apimachinery/pkg/util/rand"
 	"log"
 	"net/http"
 	"strconv"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
+	"k8s.io/apimachinery/pkg/util/rand"
 )
 
 var (
 	dataStorage       map[string]string
-	MemoryArea        = []string{"M", "Q", "T", "C"}
+	memoryArea        = []string{"M", "Q", "T", "C"}
 	originalCharacter = "0b0000000000000000"
 )
 
@@ -25,16 +26,16 @@ const (
 
 func main() {
 	dataStorage = make(map[string]string)
-	for _, v := range MemoryArea {
+	for _, v := range memoryArea {
 		dataStorage[v] = originalCharacter
 	}
 
-	available_funcs := []string{
+	availableFuncs := []string{
 		"getcontent",
 		"sendsinglebit",
 		"get_status",
 	}
-	mockdevice.StartMockDevice(available_funcs, instructionHandler)
+	mockdevice.StartMockDevice(availableFuncs, instructionHandler)
 }
 
 func instructionHandler(functionName string) http.HandlerFunc {
@@ -85,7 +86,7 @@ func instructionHandler(functionName string) http.HandlerFunc {
 		case "get_status":
 			rand.Seed(time.Now().UnixNano())
 			w.WriteHeader(http.StatusOK)
-			fmt.Fprintf(w, mockdevice.STATUS_STR_LIST[(rand.Intn(len(mockdevice.STATUS_STR_LIST)))])
+			fmt.Fprintf(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}
 }

@@ -1,4 +1,4 @@
-package deviceshifuHTTP
+package deviceshifuhttp
 
 import (
 	"io"
@@ -20,7 +20,7 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		Name:           "TestDeviceShifuEmptyNamespace",
 		ConfigFilePath: "etc/edgedevice/config",
-		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
 	}
 
 	_, err := New(deviceShifuMetadata)
@@ -35,7 +35,7 @@ func TestStart(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		Name:           "TestStart",
 		ConfigFilePath: "etc/edgedevice/config",
-		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
 		Namespace:      "TestStartNamespace",
 	}
 
@@ -55,10 +55,10 @@ func TestStart(t *testing.T) {
 
 func TestDeviceHealthHandler(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		Name:           "TestStartHttpServer",
+		Name:           "TeststartHTTPServer",
 		ConfigFilePath: "etc/edgedevice/config",
-		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		Namespace:      "TestStartHttpServerNamespace",
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
+		Namespace:      "TeststartHTTPServerNamespace",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
@@ -81,7 +81,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("unable to read response body, error: %v", err.Error())
 	}
 
-	if string(body) != deviceshifubase.DEVICE_IS_HEALTHY_STR {
+	if string(body) != deviceshifubase.DeviceIsHealthyStr {
 		t.Errorf("%+v", body)
 	}
 
@@ -111,49 +111,49 @@ func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	}
 }
 
-func TestCreateHTTPUriString(t *testing.T) {
-	expectedUriString := "http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2"
-	req, err := http.NewRequest("POST", expectedUriString, nil)
+func TestCreatehttpURLString(t *testing.T) {
+	expectedURIString := "http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2"
+	req, err := http.NewRequest("POST", expectedURIString, nil)
 	if err != nil {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
 	log.Println(req.URL.Query())
-	createdUriString := createUriFromRequest("localhost:8081", "start", req)
+	createdURIString := createURIFromRequest("localhost:8081", "start", req)
 
-	createdUriStringWithoutQueries := strings.Split(createdUriString, "?")[0]
-	createdQueries := strings.Split(strings.Split(createdUriString, "?")[1], "&")
-	expectedUriStringWithoutQueries := strings.Split(expectedUriString, "?")[0]
-	expectedQueries := strings.Split(strings.Split(expectedUriString, "?")[1], "&")
+	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
+	createdQueries := strings.Split(strings.Split(createdURIString, "?")[1], "&")
+	expectedURIStringWithoutQueries := strings.Split(expectedURIString, "?")[0]
+	expectedQueries := strings.Split(strings.Split(expectedURIString, "?")[1], "&")
 
 	sort.Strings(createdQueries)
 	sort.Strings(expectedQueries)
-	if createdUriStringWithoutQueries != expectedUriStringWithoutQueries || !reflect.DeepEqual(createdQueries, expectedQueries) {
-		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdUriString, expectedUriString)
+	if createdURIStringWithoutQueries != expectedURIStringWithoutQueries || !reflect.DeepEqual(createdQueries, expectedQueries) {
+		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdURIString, expectedURIString)
 	}
 }
 
-func TestCreateHTTPUriStringNoQuery(t *testing.T) {
-	expectedUriString := "http://localhost:8081/start"
-	req, err := http.NewRequest("POST", expectedUriString, nil)
+func TestCreatehttpURLStringNoQuery(t *testing.T) {
+	expectedURIString := "http://localhost:8081/start"
+	req, err := http.NewRequest("POST", expectedURIString, nil)
 	if err != nil {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
 	log.Println(req.URL.Query())
-	createdUriString := createUriFromRequest("localhost:8081", "start", req)
+	createdURIString := createURIFromRequest("localhost:8081", "start", req)
 
-	createdUriStringWithoutQueries := strings.Split(createdUriString, "?")[0]
-	expectedUriStringWithoutQueries := strings.Split(expectedUriString, "?")[0]
+	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
+	expectedURIStringWithoutQueries := strings.Split(expectedURIString, "?")[0]
 
-	if createdUriStringWithoutQueries != expectedUriStringWithoutQueries {
-		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdUriString, expectedUriString)
+	if createdURIStringWithoutQueries != expectedURIStringWithoutQueries {
+		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdURIString, expectedURIString)
 	}
 
 	// cleanup
 	t.Cleanup(func() {
 		//tear-down code
-		err := os.RemoveAll(MOCK_DEVICE_CONFIG_PATH)
+		err := os.RemoveAll(MockDeviceConfigPath)
 		if err != nil {
 			log.Fatal(err)
 		}

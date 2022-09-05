@@ -68,14 +68,14 @@ func main() {
 	defer sshClient.Close()
 	log.Println("Driver SSH established")
 
-	ssh_listener, err := sshClient.Listen("tcp", "localhost:"+driverHTTPPort)
+	sshListener, err := sshClient.Listen("tcp", "localhost:"+driverHTTPPort)
 	if err != nil {
 		log.Fatal("unable to register tcp forward: ", err)
 	}
-	defer ssh_listener.Close()
+	defer sshListener.Close()
 	log.Println("Driver HTTP listener established")
 
-	http.Serve(ssh_listener, httpCmdlinePostHandler(sshClient))
+	http.Serve(sshListener, httpCmdlinePostHandler(sshClient))
 }
 
 // Create a session reply for the incoming connection, obtain the connection body information,

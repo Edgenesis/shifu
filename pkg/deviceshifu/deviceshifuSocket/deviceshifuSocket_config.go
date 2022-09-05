@@ -1,11 +1,13 @@
-package deviceshifuSocket
+package deviceshifusocket
 
-type DeviceShifuSocketRequestBody struct {
+// RequestBody Socket Request Body
+type RequestBody struct {
 	Command string `json:"command"`
 	Timeout int    `json:"timeout"`
 }
 
-type DeviceShifuSocketReturnBody struct {
+// ReturnBody Socket Reply Body
+type ReturnBody struct {
 	Message string `json:"message"`
 	Status  int    `json:"status"`
 }

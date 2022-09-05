@@ -4,14 +4,16 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"log"
 	"net/http"
 	"time"
 
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+
 	"k8s.io/client-go/rest"
 )
 
+// DeviceShifuBase deviceshifu Basic Info
 type DeviceShifuBase struct {
 	Name              string
 	Server            *http.Server
@@ -20,6 +22,7 @@ type DeviceShifuBase struct {
 	RestClient        *rest.RESTClient
 }
 
+// DeviceShifuMetaData Deviceshifu MetaData
 type DeviceShifuMetaData struct {
 	Name           string
 	ConfigFilePath string
@@ -27,52 +30,57 @@ type DeviceShifuMetaData struct {
 	Namespace      string
 }
 
+// collectTelemetry struct of collectTelemetry
 type collectTelemetry func() (bool, error)
 
+// DeviceShifu interface of Deviceshifu include start telemetry and stop http server
 type DeviceShifu interface {
 	Start(stopCh <-chan struct{}) error
 	Stop() error
 }
 
+// Str and default value
 const (
-	CM_DRIVERPROPERTIES_STR                            = "driverProperties"
-	CM_INSTRUCTIONS_STR                                = "instructions"
-	CM_TELEMETRIES_STR                                 = "telemetries"
-	EDGEDEVICE_RESOURCE_STR                            = "edgedevices"
-	TELEMETRYCOLLECTIONSERVICE_RESOURCE_STR            = "telemetryservices"
-	DEVICE_TELEMETRY_TIMEOUT_MS                 int64  = 3000
-	DEVICE_TELEMETRY_UPDATE_INTERVAL_MS         int64  = 3000
-	DEVICE_TELEMETRY_INITIAL_DELAY_MS           int64  = 3000
-	DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS        int64  = 3000
-	DEVICE_DEFAULT_PORT_STR                     string = ":8080"
-	DEVICE_DEFAULT_REQUEST_TIMEOUT_MS           int64  = 1000
-	DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS int64  = 1000
-	DEVICE_IS_HEALTHY_STR                       string = "Device is healthy"
-	DEVICE_CONFIGMAP_FOLDER_PATH                string = "/etc/edgedevice/config"
-	DEVICE_KUBECONFIG_DO_NOT_LOAD_STR           string = "NULL"
-	DEVICE_NAMESPACE_DEFAULT                    string = "default"
-	KUBERNETES_CONFIG_DEFAULT                   string = ""
-	DEVICE_INSTRUCTION_TIMEOUT_URI_QUERY_STR    string = "timeout"
-	DEVICE_DEFAULT_GLOBAL_TIMEOUT_SECONDS       int    = 3
-	DEFAULT_HTTP_SERVER_TIMEOUT_SECONDS         int    = 0
+	ConfigmapDriverPropertiesStr                    = "driverProperties"
+	ConfigmapInstructionsStr                        = "instructions"
+	ConfigmapTelemetriesStr                         = "telemetries"
+	EdgedeviceResourceStr                           = "edgedevices"
+	TelemetryCollectionServiceResourceStr           = "telemetryservices"
+	DeviceTelemetryTimeoutInMS               int64  = 3000
+	DeviceTelemetryUpdateIntervalInMS        int64  = 3000
+	DeviceTelemetryInitialDelayInMS          int64  = 3000
+	DeviceDefaultConnectionTimeoutInMS       int64  = 3000
+	DeviceDefaultPortStr                     string = ":8080"
+	DeviceDefaultRequestTimeoutInMS          int64  = 1000
+	DeviceDefaultTelemetryUpdateIntervalInMS int64  = 1000
+	DeviceIsHealthyStr                       string = "Device is healthy"
+	DeviceConfigmapFolderPath                string = "/etc/edgedevice/config"
+	DeviceKubeconfigDoNotLoadStr             string = "NULL"
+	DeviceNameSpaceDefault                   string = "default"
+	KubernetesConfigDefault                  string = ""
+	DevuceInstructionTimeoutURIQueryStr      string = "timeout"
+	DeviceDefaultGolbalTimeoutInSeconds      int    = 3
+	DefaultHTTPServerTimeoutInSeconds        int    = 0
 )
 
 var (
+	// TelemetryCollectionServiceMap Telemetry Collection Service Map
 	TelemetryCollectionServiceMap map[string]string
 )
 
+// New new deviceshifu base
 func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.ServeMux, error) {
 	if deviceShifuMetadata.Name == "" {
-		return nil, nil, fmt.Errorf("DeviceShifu's name can't be empty\n")
+		return nil, nil, fmt.Errorf("DeviceShifu's name can't be empty")
 	}
 
 	if deviceShifuMetadata.ConfigFilePath == "" {
-		deviceShifuMetadata.ConfigFilePath = DEVICE_CONFIGMAP_FOLDER_PATH
+		deviceShifuMetadata.ConfigFilePath = DeviceConfigmapFolderPath
 	}
 
 	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+		return nil, nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
 	mux := http.NewServeMux()
@@ -82,7 +90,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 	edgeDevice := &v1alpha1.EdgeDevice{}
 	client := &rest.RESTClient{}
 
-	if deviceShifuMetadata.KubeConfigPath != DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
+	if deviceShifuMetadata.KubeConfigPath != DeviceKubeconfigDoNotLoadStr {
 		edgeDeviceConfig := &EdgeDeviceConfig{
 			NameSpace:      deviceShifuMetadata.Namespace,
 			DeviceName:     deviceShifuMetadata.Name,
@@ -104,10 +112,10 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 	base := &DeviceShifuBase{
 		Name: deviceShifuMetadata.Name,
 		Server: &http.Server{
-			Addr:         DEVICE_DEFAULT_PORT_STR,
+			Addr:         DeviceDefaultPortStr,
 			Handler:      mux,
-			ReadTimeout:  time.Duration(DEFAULT_HTTP_SERVER_TIMEOUT_SECONDS) * time.Second,
-			WriteTimeout: time.Duration(DEFAULT_HTTP_SERVER_TIMEOUT_SECONDS) * time.Second,
+			ReadTimeout:  time.Duration(DefaultHTTPServerTimeoutInSeconds) * time.Second,
+			WriteTimeout: time.Duration(DefaultHTTPServerTimeoutInSeconds) * time.Second,
 		},
 		DeviceShifuConfig: deviceShifuConfig,
 		EdgeDevice:        edgeDevice,
@@ -118,7 +126,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DEVICE_IS_HEALTHY_STR)
+	fmt.Fprintf(w, DeviceIsHealthyStr)
 }
 
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
@@ -126,12 +134,13 @@ func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
+// UpdateEdgeDeviceResourcePhase Update device status
 func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
 	log.Printf("updating device %v status to: %v\n", ds.Name, edPhase)
 	currEdgeDevice := &v1alpha1.EdgeDevice{}
 	err := ds.RestClient.Get().
 		Namespace(ds.EdgeDevice.Namespace).
-		Resource(EDGEDEVICE_RESOURCE_STR).
+		Resource(EdgedeviceResourceStr).
 		Name(ds.Name).
 		Do(context.TODO()).
 		Into(currEdgeDevice)
@@ -151,7 +160,7 @@ func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDe
 	putResult := &v1alpha1.EdgeDevice{}
 	err = ds.RestClient.Put().
 		Namespace(ds.EdgeDevice.Namespace).
-		Resource(EDGEDEVICE_RESOURCE_STR).
+		Resource(EdgedeviceResourceStr).
 		Name(ds.Name).
 		Body(currEdgeDevice).
 		Do(context.TODO()).
@@ -162,6 +171,7 @@ func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDe
 	}
 }
 
+// ValidateTelemetryConfig Validate TelemetryConfig
 func (ds *DeviceShifuBase) ValidateTelemetryConfig() error {
 	if ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings == nil {
 		ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
@@ -169,21 +179,21 @@ func (ds *DeviceShifuBase) ValidateTelemetryConfig() error {
 
 	var dsTelemetrySettings = ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
 	if initial := dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds; initial == nil {
-		var telemetryInitialDelayInMilliseconds = DEVICE_TELEMETRY_INITIAL_DELAY_MS
+		var telemetryInitialDelayInMilliseconds = DeviceTelemetryInitialDelayInMS
 		dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds = &telemetryInitialDelayInMilliseconds
 	} else if *initial < 0 {
 		return errors.New("error deviceShifuTelemetryInitialDelay mustn't be negative number")
 	}
 
 	if timeout := dsTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds; timeout == nil {
-		var telemetryTimeoutInMilliseconds = DEVICE_TELEMETRY_TIMEOUT_MS
+		var telemetryTimeoutInMilliseconds = DeviceTelemetryTimeoutInMS
 		dsTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds = &telemetryTimeoutInMilliseconds
 	} else if *timeout < 0 {
 		return errors.New("error deviceShifuTelemetryTimeout mustn't be negative number")
 	}
 
 	if interval := dsTelemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds; interval == nil {
-		var telemetryUpdateIntervalInMilliseconds = DEVICE_TELEMETRY_UPDATE_INTERVAL_MS
+		var telemetryUpdateIntervalInMilliseconds = DeviceTelemetryUpdateIntervalInMS
 		dsTelemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = &telemetryUpdateIntervalInMilliseconds
 	} else if *interval < 0 {
 		return errors.New("error deviceShifuTelemetryInterval mustn't be negative number")
@@ -214,10 +224,11 @@ func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {
 	return nil
 }
 
+// StartTelemetryCollection Start TelemetryCollection
 func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	log.Println("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
-	telemetryUpdateIntervalInMilliseconds := DEVICE_DEFAULT_TELEMETRY_UPDATE_INTERVAL_MS
+	telemetryUpdateIntervalInMilliseconds := DeviceDefaultTelemetryUpdateIntervalInMS
 	var err error
 	TelemetryCollectionServiceMap, err = getTelemetryCollectionServiceMap(ds)
 	if err != nil {
@@ -246,20 +257,22 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	}
 }
 
-func (ds *DeviceShifuBase) startHttpServer(stopCh <-chan struct{}) error {
+func (ds *DeviceShifuBase) startHTTPServer(stopCh <-chan struct{}) error {
 	fmt.Printf("deviceshifu %s's http server started\n", ds.Name)
 	return ds.Server.ListenAndServe()
 }
 
+// Start HTTP server and telemetryCollection
 func (ds *DeviceShifuBase) Start(stopCh <-chan struct{}, fn collectTelemetry) error {
 	log.Printf("deviceshifu %s started\n", ds.Name)
 
-	go ds.startHttpServer(stopCh)
+	go ds.startHTTPServer(stopCh)
 	go ds.StartTelemetryCollection(fn)
 
 	return nil
 }
 
+// Stop Stop http server
 func (ds *DeviceShifuBase) Stop() error {
 	if err := ds.Server.Shutdown(context.TODO()); err != nil {
 		return err
