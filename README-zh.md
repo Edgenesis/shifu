@@ -40,7 +40,7 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 
 ### 使用文档
 
-请在 <https://shifu.run/docs/> 查看 ***Shifu*** 的使用文档。
+请在 <https://shifu.run/zh-Hans/docs/> 查看 ***Shifu*** 的使用文档。
 
 ## 深入理解 ***Shifu***
 
