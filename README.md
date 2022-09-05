@@ -36,11 +36,11 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 
 ### Demo
 
-If you are not familiar with Kubernetes, we provide [***Shifu*** Demo](https://shifu.run/demo/), which will intuitively show how ***Shifu*** creates and manages digital twins of any physical device in the real world.
+If you are not familiar with Kubernetes, we provide [***Shifu*** Demo](https://shifu.run/disclaimer), which will intuitively show how ***Shifu*** creates and manages digital twins of any physical device in the real world.
 
 ### Documentation
 
-See documentation on <https://shifu.run/en/docs/>.
+See documentation on <https://shifu.run/docs/>.
 
 ## Look into ***Shifu***
 
