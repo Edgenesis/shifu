@@ -3,8 +3,8 @@ package main
 import (
 	"os"
 
+	deviceshifuopcua "github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifuOPCUA"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifuopcua"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 )
