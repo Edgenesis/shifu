@@ -4,7 +4,7 @@
 *OPC UA例子的更新，由 @tomqin93 在https://github.com/Edgenesis/shifu/pull/233。
 * 修复raedme中的演示链接，由 @Yang-Xijie 在https://github.com/Edgenesis/shifu/pull/229。
 * 修复遥测YAML和设备样本YAML中的一些错误 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/235
-* [问题#234] MQTT和其他telemetrySetting的修复 由 @tomqin93 在https://github.com/Edgenesis/shifu/pull/236
+* [issue#234] MQTT和其他telemetrySetting的修复 由 @tomqin93 在https://github.com/Edgenesis/shifu/pull/236
 * 修复http和socket如果defaulttimeoutSeconds<0由 @MrLeea-13155bc 在https://github.com/Edgenesis/shifu/pull/237
 
 ## 功能和改进
@@ -22,5 +22,5 @@
 ## 文档
 * 更新问题模板，由 @tomqin93 在 https://github.com/Edgenesis/shifu/pull/213 发表。
 * 修复changelog v0.0.6的名称 by @BtXin in https://github.com/Edgenesis/shifu/pull/214
-* 
-**完整的更新日志**: https://github.com/Edgenesis/shifu/compare/v0.0.6...v0.0.7
+
+**Full Changelog**: https://github.com/Edgenesis/shifu/compare/v0.0.6...v0.1.0

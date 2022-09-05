@@ -22,5 +22,5 @@
 ## Docs
 * Update issue templates by @tomqin93 in https://github.com/Edgenesis/shifu/pull/213
 * Fix changelog v0.0.6 name by @BtXin in https://github.com/Edgenesis/shifu/pull/214
-* 
-**Full Changelog**: https://github.com/Edgenesis/shifu/compare/v0.0.6...v0.0.7
+
+**Full Changelog**: https://github.com/Edgenesis/shifu/compare/v0.0.6...v0.1.0
