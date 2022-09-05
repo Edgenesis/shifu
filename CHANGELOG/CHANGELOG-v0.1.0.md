@@ -1,8 +1,11 @@
 # Changelog since [v0.0.6](https://github.com/Edgenesis/shifu/releases/tag/v0.0.6)
 
+# ⚠️ Breaking change ⚠️
+* Refactored shifu into monorepo by @BtXin in https://github.com/Edgenesis/shifu/pull/217
+
 ## Bug fixes
 * OPC UA example update by @tomqin93 in https://github.com/Edgenesis/shifu/pull/233
-* fix demo link in raedme by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/229
+* fix demo link in README by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/229
 * fix some error in telemetry YAML and sample device YAML by @tomqin93 in https://github.com/Edgenesis/shifu/pull/235
 * [Issue #234] MQTT and other telemetrySetting fixes by @tomqin93 in https://github.com/Edgenesis/shifu/pull/236
 * fix http and socket if defaulttimeoutSeconds<0 by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/237
