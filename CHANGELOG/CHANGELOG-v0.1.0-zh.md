@@ -18,7 +18,7 @@
 * 尝试修复CI，由 @tomqin93 在 https://github.com/Edgenesis/shifu/pull/228 发表
 * 将k8s.io/client-go从0.24.4提升到0.25.0 由 @dependabot 在 https://github.com/Edgenesis/shifu/pull/220
 * 将github.com/onsi/gomega从1.18.1升至1.20.1 由@dependabot在 https://github.com/Edgenesis/shifu/pull/227
-* 将github.com/onsi/gomega从1.20.1升级到1.20.2 由@dependabot在 https://github.com/Edgenesis/shifu/pull/232。
+* 将github.com/onsi/gomega从1.20.1升级到1.20.2 由@dependabot在 https://github.com/Edgenesis/shifu/pull/232
 * 使用 gcr distroless 而不是 edgehub 的镜像，由 @BtXin 在 https://github.com/Edgenesis/shifu/pull/231 发表
 * 将sigs.k8s.io/controller-runtime从0.12.3提升到0.13.0 由 @dependabot 在 https://github.com/Edgenesis/shifu/pull/238
 
