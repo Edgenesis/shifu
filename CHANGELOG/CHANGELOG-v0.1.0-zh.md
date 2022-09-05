@@ -4,8 +4,8 @@
 * 将Shifu的项目重构为单一项目目录 by @BtXin in https://github.com/Edgenesis/shifu/pull/217
 
 ## 错误修正
-* OPC UA例子的更新，由 @tomqin93 在 https://github.com/Edgenesis/shifu/pull/233。
-* 修复 README 中的演示链接，由 @Yang-Xijie 在 https://github.com/Edgenesis/shifu/pull/229。
+* OPC UA例子的更新，由 @tomqin93 在 https://github.com/Edgenesis/shifu/pull/233
+* 修复 README 中的演示链接，由 @Yang-Xijie 在 https://github.com/Edgenesis/shifu/pull/229
 * 修复遥测YAML和设备样本YAML中的一些错误 by @tomqin93 在 https://github.com/Edgenesis/shifu/pull/235
 * [issue#234] MQTT和其他telemetrySetting的修复 由 @tomqin93 在 https://github.com/Edgenesis/shifu/pull/236
 * 修复当defaulttimeoutSeconds<0时http和socket协议的问题 @MrLeea-13155bc 在 https://github.com/Edgenesis/shifu/pull/237
