@@ -162,7 +162,7 @@ def main():
 ```
 
 ## Internal structure of data
-`deviceShifu`'s handling of data is collapsed into generally 4 components: data-adapter, data-handler, data-provider, data-cache:
+`deviceShifu`'s handling of data contains 4 components: data-adapter, data-handler, data-provider, data-cache:
 
 1. **data-adapter** is responsible for receiving data from physical device. `deviceShifu` loads the driver and enables the data flow from physical device to data-adapter.
 2. **data-handler** has custom-implemented handlers that process the data in action.
