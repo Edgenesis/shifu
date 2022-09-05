@@ -72,7 +72,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		},
 		DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
 			"device_health": {
-				deviceshifubase.DeviceShifuTelemetryProperties{
+				DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
 					DeviceInstructionName: &InstructionNameGetServerVersion,
 					InitialDelayMs:        &TelemetryMs1000,
 					IntervalMs:            &TelemetryMs1000,

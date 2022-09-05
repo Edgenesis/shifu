@@ -63,7 +63,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 			opts := mqtt.NewClientOptions()
 			opts.AddBroker(fmt.Sprintf("tcp://%s", mqttServerAddress))
-			opts.SetClientID(*&base.EdgeDevice.Name)
+			opts.SetClientID(base.EdgeDevice.Name)
 			opts.SetDefaultPublishHandler(messagePubHandler)
 			opts.OnConnect = connectHandler
 			opts.OnConnectionLost = connectLostHandler
@@ -110,19 +110,10 @@ func sub(client mqtt.Client, topic string) {
 	log.Printf("Subscribed to topic: %s", topic)
 }
 
-func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, deviceshifubase.DeviceIsHealthyStr)
-}
-
 // DeviceCommandHandlerMQTT handler for Mqtt
 type DeviceCommandHandlerMQTT struct {
 	// client                         *rest.RESTClient
 	HandlerMetaData *HandlerMetaData
-}
-
-func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Error: Device instruction does not exist!")
-	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
 func createURIFromRequest(address string, handlerInstruction string, r *http.Request) string {
@@ -157,23 +148,18 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 
 			w.WriteHeader(http.StatusOK)
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(returnMessage)
+			err := json.NewEncoder(w).Encode(returnMessage)
+			if err != nil {
+				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
+				log.Println("Cannot Encode message to json")
+				return
+			}
 		} else {
 			http.Error(w, "must be GET method", http.StatusBadRequest)
 			log.Println("Request type " + reqType + " is not supported yet!")
 			return
 		}
 
-	}
-}
-
-// HTTP header type:
-// type Header map[string][]string
-func copyHeader(dst, src http.Header) {
-	for header, headerValueList := range src {
-		for _, value := range headerValueList {
-			dst.Add(header, value)
-		}
 	}
 }
 
@@ -210,11 +196,6 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 		}
 	}
 	return driverExecution + " --" + instruction + requestStr + flagsStr
-}
-
-func (ds *DeviceShifu) startHTTPServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceshifu %s's http server started\n", ds.base.Name)
-	return ds.base.Server.ListenAndServe()
 }
 
 // TODO: update configs

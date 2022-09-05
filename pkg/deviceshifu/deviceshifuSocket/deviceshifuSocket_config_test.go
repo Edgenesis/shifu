@@ -38,21 +38,21 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	)
 
 	var DriverProperties = deviceshifubase.DeviceShifuDriverProperties{
-		"Edgenesis Mock Device",
-		"edgenesis/mockdevice:v0.0.1",
-		"python mock_driver.py",
+		DriverSku:       "Edgenesis Mock Device",
+		DriverImage:     "edgenesis/mockdevice:v0.0.1",
+		DriverExecution: "python mock_driver.py",
 	}
 
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
 		"set_reading": {
-			[]deviceshifubase.DeviceShifuInstructionProperty{
+			DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
 				{
 					ValueType:    InstructionValueTypeInt32,
 					ReadWrite:    InstructionReadWriteW,
 					DefaultValue: nil,
 				},
 			},
-			nil,
+			DeviceShifuProtocolProperties: nil,
 		},
 		"start": nil,
 		"stop":  nil,

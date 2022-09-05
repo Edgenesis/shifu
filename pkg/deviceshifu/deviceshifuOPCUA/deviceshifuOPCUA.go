@@ -30,10 +30,6 @@ type HandlerMetaData struct {
 	properties     *OPCUAInstructionProperty
 }
 
-type deviceCommandHandler interface {
-	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
-}
-
 // Str and default value
 const (
 	DeviceConfigmapCertificatePath string = "/etc/edgedevice/certificate"
@@ -196,11 +192,6 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 	}
 }
 
-func (ds *DeviceShifu) startHTTPServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceshifu %s's http server started\n", ds.base.Name)
-	return ds.base.Server.ListenAndServe()
-}
-
 func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string) (string, error) {
 	if instructionProperties, exists := ds.opcuaInstructions.Instructions[instructionName]; exists {
 		return instructionProperties.OPCUAInstructionProperty.OPCUANodeID, nil
@@ -238,7 +229,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 		return err
 	}
 
-	log.Printf(fmt.Sprint(resp.Results[0].Value.Value()))
+	log.Println(resp.Results[0].Value.Value())
 
 	return nil
 }
@@ -260,7 +251,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				nodeID, err := ds.getOPCUANodeIDFromInstructionName(instruction)
 				if err != nil {
-					log.Printf(err.Error())
+					log.Println(err.Error())
 					return false, err
 				}
 

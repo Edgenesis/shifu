@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	deviceshifuopcua "github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifuOPCUA"
@@ -25,7 +26,10 @@ func main() {
 		panic(err.Error())
 	}
 
-	ds.Start(wait.NeverStop)
-
+	err = ds.Start(wait.NeverStop)
+	if err != nil {
+		log.Println("deviceshifu start default, error: ", err)
+		return
+	}
 	select {}
 }

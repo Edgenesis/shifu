@@ -27,10 +27,10 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			rand.Seed(time.Now().UnixNano())
 			min := 10
 			max := 30
-			fmt.Fprintf(w, strconv.Itoa(rand.Intn(max-min+1)+min))
+			fmt.Fprintln(w, strconv.Itoa(rand.Intn(max-min+1)+min))
 		case "get_status":
 			rand.Seed(time.Now().UnixNano())
-			fmt.Fprintf(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
+			fmt.Fprintln(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}
 }

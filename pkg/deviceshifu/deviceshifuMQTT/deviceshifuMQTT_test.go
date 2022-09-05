@@ -18,10 +18,10 @@ import (
 
 func TestStart(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		"TestStart",
-		"etc/edgedevice/config",
-		deviceshifubase.DeviceKubeconfigDoNotLoadStr,
-		"",
+		Name:           "TestStart",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
+		Namespace:      "",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
@@ -40,10 +40,10 @@ func TestStart(t *testing.T) {
 
 func TestDeviceHealthHandler(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		"TeststartHTTPServer",
-		"etc/edgedevice/config",
-		deviceshifubase.DeviceKubeconfigDoNotLoadStr,
-		"",
+		Name:           "TeststartHTTPServer",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
+		Namespace:      "",
 	}
 
 	mockds, err := New(deviceShifuMetadata)

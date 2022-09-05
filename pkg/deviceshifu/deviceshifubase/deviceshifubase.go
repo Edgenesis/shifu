@@ -102,11 +102,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 			log.Fatalf("Error retrieving EdgeDevice")
 			return nil, nil, err
 		}
-
-		if &edgeDevice.Spec == nil {
-			log.Fatalf("edgeDeviceConfig.Spec is nil")
-			return nil, nil, err
-		}
 	}
 
 	base := &DeviceShifuBase{
@@ -126,7 +121,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, DeviceIsHealthyStr)
+	fmt.Fprint(w, DeviceIsHealthyStr)
 }
 
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
@@ -252,7 +247,11 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	}
 
 	for {
-		ds.telemetryCollection(fn)
+		err := ds.telemetryCollection(fn)
+		if err != nil {
+			log.Println("error when telemetry collection")
+			return err
+		}
 		time.Sleep(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond)
 	}
 }
@@ -266,9 +265,18 @@ func (ds *DeviceShifuBase) startHTTPServer(stopCh <-chan struct{}) error {
 func (ds *DeviceShifuBase) Start(stopCh <-chan struct{}, fn collectTelemetry) error {
 	log.Printf("deviceshifu %s started\n", ds.Name)
 
-	go ds.startHTTPServer(stopCh)
-	go ds.StartTelemetryCollection(fn)
-
+	go func() {
+		err := ds.startHTTPServer(stopCh)
+		if err != nil {
+			log.Println("error during Http Server is up, error: ", err)
+		}
+	}()
+	go func() {
+		err := ds.StartTelemetryCollection(fn)
+		if err != nil {
+			log.Println("error during Telemetry is running, error: ", err)
+		}
+	}()
 	return nil
 }
 

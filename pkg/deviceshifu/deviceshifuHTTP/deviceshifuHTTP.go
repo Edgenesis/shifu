@@ -38,10 +38,6 @@ type CommandlineHandlerMetadata struct {
 	driverExecution string
 }
 
-type deviceCommandHandler interface {
-	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
-}
-
 var (
 	instructionSettings *deviceshifubase.DeviceShifuInstructionSettings
 )
@@ -118,20 +114,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	return ds, nil
 }
 
-// deviceHealthHandler writes the status as healthy
-func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, deviceshifubase.DeviceIsHealthyStr)
-}
-
 // DeviceCommandHandlerHTTP handler for http
 type DeviceCommandHandlerHTTP struct {
 	client          *rest.RESTClient
 	HandlerMetaData *HandlerMetaData
-}
-
-func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Error: Device instruction does not exist!")
-	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
 // This function is to create a URL containing directives from the requested URL
@@ -240,13 +226,19 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		if resp != nil {
 			deviceshifubase.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
-			io.Copy(w, resp.Body)
+			_, err := io.Copy(w, resp.Body)
+			if err != nil {
+				log.Println("error when copy requestBody from responseBody, err: ", err)
+			}
 			return
 		}
 
 		// TODO: For now, just write tht instruction to the response
 		log.Println("resp is nil")
-		w.Write([]byte(handlerInstruction))
+		_, err := w.Write([]byte(handlerInstruction))
+		if err != nil {
+			log.Println("cannot write instruction into response's body, err: ", err)
+		}
 	}
 }
 
@@ -321,19 +313,20 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		if resp != nil {
 			deviceshifubase.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
-			io.Copy(w, resp.Body)
+			_, err := io.Copy(w, resp.Body)
+			if err != nil {
+				log.Println("cannot copy requestBody from requestBody, error: ", err)
+			}
 			return
 		}
 
 		// TODO: For now, just write tht instruction to the response
 		log.Println("resp is nil")
-		w.Write([]byte(handlerInstruction))
+		_, err = w.Write([]byte(handlerInstruction))
+		if err != nil {
+			log.Println("cannot write instruction into responseBody")
+		}
 	}
-}
-
-func (ds *DeviceShifuHTTP) startHTTPServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceshifu %s's http server started\n", ds.base.Name)
-	return ds.base.Server.ListenAndServe()
 }
 
 // TODO: update configs

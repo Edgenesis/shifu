@@ -23,11 +23,10 @@ func instructionHandler(functionName string) http.HandlerFunc {
 		log.Printf("Handling: %v", functionName)
 		switch functionName {
 		case "get_measurement":
-			outputMatrix := [8][12]float32{}
 			rand.Seed(time.Now().UnixNano())
 			readingRange := float32(3.0)
-			for i := 0; i < len(outputMatrix); i++ {
-				for j := 0; j < len(outputMatrix[i]); j++ {
+			for i := 0; i < 8; i++ {
+				for j := 0; j < 12; j++ {
 					num := fmt.Sprintf("%.2f", rand.Float32()*readingRange)
 					fmt.Fprintf(w, num+" ")
 				}

@@ -36,8 +36,12 @@ var StatusSetList = []string{
 func (md *MockDevice) Start(stopCh <-chan struct{}) error {
 	log.Printf("mockDevice %s started\n", md.Name)
 
-	go md.startHTTPServer(stopCh)
-
+	go func() {
+		err := md.startHTTPServer(stopCh)
+		if err != nil {
+			log.Println("error during HTTP Server is Up")
+		}
+	}()
 	return nil
 }
 
@@ -79,7 +83,10 @@ func StartMockDevice(availableFuncs []string, instructionHandler instructionHand
 		log.Printf("Error starting device %v", deviceName)
 	}
 
-	md.Start(wait.NeverStop)
+	err = md.Start(wait.NeverStop)
+	if err != nil {
+		log.Printf("Error start MockDevice %#v", err)
+	}
 
 	select {}
 }

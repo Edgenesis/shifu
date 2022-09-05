@@ -28,10 +28,6 @@ type HandlerMetaData struct {
 	connection     *net.Conn
 }
 
-type deviceCommandHandler interface {
-	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
-}
-
 // New new socket deviceshifu
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
 	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
@@ -98,16 +94,6 @@ func createURIFromRequest(address string, handlerInstruction string, r *http.Req
 	return "http://" + address + "/" + handlerInstruction + queryStr
 }
 
-// HTTP header type:
-// type Header map[string][]string
-func copyHeader(dst, src http.Header) {
-	for header, headerValueList := range src {
-		for _, value := range headerValueList {
-			dst.Add(header, value)
-		}
-	}
-}
-
 func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		headerContentType := r.Header.Get("Content-Type")
@@ -130,15 +116,27 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		command := socketRequest.Command
 		timeout := socketRequest.Timeout
 		if timeout > 0 {
-			(*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
+			err := (*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
+			if err != nil {
+				log.Println("cannot send deadline to socket, error: ", err)
+				http.Error(w, "Failed to send deadline to socket, error:  "+err.Error(), http.StatusBadRequest)
+				return
+			}
 		}
 
 		log.Printf("Sending %v", []byte(command+"\n"))
-		(*connection).Write([]byte(command + "\n"))
+		_, err = (*connection).Write([]byte(command + "\n"))
+		if err != nil {
+			log.Println("cannot write command into socket, error: ", err)
+			http.Error(w, "Failed to send message to socket, error: "+err.Error(), http.StatusBadRequest)
+			return
+		}
+
 		message, err := bufio.NewReader(*connection).ReadString('\n')
 		if err != nil {
 			log.Printf("Failed to ReadString from Socket, current message: %v", message)
 			http.Error(w, "Failed to read message from socket, error: "+err.Error(), http.StatusBadRequest)
+			return
 		}
 
 		returnMessage := ReturnBody{
@@ -148,7 +146,11 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 
 		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(returnMessage)
+		err = json.NewEncoder(w).Encode(returnMessage)
+		if err != nil {
+			log.Printf("Failed encode message to json, error: %v" + err.Error())
+			http.Error(w, "Failed encode message to json, error: "+err.Error(), http.StatusBadRequest)
+		}
 	}
 }
 
@@ -185,11 +187,6 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 		}
 	}
 	return driverExecution + " --" + instruction + requestStr + flagsStr
-}
-
-func (ds *DeviceShifu) startHTTPServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceshifu %s's http server started\n", ds.base.Name)
-	return ds.base.Server.ListenAndServe()
 }
 
 // TODO: update configs

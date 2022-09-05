@@ -38,6 +38,9 @@ func TestStartMockDevice(t *testing.T) {
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		t.Errorf("cannot read body from response, %+v", err)
+	}
 
 	if string(body) != "Running" {
 		t.Errorf("Body is not running: %+v", string(body))
