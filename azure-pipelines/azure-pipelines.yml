@@ -130,8 +130,8 @@ stages:
         displayName: "mosquitto Installer"
         inputs:
           script: |
-            apt-add-repository ppa:mosquitto-dev/mosquitto-ppa
-            apt-get install mosquitto mosquitto-clients
+            sudo apt-add-repository ppa:mosquitto-dev/mosquitto-ppa
+            sudo apt-get install mosquitto mosquitto-clients
       - script: |
           echo $tag
           docker buildx build --platform=linux/amd64 \
