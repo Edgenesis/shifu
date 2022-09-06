@@ -265,8 +265,8 @@ stages:
       - script: |
           set -e 
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
-          kubectl wait --for=condition=Available deploy/deviceshifu-opcua-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=condition=Available deploy/opcua-device -n devices --timeout=150s
+          kubectl wait --for=condition=Available deploy/deviceshifu-opcua-deployment -n deviceshifu --timeout=150s
           sleep 5
           kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-opcua/get_time
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
@@ -274,8 +274,8 @@ stages:
       - script: |
           set -e 
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt
-          kubectl wait --for=condition=Available deploy/deviceshifu-mqtt-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=condition=Available deploy/mosquitto -n devices --timeout=150s
+          kubectl wait --for=condition=Available deploy/deviceshifu-mqtt-deployment -n deviceshifu --timeout=150s
           sleep 5
           bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt/checkoutput.sh
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt
@@ -288,8 +288,7 @@ stages:
           sleep 5
           kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" deviceshifu-socket.deviceshifu.svc.cluster.local/cmd -d '{"command":"123"}'
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
-          displayName: "Shifu demo device Socket E2E test" 
-
+        displayName: "Shifu demo device Socket E2E test" 
 - stage: docker_build_muiltiarch_and_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   variables:
