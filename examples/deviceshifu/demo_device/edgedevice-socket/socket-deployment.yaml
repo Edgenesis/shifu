@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: socket-mock-device
-        image: socket-mock-device:v0.0.1
+        image: socket-mock-device:v0.1.0
         resources:
           limits:
             memory: "128Mi"

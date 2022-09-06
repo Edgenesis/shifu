@@ -196,13 +196,15 @@ stages:
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/dockerfile \
-          -t socket-mock-device:v0.0.1 --load 
+          $(System.DefaultWorkingDirectory) \
+          -t socket-mock-device:$(tag) --load 
         displayName: build socket-mock-device
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/dockerfile \
-          -t opcua-mock-device:v0.0.1 --load 
-          
+          $(System.DefaultWorkingDirectory) \
+          -t opcua-mock-device:$(tag) --load 
+        displayName: build opcua-mock-device
       - script: |
           set -e
           kind --version
@@ -217,8 +219,8 @@ stages:
           kind load docker-image edgehub/deviceshifu-http-mqtt:$(tag)
           kind load docker-image edgehub/deviceshifu-http-opcua:$(tag)
           kind load docker-image edgehub/deviceshifu-http-socket:$(tag)
-          kind load docker-image opcua-mock-device:v0.0.1
-          kind load docker-image socket-mock-device:v0.0.1
+          kind load docker-image opcua-mock-device:$(tag)
+          kind load docker-image socket-mock-device:$(tag)
 
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
@@ -258,6 +260,7 @@ stages:
           kubectl wait --for=condition=Available deploy/thermometer -n devices --timeout=150s
           sleep 5    
           kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-thermometer/read_value
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-thermometer
         displayName: "Shifu demo device HTTP E2E test"
       - script: |
           set -e 

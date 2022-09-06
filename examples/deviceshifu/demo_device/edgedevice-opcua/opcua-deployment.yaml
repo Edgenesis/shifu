@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: opcua-device
-        image: opcua-mock-device:v0.0.1
+        image: opcua-mock-device:v0.1.0
         resources:
           limits:
             memory: "128Mi"
