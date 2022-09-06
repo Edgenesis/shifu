@@ -48,7 +48,9 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/huin/mqtt v0.0.0-20220729180547-9e81042af5f7 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/jeffallen/mqtt v0.0.0-20180518073322-5387cfa89df0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/mailru/easyjson v0.7.7 // indirect

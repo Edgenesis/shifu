@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opcua-device
+  namespace: devices
+spec:
+  selector:
+    matchLabels:
+      app: opcua-device
+  template:
+    metadata:
+      labels:
+        app: opcua-device
+    spec:
+      containers:
+      - name: opcua-device
+        image: opcua-mock-device:v0.0.1
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 4840

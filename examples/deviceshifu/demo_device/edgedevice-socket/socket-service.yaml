@@ -1,0 +1,13 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: socket-mock-device
+  namespace: devices
+spec:
+  selector:
+    app: socket-mock-device
+  ports:
+  - port: 11122
+    protocol: TCP
+    targetPort: 11122
+

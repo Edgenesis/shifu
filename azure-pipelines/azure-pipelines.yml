@@ -126,7 +126,12 @@ stages:
         inputs:
           command: 'get'
           arguments: 'sigs.k8s.io/kind@v0.14.0'
-
+      - task: CmdLine@2
+        displayName: "mosquitto Installer"
+        inputs:
+          script: |
+            apt-add-repository ppa:mosquitto-dev/mosquitto-ppa
+            apt-get install mosquitto mosquitto-clients
       - script: |
           echo $tag
           docker buildx build --platform=linux/amd64 \
@@ -241,8 +246,31 @@ stages:
           kubectl wait --for=condition=Available deploy/thermometer -n devices --timeout=150s
           sleep 5    
           kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-thermometer/read_value
-          kind delete cluster
-        displayName: "Shifu demo device E2E test"
+        displayName: "Shifu demo device HTTP E2E test"
+      - script: |
+          set -e 
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
+          kubectl wait --for=condition=Available deploy/deviceshifu-opcua-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=condition=Available deploy/opcua-device -n devices --timeout=150s
+          sleep 5
+          kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-opcua/get_time
+        displayName: "Shifu demo device OPCUA E2E test"
+      - script: |
+          set -e 
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt
+          kubectl wait --for=condition=Available deploy/deviceshifu-mqtt-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=condition=Available deploy/mosquitto -n devices --timeout=150s
+          sleep 5
+          bash checkoutput.sh
+        displayName: "Shifu demo device MQTT E2E test"
+      - script: |
+          set -e 
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
+          kubectl wait --for=condition=Available deploy/deviceshifu-socket-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=condition=Available deploy/socket-mock-device -n devices --timeout=150s
+          sleep 5
+          kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" deviceshifu-socket.deviceshifu.svc.cluster.local/cmd -d '{"command":"123"}'
+        displayName: "Shifu demo device Socket E2E test" 
 
 - stage: docker_build_muiltiarch_and_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
