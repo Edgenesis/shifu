@@ -193,7 +193,16 @@ stages:
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-plc:$(tag) --load
         displayName: build edgehub/mockdevice-plc
-
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/dockerfile \
+          -t socket-mock-device:v0.0.1 --load 
+        displayName: build socket-mock-device
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/dockerfile \
+          -t opcua-mock-device:v0.0.1 --load 
+          
       - script: |
           set -e
           kind --version
@@ -208,6 +217,9 @@ stages:
           kind load docker-image edgehub/deviceshifu-http-mqtt:$(tag)
           kind load docker-image edgehub/deviceshifu-http-opcua:$(tag)
           kind load docker-image edgehub/deviceshifu-http-socket:$(tag)
+          kind load docker-image opcua-mock-device:v0.0.1
+          kind load docker-image socket-mock-device:v0.0.1
+
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
           kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
