@@ -2,6 +2,6 @@ FROM python:3.9-bullseye
 
 WORKDIR /worker
 
-COPY echo_server.py echo_server.py
+COPY shifu/examples/deviceshifu/demo_device/edgedevice-socket/echo_server.py echo_server.py
 
 CMD [ "python3","/worker/echo_server.py" ]
