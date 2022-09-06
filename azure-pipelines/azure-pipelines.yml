@@ -276,7 +276,7 @@ stages:
           kubectl wait --for=condition=Available deploy/deviceshifu-mqtt-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=condition=Available deploy/mosquitto -n devices --timeout=150s
           sleep 5
-          bash checkoutput.sh
+          # bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt/checkoutput.sh
         displayName: "Shifu demo device MQTT E2E test"
       - script: |
           set -e 

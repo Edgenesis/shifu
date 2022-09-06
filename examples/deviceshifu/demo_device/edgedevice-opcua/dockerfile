@@ -1,9 +1,9 @@
-FROM python:3.9-bullseye
+FROM python:3.9-slim
 
 WORKDIR /worker
 
-COPY examples/deviceshifu/demo_device/edgedevice-opcua/requirements.txt requirements.txt
-COPY examples/deviceshifu/demo_device/edgedevice-opcua/server.py server.py
+COPY requirements.txt requirements.txt
+COPY server.py server.py
 
 RUN pip3 install -r requirements.txt
 
