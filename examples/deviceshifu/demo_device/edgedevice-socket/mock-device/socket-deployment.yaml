@@ -19,10 +19,5 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
-        livenessProbe:
-          tcpSocket:
-            port: 11122
-          initialDelaySeconds: 3
-          periodSeconds: 3
         ports:
         - containerPort: 11122
