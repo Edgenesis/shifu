@@ -4,4 +4,4 @@ WORKDIR /worker
 
 COPY echo_server.py echo_server.py
 
-CMD [ "python3","echo_server.py" ]
+CMD [ "python3","/worker/echo_server.py" ]
