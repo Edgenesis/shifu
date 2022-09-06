@@ -36,7 +36,7 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 
 ### 演示
 
-如果您不熟悉Kubernetes，我们准备了 [***Shifu*** Demo](https://shifu.run/demo/)。您可以直观的体验 ***Shifu*** 如何通过数字孪生来连接和管理实体设备。
+如果您不熟悉Kubernetes，我们准备了 [***Shifu*** Demo](https://shifu.run/zh-Hans/disclaimer/)。您可以直观的体验 ***Shifu*** 如何通过数字孪生来连接和管理实体设备。
 
 ### 使用文档
 
