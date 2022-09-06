@@ -2,6 +2,8 @@
 
 default='{"mqtt_message":"","mqtt_receive_timestamp":"0001-01-01 00:00:00 +0000 UTC"}'
 
+
+kubectl port-forward svc/mosquitto-service  -n devices 18830:18830 &
 mosquitto_pub -h localhost -d -p 18830 -t /test/test -m "test2333"
 kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-mqtt/mqtt_data
 
