@@ -29,6 +29,12 @@ spec:
           value: "edgedevice-mqtt"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
       volumes:
       - name: deviceshifu-config
         configMap:

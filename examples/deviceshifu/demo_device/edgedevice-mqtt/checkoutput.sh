@@ -8,6 +8,6 @@ mosquitto_pub -h localhost -d -p 18830 -t /test/test -m "test2333"
 kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-mqtt/mqtt_data
 
 if [[ $1 == $default ]]; then
-    echo "not equal"
+        echo "not equal"
     exit 1
 fi

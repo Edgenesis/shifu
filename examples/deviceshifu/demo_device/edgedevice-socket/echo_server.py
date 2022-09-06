@@ -5,7 +5,7 @@ PORT = 11122              # Arbitrary non-privileged port
 while 1:
   s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
   s.bind((HOST, PORT))
-  s.listen(1)
+  s.listen(5)
   conn, addr = s.accept()
   print('Connected by', addr)
   while 1:

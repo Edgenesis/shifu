@@ -29,6 +29,16 @@ spec:
           value: "edgedevice-socket"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 10
       volumes:
       - name: deviceshifu-config
         configMap:
