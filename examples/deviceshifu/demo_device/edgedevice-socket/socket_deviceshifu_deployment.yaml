@@ -43,8 +43,8 @@ spec:
           httpGet:
             path: /health
             port: 8080
-          initialDelaySeconds: 3
-          periodSeconds: 3
+          initialDelaySeconds: 10
+          periodSeconds: 5
       volumes:
       - name: deviceshifu-config
         configMap:
