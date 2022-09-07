@@ -186,11 +186,11 @@ stages:
       - script: |
           set -e
           kubectl run nginx --image=nginx -n deviceshifu
-          kubectl wait --for condition=Ready pod/nginx -n deviceshifu --timeout=600s
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plc
           kubectl wait --for=condition=Available deploy/plc -n devices --timeout=150s
           kubectl wait --for=condition=Available deploy/deviceshifu-plc-deployment -n deviceshifu --timeout=150s
           sleep 5
+          kubectl wait --for condition=Ready pod/nginx -n deviceshifu --timeout=150s
           kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-plc/getcontent?rootsssaddress=Q;echo
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plc
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-agv
@@ -275,6 +275,7 @@ stages:
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
           kubectl wait --for=condition=Available deploy/deviceshifu-opcua-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-opcua -n devices --timeout=150s
+          kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
           kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-opcua/get_server;echo
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
@@ -336,6 +337,7 @@ stages:
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
           kubectl wait --for=condition=Available deploy/deviceshifu-socket-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-socket -n devices --timeout=150s
+          kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
           kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" deviceshifu-socket.deviceshifu.svc.cluster.local/cmd -d '{"command":"123"}'
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
@@ -391,6 +393,7 @@ stages:
           kubectl run mosquitto -n devices --image=eclipse-mosquitto:2.0.14
           kubectl wait --for=condition=Ready pod/mosquitto -n devices --timeout=150s
           kubectl exec -it mosquitto -n devices -- mosquitto_pub -h mosquitto-service -d -p 18830 -t /test/test -m "test2333" 
+          kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
           bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt/checkoutput.sh
           kubectl delete -f examples/deviceshifu/demo_device/edgedevice-mqtt
           kubectl delete po mosquitto -n devices
