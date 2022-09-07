@@ -1,7 +1,11 @@
-FROM python:3.9-slim
+FROM golang:1.18-alpine
 
 WORKDIR /worker
 
-COPY examples/deviceshifu/demo_device/edgedevice-socket/echo_server.py echo_server.py
+COPY examples/deviceshifu/demo_device/edgedevice-socket/server.go server.go
 
-CMD [ "python3","/worker/echo_server.py" ]
+RUN go build -o /output/server server.go
+
+EXPOSE 11122:11122/tcp
+
+ENTRYPOINT [ "/output/server" ]

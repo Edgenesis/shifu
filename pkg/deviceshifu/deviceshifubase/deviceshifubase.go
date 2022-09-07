@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/client-go/rest"
 )
@@ -76,8 +77,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", deviceHealthHandler)
-	mux.HandleFunc("/", instructionNotFoundHandler)
 
 	edgeDevice := &v1alpha1.EdgeDevice{}
 	client := &rest.RESTClient{}
