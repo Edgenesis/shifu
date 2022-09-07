@@ -291,6 +291,7 @@ stages:
           kubectl wait --for=condition=Available deploy/socket-mock-device -n devices --timeout=150s
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
           kubectl wait --for=condition=Available deploy/deviceshifu-socket-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-socket -n devices --timeout=150s
           kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" deviceshifu-socket.deviceshifu.svc.cluster.local/cmd -d '{"command":"123"}'
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
