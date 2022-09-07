@@ -384,6 +384,7 @@ stages:
         displayName: "setup Kind cluster and install Shifu"
       - script: |
           set -e 
+          kubectl run nginx --image=nginx -n deviceshifu
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt
           kubectl wait --for=condition=Available deploy/mosquitto -n devices --timeout=150s
           kubectl wait --for=condition=Available deploy/deviceshifu-mqtt-deployment -n deviceshifu --timeout=150s
