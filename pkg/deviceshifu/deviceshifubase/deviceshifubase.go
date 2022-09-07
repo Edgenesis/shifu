@@ -77,6 +77,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 	}
 
 	mux := http.NewServeMux()
+	mux.HandleFunc("/health", deviceHealthHandler)
+	mux.HandleFunc("/", instructionNotFoundHandler)
 
 	edgeDevice := &v1alpha1.EdgeDevice{}
 	client := &rest.RESTClient{}
