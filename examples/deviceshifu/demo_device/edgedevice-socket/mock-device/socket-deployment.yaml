@@ -16,8 +16,5 @@ spec:
       - name: socket-mock-device
         image: socket-mock-device:v0.1.0
         resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
         ports:
         - containerPort: 11122
