@@ -279,6 +279,7 @@ stages:
           kubectl wait --for=condition=Available deploy/mosquitto -n devices --timeout=150s
           kubectl wait --for=condition=Available deploy/deviceshifu-mqtt-deployment -n deviceshifu --timeout=150s
           kubectl run mosquitto -n devices --image=eclipse-mosquitto:2.0.14
+          kubectl wait --for=condition=Ready pod/mosquitto -n devices --timeout=150s
           kubectl exec -it mosquitto -n devices -- mosquitto_pub -h mosquitto-service -d -p 18830 -t /test/test -m "test2333" 
           bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt/checkoutput.sh
           kubectl delete -f examples/deviceshifu/demo_device/edgedevice-mqtt
