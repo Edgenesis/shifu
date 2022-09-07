@@ -269,6 +269,7 @@ stages:
         displayName: "setup Kind cluster and install Shifu"
       - script: |
           set -e 
+          kubectl run nginx --image=nginx -n deviceshifu
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
           kubectl wait --for=condition=Available deploy/opcua-device -n devices --timeout=150s
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
@@ -329,6 +330,7 @@ stages:
         displayName: "setup Kind cluster and install Shifu"
       - script: |
           set -e 
+          kubectl run nginx --image=nginx -n deviceshifu
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
           kubectl wait --for=condition=Available deploy/socket-mock-device -n devices --timeout=150s
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
@@ -338,7 +340,7 @@ stages:
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
         displayName: "Shifu demo device Socket E2E test" 
-        
+
   - job: kind_e2e_test_mqtt
     steps:
       - script: |
