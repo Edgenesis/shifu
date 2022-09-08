@@ -16,6 +16,19 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+func TestMain(m *testing.M) {
+	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
+	if err != nil {
+		log.Println("error when generateConfigmapFromSnippet,err: ", err)
+		os.Exit(-1)
+	}
+	m.Run()
+	err = os.RemoveAll(MockDeviceConfigPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func TestStart(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		Name:           "TestStart",
@@ -134,13 +147,4 @@ func TestCreatehttpURLStringNoQuery(t *testing.T) {
 	if createdURIStringWithoutQueries != expectedURIStringWithoutQueries {
 		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdURIString, expectedURIString)
 	}
-
-	// cleanup
-	t.Cleanup(func() {
-		//tear-down code
-		err := os.RemoveAll(MockDeviceConfigPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-	})
 }

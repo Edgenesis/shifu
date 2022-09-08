@@ -12,6 +12,19 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+func TestMain(m *testing.M) {
+	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
+	if err != nil {
+		log.Println("error when generateConfigmapFromSnippet,err: ", err)
+		os.Exit(-1)
+	}
+	m.Run()
+	err = os.RemoveAll(MockDeviceConfigPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func TestNew(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		Name:           "TeststartHTTPServer",
@@ -98,13 +111,4 @@ func TestDeviceHealthHandler(t *testing.T) {
 	if err := mockds.Stop(); err != nil {
 		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
 	}
-
-	// cleanup
-	t.Cleanup(func() {
-		//tear-down code
-		err := os.RemoveAll(MockDeviceConfigPath)
-		if err != nil {
-			log.Fatal(err)
-		}
-	})
 }

@@ -64,11 +64,6 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		},
 	}
 
-	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
-	if err != nil {
-		t.Errorf(err.Error())
-	}
-
 	mockdsc, err := deviceshifubase.NewDeviceShifuConfig(MockDeviceConfigFolder)
 	if err != nil {
 		t.Errorf(err.Error())
