@@ -4,10 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/client-go/rest"
 )

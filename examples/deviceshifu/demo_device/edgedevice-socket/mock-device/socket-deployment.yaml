@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: socket-mock-device
+  namespace: devices
+spec:
+  selector:
+    matchLabels:
+      app: socket-mock-device
+  template:
+    metadata:
+      labels:
+        app: socket-mock-device
+    spec:
+      containers:
+      - name: socket-mock-device
+        image: edgehub/socket-mock-device:v0.1.0
+        ports:
+        - containerPort: 11122
