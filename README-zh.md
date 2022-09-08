@@ -2,6 +2,8 @@
 
 中文 | [English](README.md)
 
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Edgenesis/shifu)](https://goreportcard.com/report/github.com/Edgenesis/shifu)
 [![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/shifu-build-muiltistage?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=19&branchName=main)
 [![codecov](https://codecov.io/gh/Edgenesis/shifu/branch/main/graph/badge.svg?token=OX2UN22O3Z)](https://codecov.io/gh/Edgenesis/shifu)
 
@@ -36,11 +38,11 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 
 ### 演示
 
-如果您不熟悉Kubernetes，我们准备了 [***Shifu*** Demo](https://shifu.run/demo/)。您可以直观的体验 ***Shifu*** 如何通过数字孪生来连接和管理实体设备。
+如果您不熟悉Kubernetes，我们准备了 [***Shifu*** Demo](https://shifu.run/zh-Hans/disclaimer/)。您可以直观的体验 ***Shifu*** 如何通过数字孪生来连接和管理实体设备。
 
 ### 使用文档
 
-请在 <https://shifu.run/docs/> 查看 ***Shifu*** 的使用文档。
+请在 <https://shifu.run/zh-Hans/docs/> 查看 ***Shifu*** 的使用文档。
 
 ## 深入理解 ***Shifu***
 

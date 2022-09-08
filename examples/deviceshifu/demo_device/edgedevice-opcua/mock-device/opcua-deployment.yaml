@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: opcua-device
+  namespace: devices
+spec:
+  selector:
+    matchLabels:
+      app: opcua-device
+  template:
+    metadata:
+      labels:
+        app: opcua-device
+    spec:
+      containers:
+      - name: opcua-device
+        image: edgehub/opcua-mock-device:v0.1.0
+        ports:
+        - containerPort: 4840
+        readinessProbe:
+          tcpSocket:
+            port: 4840
+          initialDelaySeconds: 3
+          periodSeconds: 3

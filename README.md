@@ -2,6 +2,8 @@
 
 [中文](README-zh.md) | English
 
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
+[![Go Report Card](https://goreportcard.com/badge/github.com/Edgenesis/shifu)](https://goreportcard.com/report/github.com/Edgenesis/shifu)
 [![Build Status](https://dev.azure.com/Edgenesis/shifu/_apis/build/status/shifu-build-muiltistage?branchName=main)](https://dev.azure.com/Edgenesis/shifu/_build/latest?definitionId=19&branchName=main)
 [![codecov](https://codecov.io/gh/Edgenesis/shifu/branch/main/graph/badge.svg?token=OX2UN22O3Z)](https://codecov.io/gh/Edgenesis/shifu)
 
@@ -36,11 +38,11 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 
 ### Demo
 
-If you are not familiar with Kubernetes, we provide [***Shifu*** Demo](https://shifu.run/demo/), which will intuitively show how ***Shifu*** creates and manages digital twins of any physical device in the real world.
+If you are not familiar with Kubernetes, we provide [***Shifu*** Demo](https://shifu.run/disclaimer), which will intuitively show how ***Shifu*** creates and manages digital twins of any physical device in the real world.
 
 ### Documentation
 
-See documentation on <https://shifu.run/en/docs/>.
+See documentation on <https://shifu.run/docs/>.
 
 ## Look into ***Shifu***
 
