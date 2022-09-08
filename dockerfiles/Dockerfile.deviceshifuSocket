@@ -9,7 +9,7 @@ ENV GOPRIVATE=github.com/Edgenesis
 COPY go.mod go.mod
 COPY go.sum go.sum
 COPY pkg/k8s pkg/k8s
-COPY cmd/deviceshifu/cmdSocket cmd/deviceshifu/cmdSocket
+COPY cmd/deviceshifu/cmdsocket cmd/deviceshifu/cmdsocket
 COPY pkg/deviceshifu pkg/deviceshifu
 
 RUN go mod download
@@ -18,7 +18,7 @@ RUN go mod download
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/deviceshifu cmd/deviceshifu/cmdSocket/main.go
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/deviceshifu cmd/deviceshifu/cmdsocket/main.go
 
 FROM gcr.io/distroless/static-debian11
 WORKDIR /
