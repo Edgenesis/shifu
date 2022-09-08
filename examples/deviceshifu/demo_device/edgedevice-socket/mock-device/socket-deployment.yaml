@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: socket-mock-device
-        image: socket-mock-device:v0.1.0
+        image: edgehub/socket-mock-device:v0.1.0
         ports:
         - containerPort: 11122
