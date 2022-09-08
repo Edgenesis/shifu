@@ -2,7 +2,7 @@ FROM golang:1.18-alpine
 
 WORKDIR /worker
 
-COPY examples/deviceshifu/demo_device/edgedevice-socket/server.go server.go
+COPY examples/socketDeviceshifu/server/server.go server.go
 
 RUN go build -o /output/server server.go
 

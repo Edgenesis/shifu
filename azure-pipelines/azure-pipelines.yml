@@ -251,9 +251,9 @@ stages:
         displayName: build deviceshifu-http-opcua
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/dockerfile \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
           $(System.DefaultWorkingDirectory) \
-          -t opcua-mock-device:$(tag) --load 
+          -t edgehub/opcua-mock-device:$(tag) --load 
         displayName: build opcua-mock-device
       - script: |
           set -e
@@ -261,7 +261,7 @@ stages:
           kind delete cluster && kind create cluster
           kind load docker-image edgehub/shifu-controller:$(tag)
           kind load docker-image edgehub/deviceshifu-http-opcua:$(tag)
-          kind load docker-image opcua-mock-device:$(tag)
+          kind load docker-image edgehub/opcua-mock-device:$(tag)
 
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
@@ -276,7 +276,7 @@ stages:
           kubectl wait --for=condition=Available deploy/deviceshifu-opcua-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-opcua -n devices --timeout=150s
           kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-          kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-opcua/get_server;echo
+          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/checkoutput.sh
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
         displayName: "Shifu demo device OPCUA E2E test"
@@ -313,9 +313,9 @@ stages:
         displayName: build edgehub/deviceshifu-http-socket
       - script: |
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/dockerfile \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
           $(System.DefaultWorkingDirectory) \
-          -t socket-mock-device:$(tag) --load 
+          -t edgehub/socket-mock-device:$(tag) --load 
         displayName: build socket-mock-device
       - script: |
           set -e
@@ -323,7 +323,7 @@ stages:
           kind delete cluster && kind create cluster
           kind load docker-image edgehub/shifu-controller:$(tag)
           kind load docker-image edgehub/deviceshifu-http-socket:$(tag)
-          kind load docker-image socket-mock-device:$(tag)
+          kind load docker-image edgehub/socket-mock-device:$(tag)
 
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
@@ -338,7 +338,7 @@ stages:
           kubectl wait --for=condition=Available deploy/deviceshifu-socket-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-socket -n devices --timeout=150s
           kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-          kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" deviceshifu-socket.deviceshifu.svc.cluster.local/cmd -d '{"command":"123"}'
+          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/checkoutput.sh
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
         displayName: "Shifu demo device Socket E2E test" 
@@ -394,7 +394,7 @@ stages:
           kubectl wait --for=condition=Ready pod/mosquitto -n devices --timeout=150s
           kubectl exec -it mosquitto -n devices -- mosquitto_pub -h mosquitto-service -d -p 18830 -t /test/test -m "test2333" 
           kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt/checkoutput.sh
+          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/mqtt/checkoutput.sh
           kubectl delete -f examples/deviceshifu/demo_device/edgedevice-mqtt
           kubectl delete po mosquitto -n devices
         displayName: "Shifu demo device MQTT E2E test"
@@ -419,7 +419,6 @@ stages:
           docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
           docker buildx create --use
         displayName: configure multi-arch and buildx
-
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuHTTP \
@@ -483,3 +482,15 @@ stages:
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-plc:$(release_tag) --push
         displayName: build edgehub/mockdevice-plc
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-socket:$(release_tag) --push
+        displayName: build edgehub/mockdevice-socket
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-opcua:$(release_tag) --push
+        displayName: build edgehub/mockdevice-opcua

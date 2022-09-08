@@ -1,2 +1,0 @@
-FROM eclipse-mosquitto:latest
-
