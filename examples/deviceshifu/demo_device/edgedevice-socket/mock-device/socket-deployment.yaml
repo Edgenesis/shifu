@@ -15,6 +15,5 @@ spec:
       containers:
       - name: socket-mock-device
         image: socket-mock-device:v0.1.0
-        resources:
         ports:
         - containerPort: 11122

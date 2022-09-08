@@ -29,10 +29,6 @@ spec:
           value: "edgedevice-socket"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
-        resources:
-          limits:
-            memory: "128Mi"
-            cpu: "500m"
         readinessProbe:
           httpGet:
             path: /health
