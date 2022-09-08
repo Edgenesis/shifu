@@ -50,7 +50,7 @@ stages:
         inputs:
           command: 'get'
           arguments: '-d'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuHTTP'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuhttp'
       - script: |
           make test
         displayName: "Go test"
@@ -58,22 +58,22 @@ stages:
         displayName: "go build deviceshifuHTTP"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdHTTP'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdhttp'
       - task: Go@0
         displayName: "go build deviceshifuSocket"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdSocket'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdsocket'
       - task: Go@0
         displayName: "go build deviceshifuMQTT"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdMQTT'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdmqtt'
       - task: Go@0
         displayName: "go build deviceshifuOPCUA"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdOPCUA'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdopcua'
       - task: Go@0
         displayName: "go build mockdevice agv"
         inputs:
