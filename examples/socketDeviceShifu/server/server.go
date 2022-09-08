@@ -19,16 +19,20 @@ func main() {
 		if err != nil {
 			break
 		}
-		go handleReq(conn) // 启用一个协程处理请求
+
+		go handleReq(conn)
 	}
 }
 func handleReq(conn net.Conn) {
-	data := make([]byte, 1024)
-	_, err := conn.Read(data)
-	log.Println(string(data), err)
-	if err != nil {
-		log.Println(err)
-		return
+	for {
+		data := make([]byte, 1024)
+		_, err := conn.Read(data)
+		log.Println(string(data), err)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		conn.Write(data)
 	}
-	conn.Write(data)
 }

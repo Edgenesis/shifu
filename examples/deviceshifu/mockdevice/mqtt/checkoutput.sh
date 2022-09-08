@@ -4,17 +4,19 @@ default='{"mqtt_message":"","mqtt_receive_timestamp":"0001-01-01 00:00:00 +0000 
 
 for i in {1..5} 
 do
-    out=(shell kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-mqtt/mqtt_data --connect-timeout 5)
+    kubectl exec -it mosquitto -n devices -- mosquitto_pub -h mosquitto-service -d -p 18830 -t /test/test -m "test2333" 
+    out=$(kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-mqtt/mqtt_data --connect-timeout 5)
 
+    echo $out
+    echo $default
     if [[ $out == "" ]]
     then 
         echo "empty reply"
-    elif [[ $out != $default ]]
+    elif [[ $out == $default ]]
     then
-        echo "not euqal"
-        exit 0
+        echo "euqal default message"
     else 
-        exit 1
+        exit 0
     fi
 done
 exit 1

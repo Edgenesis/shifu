@@ -27,4 +27,3 @@ data:
           instruction: get_server
           initialDelayMs: 1000
           intervalMs: 1000
-   
