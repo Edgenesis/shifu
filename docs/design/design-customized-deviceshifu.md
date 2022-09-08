@@ -12,7 +12,7 @@ sequenceDiagram
     cd->>cd: parse raw data via handler function
     cd->>application: parsed data
 ```
-## Internal data flow
+Anything between `raw data` and `app-friendly data` are components in `deviceShifu`:
 ```mermaid
   flowchart LR
     IoT-device --> |raw data|deviceShifu-data-adapter-->deviceShifu-data-handler-->deviceShifu-data-sender-->|app-friendly data|application
@@ -105,13 +105,18 @@ To make `deviceShifu` able to "translate" the raw data to a more application-fri
 1. create a handler function, such as `check_regular_measurement_exception`.
 2. register the handler function by editing `register_handlers`.
 
+By default, `deviceShifu` will use the default command handler to process the data of each instruction, and calling the endpoint of the instruction will give a response of raw data from device. 
+
+If user registers the custom handler and its associated instruction by calling register_handler, `deviceShifu` will switch to use the custom handler for that instruction. As a result, a call to the endpoint of that instruction will respond the processed data instead of raw data.
+
 ```python
 class DeviceShifu():
     def __init__(self):
         self.register_handlers()
 
     def register_handlers(self):
-        self.register_handler(self.translate_data_from_sensor_a)
+        // register_handler(handler, instruction)
+        self.register_handler(self.translate_data_from_sensor_a, "humidity")
 
     def start(self):
 
@@ -165,8 +170,8 @@ def main():
 `deviceShifu`'s handling of data contains 4 components: data-adapter, data-handler, data-provider, data-cache:
 
 1. **data-adapter** is responsible for receiving data from physical device. `deviceShifu` loads the driver and enables the data flow from physical device to data-adapter.
-2. **data-handler** has custom-implemented handlers that process the data in action.
+2. **data-handler** has custom-implemented handlers that process the data in action, handler's callback is invoked every time new data comes.
 3. **data-provider** is the portal for actively sending data to applications or for applications to ask for data.
 4. **data-cache** is cutsomizable to store data used very frequently.
 
-
+## Internal data flow
