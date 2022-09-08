@@ -109,7 +109,7 @@ func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	}
 }
 
-func TestCreatehttpURLString(t *testing.T) {
+func TestCreatehttpURIString(t *testing.T) {
 	expectedURIString := "http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2"
 	req, err := http.NewRequest("POST", expectedURIString, nil)
 	if err != nil {
@@ -131,7 +131,7 @@ func TestCreatehttpURLString(t *testing.T) {
 	}
 }
 
-func TestCreatehttpURLStringNoQuery(t *testing.T) {
+func TestCreatehttpURIStringNoQuery(t *testing.T) {
 	expectedURIString := "http://localhost:8081/start"
 	req, err := http.NewRequest("POST", expectedURIString, nil)
 	if err != nil {
