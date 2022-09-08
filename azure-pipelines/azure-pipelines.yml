@@ -276,7 +276,7 @@ stages:
           kubectl wait --for=condition=Available deploy/deviceshifu-opcua-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-opcua -n devices --timeout=150s
           kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/checkoutput.sh
+          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/checkout.sh
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
         displayName: "Shifu demo device OPCUA E2E test"
@@ -338,7 +338,7 @@ stages:
           kubectl wait --for=condition=Available deploy/deviceshifu-socket-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-socket -n devices --timeout=150s
           kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/checkoutput.sh
+          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/checkout.sh
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
         displayName: "Shifu demo device Socket E2E test" 
