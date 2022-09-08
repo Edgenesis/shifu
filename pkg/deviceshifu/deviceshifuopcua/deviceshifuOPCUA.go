@@ -11,7 +11,6 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
 )
