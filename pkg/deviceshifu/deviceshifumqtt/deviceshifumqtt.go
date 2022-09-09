@@ -1,4 +1,4 @@
-package deviceshifuMQTT
+package deviceshifumqtt
 
 import (
 	"encoding/json"
@@ -14,33 +14,37 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
+// DeviceShifu implemented from deviceshifuBase
 type DeviceShifu struct {
 	base *deviceshifubase.DeviceShifuBase
 }
 
-type DeviceShifuMQTTHandlerMetaData struct {
+// HandlerMetaData MetaData for EdgeDevice Setting
+type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	// instruction    string
 	// properties     *DeviceShifuInstruction
 }
 
+// Str and default value
 const (
-	MQTT_DATA_ENDPOINT         string = "mqtt_data"
-	DEFAULT_UPDATE_INTERVAL_MS int64  = 3000
+	MqttDataEndpoint          string = "mqtt_data"
+	DefaultUpdateIntervalInMS int64  = 3000
 )
 
 var (
-	MQTT_MESSAGE_STR               string
-	MQTT_MESSAGE_RECEIVE_TIMESTAMP time.Time
+	mqttMessageStr              string
+	mqttMessageReceiveTimestamp time.Time
 )
 
+// New new MQTT Deviceshifu
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
 	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 	if err != nil {
 		return nil, err
 	}
 
-	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
+	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
 			mqttSetting := *base.EdgeDevice.Spec.ProtocolSettings.MQTTSetting
@@ -59,7 +63,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 			opts := mqtt.NewClientOptions()
 			opts.AddBroker(fmt.Sprintf("tcp://%s", mqttServerAddress))
-			opts.SetClientID(*&base.EdgeDevice.Name)
+			opts.SetClientID(base.EdgeDevice.Name)
 			opts.SetDefaultPublishHandler(messagePubHandler)
 			opts.OnConnect = connectHandler
 			opts.OnConnectionLost = connectLostHandler
@@ -70,12 +74,12 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 			sub(client, *mqttSetting.MQTTTopic)
 
-			deviceShifuMQTTHandlerMetaData := &DeviceShifuMQTTHandlerMetaData{
+			HandlerMetaData := &HandlerMetaData{
 				base.EdgeDevice.Spec,
 			}
 
-			handler := DeviceCommandHandlerMQTT{deviceShifuMQTTHandlerMetaData}
-			mux.HandleFunc("/"+MQTT_DATA_ENDPOINT, handler.commandHandleFunc())
+			handler := DeviceCommandHandlerMQTT{HandlerMetaData}
+			mux.HandleFunc("/"+MqttDataEndpoint, handler.commandHandleFunc())
 		}
 	}
 	ds := &DeviceShifu{base: base}
@@ -86,8 +90,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	log.Printf("Received message: %v from topic: %v\n", msg.Payload(), msg.Topic())
-	MQTT_MESSAGE_STR = string(msg.Payload())
-	MQTT_MESSAGE_RECEIVE_TIMESTAMP = time.Now()
+	mqttMessageStr = string(msg.Payload())
+	mqttMessageReceiveTimestamp = time.Now()
 	log.Print("MESSAGE_STR updated")
 }
 
@@ -106,21 +110,13 @@ func sub(client mqtt.Client, topic string) {
 	log.Printf("Subscribed to topic: %s", topic)
 }
 
-func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, deviceshifubase.DEVICE_IS_HEALTHY_STR)
-}
-
+// DeviceCommandHandlerMQTT handler for Mqtt
 type DeviceCommandHandlerMQTT struct {
 	// client                         *rest.RESTClient
-	deviceShifuMQTTHandlerMetaData *DeviceShifuMQTTHandlerMetaData
+	HandlerMetaData *HandlerMetaData
 }
 
-func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Error: Device instruction does not exist!")
-	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
-}
-
-func createUriFromRequest(address string, handlerInstruction string, r *http.Request) string {
+func createURIFromRequest(address string, handlerInstruction string, r *http.Request) string {
 
 	queryStr := "?"
 
@@ -141,34 +137,29 @@ func createUriFromRequest(address string, handlerInstruction string, r *http.Req
 
 func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		// handlerEdgeDeviceSpec := handler.deviceShifuMQTTHandlerMetaData.edgeDeviceSpec
+		// handlerEdgeDeviceSpec := handler.HandlerMetaData.edgeDeviceSpec
 		reqType := r.Method
 
 		if reqType == http.MethodGet {
-			returnMessage := DeviceShifuMQTTReturnBody{
-				MQTTMessage:   MQTT_MESSAGE_STR,
-				MQTTTimestamp: MQTT_MESSAGE_RECEIVE_TIMESTAMP.String(),
+			returnMessage := ReturnBody{
+				MQTTMessage:   mqttMessageStr,
+				MQTTTimestamp: mqttMessageReceiveTimestamp.String(),
 			}
 
 			w.WriteHeader(http.StatusOK)
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(returnMessage)
+			err := json.NewEncoder(w).Encode(returnMessage)
+			if err != nil {
+				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
+				log.Println("Cannot Encode message to json")
+				return
+			}
 		} else {
 			http.Error(w, "must be GET method", http.StatusBadRequest)
 			log.Println("Request type " + reqType + " is not supported yet!")
 			return
 		}
 
-	}
-}
-
-// HTTP header type:
-// type Header map[string][]string
-func copyHeader(dst, src http.Header) {
-	for header, headerValueList := range src {
-		for _, value := range headerValueList {
-			dst.Add(header, value)
-		}
 	}
 }
 
@@ -207,11 +198,6 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
-func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceshifu %s's http server started\n", ds.base.Name)
-	return ds.base.Server.ListenAndServe()
-}
-
 // TODO: update configs
 // TODO: update status based on telemetry
 
@@ -226,12 +212,12 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 			}
 
 			if interval := telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds; interval == nil {
-				var telemetryUpdateIntervalInMilliseconds = DEFAULT_UPDATE_INTERVAL_MS
+				var telemetryUpdateIntervalInMilliseconds = DefaultUpdateIntervalInMS
 				telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = &telemetryUpdateIntervalInMilliseconds
 			}
 
 			nowTime := time.Now()
-			if int64(nowTime.Sub(MQTT_MESSAGE_RECEIVE_TIMESTAMP).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
+			if int64(nowTime.Sub(mqttMessageReceiveTimestamp).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
 				return true, nil
 			}
 		default:
@@ -243,10 +229,12 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 	return false, nil
 }
 
+// Start start Mqtt Telemetry
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	return ds.base.Start(stopCh, ds.collectMQTTTelemetry)
 }
 
+// Stop Stop Http Server
 func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
 }

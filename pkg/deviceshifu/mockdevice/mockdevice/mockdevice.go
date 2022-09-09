@@ -10,34 +10,42 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+// MockDevice basic info
 type MockDevice struct {
 	Name   string
 	server *http.Server
 }
 
-type MockDeviceDriver interface {
+// Driver MockDevice Driver interface include main function and instruction handler
+type Driver interface {
 	main()
 	instructionHandler(string) func(http.ResponseWriter, *http.Request)
 }
 
 type instructionHandlerFunc func(string) http.HandlerFunc
 
-var STATUS_STR_LIST = []string{
+// StatusSetList Status Set List
+var StatusSetList = []string{
 	"Running",
 	"Idle",
 	"Busy",
 	"Error",
 }
 
+// Start start http server
 func (md *MockDevice) Start(stopCh <-chan struct{}) error {
 	log.Printf("mockDevice %s started\n", md.Name)
 
-	go md.startHttpServer(stopCh)
-
+	go func() {
+		err := md.startHTTPServer(stopCh)
+		if err != nil {
+			log.Println("error during HTTP Server is Up")
+		}
+	}()
 	return nil
 }
 
-func (md *MockDevice) startHttpServer(stopCh <-chan struct{}) error {
+func (md *MockDevice) startHTTPServer(stopCh <-chan struct{}) error {
 	log.Printf("mockDevice %s's http server started\n", md.Name)
 	return md.server.ListenAndServe()
 }
@@ -46,10 +54,11 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, "Healthy")
 }
 
-func New(deviceName string, devicePort string, available_funcs []string, instructionHandler instructionHandlerFunc) (*MockDevice, error) {
+// New new mock device
+func New(deviceName string, devicePort string, availableFuncs []string, instructionHandler instructionHandlerFunc) (*MockDevice, error) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", deviceHealthHandler)
-	for _, function := range available_funcs {
+	for _, function := range availableFuncs {
 		mux.HandleFunc("/"+function, instructionHandler(function))
 	}
 
@@ -65,15 +74,19 @@ func New(deviceName string, devicePort string, available_funcs []string, instruc
 	return md, nil
 }
 
-func StartMockDevice(available_funcs []string, instructionHandler instructionHandlerFunc) {
+// StartMockDevice Start MockDevice
+func StartMockDevice(availableFuncs []string, instructionHandler instructionHandlerFunc) {
 	deviceName := os.Getenv("MOCKDEVICE_NAME")
 	devicePort := os.Getenv("MOCKDEVICE_PORT")
-	md, err := New(deviceName, devicePort, available_funcs, instructionHandler)
+	md, err := New(deviceName, devicePort, availableFuncs, instructionHandler)
 	if err != nil {
 		log.Printf("Error starting device %v", deviceName)
 	}
 
-	md.Start(wait.NeverStop)
+	err = md.Start(wait.NeverStop)
+	if err != nil {
+		log.Printf("Error start MockDevice %#v", err)
+	}
 
 	select {}
 }

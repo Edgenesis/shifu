@@ -68,14 +68,17 @@ func main() {
 	defer sshClient.Close()
 	log.Println("Driver SSH established")
 
-	ssh_listener, err := sshClient.Listen("tcp", "localhost:"+driverHTTPPort)
+	sshListener, err := sshClient.Listen("tcp", "localhost:"+driverHTTPPort)
 	if err != nil {
 		log.Fatal("unable to register tcp forward: ", err)
 	}
-	defer ssh_listener.Close()
+	defer sshListener.Close()
 	log.Println("Driver HTTP listener established")
 
-	http.Serve(ssh_listener, httpCmdlinePostHandler(sshClient))
+	err = http.Serve(sshListener, httpCmdlinePostHandler(sshClient))
+	if err != nil {
+		log.Println("cannot start server, error: ", err)
+	}
 }
 
 // Create a session reply for the incoming connection, obtain the connection body information,
@@ -103,12 +106,12 @@ func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 		if err := session.Run(cmdString); err != nil {
 			log.Printf("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stderr.String(), stdout.String())
 			resp.WriteHeader(http.StatusBadRequest)
-			resp.Write(append(stderr.Bytes(), stdout.Bytes()...))
+			_, _ = resp.Write(append(stderr.Bytes(), stdout.Bytes()...))
 			return
 		}
 
 		log.Printf("cmd: %v success", cmdString)
 		resp.WriteHeader(http.StatusOK)
-		resp.Write(stdout.Bytes())
+		_, _ = resp.Write(stdout.Bytes())
 	}
 }

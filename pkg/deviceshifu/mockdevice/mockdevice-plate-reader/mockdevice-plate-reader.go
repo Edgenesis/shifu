@@ -11,11 +11,11 @@ import (
 )
 
 func main() {
-	available_funcs := []string{
+	availableFuncs := []string{
 		"get_measurement",
 		"get_status",
 	}
-	mockdevice.StartMockDevice(available_funcs, instructionHandler)
+	mockdevice.StartMockDevice(availableFuncs, instructionHandler)
 }
 
 func instructionHandler(functionName string) http.HandlerFunc {
@@ -23,19 +23,18 @@ func instructionHandler(functionName string) http.HandlerFunc {
 		log.Printf("Handling: %v", functionName)
 		switch functionName {
 		case "get_measurement":
-			output_matrix := [8][12]float32{}
 			rand.Seed(time.Now().UnixNano())
-			reading_range := float32(3.0)
-			for i := 0; i < len(output_matrix); i++ {
-				for j := 0; j < len(output_matrix[i]); j++ {
-					num := fmt.Sprintf("%.2f", rand.Float32()*reading_range)
+			readingRange := float32(3.0)
+			for i := 0; i < 8; i++ {
+				for j := 0; j < 12; j++ {
+					num := fmt.Sprintf("%.2f", rand.Float32()*readingRange)
 					fmt.Fprintf(w, num+" ")
 				}
 				fmt.Fprintf(w, "\n")
 			}
 		case "get_status":
 			rand.Seed(time.Now().UnixNano())
-			fmt.Fprintf(w, mockdevice.STATUS_STR_LIST[(rand.Intn(len(mockdevice.STATUS_STR_LIST)))])
+			fmt.Fprintf(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}
 }

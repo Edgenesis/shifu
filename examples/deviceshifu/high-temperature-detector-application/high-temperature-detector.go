@@ -9,8 +9,8 @@ import (
 )
 
 func main() {
-	targetUrl := "http://edgedevice-thermometer/read_value"
-	req, _ := http.NewRequest("GET", targetUrl, nil)
+	targetURL := "http://edgedevice-thermometer/read_value"
+	req, _ := http.NewRequest("GET", targetURL, nil)
 	for {
 		res, _ := http.DefaultClient.Do(req)
 		body, _ := ioutil.ReadAll(res.Body)

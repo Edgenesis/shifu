@@ -79,11 +79,11 @@ func replaceTag(file *os.File, oldTag string, newTag string) error {
 	reader := bufio.NewReader(file)
 	out := bufio.NewWriter(file)
 	defer func() {
-		file.Truncate(0)
-		file.Seek(0, 0)
-		out.WriteString(context)
-		out.Flush()
-		file.Close()
+		_ = file.Truncate(0)
+		_, _ = file.Seek(0, 0)
+		_, _ = out.WriteString(context)
+		_ = out.Flush()
+		_ = file.Close()
 	}()
 
 	for {

@@ -1,4 +1,4 @@
-package deviceshifuOPCUA
+package deviceshifuopcua
 
 import (
 	"io"
@@ -12,12 +12,25 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 )
 
+func TestMain(m *testing.M) {
+	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
+	if err != nil {
+		log.Println("error when generateConfigmapFromSnippet,err: ", err)
+		os.Exit(-1)
+	}
+	m.Run()
+	err = os.RemoveAll(MockDeviceConfigPath)
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func TestNew(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		Name:           "TestStartHttpServer",
+		Name:           "TeststartHTTPServer",
 		ConfigFilePath: "etc/edgedevice/config",
-		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		Namespace:      "TestStartHttpServerNamespace",
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
+		Namespace:      "TeststartHTTPServerNamespace",
 	}
 
 	_, err := New(deviceShifuMetadata)
@@ -30,7 +43,7 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		Name:           "TestDeviceShifuEmptyNamespace",
 		ConfigFilePath: "etc/edgedevice/config",
-		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
 	}
 
 	_, err := New(deviceShifuMetadata)
@@ -45,7 +58,7 @@ func TestStart(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		Name:           "TestStartOPCUA",
 		ConfigFilePath: "etc/edgedevice/config",
-		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
 		Namespace:      "TestStartNamespace",
 	}
 
@@ -65,10 +78,10 @@ func TestStart(t *testing.T) {
 
 func TestDeviceHealthHandler(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		Name:           "TestStartHttpServerOPCUA",
+		Name:           "TeststartHTTPServerOPCUA",
 		ConfigFilePath: "etc/edgedevice/config",
-		KubeConfigPath: deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR,
-		Namespace:      "TestStartHttpServerNamespace",
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
+		Namespace:      "TeststartHTTPServerNamespace",
 	}
 
 	mockds, err := New(deviceShifuMetadata)
@@ -91,20 +104,11 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("unable to read response body, error: %v", err.Error())
 	}
 
-	if string(body) != deviceshifubase.DEVICE_IS_HEALTHY_STR {
+	if string(body) != deviceshifubase.DeviceIsHealthyStr {
 		t.Errorf("%+v", body)
 	}
 
 	if err := mockds.Stop(); err != nil {
 		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
 	}
-
-	// cleanup
-	t.Cleanup(func() {
-		//tear-down code
-		err := os.RemoveAll(MOCK_DEVICE_CONFIG_PATH)
-		if err != nil {
-			log.Fatal(err)
-		}
-	})
 }

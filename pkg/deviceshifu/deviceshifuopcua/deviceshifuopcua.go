@@ -1,45 +1,44 @@
-package deviceshifuOPCUA
+package deviceshifuopcua
 
 import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"log"
 	"net/http"
 	"path"
 	"time"
 
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
 )
 
+// DeviceShifu implemented from deviceshifuBase and OPC UA Setting and client
 type DeviceShifu struct {
 	base              *deviceshifubase.DeviceShifuBase
 	opcuaInstructions *OPCUAInstructions
 	opcuaClient       *opcua.Client
 }
 
-type DeviceShifuOPCUAHandlerMetaData struct {
+// HandlerMetaData MetaData for OPC UA handler
+type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
 	properties     *OPCUAInstructionProperty
 }
 
-type deviceCommandHandler interface {
-	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
-}
-
+// Str and default value
 const (
-	DEVICE_CONFIGMAP_CERTIFICATE_PATH string = "/etc/edgedevice/certificate"
-	EDGEDEVICE_STATUS_FAIL            bool   = false
+	DeviceConfigmapCertificatePath string = "/etc/edgedevice/certificate"
+	EdgedeviceStatusFail           bool   = false
 )
 
-// This function creates a new Device Shifu based on the configuration
+// New This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
 	if deviceShifuMetadata.Namespace == "" {
-		return nil, fmt.Errorf("DeviceShifu's namespace can't be empty\n")
+		return nil, fmt.Errorf("DeviceShifu's namespace can't be empty")
 	}
 
 	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
@@ -49,16 +48,16 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 	opcuaInstructions := CreateOPCUAInstructions(&base.DeviceShifuConfig.Instructions)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing ConfigMap at %v\n", deviceShifuMetadata.ConfigFilePath)
+		return nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 	var opcuaClient *opcua.Client
 
-	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DEVICE_KUBECONFIG_DO_NOT_LOAD_STR {
+	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		// switch for different Shifu Protocols
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolOPCUA:
 			for instruction, properties := range opcuaInstructions.Instructions {
-				deviceShifuOPCUAHandlerMetaData := &DeviceShifuOPCUAHandlerMetaData{
+				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
 					properties.OPCUAInstructionProperty,
@@ -88,8 +87,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				case ua.UserTokenTypeIssuedToken:
 					options = append(options, opcua.AuthIssuedToken([]byte(*setting.IssuedToken)))
 				case ua.UserTokenTypeCertificate:
-					var privateKeyFileName = path.Join(DEVICE_CONFIGMAP_CERTIFICATE_PATH, *setting.PrivateKeyFileName)
-					var certificateFileName = path.Join(DEVICE_CONFIGMAP_CERTIFICATE_PATH, *setting.CertificateFileName)
+					var privateKeyFileName = path.Join(DeviceConfigmapCertificatePath, *setting.PrivateKeyFileName)
+					var certificateFileName = path.Join(DeviceConfigmapCertificatePath, *setting.CertificateFileName)
 					cert, err := tls.LoadX509KeyPair(certificateFileName, privateKeyFileName)
 					if err != nil {
 						log.Fatalf("X509 Certificate Or PrivateKey load Default")
@@ -119,11 +118,11 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 				var handler DeviceCommandHandlerOPCUA
 				if base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds == nil {
-					timeout := deviceshifubase.DEVICE_DEFAULT_CONNECTION_TIMEOUT_MS
-					handler = DeviceCommandHandlerOPCUA{opcuaClient, &timeout, deviceShifuOPCUAHandlerMetaData}
+					timeout := deviceshifubase.DeviceDefaultConnectionTimeoutInMS
+					handler = DeviceCommandHandlerOPCUA{opcuaClient, &timeout, HandlerMetaData}
 				} else {
 					timeout := base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds
-					handler = DeviceCommandHandlerOPCUA{opcuaClient, timeout, deviceShifuOPCUAHandlerMetaData}
+					handler = DeviceCommandHandlerOPCUA{opcuaClient, timeout, HandlerMetaData}
 				}
 
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
@@ -141,15 +140,16 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	return ds, nil
 }
 
+// DeviceCommandHandlerOPCUA handler for opcua
 type DeviceCommandHandlerOPCUA struct {
-	client                          *opcua.Client
-	timeout                         *int64
-	deviceShifuOPCUAHandlerMetaData *DeviceShifuOPCUAHandlerMetaData
+	client          *opcua.Client
+	timeout         *int64
+	HandlerMetaData *HandlerMetaData
 }
 
 func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		nodeID := handler.deviceShifuOPCUAHandlerMetaData.properties.OPCUANodeID
+		nodeID := handler.HandlerMetaData.properties.OPCUANodeID
 		log.Printf("Requesting NodeID: %v", nodeID)
 
 		id, err := ua.ParseNodeID(nodeID)
@@ -191,11 +191,6 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 	}
 }
 
-func (ds *DeviceShifu) startHttpServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceshifu %s's http server started\n", ds.base.Name)
-	return ds.base.Server.ListenAndServe()
-}
-
 func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string) (string, error) {
 	if instructionProperties, exists := ds.opcuaInstructions.Instructions[instructionName]; exists {
 		return instructionProperties.OPCUAInstructionProperty.OPCUANodeID, nil
@@ -219,7 +214,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 	}
 
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(deviceshifubase.DEVICE_DEFAULT_REQUEST_TIMEOUT_MS)*time.Millisecond)
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(deviceshifubase.DeviceDefaultRequestTimeoutInMS)*time.Millisecond)
 	defer cancel()
 
 	resp, err := ds.opcuaClient.ReadWithContext(ctx, req)
@@ -233,7 +228,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 		return err
 	}
 
-	log.Printf(fmt.Sprint(resp.Results[0].Value.Value()))
+	log.Println(resp.Results[0].Value.Value())
 
 	return nil
 }
@@ -255,7 +250,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				nodeID, err := ds.getOPCUANodeIDFromInstructionName(instruction)
 				if err != nil {
-					log.Printf(err.Error())
+					log.Println(err.Error())
 					return false, err
 				}
 
@@ -275,10 +270,12 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 
 }
 
+// Start start opcua telemetry
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	return ds.base.Start(stopCh, ds.collectOPCUATelemetry)
 }
 
+// Stop http server
 func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
 }
