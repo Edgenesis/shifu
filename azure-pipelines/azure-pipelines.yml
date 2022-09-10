@@ -7,7 +7,7 @@ trigger:
     - docs
     - examples
     - img
-    - ./*.md
+    - README*
     - LICENSE
     - .devcontainer
     - .github
@@ -24,7 +24,7 @@ pr:
     - docs
     - examples
     - img
-    - ./*.md
+    - README*
     - LICENSE
     - .devcontainer
     - .github
@@ -372,7 +372,6 @@ stages:
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-mqtt:$(tag) --load
         displayName: build edgehub/deviceshifu-http-mqtt
-      
       - script: |
           set -e
           kind --version
@@ -406,7 +405,7 @@ stages:
     ${{ else }}:
       value: $[replace(variables['build.sourcebranch'], 'refs/tags/', '')]
   jobs:
-  - job: docker_login_setup_qemu
+  - job: docker_push_deviceshifu_http_http
     steps: 
       - task: Docker@2
         displayName: Login to DockerHub
@@ -423,69 +422,198 @@ stages:
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-http:$(release_tag) --push
         displayName: build edgehub/deviceshifu-http-http
+
+  - job: docker_push_deviceshifu_http_socket
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuSocket \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-socket:$(release_tag) --push
         displayName: build edgehub/deviceshifu-http-socket
+
+  - job: docker_push_deviceshifu_http_mqtt
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuMQTT \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-mqtt:$(release_tag) --push
         displayName: build edgehub/deviceshifu-http-mqtt
+
+  - job: docker_push_deviceshifu_http_opcua
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuOPCUA \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-opcua:$(release_tag) --push
         displayName: build deviceshifu-http-opcua
+
+  - job: docker_push_shifu_controller
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
       - script: |
-          ls && pwd
-        displayName: get current directory
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/shifu-controller:$(release_tag) --push
         displayName: build edgehub/shifu-controller
+
+  - job: docker_push_mockdevice_thermometer
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-thermometer:$(release_tag) --push
         displayName: build edgehub/mockdevice-thermometer
+
+  - job: docker_push_mockdevice_robot_arm
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-robot-arm:$(release_tag) --push
         displayName: build edgehub/mockdevice-robot-arm
+
+  - job: docker_push_mockdevice_plate_reader
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-plate-reader:$(release_tag) --push
-        displayName: build edgehub/mockdevice-plate-reader 
+        displayName: build edgehub/mockdevice-plate-reader
+
+  - job: docker_push_mockdevice_agv
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-agv:$(release_tag) --push
         displayName: build edgehub/mockdevice-agv
+
+  - job: docker_push_mockdevice_plc
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plc/Dockerfile.mockdevice-plc \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-plc:$(release_tag) --push
         displayName: build edgehub/mockdevice-plc
+
+  - job: docker_push_mockdevice_socket
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-socket:$(release_tag) --push
         displayName: build edgehub/mockdevice-socket
+
+  - job: docker_push_mockdevice_opcua
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
