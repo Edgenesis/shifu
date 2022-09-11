@@ -82,6 +82,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			mux.HandleFunc("/"+MqttDataEndpoint, handler.commandHandleFunc())
 		}
 	}
+	deviceshifubase.BindDefaultHandler(mux)
+
 	ds := &DeviceShifu{base: base}
 
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)

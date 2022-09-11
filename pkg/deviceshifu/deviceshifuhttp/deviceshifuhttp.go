@@ -102,6 +102,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			return nil, errors.New("wrong protocol not supported in deviceShifu_http_http")
 		}
 	}
+	deviceshifubase.BindDefaultHandler(mux)
 
 	ds := &DeviceShifuHTTP{base: base}
 

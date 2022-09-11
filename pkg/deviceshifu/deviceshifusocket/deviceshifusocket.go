@@ -69,6 +69,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 		}
 	}
+	deviceshifubase.BindDefaultHandler(mux)
 
 	ds := &DeviceShifu{base: base, socketConnection: &socketConnection}
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)

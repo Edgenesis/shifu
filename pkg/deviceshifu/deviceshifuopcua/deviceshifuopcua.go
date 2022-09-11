@@ -130,6 +130,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		}
 	}
 
+	deviceshifubase.BindDefaultHandler(mux)
+
 	ds := &DeviceShifu{
 		base:              base,
 		opcuaInstructions: opcuaInstructions,
