@@ -16,3 +16,6 @@
    ``` 
    kubectl delete -f pkg/k8s/crd/install/shifu_install.yml
    ```
+
+### 关于遥测
+要了解更多信息，包括如何禁用内置遥测，请在[此处](telemetry.md)查看我们的指南

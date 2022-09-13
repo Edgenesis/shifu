@@ -10,6 +10,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/types"
 )
 
 const (
@@ -50,10 +52,10 @@ func GetPublicIPAddr(url string) (string, error) {
 	return "", errors.New("Did not find IP in return query")
 }
 
-func SendTelemetry(telemetry interface{}) error {
+func SendTelemetry(telemetry types.TelemetryResponse) error {
 	postBodyJson, err := json.Marshal(telemetry)
 	if err != nil {
-		log.Printf("Error sending telemetry")
+		log.Printf("Error marshaling telemetry")
 		return err
 	}
 

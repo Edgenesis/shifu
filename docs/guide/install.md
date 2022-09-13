@@ -18,4 +18,4 @@
    ```
 
 ### About Telemetry
-if you want to close telemetry [click me!](telemetry.md)
+To learn more including how to disable the built-in telemetry, checkout out our guide [here!](telemetry.md)
