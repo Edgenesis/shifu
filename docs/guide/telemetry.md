@@ -15,7 +15,7 @@ Telemetry is enabled by default when you install Shifu, while you also have the 
 
 ## To turn-off Telemetry
 
-If you want to turn off temeletry, please delete `--enable-telemetry` on `pkg/k8s/crd/install/shifu_install.yaml` manually.
+If you want to turn off temeletry, please delete `--enable-telemetry` on `pkg/k8s/crd/install/shifu_install.yaml` manually.  
 Or you can also edit via `kubectl edit deployment -n shifu-crd-system shifu-crd-controller-manager` after installation
 
 ```yaml

@@ -15,7 +15,7 @@
 
 ## 关闭遥测
 
-如果要关闭 telemetry，请手动删除 `pkg/k8s/crd/install/shifu_install.yaml` 上的 `--enable-telemetry`。
+如果要关闭 telemetry，请手动删除 `pkg/k8s/crd/install/shifu_install.yaml` 上的 `--enable-telemetry`。  
 或者您也可以在安装后通过 `kubectl edit deployment -n shifu-crd-system shifu-crd-controller-manager` 进行编辑
 
 ```yaml
@@ -32,5 +32,5 @@ spec:
       image: quay.io/brancz/kube-rbac-proxy:v0.12.0
       name: kube-rbac-proxy
       - args:
-        - --enable-telemetry ## delete on demand
+        - --enable-telemetry ## 删除此行
 ```
