@@ -59,7 +59,7 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	flag.BoolVar(&enableTelemetry, "enable-telemetry", false, "collection user info and send to server")
+	flag.BoolVar(&enableTelemetry, "enable-telemetry", false, "collection telemetry")
 	opts := zap.Options{
 		Development: true,
 	}
