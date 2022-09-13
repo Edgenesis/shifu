@@ -30,6 +30,7 @@ spec:
         args:
         - --leader-elect
         - --enable-telemetry
+        - --telemetry-interval=60
         image: controller:latest
         name: manager
         securityContext:

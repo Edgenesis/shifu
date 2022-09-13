@@ -15,15 +15,16 @@ import (
 )
 
 const (
-	URL_EXTERNAL_IP              = "http://cip.cc"
-	URL_IP_LINE                  = "<pre>IP"
-	URL_SHIFU_TELEMETRY          = "https://telemetry.shifu.run/shifu-telemetry/"
-	URL_DEFAULT_PUBLIC_IP        = "0.0.0.0"
-	TASK_RUN_DEMO_KIND           = "run_shifu_release"
-	SOURCE_SHIFU_CONTROLLER      = "shifu_controller"
-	HTTP_CONTENT_TYPE_JSON       = "application/json"
-	TELEMETRY_INTERVAL_IN_SECOND = 60
+	URL_EXTERNAL_IP         = "http://cip.cc"
+	URL_IP_LINE             = "<pre>IP"
+	URL_SHIFU_TELEMETRY     = "https://telemetry.shifu.run/shifu-telemetry/"
+	URL_DEFAULT_PUBLIC_IP   = "0.0.0.0"
+	TASK_RUN_DEMO_KIND      = "run_shifu_release"
+	SOURCE_SHIFU_CONTROLLER = "shifu_controller"
+	HTTP_CONTENT_TYPE_JSON  = "application/json"
 )
+
+var TelemetryIntervalInSecond int
 
 func GetPublicIPAddr(url string) (string, error) {
 	resp, err := http.Get(url)

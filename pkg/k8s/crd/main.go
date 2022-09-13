@@ -23,6 +23,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/k8s/controllers"
 	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/utils"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -60,6 +61,7 @@ func main() {
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&enableTelemetry, "enable-telemetry", false, "Collect telemetry")
+	flag.IntVar(&utils.TelemetryIntervalInSecond, "telemetry-interval", 60, "Telemetry Interval")
 	opts := zap.Options{
 		Development: true,
 	}

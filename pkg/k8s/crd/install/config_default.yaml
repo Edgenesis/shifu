@@ -435,6 +435,7 @@ spec:
         - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
         - --enable-telemetry
+        - --telemetry-interval=60
         command:
         - /manager
         image: edgehub/shifu-controller:v0.1.0
@@ -464,16 +465,3 @@ spec:
         runAsNonRoot: true
       serviceAccountName: shifu-crd-controller-manager
       terminationGracePeriodSeconds: 10
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRoleBinding
-metadata:
-  name: default-view
-roleRef:
-  apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: view
-subjects:
-- kind: ServiceAccount
-  name: shifu-crd-controller-manager
-  namespace: shifu-crd-system

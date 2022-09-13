@@ -82,6 +82,6 @@ func StartTelemetry() {
 			log.Println("telemetry done")
 		}
 
-		time.Sleep(utils.TELEMETRY_INTERVAL_IN_SECOND * time.Second)
+		time.Sleep(time.Duration(utils.TelemetryIntervalInSecond) * time.Second)
 	}
 }
