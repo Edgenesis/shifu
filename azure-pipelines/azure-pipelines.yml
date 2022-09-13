@@ -615,7 +615,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          docker buildx build --platform=linux/amd64,linux/arm64 \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-opcua:$(release_tag) --push
