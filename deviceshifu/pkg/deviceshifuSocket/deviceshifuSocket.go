@@ -2,6 +2,7 @@ package deviceshifuSocket
 
 import (
 	"bufio"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"log"
@@ -27,12 +28,8 @@ type DeviceShifuSocketHandlerMetaData struct {
 	connection     *net.Conn
 }
 
-type deviceCommandHandler interface {
-	commandHandleFunc(w http.ResponseWriter, r *http.Request) http.HandlerFunc
-}
-
 const (
-	DEFAULT_SEND_END_CHAR = "\n"
+	DEFAULT_SEND_END_CHAR = '\n'
 )
 
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
@@ -92,7 +89,9 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 			return
 		}
 
+		var command []byte
 		var socketRequest DeviceShifuSocketRequestBody
+
 		err := json.NewDecoder(r.Body).Decode(&socketRequest)
 		if err != nil {
 			log.Printf("error decode: %v", socketRequest)
@@ -100,15 +99,26 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 			return
 		}
 
+		switch socketRequest.Encode {
+		case MessageEncodeHEX:
+			command, err = hex.DecodeString(socketRequest.Command)
+		case MessageEncodeUTF8:
+			fallthrough
+		default:
+			command = []byte(socketRequest.Command)
+		}
+		if err != nil {
+			log.Println("error when decode command to byte, error: ", err)
+		}
+
 		log.Printf("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
 		connection := deviceShifuSocketHandlerMetaData.connection
-		command := socketRequest.Command
 		timeout := socketRequest.Timeout
 
 		if startEnd, exists := params["sendEnd"]; exists {
-			command += startEnd
+			command = append(command, []byte(startEnd)...)
 		} else {
-			command += DEFAULT_SEND_END_CHAR
+			command = append(command, DEFAULT_SEND_END_CHAR)
 		}
 
 		if timeout != 0 {
