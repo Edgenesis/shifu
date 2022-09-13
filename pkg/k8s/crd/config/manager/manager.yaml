@@ -29,6 +29,7 @@ spec:
         - /manager
         args:
         - --leader-elect
+        - --enable-telemetry
         image: controller:latest
         name: manager
         securityContext:

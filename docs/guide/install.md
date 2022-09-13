@@ -16,3 +16,6 @@
    ```
    kubectl delete -f pkg/k8s/crd/install/shifu_install.yml
    ```
+
+### About Telemetry
+if you want to close telemetry [click me!](telemetry.md)
