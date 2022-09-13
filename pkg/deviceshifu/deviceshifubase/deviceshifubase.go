@@ -84,9 +84,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/health", deviceHealthHandler)
-	mux.HandleFunc("/", instructionNotFoundHandler)
-
 	edgeDevice := &v1alpha1.EdgeDevice{}
 	client := &rest.RESTClient{}
 
@@ -118,6 +115,11 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 	}
 
 	return base, mux, nil
+}
+
+func BindDefaultHandler(mux *http.ServeMux) {
+	mux.HandleFunc("/health", deviceHealthHandler)
+	mux.HandleFunc("/", instructionNotFoundHandler)
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
