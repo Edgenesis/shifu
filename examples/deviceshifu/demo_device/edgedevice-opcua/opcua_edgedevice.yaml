@@ -6,7 +6,7 @@ metadata:
 spec:
   sku: "opcua-test" 
   connection: Ethernet
-  address: opc.tcp://opcua-device.devices.svc.cluster.local:4840/freeopcua/server #change this accordingly
+  address: opc.tcp://mockdevice-opcua.devices.svc.cluster.local:4840/freeopcua/server #change this accordingly
   protocol: OPCUA
   protocolSettings:
     OPCUASetting:

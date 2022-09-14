@@ -1,11 +1,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: opcua-device
+  name: mockdevice-opcua
   namespace: devices
 spec:
   selector:
-    app: opcua-device
+    app: mockdevice-opcua
   ports:
   - port: 4840
     targetPort: 4840
