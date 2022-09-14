@@ -5,9 +5,11 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/edgenesis/shifu/deviceshifu/pkg/deviceshifubase"
@@ -30,6 +32,7 @@ type DeviceShifuSocketHandlerMetaData struct {
 
 const (
 	DEFAULT_SEND_END_CHAR = '\n'
+	DEFAULT_BUFFER_SIZE   = 1024
 )
 
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
@@ -122,22 +125,19 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 		(*connection).Write([]byte(command))
 
 		var message []byte
-		if end, exists := params["receivedEnd"]; exists {
-			if end != "" {
-				var endbytes []byte
-
-				endbytes, err = bindEncode(end, socketRequest.Encode)
-				if err != nil {
-					log.Println("error when bind `receivedEnd`", err)
-					http.Error(w, "Failed to bind receivedEnd, error: "+err.Error(), http.StatusBadRequest)
-				}
-
-				message, err = bufio.NewReader(*connection).ReadBytes(endbytes[0])
-			} else {
-				http.Error(w, "receivedEnd shouldn't be empty, error: "+err.Error(), http.StatusBadRequest)
+		var receivedLength = DEFAULT_BUFFER_SIZE
+		if length, exists := params["receivedLength"]; exists {
+			receivedLength, err = strconv.Atoi(length)
+			if err != nil {
+				log.Println("error when parse receivedLength, error: ", err)
+				http.Error(w, "Failed to parse receivedLength, error: "+err.Error(), http.StatusBadRequest)
+				return
 			}
+
+			message = make([]byte, receivedLength)
+			_, err = io.ReadFull(*connection, message)
 		} else {
-			bufio.NewReader(*connection).ReadBytes(DEFAULT_SEND_END_CHAR)
+			message, err = bufio.NewReaderSize(*connection, receivedLength).ReadBytes(DEFAULT_SEND_END_CHAR)
 		}
 
 		if err != nil {
