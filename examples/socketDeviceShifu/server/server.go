@@ -1,9 +1,8 @@
 package main
 
 import (
+	"log"
 	"net"
-
-	"k8s.io/klog/v2"
 )
 
 func main() {
@@ -13,10 +12,10 @@ func main() {
 		panic(err)
 	}
 	defer listener.Close()
-	klog.Infoln("listening at ", addr)
+	log.Println("listening at ", addr)
 	for {
 		conn, err := listener.Accept()
-		klog.Infoln(conn.RemoteAddr())
+		log.Println(conn.RemoteAddr())
 		if err != nil {
 			break
 		}
@@ -28,9 +27,9 @@ func handleReq(conn net.Conn) {
 	for {
 		data := make([]byte, 1024)
 		_, err := conn.Read(data)
-		klog.Infoln(string(data), err)
+		log.Println(string(data), err)
 		if err != nil {
-			klog.Errorln(err)
+			log.Println(err)
 			return
 		}
 
