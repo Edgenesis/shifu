@@ -3,7 +3,7 @@ package deviceshifuSocket
 type DeviceShifuSocketRequestBody struct {
 	Command string `json:"command"`
 	Timeout int    `json:"timeout"`
-	Encode  string `json:"Encode"`
+	Encode  string `json:"encode"`
 }
 
 type DeviceShifuSocketReturnBody struct {

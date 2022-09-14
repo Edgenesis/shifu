@@ -4,7 +4,7 @@ HOST = '0.0.0.0'                 # Symbolic name meaning all available interface
 PORT = 11122              # Arbitrary non-privileged port
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind((HOST, PORT))
-s.listen(1)
+s.listen(10)
 conn, addr = s.accept()
 print('Connected by', addr)
 while 1:

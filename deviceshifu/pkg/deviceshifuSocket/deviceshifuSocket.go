@@ -99,14 +99,7 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 			return
 		}
 
-		switch socketRequest.Encode {
-		case MessageEncodeHEX:
-			command, err = hex.DecodeString(socketRequest.Command)
-		case MessageEncodeUTF8:
-			fallthrough
-		default:
-			command = []byte(socketRequest.Command)
-		}
+		command, err = bindEncode(socketRequest.Command, socketRequest.Encode)
 		if err != nil {
 			log.Println("error when decode command to byte, error: ", err)
 		}
@@ -130,9 +123,21 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 
 		var message []byte
 		if end, exists := params["receivedEnd"]; exists {
-			message, err = bufio.NewReader(*connection).ReadBytes(end[0])
+			if end != "" {
+				var endbytes []byte
+
+				endbytes, err = bindEncode(end, socketRequest.Encode)
+				if err != nil {
+					log.Println("error when bind `receivedEnd`", err)
+					http.Error(w, "Failed to bind receivedEnd, error: "+err.Error(), http.StatusBadRequest)
+				}
+
+				message, err = bufio.NewReader(*connection).ReadBytes(endbytes[0])
+			} else {
+				http.Error(w, "receivedEnd shouldn't be empty, error: "+err.Error(), http.StatusBadRequest)
+			}
 		} else {
-			message, err = bufio.NewReader(*connection).ReadBytes('\n')
+			bufio.NewReader(*connection).ReadBytes(DEFAULT_SEND_END_CHAR)
 		}
 
 		if err != nil {
@@ -189,4 +194,19 @@ func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 
 func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
+}
+
+func bindEncode(input string, encode string) ([]byte, error) {
+	var output []byte
+	var err error
+
+	switch encode {
+	case MessageEncodeHEX:
+		output, err = hex.DecodeString(input)
+	case MessageEncodeUTF8:
+		fallthrough
+	default:
+		output = []byte(input)
+	}
+	return output, err
 }
