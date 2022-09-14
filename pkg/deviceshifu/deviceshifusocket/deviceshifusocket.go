@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
-	"log"
 	"net"
 	"net/http"
 	"strings"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"k8s.io/klog/v2"
 )
 
 // DeviceShifu deviceshifu and socketConnection for Socket
@@ -47,7 +47,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 
 			if encoding == nil {
-				log.Println("Socket encoding not specified, default to UTF-8")
+				klog.Warningln("Socket encoding not specified, default to UTF-8")
 				return nil, fmt.Errorf("Encoding error")
 			}
 
@@ -56,7 +56,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				return nil, fmt.Errorf("Cannot connect to %v", *base.EdgeDevice.Spec.Address)
 			}
 
-			log.Printf("Connected to '%v'\n", *base.EdgeDevice.Spec.Address)
+			klog.Infof("Connected to '%v'\n", *base.EdgeDevice.Spec.Address)
 			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
 				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
@@ -100,42 +100,42 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		headerContentType := r.Header.Get("Content-Type")
 		if headerContentType != "application/json" {
 			http.Error(w, "content-type is not application/json", http.StatusBadRequest)
-			log.Println("content-type is not application/json")
+			klog.Errorln("content-type is not application/json")
 			return
 		}
 
 		var socketRequest RequestBody
 		err := json.NewDecoder(r.Body).Decode(&socketRequest)
 		if err != nil {
-			log.Printf("error decode: %v", socketRequest)
+			klog.Errorf("error decode: %v", socketRequest)
 			http.Error(w, "error decode JSON "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		log.Printf("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
+		klog.Infof("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
 		connection := HandlerMetaData.connection
 		command := socketRequest.Command
 		timeout := socketRequest.Timeout
 		if timeout > 0 {
 			err := (*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
 			if err != nil {
-				log.Println("cannot send deadline to socket, error: ", err)
+				klog.Errorf("cannot send deadline to socket, error: %v", err)
 				http.Error(w, "Failed to send deadline to socket, error:  "+err.Error(), http.StatusBadRequest)
 				return
 			}
 		}
 
-		log.Printf("Sending %v", []byte(command+"\n"))
+		klog.Infof("Sending %v", []byte(command+"\n"))
 		_, err = (*connection).Write([]byte(command + "\n"))
 		if err != nil {
-			log.Println("cannot write command into socket, error: ", err)
+			klog.Errorln("cannot write command into socket, error: ", err)
 			http.Error(w, "Failed to send message to socket, error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		message, err := bufio.NewReader(*connection).ReadString('\n')
 		if err != nil {
-			log.Printf("Failed to ReadString from Socket, current message: %v", message)
+			klog.Errorf("Failed to ReadString from Socket, current message: %v", message)
 			http.Error(w, "Failed to read message from socket, error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -149,7 +149,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(returnMessage)
 		if err != nil {
-			log.Printf("Failed encode message to json, error: %v" + err.Error())
+			klog.Errorf("Failed encode message to json, error: %v" + err.Error())
 			http.Error(w, "Failed encode message to json, error: "+err.Error(), http.StatusBadRequest)
 		}
 	}
@@ -203,14 +203,14 @@ func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 		case v1alpha1.ProtocolSocket:
 			conn, err := net.Dial("tcp", *ds.base.EdgeDevice.Spec.Address)
 			if err != nil {
-				log.Printf("error checking telemetry: error: %v", err.Error())
+				klog.Errorf("error checking telemetry: error: %v", err.Error())
 				return false, err
 			}
 
 			defer conn.Close()
 			return true, nil
 		default:
-			log.Printf("EdgeDevice protocol %v not supported in deviceshifu\n", protocol)
+			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu\n", protocol)
 			return false, nil
 		}
 	}

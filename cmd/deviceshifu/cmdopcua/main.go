@@ -1,13 +1,13 @@
 package main
 
 import (
-	"log"
 	"os"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifuopcua"
 
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 )
 
 func main() {
@@ -28,7 +28,7 @@ func main() {
 
 	err = ds.Start(wait.NeverStop)
 	if err != nil {
-		log.Println("deviceshifu start default, error: ", err)
+		klog.Errorln("deviceshifu start default, error: ", err)
 		return
 	}
 	select {}

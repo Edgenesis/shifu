@@ -2,12 +2,12 @@ package mockdevice
 
 import (
 	"fmt"
-	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 )
 
 // MockDevice basic info
@@ -34,19 +34,19 @@ var StatusSetList = []string{
 
 // Start start http server
 func (md *MockDevice) Start(stopCh <-chan struct{}) error {
-	log.Printf("mockDevice %s started\n", md.Name)
+	klog.Infof("mockDevice %s started\n", md.Name)
 
 	go func() {
 		err := md.startHTTPServer(stopCh)
 		if err != nil {
-			log.Println("error during HTTP Server is Up")
+			klog.Errorln("error during HTTP Server is Up")
 		}
 	}()
 	return nil
 }
 
 func (md *MockDevice) startHTTPServer(stopCh <-chan struct{}) error {
-	log.Printf("mockDevice %s's http server started\n", md.Name)
+	klog.Infof("mockDevice %s's http server started\n", md.Name)
 	return md.server.ListenAndServe()
 }
 
@@ -80,12 +80,12 @@ func StartMockDevice(availableFuncs []string, instructionHandler instructionHand
 	devicePort := os.Getenv("MOCKDEVICE_PORT")
 	md, err := New(deviceName, devicePort, availableFuncs, instructionHandler)
 	if err != nil {
-		log.Printf("Error starting device %v", deviceName)
+		klog.Errorf("Error starting device %v", deviceName)
 	}
 
 	err = md.Start(wait.NeverStop)
 	if err != nil {
-		log.Printf("Error start MockDevice %#v", err)
+		klog.Errorf("Error start MockDevice %#v", err)
 	}
 
 	select {}

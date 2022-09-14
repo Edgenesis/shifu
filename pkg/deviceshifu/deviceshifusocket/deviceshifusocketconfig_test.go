@@ -2,13 +2,13 @@ package deviceshifusocket
 
 import (
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"reflect"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"k8s.io/klog/v2"
 
 	"gopkg.in/yaml.v3"
 )
@@ -94,7 +94,7 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 	var cmData ConfigMapData
 	err = yaml.Unmarshal(snippetFile, &cmData)
 	if err != nil {
-		log.Fatalf("Error parsing ConfigMap %v, error: %v", fileName, err)
+		klog.Fatalf("Error parsing ConfigMap %v, error: %v", fileName, err)
 		return err
 	}
 
@@ -106,14 +106,14 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 
 	err = os.MkdirAll(MockDeviceConfigFolder, os.ModePerm)
 	if err != nil {
-		log.Fatalf("Error creating path for: %v", MockDeviceConfigFolder)
+		klog.Fatalf("Error creating path for: %v", MockDeviceConfigFolder)
 		return err
 	}
 
 	for outputDir, data := range MockDeviceConfigMapping {
 		err = os.WriteFile(outputDir, []byte(data), MockDeviceWritFilePermission)
 		if err != nil {
-			log.Fatalf("Error creating configFile for: %v", outputDir)
+			klog.Fatalf("Error creating configFile for: %v", outputDir)
 			return err
 		}
 	}

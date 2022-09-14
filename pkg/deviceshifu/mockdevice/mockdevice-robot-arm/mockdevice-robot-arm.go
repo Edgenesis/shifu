@@ -2,13 +2,13 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"math/rand"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
+	"k8s.io/klog/v2"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 
 func instructionHandler(functionName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Handling: %v", functionName)
+		klog.Infof("Handling: %v", functionName)
 		switch functionName {
 		case "get_coordinate":
 			rand.Seed(time.Now().UnixNano())

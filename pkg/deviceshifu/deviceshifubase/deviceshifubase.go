@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 )
 
 // DeviceShifuBase deviceshifu Basic Info
@@ -96,7 +96,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 
 		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
-			log.Fatalf("Error retrieving EdgeDevice")
+			klog.Fatalf("Error retrieving EdgeDevice")
 			return nil, nil, err
 		}
 	}
@@ -127,13 +127,13 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	log.Printf("Error: Device instruction does not exist!")
+	klog.Infof("Error: Device instruction does not exist!")
 	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
 // UpdateEdgeDeviceResourcePhase Update device status
 func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
-	log.Printf("updating device %v status to: %v\n", ds.Name, edPhase)
+	klog.Infof("updating device %v status to: %v\n", ds.Name, edPhase)
 	currEdgeDevice := &v1alpha1.EdgeDevice{}
 	err := ds.RestClient.Get().
 		Namespace(ds.EdgeDevice.Namespace).
@@ -143,7 +143,7 @@ func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDe
 		Into(currEdgeDevice)
 
 	if err != nil {
-		log.Printf("Unable to update status, error: %v", err.Error())
+		klog.Errorf("Unable to update status, error: %v", err.Error())
 		return
 	}
 
@@ -164,7 +164,7 @@ func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDe
 		Into(putResult)
 
 	if err != nil {
-		log.Printf("Unable to update status, error: %v", err)
+		klog.Errorf("Unable to update status, error: %v", err)
 	}
 }
 
@@ -202,9 +202,9 @@ func (ds *DeviceShifuBase) ValidateTelemetryConfig() error {
 func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {
 	telemetryOK := true
 	status, err := fn()
-	log.Printf("Status is: %v", status)
+	klog.Infof("Status is: %v", status)
 	if err != nil {
-		log.Printf("Error is: %v", err.Error())
+		klog.Errorf("Error is: %v", err.Error())
 		telemetryOK = false
 	}
 
@@ -223,7 +223,7 @@ func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {
 
 // StartTelemetryCollection Start TelemetryCollection
 func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
-	log.Println("Wait 5 seconds before updating status")
+	klog.Infoln("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
 	telemetryUpdateIntervalInMilliseconds := DeviceDefaultTelemetryUpdateIntervalInMS
 	var err error
@@ -251,7 +251,7 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	for {
 		err := ds.telemetryCollection(fn)
 		if err != nil {
-			log.Println("error when telemetry collection")
+			klog.Errorln("error when telemetry collection")
 			return err
 		}
 		time.Sleep(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond)
@@ -265,18 +265,18 @@ func (ds *DeviceShifuBase) startHTTPServer(stopCh <-chan struct{}) error {
 
 // Start HTTP server and telemetryCollection
 func (ds *DeviceShifuBase) Start(stopCh <-chan struct{}, fn collectTelemetry) error {
-	log.Printf("deviceshifu %s started\n", ds.Name)
+	klog.Infof("deviceshifu %s started\n", ds.Name)
 
 	go func() {
 		err := ds.startHTTPServer(stopCh)
 		if err != nil {
-			log.Println("error during Http Server is up, error: ", err)
+			klog.Errorln("error during Http Server is up, error: ", err)
 		}
 	}()
 	go func() {
 		err := ds.StartTelemetryCollection(fn)
 		if err != nil {
-			log.Println("error during Telemetry is running, error: ", err)
+			klog.Errorln("error during Telemetry is running, error: ", err)
 		}
 	}()
 	return nil
@@ -288,6 +288,6 @@ func (ds *DeviceShifuBase) Stop() error {
 		return err
 	}
 
-	log.Printf("deviceshifu %s's http server stopped\n", ds.Name)
+	klog.Infof("deviceshifu %s's http server stopped\n", ds.Name)
 	return nil
 }
