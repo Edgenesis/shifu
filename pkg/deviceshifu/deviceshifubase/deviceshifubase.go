@@ -223,7 +223,7 @@ func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {
 
 // StartTelemetryCollection Start TelemetryCollection
 func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
-	klog.Infoln("Wait 5 seconds before updating status")
+	klog.Infof("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
 	telemetryUpdateIntervalInMilliseconds := DeviceDefaultTelemetryUpdateIntervalInMS
 	var err error
@@ -270,7 +270,7 @@ func (ds *DeviceShifuBase) Start(stopCh <-chan struct{}, fn collectTelemetry) er
 	go func() {
 		err := ds.startHTTPServer(stopCh)
 		if err != nil {
-			klog.Errorln("error during Http Server is up, error: ", err)
+			klog.Errorf("error during Http Server is up, error: %v", err)
 		}
 	}()
 	go func() {

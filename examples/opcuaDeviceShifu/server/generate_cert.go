@@ -17,14 +17,13 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
+	"log"
 	"math/big"
 	"net"
 	"net/url"
 	"os"
 	"strings"
 	"time"
-
-	"k8s.io/klog/v2"
 )
 
 func main() {
@@ -35,7 +34,7 @@ func main() {
 
 	priv, err := rsa.GenerateKey(rand.Reader, rsaBits)
 	if err != nil {
-		klog.Fatalf("failed to generate private key: %s", err)
+		log.Fatalf("failed to generate private key: %s", err)
 	}
 
 	notBefore := time.Now()
@@ -44,7 +43,7 @@ func main() {
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		klog.Fatalf("failed to generate serial number: %s", err)
+		log.Fatalf("failed to generate serial number: %s", err)
 	}
 
 	template := x509.Certificate{
@@ -75,39 +74,39 @@ func main() {
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey(priv), priv)
 	if err != nil {
-		klog.Fatalf("Failed to create certificate: %s", err)
+		log.Fatalf("Failed to create certificate: %s", err)
 	}
 
 	certOut, err := os.Create(certFile)
 	if err != nil {
-		klog.Fatalf("failed to open %s for writing: %s", certFile, err)
+		log.Fatalf("failed to open %s for writing: %s", certFile, err)
 	}
 
 	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
-		klog.Fatalf("failed to write data to %s: %s", certFile, err)
+		log.Fatalf("failed to write data to %s: %s", certFile, err)
 	}
 
 	if err := certOut.Close(); err != nil {
-		klog.Fatalf("error closing %s: %s", certFile, err)
+		log.Fatalf("error closing %s: %s", certFile, err)
 	}
 
-	klog.Infof("wrote %s\n", certFile)
+	log.Printf("wrote %s", certFile)
 
 	keyOut, err := os.OpenFile(keyFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
-		klog.Errorf("failed to open %s for writing: %s", keyFile, err)
+		log.Printf("failed to open %s for writing: %s", keyFile, err)
 		return
 	}
 
 	if err := pem.Encode(keyOut, pemBlockForKey(priv)); err != nil {
-		klog.Fatalf("failed to write data to %s: %s", keyFile, err)
+		log.Fatalf("failed to write data to %s: %s", keyFile, err)
 	}
 
 	if err := keyOut.Close(); err != nil {
-		klog.Fatalf("error closing %s: %s", keyFile, err)
+		log.Fatalf("error closing %s: %s", keyFile, err)
 	}
 
-	klog.Infof("wrote %s\n", keyFile)
+	log.Printf("wrote %s", keyFile)
 }
 
 func publicKey(priv interface{}) interface{} {

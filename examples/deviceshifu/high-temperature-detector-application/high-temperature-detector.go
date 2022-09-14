@@ -2,11 +2,10 @@ package main
 
 import (
 	"io/ioutil"
+	"log"
 	"net/http"
 	"strconv"
 	"time"
-
-	"k8s.io/klog/v2"
 )
 
 func main() {
@@ -17,11 +16,11 @@ func main() {
 		body, _ := ioutil.ReadAll(res.Body)
 		temperature, _ := strconv.Atoi(string(body))
 		if temperature > 20 {
-			klog.Infoln("High temperature:", temperature)
+			log.Println("High temperature:", temperature)
 		} else if temperature > 15 {
-			klog.Infoln("Normal temperature:", temperature)
+			log.Println("Normal temperature:", temperature)
 		} else {
-			klog.Infoln("Low temperature:", temperature)
+			log.Println("Low temperature:", temperature)
 		}
 		res.Body.Close()
 		time.Sleep(2 * time.Second)

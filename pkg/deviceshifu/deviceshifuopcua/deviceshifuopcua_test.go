@@ -15,7 +15,7 @@ import (
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		klog.Errorln("error when generateConfigmapFromSnippet,err: ", err)
+		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
@@ -48,7 +48,7 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 
 	_, err := New(deviceShifuMetadata)
 	if err != nil {
-		klog.Errorln(err)
+		klog.Errorf("%v", err)
 	} else {
 		t.Errorf("DeviceShifu Test with empty namespace failed")
 	}

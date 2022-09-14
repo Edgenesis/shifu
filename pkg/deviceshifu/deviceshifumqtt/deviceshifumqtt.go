@@ -55,7 +55,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
 				// return nil, fmt.Errorf("MQTT server cannot be empty")
-				klog.Errorln("MQTT Server Address is empty, use address instead")
+				klog.Errorf("MQTT Server Address is empty, use address instead")
 				mqttServerAddress = *base.EdgeDevice.Spec.Address
 			} else {
 				mqttServerAddress = *mqttSetting.MQTTServerAddress
@@ -153,12 +153,12 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			err := json.NewEncoder(w).Encode(returnMessage)
 			if err != nil {
 				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
-				klog.Errorln("Cannot Encode message to json")
+				klog.Errorf("Cannot Encode message to json")
 				return
 			}
 		} else {
 			http.Error(w, "must be GET method", http.StatusBadRequest)
-			klog.Errorln("Request type " + reqType + " is not supported yet!")
+			klog.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
 

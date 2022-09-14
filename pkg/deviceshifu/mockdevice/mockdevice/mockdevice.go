@@ -39,7 +39,7 @@ func (md *MockDevice) Start(stopCh <-chan struct{}) error {
 	go func() {
 		err := md.startHTTPServer(stopCh)
 		if err != nil {
-			klog.Errorln("error during HTTP Server is Up")
+			klog.Errorf("error during HTTP Server is Up")
 		}
 	}()
 	return nil

@@ -19,7 +19,7 @@ import (
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		klog.Errorln("error when generateConfigmapFromSnippet,err: ", err)
+		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
@@ -90,7 +90,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	req, err := http.NewRequest("GET", "http://localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
-	klog.Infoln(req.URL.Query())
+	klog.Infof("%v", req.URL.Query())
 	createdRequestString := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "start")
 	if err != nil {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
@@ -116,7 +116,7 @@ func TestCreatehttpURIString(t *testing.T) {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	klog.Infoln(req.URL.Query())
+	klog.Infof("%v", req.URL.Query())
 	createdURIString := createURIFromRequest("localhost:8081", "start", req)
 
 	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
@@ -138,7 +138,7 @@ func TestCreatehttpURIStringNoQuery(t *testing.T) {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	klog.Infoln(req.URL.Query())
+	klog.Infof("%v", req.URL.Query())
 	createdURIString := createURIFromRequest("localhost:8081", "start", req)
 
 	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]

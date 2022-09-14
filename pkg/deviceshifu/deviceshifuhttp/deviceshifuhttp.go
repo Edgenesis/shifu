@@ -107,7 +107,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	ds := &DeviceShifuHTTP{base: base}
 
 	if err := ds.base.ValidateTelemetryConfig(); err != nil {
-		klog.Errorln(err)
+		klog.Errorf("%v", err)
 		return ds, err
 	}
 
@@ -229,16 +229,16 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			w.WriteHeader(resp.StatusCode)
 			_, err := io.Copy(w, resp.Body)
 			if err != nil {
-				klog.Errorln("error when copy requestBody from responseBody, err: ", err)
+				klog.Errorf("error when copy requestBody from responseBody, err: %v", err)
 			}
 			return
 		}
 
 		// TODO: For now, just write tht instruction to the response
-		klog.Warningln("resp is nil")
+		klog.Warningf("resp is nil")
 		_, err := w.Write([]byte(handlerInstruction))
 		if err != nil {
-			klog.Errorln("cannot write instruction into response's body, err: ", err)
+			klog.Errorf("cannot write instruction into response's body, err: %v", err)
 		}
 	}
 }
@@ -316,16 +316,16 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			w.WriteHeader(resp.StatusCode)
 			_, err := io.Copy(w, resp.Body)
 			if err != nil {
-				klog.Errorln("cannot copy requestBody from requestBody, error: ", err)
+				klog.Errorf("cannot copy requestBody from requestBody, error: %v", err)
 			}
 			return
 		}
 
 		// TODO: For now, just write tht instruction to the response
-		klog.Infoln("resp is nil")
+		klog.Infof("resp is nil")
 		_, err = w.Write([]byte(handlerInstruction))
 		if err != nil {
-			klog.Errorln("cannot write instruction into responseBody")
+			klog.Errorf("cannot write instruction into responseBody")
 		}
 	}
 }

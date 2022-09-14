@@ -17,7 +17,7 @@ func RetryAndGetHTTP(url string, retries int) (*http.Response, error) {
 	for retries > 0 {
 		response, err = http.Get(url)
 		if err != nil {
-			klog.Errorln(err)
+			klog.Errorf("%v", err)
 			retries--
 			time.Sleep(time.Second * 1)
 			continue

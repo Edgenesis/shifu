@@ -22,7 +22,7 @@ var (
 
 func init() {
 	if privateSSHKeyFile == "" {
-		klog.Fatalln("SSH Keyfile needs to be specified")
+		klog.Fatalf("SSH Keyfile needs to be specified")
 	}
 
 	if driverHTTPPort == "" {
@@ -66,14 +66,14 @@ func main() {
 		klog.Fatalf("unable to connect: %v", err)
 	}
 	defer sshClient.Close()
-	klog.Infoln("Driver SSH established")
+	klog.Infof("Driver SSH established")
 
 	sshListener, err := sshClient.Listen("tcp", "localhost:"+driverHTTPPort)
 	if err != nil {
 		klog.Fatalf("unable to register tcp forward: %v", err)
 	}
 	defer sshListener.Close()
-	klog.Infoln("Driver HTTP listener established")
+	klog.Infof("Driver HTTP listener established")
 
 	err = http.Serve(sshListener, httpCmdlinePostHandler(sshClient))
 	if err != nil {

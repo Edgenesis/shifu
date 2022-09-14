@@ -104,7 +104,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 					fallthrough
 				default:
 					if *setting.AuthenticationMode != "Anonymous" {
-						klog.Errorln("Could not parse your input, you are in Anonymous Mode default")
+						klog.Errorf("Could not parse your input, you are in Anonymous Mode default")
 					}
 
 					options = append(options, opcua.AuthAnonymous())
@@ -252,7 +252,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				nodeID, err := ds.getOPCUANodeIDFromInstructionName(instruction)
 				if err != nil {
-					klog.Errorln(err.Error())
+					klog.Errorf("%v", err.Error())
 					return false, err
 				}
 

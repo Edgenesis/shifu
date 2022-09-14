@@ -47,7 +47,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 
 			if encoding == nil {
-				klog.Warningln("Socket encoding not specified, default to UTF-8")
+				klog.Errorf("Socket encoding not specified, default to UTF-8")
 				return nil, fmt.Errorf("Encoding error")
 			}
 
@@ -100,7 +100,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		headerContentType := r.Header.Get("Content-Type")
 		if headerContentType != "application/json" {
 			http.Error(w, "content-type is not application/json", http.StatusBadRequest)
-			klog.Errorln("content-type is not application/json")
+			klog.Errorf("content-type is not application/json")
 			return
 		}
 
@@ -128,7 +128,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		klog.Infof("Sending %v", []byte(command+"\n"))
 		_, err = (*connection).Write([]byte(command + "\n"))
 		if err != nil {
-			klog.Errorln("cannot write command into socket, error: ", err)
+			klog.Errorf("cannot write command into socket, error: %v", err)
 			http.Error(w, "Failed to send message to socket, error: "+err.Error(), http.StatusBadRequest)
 			return
 		}

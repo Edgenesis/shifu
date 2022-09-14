@@ -174,7 +174,7 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	err := v1alpha1.AddToScheme(scheme.Scheme)
 	if err != nil {
-		klog.Errorln("cannot add to scheme, error: ", err)
+		klog.Errorf("cannot add to scheme, error: %v", err)
 		return nil, err
 	}
 	crdConfig := config
