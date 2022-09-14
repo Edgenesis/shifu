@@ -230,7 +230,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 		return err
 	}
 
-	klog.Infoln(resp.Results[0].Value.Value())
+	klog.Infof("%#v", resp.Results[0].Value.Value())
 
 	return nil
 }
@@ -263,7 +263,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 
 			}
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu\n", protocol)
+			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
 		}
 	}

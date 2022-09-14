@@ -98,7 +98,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceShifu_http_http\n", protocol)
+			klog.Errorf("EdgeDevice protocol %v not supported in deviceShifu_http_http", protocol)
 			return nil, errors.New("wrong protocol not supported in deviceShifu_http_http")
 		}
 	}
@@ -220,7 +220,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 		default:
 			http.Error(w, httpErr.Error(), http.StatusBadRequest)
-			klog.Warningln("Request type " + reqType + " is not supported yet!")
+			klog.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
 
@@ -235,7 +235,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		}
 
 		// TODO: For now, just write tht instruction to the response
-		klog.Infoln("resp is nil")
+		klog.Warningln("resp is nil")
 		_, err := w.Write([]byte(handlerInstruction))
 		if err != nil {
 			klog.Errorln("cannot write instruction into response's body, err: ", err)

@@ -100,7 +100,7 @@ func main() {
 	}
 
 	if err := pem.Encode(keyOut, pemBlockForKey(priv)); err != nil {
-		klog.Errorf("failed to write data to %s: %s", keyFile, err)
+		klog.Fatalf("failed to write data to %s: %s", keyFile, err)
 	}
 
 	if err := keyOut.Close(); err != nil {

@@ -127,7 +127,7 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	klog.Infof("Error: Device instruction does not exist!")
+	klog.Errorf("Error: Device instruction does not exist!")
 	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
@@ -251,7 +251,7 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	for {
 		err := ds.telemetryCollection(fn)
 		if err != nil {
-			klog.Errorln("error when telemetry collection")
+			klog.Errorf("error when telemetry collection, error: %v", err)
 			return err
 		}
 		time.Sleep(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond)
@@ -276,7 +276,7 @@ func (ds *DeviceShifuBase) Start(stopCh <-chan struct{}, fn collectTelemetry) er
 	go func() {
 		err := ds.StartTelemetryCollection(fn)
 		if err != nil {
-			klog.Errorln("error during Telemetry is running, error: ", err)
+			klog.Errorf("error during Telemetry is running, error: %v", err)
 		}
 	}()
 	return nil
@@ -288,6 +288,6 @@ func (ds *DeviceShifuBase) Stop() error {
 		return err
 	}
 
-	klog.Infof("deviceshifu %s's http server stopped\n", ds.Name)
+	klog.Infof("deviceshifu %s's http server stopped", ds.Name)
 	return nil
 }

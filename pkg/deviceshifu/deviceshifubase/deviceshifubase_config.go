@@ -110,7 +110,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if driverProperties, ok := cfg[ConfigmapDriverPropertiesStr]; ok {
 		err := yaml.Unmarshal([]byte(driverProperties), &dsc.DriverProperties)
 		if err != nil {
-			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
+			klog.Fatalf("parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
 			return nil, err
 		}
 	}
@@ -119,7 +119,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if instructions, ok := cfg[ConfigmapInstructionsStr]; ok {
 		err := yaml.Unmarshal([]byte(instructions), &dsc.Instructions)
 		if err != nil {
-			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
+			klog.Fatalf("parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
 			return nil, err
 		}
 	}
