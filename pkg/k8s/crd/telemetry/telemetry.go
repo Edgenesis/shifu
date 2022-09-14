@@ -2,7 +2,6 @@ package telemetry
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/types"
@@ -11,44 +10,45 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 )
 
 func StartTelemetry() {
 	for {
 		publicIP, err := utils.GetPublicIPAddr(utils.URL_EXTERNAL_IP)
 		if err != nil {
-			log.Printf("issue getting Public IP")
+			klog.Errorf("issue getting Public IP")
 			publicIP = utils.URL_DEFAULT_PUBLIC_IP
 		}
 
-		log.Printf("Public IP is %v\n", publicIP)
+		klog.Infof("Public IP is %v\n", publicIP)
 		config, err := rest.InClusterConfig()
 		if err != nil {
-			log.Println("error when get cluster Config,error: ", err)
+			klog.Errorln("error when get cluster Config,error: ", err)
 			continue
 		}
 
 		clientset, err := kubernetes.NewForConfig(config)
 		if err != nil {
-			log.Println("cannot get ClusterInfo,errors: ", err)
+			klog.Errorln("cannot get ClusterInfo,errors: ", err)
 			continue
 		}
 
 		kVersion, err := clientset.ServerVersion()
 		if err != nil {
-			log.Println("cannot get Kubernetes Server Info,errors: ", err)
+			klog.Errorln("cannot get Kubernetes Server Info,errors: ", err)
 			continue
 		}
-		log.Printf("%#v", kVersion)
+		klog.Infof("%#v", kVersion)
 		pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
-			log.Println("cannot get Pod Info,errors: ", err)
+			klog.Errorln("cannot get Pod Info,errors: ", err)
 			continue
 		}
 
 		deploy, err := clientset.AppsV1().Deployments("").List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
-			log.Println("cannot get Deployment Info,errors: ", err)
+			klog.Errorln("cannot get Deployment Info,errors: ", err)
 			continue
 		}
 
@@ -79,7 +79,7 @@ func StartTelemetry() {
 		}
 
 		if result := utils.SendTelemetry(controllerTelemetry); result == nil {
-			log.Println("telemetry done")
+			klog.Infoln("telemetry done")
 		}
 
 		time.Sleep(time.Duration(utils.TelemetryIntervalInSecond) * time.Second)

@@ -7,11 +7,11 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strings"
 
 	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/types"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -36,7 +36,7 @@ func GetPublicIPAddr(url string) (string, error) {
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			log.Printf("Error getting response of IP query")
+			klog.Errorf("Error getting response of IP query")
 			return "", err
 		}
 
@@ -56,13 +56,13 @@ func GetPublicIPAddr(url string) (string, error) {
 func SendTelemetry(telemetry types.TelemetryResponse) error {
 	postBodyJson, err := json.Marshal(telemetry)
 	if err != nil {
-		log.Printf("Error marshaling telemetry")
+		klog.Errorf("Error marshaling telemetry")
 		return err
 	}
 
 	resp, err := http.Post(URL_SHIFU_TELEMETRY, HTTP_CONTENT_TYPE_JSON, bytes.NewBuffer(postBodyJson))
 	if err != nil {
-		log.Println("error posting telemetry, errors: ", err)
+		klog.Errorln("error posting telemetry, errors: ", err)
 		return err
 	}
 
