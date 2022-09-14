@@ -434,6 +434,8 @@ spec:
         - --health-probe-bind-address=:8081
         - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
+        - --enable-telemetry
+        - --telemetry-interval=60
         command:
         - /manager
         image: edgehub/shifu-controller:v0.1.0
