@@ -252,15 +252,15 @@ stages:
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
           $(System.DefaultWorkingDirectory) \
-          -t edgehub/opcua-mock-device:$(tag) --load 
-        displayName: build opcua-mock-device
+          -t edgehub/mockdevice-opcua:$(tag) --load 
+        displayName: build mockdevice-opcua
       - script: |
           set -e
           kind --version
           kind delete cluster && kind create cluster
           kind load docker-image edgehub/shifu-controller:$(tag)
           kind load docker-image edgehub/deviceshifu-http-opcua:$(tag)
-          kind load docker-image edgehub/opcua-mock-device:$(tag)
+          kind load docker-image edgehub/mockdevice-opcua:$(tag)
 
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
@@ -270,7 +270,7 @@ stages:
           set -e 
           kubectl run nginx --image=nginx -n deviceshifu
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
-          kubectl wait --for=condition=Available deploy/opcua-device -n devices --timeout=150s
+          kubectl wait --for=condition=Available deploy/mockdevice-opcua -n devices --timeout=150s
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
           kubectl wait --for=condition=Available deploy/deviceshifu-opcua-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-opcua -n devices --timeout=150s
@@ -314,15 +314,15 @@ stages:
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
           $(System.DefaultWorkingDirectory) \
-          -t edgehub/socket-mock-device:$(tag) --load 
-        displayName: build socket-mock-device
+          -t edgehub/mockdevice-socket:$(tag) --load 
+        displayName: build mockdevice-socket
       - script: |
           set -e
           kind --version
           kind delete cluster && kind create cluster
           kind load docker-image edgehub/shifu-controller:$(tag)
           kind load docker-image edgehub/deviceshifu-http-socket:$(tag)
-          kind load docker-image edgehub/socket-mock-device:$(tag)
+          kind load docker-image edgehub/mockdevice-socket:$(tag)
 
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
@@ -332,7 +332,7 @@ stages:
           set -e 
           kubectl run nginx --image=nginx -n deviceshifu
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
-          kubectl wait --for=condition=Available deploy/socket-mock-device -n devices --timeout=150s
+          kubectl wait --for=condition=Available deploy/mockdevice-socket -n devices --timeout=150s
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
           kubectl wait --for=condition=Available deploy/deviceshifu-socket-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-socket -n devices --timeout=150s
