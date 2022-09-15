@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"net"
 	"net/http"
@@ -135,9 +134,9 @@ func deviceCommandHandlerSocket(deviceShifuSocketHandlerMetaData *DeviceShifuSoc
 			}
 
 			message = make([]byte, receivedLength)
-			_, err = io.ReadFull(*connection, message)
+			_, err = bufio.NewReader(*connection).Read(message)
 		} else {
-			message, err = bufio.NewReaderSize(*connection, receivedLength).ReadBytes(DEFAULT_SEND_END_CHAR)
+			message, err = bufio.NewReader(*connection).ReadBytes(DEFAULT_SEND_END_CHAR)
 		}
 
 		if err != nil {
