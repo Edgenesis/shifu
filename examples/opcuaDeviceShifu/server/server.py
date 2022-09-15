@@ -1,13 +1,9 @@
 import sys
 sys.path.insert(0, "..")
 import time
-
-
 from opcua import ua, Server
 
-
 if __name__ == "__main__":
-
     # setup our server
     server = Server()
     server.set_endpoint("opc.tcp://0.0.0.0:4840/freeopcua/server/")
@@ -26,7 +22,7 @@ if __name__ == "__main__":
 
     # starting!
     server.start()
-    
+
     try:
         count = 0
         while True:

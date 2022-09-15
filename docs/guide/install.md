@@ -8,11 +8,14 @@
 2. Install via:
    ```
    cd shifu
-   kubectl apply -f k8s/crd/install/shifu_install.yml
+   kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
    ```
 
 ### Uninstall
 1. To uninstall, issue:
    ```
-   kubectl delete -f k8s/crd/install/shifu_install.yml
+   kubectl delete -f pkg/k8s/crd/install/shifu_install.yml
    ```
+
+### About Telemetry
+To learn more including how to disable the built-in telemetry, checkout out our guide [here!](telemetry.md)

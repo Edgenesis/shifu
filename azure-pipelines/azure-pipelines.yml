@@ -1,0 +1,622 @@
+trigger:
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - docs
+    - examples
+    - img
+    - README*
+    - LICENSE
+    - .devcontainer
+    - .github
+    - CHANGELOG
+  tags:
+    include:
+    - '*'
+pr:
+  branches:
+    include:
+    - main
+  paths:
+    exclude:
+    - docs
+    - examples
+    - img
+    - README*
+    - LICENSE
+    - .devcontainer
+    - .github
+    - CHANGELOG
+
+variables:
+  name: tag
+  value: 
+
+pool:
+   vmImage: 'ubuntu-latest'
+
+stages:
+- stage: go_test_and_kind_e2e_test
+  jobs:
+  - job: go_setup
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.18.4'
+      - task: Go@0
+        displayName: "go get"
+        inputs:
+          command: 'get'
+          arguments: '-d'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuhttp'
+      - script: |
+          make test
+        displayName: "Go test"
+      - task: Go@0
+        displayName: "go build deviceshifuHTTP"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdhttp'
+      - task: Go@0
+        displayName: "go build deviceshifuSocket"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdsocket'
+      - task: Go@0
+        displayName: "go build deviceshifuMQTT"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdmqtt'
+      - task: Go@0
+        displayName: "go build deviceshifuOPCUA"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdopcua'
+      - task: Go@0
+        displayName: "go build mockdevice agv"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-agv'
+      - task: Go@0
+        displayName: "go build mockdevice plate reader"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-plate-reader'
+      - task: Go@0
+        displayName: "go build mockdevice plc"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-plc'
+      - task: Go@0
+        displayName: "go build mockdevice robot arm"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-robot-arm'
+      - task: Go@0
+        displayName: "go build mockdevice thermometer"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-thermometer'
+      - task: Go@0
+        displayName: "go build http to ssh stub"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/driver_util'
+  
+  - job: kind_e2e_test_http
+    steps:
+      - script: |
+          tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
+        displayName: Set the tag name as an environment variable
+      - task: DockerInstaller@0
+        displayName: "Docker Installer"
+        inputs:
+          dockerVersion: 20.10.9
+          releaseType: stable
+      - task: KubectlInstaller@0
+        inputs:
+          kubectlVersion: latest
+      - task: Go@0
+        displayName: "Kind Installer"
+        inputs:
+          command: 'get'
+          arguments: 'sigs.k8s.io/kind@v0.14.0'
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/shifu-controller:$(tag) --load
+        displayName: build edgehub/shifu-controller
+      - script: |
+          echo $tag
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuHTTP \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/deviceshifu-http-http:$(tag) --load
+        displayName: build edgehub/deviceshifu-http-http
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-thermometer:$(tag) --load
+        displayName: build edgehub/mockdevice-thermometer
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-robot-arm:$(tag) --load
+        displayName: build edgehub/mockdevice-robot-arm
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-plate-reader:$(tag) --load
+        displayName: build edgehub/mockdevice-plate-reader
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-agv:$(tag) --load
+        displayName: build edgehub/mockdevice-agv
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plc/Dockerfile.mockdevice-plc \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-plc:$(tag) --load
+        displayName: build edgehub/mockdevice-plc
+      - script: |
+          set -e
+          kind --version
+          kind delete cluster && kind create cluster
+          kind load docker-image edgehub/shifu-controller:$(tag)
+          kind load docker-image edgehub/mockdevice-thermometer:$(tag)
+          kind load docker-image edgehub/mockdevice-plate-reader:$(tag)
+          kind load docker-image edgehub/mockdevice-robot-arm:$(tag)
+          kind load docker-image edgehub/mockdevice-agv:$(tag)
+          kind load docker-image edgehub/mockdevice-plc:$(tag)
+          kind load docker-image edgehub/deviceshifu-http-http:$(tag)   
+
+          kubectl version
+          kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
+          kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
+        displayName: "setup Kind cluster and install Shifu"
+      - script: |
+          set -e
+          kubectl run nginx --image=nginx -n deviceshifu
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plc
+          kubectl wait --for=condition=Available deploy/plc -n devices --timeout=150s
+          kubectl wait --for=condition=Available deploy/deviceshifu-plc-deployment -n deviceshifu --timeout=150s
+          sleep 5
+          kubectl wait --for condition=Ready pod/nginx -n deviceshifu --timeout=150s
+          kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-plc/getcontent?rootsssaddress=Q;echo
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plc
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-agv
+          kubectl wait --for=condition=Available deploy/deviceshifu-agv-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=condition=Available deploy/agv -n devices --timeout=150s
+          sleep 5
+          kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-agv
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plate-reader
+          kubectl wait --for=condition=Available deploy/deviceshifu-plate-reader-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=condition=Available deploy/plate-reader -n devices --timeout=150s
+          sleep 5
+          kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-plate-reader/get_measurement
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-plate-reader
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-robot-arm
+          kubectl wait --for=condition=Available deploy/deviceshifu-robotarm-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=condition=Available deploy/robotarm -n devices --timeout=150s
+          sleep 5    
+          kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-robotarm/get_coordinate
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-robot-arm
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-thermometer
+          kubectl wait --for=condition=Available deploy/deviceshifu-thermometer-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=condition=Available deploy/thermometer -n devices --timeout=150s
+          sleep 5    
+          kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-thermometer/read_value
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-thermometer
+        displayName: "Shifu demo device HTTP E2E test"
+    
+  - job: kind_e2e_test_opcua
+    steps:
+      - script: |
+          tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
+        displayName: Set the tag name as an environment variable
+      - task: DockerInstaller@0
+        displayName: "Docker Installer"
+        inputs:
+          dockerVersion: 20.10.9
+          releaseType: stable
+      - task: KubectlInstaller@0
+        inputs:
+          kubectlVersion: latest
+      - task: Go@0
+        displayName: "Kind Installer"
+        inputs:
+          command: 'get'
+          arguments: 'sigs.k8s.io/kind@v0.14.0'
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/shifu-controller:$(tag) --load
+        displayName: build edgehub/shifu-controller
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuOPCUA \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/deviceshifu-http-opcua:$(tag) --load
+        displayName: build deviceshifu-http-opcua
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
+          $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-opcua:$(tag) --load 
+        displayName: build mockdevice-opcua
+      - script: |
+          set -e
+          kind --version
+          kind delete cluster && kind create cluster
+          kind load docker-image edgehub/shifu-controller:$(tag)
+          kind load docker-image edgehub/deviceshifu-http-opcua:$(tag)
+          kind load docker-image edgehub/mockdevice-opcua:$(tag)
+
+          kubectl version
+          kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
+          kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
+        displayName: "setup Kind cluster and install Shifu"
+      - script: |
+          set -e 
+          kubectl run nginx --image=nginx -n deviceshifu
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
+          kubectl wait --for=condition=Available deploy/mockdevice-opcua -n devices --timeout=150s
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
+          kubectl wait --for=condition=Available deploy/deviceshifu-opcua-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-opcua -n devices --timeout=150s
+          kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
+          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/checkout.sh
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
+        displayName: "Shifu demo device OPCUA E2E test"
+
+  - job: kind_e2e_test_socket
+    steps:
+      - script: |
+          tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
+        displayName: Set the tag name as an environment variable
+      - task: DockerInstaller@0
+        displayName: "Docker Installer"
+        inputs:
+          dockerVersion: 20.10.9
+          releaseType: stable
+      - task: KubectlInstaller@0
+        inputs:
+          kubectlVersion: latest
+      - task: Go@0
+        displayName: "Kind Installer"
+        inputs:
+          command: 'get'
+          arguments: 'sigs.k8s.io/kind@v0.14.0'
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/shifu-controller:$(tag) --load
+        displayName: build edgehub/shifu-controller
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuSocket \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/deviceshifu-http-socket:$(tag) --load
+        displayName: build edgehub/deviceshifu-http-socket
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
+          $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-socket:$(tag) --load 
+        displayName: build mockdevice-socket
+      - script: |
+          set -e
+          kind --version
+          kind delete cluster && kind create cluster
+          kind load docker-image edgehub/shifu-controller:$(tag)
+          kind load docker-image edgehub/deviceshifu-http-socket:$(tag)
+          kind load docker-image edgehub/mockdevice-socket:$(tag)
+
+          kubectl version
+          kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
+          kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
+        displayName: "setup Kind cluster and install Shifu"
+      - script: |
+          set -e 
+          kubectl run nginx --image=nginx -n deviceshifu
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
+          kubectl wait --for=condition=Available deploy/mockdevice-socket -n devices --timeout=150s
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
+          kubectl wait --for=condition=Available deploy/deviceshifu-socket-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=jsonpath='{status.edgedevicephase}'=Running edgedevice/edgedevice-socket -n devices --timeout=150s
+          kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
+          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/checkout.sh
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
+          kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
+        displayName: "Shifu demo device Socket E2E test" 
+
+  - job: kind_e2e_test_mqtt
+    steps:
+      - script: |
+          tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
+        displayName: Set the tag name as an environment variable
+      - task: DockerInstaller@0
+        displayName: "Docker Installer"
+        inputs:
+          dockerVersion: 20.10.9
+          releaseType: stable
+      - task: KubectlInstaller@0
+        inputs:
+          kubectlVersion: latest
+      - task: Go@0
+        displayName: "Kind Installer"
+        inputs:
+          command: 'get'
+          arguments: 'sigs.k8s.io/kind@v0.14.0'
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/shifu-controller:$(tag) --load
+        displayName: build edgehub/shifu-controller
+      - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuMQTT \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/deviceshifu-http-mqtt:$(tag) --load
+        displayName: build edgehub/deviceshifu-http-mqtt
+      - script: |
+          set -e
+          kind --version
+          kind delete cluster && kind create cluster
+          kind load docker-image edgehub/shifu-controller:$(tag)  
+
+          kubectl version
+          kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
+          kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
+        displayName: "setup Kind cluster and install Shifu"
+      - script: |
+          set -e 
+          kubectl run nginx --image=nginx -n deviceshifu
+          kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-mqtt
+          kubectl wait --for=condition=Available deploy/mosquitto -n devices --timeout=150s
+          kubectl wait --for=condition=Available deploy/deviceshifu-mqtt-deployment -n deviceshifu --timeout=150s
+          kubectl run mosquitto -n devices --image=eclipse-mosquitto:2.0.14
+          kubectl wait --for=condition=Ready pod/mosquitto -n devices --timeout=150s
+          kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
+          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/mqtt/checkoutput.sh
+          kubectl delete -f examples/deviceshifu/demo_device/edgedevice-mqtt
+          kubectl delete po mosquitto -n devices
+        displayName: "Shifu demo device MQTT E2E test"
+      
+- stage: docker_build_muiltiarch_and_push
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  variables:
+  - name: release_tag
+    ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
+      value: 'latest'
+    ${{ else }}:
+      value: $[replace(variables['build.sourcebranch'], 'refs/tags/', '')]
+  jobs:
+  - job: docker_push_deviceshifu_http_http
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuHTTP \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/deviceshifu-http-http:$(release_tag) --push
+        displayName: build edgehub/deviceshifu-http-http
+
+  - job: docker_push_deviceshifu_http_socket
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuSocket \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/deviceshifu-http-socket:$(release_tag) --push
+        displayName: build edgehub/deviceshifu-http-socket
+
+  - job: docker_push_deviceshifu_http_mqtt
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuMQTT \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/deviceshifu-http-mqtt:$(release_tag) --push
+        displayName: build edgehub/deviceshifu-http-mqtt
+
+  - job: docker_push_deviceshifu_http_opcua
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuOPCUA \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/deviceshifu-http-opcua:$(release_tag) --push
+        displayName: build deviceshifu-http-opcua
+
+  - job: docker_push_shifu_controller
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/shifu-controller:$(release_tag) --push
+        displayName: build edgehub/shifu-controller
+
+  - job: docker_push_mockdevice_thermometer
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-thermometer:$(release_tag) --push
+        displayName: build edgehub/mockdevice-thermometer
+
+  - job: docker_push_mockdevice_robot_arm
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-robot-arm:$(release_tag) --push
+        displayName: build edgehub/mockdevice-robot-arm
+
+  - job: docker_push_mockdevice_plate_reader
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-plate-reader:$(release_tag) --push
+        displayName: build edgehub/mockdevice-plate-reader
+
+  - job: docker_push_mockdevice_agv
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-agv:$(release_tag) --push
+        displayName: build edgehub/mockdevice-agv
+
+  - job: docker_push_mockdevice_plc
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plc/Dockerfile.mockdevice-plc \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-plc:$(release_tag) --push
+        displayName: build edgehub/mockdevice-plc
+
+  - job: docker_push_mockdevice_socket
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-socket:$(release_tag) --push
+        displayName: build edgehub/mockdevice-socket
+
+  - job: docker_push_mockdevice_opcua
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/mockdevice-opcua:$(release_tag) --push
+        displayName: build edgehub/mockdevice-opcua

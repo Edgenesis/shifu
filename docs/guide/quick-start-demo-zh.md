@@ -44,7 +44,7 @@
 
 3. **启动演示的deviceShifu（数字孪生）:**
     
-    在`deviceshifu/examples/demo_device`目录下，我们有4个演示的设备来创建 ***deviceShifu***（虚拟设备）。所有的设备都有 `get_status`命令来获取当前设备的状态，如Busy, Error, Idle等
+    在`examples/deviceshifu/demo_device`目录下，我们有4个演示的设备来创建 ***deviceShifu***（虚拟设备）。所有的设备都有 `get_status`命令来获取当前设备的状态，如Busy, Error, Idle等
     除了`get_status`，每一台设备有一个自己的命令：
     * **thermometer**: 一个获取当前温度的温度计，命令`read_value`会返回当前温度计的读数
     * **agv**: 一个自动引导车，命令 `get_position`会返回以x, y轴为坐标的设备当前位置
@@ -53,10 +53,10 @@
 
     在shifu根目录执行以下命令，以运行4个设备的deviceShifu:
     ```
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-agv
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-robot-arm
-    ./test/scripts/deviceshifu-demo.sh apply edgedevice-plate-reader
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-thermometer
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-agv
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-robot-arm
+    kubectl apply -f examples/deviceshifu/demo_device/edgedevice-plate-reader
     ```
     通过命令来获取devices域中所有的Pods：
     ```
@@ -79,30 +79,30 @@
     如果要和deviceShifu直接交互，我们可以运行一个简易nginx服务，并通过命令 `kubectl exec`来进入Pods里。
     本演示提供了一个nginx镜像，我们可以直接运行该Pod：
     ```
-    kubectl run nginx --image=nginx:1.21
+    kubectl run nginx --image=nginx:1.21 -n deviceshifu
     ```
     通过命令来进入nginx Pod的命令行：
     ```
-    kubectl exec -it nginx -- bash
+    kubectl -n deviceshifu exec -it nginx -- bash
     ```
     之后，我们可以呼叫每一个deviceShifu内置的命令来查看返回值（每一个deviceShifu的命令定义在该设备的ConfigMap文件中）。
     注意，以下返回值均为随机产生：
     ```
-    / # curl http://edgedevice-thermometer/get_status
+    / # curl http://deviceshifu-thermometer/get_status
     Busy
-    / # curl http://edgedevice-thermometer/read_value
+    / # curl http://deviceshifu-thermometer/read_value
     27
-    / # curl http://edgedevice-agv/get_status
+    / # curl http://deviceshifu-agv/get_status
     Busy
-    / # curl http://edgedevice-agv/get_position
+    / # curl http://deviceshifu-agv/get_position
     xpos: 54, ypos: 34
-    / # curl http://edgedevice-robotarm/get_status
+    / # curl http://deviceshifu-robotarm/get_status
     Busy
-    / # curl http://edgedevice-robotarm/get_coordinate
+    / # curl http://deviceshifu-robotarm/get_coordinate
     xpos: 55, ypos: 140, zpos: 135
-    / # curl http://edgedevice-plate-reader/get_status
+    / # curl http://deviceshifu-plate-reader/get_status
     Idle
-    / # curl http://edgedevice-plate-reader/get_measurement
+    / # curl http://deviceshifu-plate-reader/get_measurement
     0.75 0.50 1.34 0.95 2.79 2.66 2.68 0.59 0.97 0.93 0.70 0.62 
     0.61 1.47 1.68 1.65 1.05 1.59 0.78 2.92 1.22 1.12 2.86 0.29 
     2.15 2.45 1.99 0.36 1.47 0.18 2.47 0.61 2.43 1.53 0.14 2.41 

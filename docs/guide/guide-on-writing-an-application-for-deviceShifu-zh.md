@@ -9,13 +9,13 @@
 本示例需要安装 [Go](https://golang.org/dl/), [Docker](https://docs.docker.com/get-docker/), [kind](https://kubernetes.io/docs/tasks/tools/), [kubectl](https://kubernetes.io/docs/tasks/tools/) 和 [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder)。
 
 ### 1. 运行 *Shifu* 并连接一个简单的温度计
-在 `shifu/deviceshifu/examples/demo_device` 路径中已经有一个演示温度计的 deployment 配置。该温度计会上报一个整数代表当前温度，它拥有一个 `read_value` API 来汇报这个数值。
+在 `shifu/examples/deviceshifu/demo_device` 路径中已经有一个演示温度计的 deployment 配置。该温度计会上报一个整数代表当前温度，它拥有一个 `read_value` API 来汇报这个数值。
 
 在 `shifu` 根目录下，运行下面两条命令来运行 *shifu* 和演示温度计的 *deviceShifu*：
 
-```
-./test/scripts/shifu-application-demo-env-setup.sh apply applicationDemo                       # setup and start shifu services for this demo
-./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer    # connect fake thermometer to shifu
+```bash
+./test/scripts/deviceshifu-setup.sh apply         # setup and start shifu services for this demo
+kubectl apply -f examples/deviceshifu/demo_device/edgedevice-thermometer    # connect fake thermometer to shifu
 ```
 ### 2. 温度检测程序
 本应用会通过 HTTP 请求来和 *deviceShifu* 交互，每两秒检测 `read_value` 节点来获取温度计 *deviceShifu* 的读数。
@@ -92,7 +92,7 @@ kind load docker-image high-temperature-detector:v0.0.1
 
 之后运行容器 Pod：
 ```
-kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1
+kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1 -n deviceshifu
 ```
 
 ### 5. 检查应用输出
@@ -119,4 +119,5 @@ kubectl logs -n default high-temperature-detector -f
 2021/10/18 10:35:49 High temperature: 30
 2021/10/18 10:35:51 High temperature: 30
 2021/10/18 10:35:53 Low temperature: 15
+
 

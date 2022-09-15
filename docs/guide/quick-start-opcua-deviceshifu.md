@@ -17,18 +17,18 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-opcua-deployment
-  name: edgedevice-opcua-deployment
-  namespace: default
+    app: deviceshifu-opcua-deployment
+  name: deviceshifu-opcua-deployment
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-opcua-deployment
+      app: deviceshifu-opcua-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-opcua-deployment
+        app: deviceshifu-opcua-deployment
     spec:
       containers:
       - image: edgehub/deviceshifu-http-opcua:v0.0.1
@@ -36,7 +36,7 @@ spec:
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
@@ -45,7 +45,7 @@ spec:
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: opcua-configmap-0.0.1
       serviceAccountName: edgedevice-sa
@@ -58,16 +58,16 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: edgedevice-opcua-deployment
-  name: edgedevice-opcua
-  namespace: default
+    app: deviceshifu-opcua-deployment
+  name: deviceshifu-opcua
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80
     protocol: TCP
     targetPort: 8080
   selector:
-    app: edgedevice-opcua-deployment
+    app: deviceshifu-opcua-deployment
   type: LoadBalancer
 ```
 
@@ -78,20 +78,20 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: opcua-configmap-0.0.1
-  namespace: default
+  namespace: deviceshifu
 data:
   driverProperties: |
     driverSku: Test OPC UA Server
     driverImage: 
   instructions: |
     get_value:
-      instructionProperties:
+      protocolPropertyList:
         OPCUANodeID: "ns=2;i=2"
     get_time:
-      instructionProperties:
+      protocolPropertyList:
         OPCUANodeID: "i=2258"
     get_server:
-      instructionProperties:
+      protocolPropertyList:
         OPCUANodeID: "i=2261"
   telemetries: |
     device_health:
@@ -127,7 +127,7 @@ spec:
 ## To interact with the device:
 
 ```bash
-root@nginx:/# curl edgedevice-opcua/get_server;echo
+root@nginx:/# curl deviceshifu-opcua/get_server;echo
 FreeOpcUa Python Server
 ```
 

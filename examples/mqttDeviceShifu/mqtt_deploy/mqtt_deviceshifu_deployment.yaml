@@ -2,26 +2,26 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-mqtt-deployment
-  name: edgedevice-mqtt-deployment
-  namespace: default
+    app: deviceshifu-mqtt-deployment
+  name: deviceshifu-mqtt-deployment
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-mqtt-deployment
+      app: deviceshifu-mqtt-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-mqtt-deployment
+        app: deviceshifu-mqtt-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-mqtt:v0.0.1
+      - image: edgehub/deviceshifu-http-mqtt:v0.1.0
         name: deviceshifu-http
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: edgedevice-config
+        - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
@@ -30,7 +30,7 @@ spec:
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
       volumes:
-      - name: edgedevice-config
+      - name: deviceshifu-config
         configMap:
           name: mqtt-configmap-0.0.1
       serviceAccountName: edgedevice-sa

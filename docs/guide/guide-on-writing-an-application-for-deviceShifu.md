@@ -8,12 +8,12 @@ This instruction will show how to build and use an application to interact with 
 The following example requires [Go](https://golang.org/dl/), [Docker](https://docs.docker.com/get-docker/), [kind](https://kubernetes.io/docs/tasks/tools/), [kubectl](https://kubernetes.io/docs/tasks/tools/) and [kubebuilder](https://github.com/kubernetes-sigs/kubebuilder) installed.
 
 ### 1. Start *Shifu* and connect a simple thermometer device
-The deployment config for a fake thermometer which produces a integer value representing the temperature read should be already in the `shifu/deviceshifu/examples/demo_device` directory.\
+The deployment config for a fake thermometer which produces a integer value representing the temperature read should be already in the `shifu/examples/deviceshifu/demo_device` directory.\
 The device driver has an API `read_value` which returns such integer value.
-Under `shifu` root directory, we can run the following three commands to have *shifu* and the fake thermometer *deviceShifu* ready:
-```
-./test/scripts/shifu-application-demo-env-setup.sh apply applicationDemo                       # setup and start shifu services for this demo
-./test/scripts/deviceshifu-demo.sh apply edgedevice-thermometer    # connect fake thermometer to shifu
+Under `shifu` root directory, we can run the following two commands to have *shifu* and the fake thermometer *deviceShifu* ready:
+```bash
+./test/scripts/deviceshifu-setup.sh apply         # setup and start shifu services for this demo
+kubectl apply -f examples/deviceshifu/demo_device/edgedevice-thermometer    # connect fake thermometer to shifu
 ```
 ### 2. High temperature detector application
 The application interacts with *deviceShifu* via HTTP requests.\
@@ -34,7 +34,7 @@ import (
 )
 
 func main() {
-	targetUrl := "http://edgedevice-thermometer/read_value"
+	targetUrl := "http://deviceshifu-thermometer/read_value"
 	req, _ := http.NewRequest("GET", targetUrl, nil)
 	for {
 		res, _ := http.DefaultClient.Do(req)
@@ -90,7 +90,7 @@ kind load docker-image high-temperature-detector:v0.0.1
 ```
 Then we can apply the manifest and start the application pod:
 ```
-kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1
+kubectl run high-temperature-detector --image=high-temperature-detector:v0.0.1 -n deviceshifu
 ```
 
 ### 5. Check the application output

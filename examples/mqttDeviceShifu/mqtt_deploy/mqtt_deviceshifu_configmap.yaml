@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: mqtt-configmap-0.0.1
-  namespace: default
+  namespace: deviceshifu
 data:
   driverProperties: |
     driverSku: testMQTT
@@ -10,6 +10,7 @@ data:
   instructions: |
     
   telemetries: |
-    device_health:
-      properties:
+    telemetries:
+      device_health:
+        properties:
 

@@ -1,0 +1,11 @@
+FROM golang:1.18-alpine
+
+WORKDIR /worker
+
+COPY examples/socketDeviceShifu/server/server.go server.go
+
+RUN go build -o /output/server server.go
+
+EXPOSE 11122:11122/tcp
+
+ENTRYPOINT [ "/output/server" ]

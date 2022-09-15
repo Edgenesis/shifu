@@ -1,5 +1,5 @@
 # 【暂未实现】shifuController 设计
-- [shifuController 设计](#shifucontroller-设计)
+- [【暂未实现】shifuController 设计](#暂未实现shifucontroller-设计)
   - [设计目标和非目标](#设计目标和非目标)
     - [设计目标](#设计目标)
       - [低资源消耗](#低资源消耗)
@@ -55,7 +55,7 @@
 
 #### ***edgeDevice*** 管理
 
-***shifuController*** 只管理 ***deviceShifu***， 而不管理 ***edgeDevice*** 和 ***edgeNode***.
+***shifuController*** 只管理 ***deviceShifu***， 而不管理 ***edgeDevice*** 和 ***edgeNode*** 。
 
 ## 设计大纲
 
@@ -68,36 +68,42 @@
 
 在任何情况下，当 ***shifuController*** 收到 ***edgeDevice*** 连接事件时，***shifuController*** 会：
 
-1. Schedule: 决定把准备中的 ***deviceShifu*** 放到哪里 
-   1. 如果 ***edgeDevice*** 是连接到某个 ***edgeNode***， ***deviceShifu*** 就会被调度到那个 ***edgeNode*** 上。
-   2. 如果 ***edgeDevice*** 是连接到集群的网络上， ***deviceShifu*** 就会根据如下优先级被调度（非最终设定）：
-      1. 位置: 如果位置信息可用，***deviceShifu*** 就会被放在最靠近 ***edgeDevice*** 的 ***edgeNode*** 上。
-      2. 可用资源: ***deviceShifu*** 会被放在拥有最高可用内存的 ***edgeNode*** 上。
-2. Compose: 整合所有该 ***deviceShifu*** 部署的的计算和编排信息。
-3. Create: 
-   1. 通过向 ***apiServer*** 提交请求来添加 ***deviceShifu*** 部署。
-   2. 将新创建的 ***deviceShifu*** 通过Kubernetes service暴露出来。
-4. Add: 把 ***edgeDevice*** 添加到 ***edgeMap***.
+1.1 Schedule: 决定把准备中的 ***deviceShifu*** 放到哪里。   
+    1.1.1 如果 ***edgeDevice*** 是连接到某个 ***edgeNode***， ***deviceShifu*** 就会被调度到那个 ***edgeNode*** 上。  
+    1.1.2 如果 ***edgeDevice*** 是连接到集群的网络上， ***deviceShifu*** 就会根据如下优先级被调度（非最终设定）：  
+      a. 位置: 如果位置信息可用，***deviceShifu*** 就会被放在最靠近 ***edgeDevice*** 的 ***edgeNode*** 上。  
+      b. 可用资源: ***deviceShifu*** 会被放在拥有最高可用内存的 ***edgeNode*** 上。
+   
+1.2 Compose: 整合所有该 ***deviceShifu*** 部署的的计算和编排信息。
+
+1.3 Create:  
+   1.3.1 通过向 ***apiServer*** 提交请求来添加 ***deviceShifu*** 部署。  
+   1.3.2 将新创建的 ***deviceShifu*** 通过Kubernetes service暴露出来。  
+   1.3.3 Add: 把 ***edgeDevice*** 添加到 ***edgeMap*** 。
 
 #### 2. 删除 ***edgeDevice***
 
 当 ***shifuController*** 收到 ***edgeDevice*** 连接断开事件时，***shifuController*** 会：
-1. Remove: 将 ***edgeDevice*** 从 ***edgeMap*** 中移除。
-2. Delete: 
-   1. 通过向 ***apiServer*** 提交请求来移除 ***deviceShifu*** 部署。
-   2. 删除 ***deviceShifu*** 的相关 Kubernetes service.
+
+2.1 Remove: 将 ***edgeDevice*** 从 ***edgeMap*** 中移除。 
+
+2.2 Delete:   
+   2.2.1 通过向 ***apiServer*** 提交请求来移除 ***deviceShifu*** 部署。  
+   2.2.2 删除 ***deviceShifu*** 的相关 Kubernetes service 。
 
 ### 响应***edgeNode*** 事件
 
 #### 1. 创建 ***edgeNode***
 
-在任何情况下，当 ***shifuController*** 收到 ***edgeNode*** 连接事件时，***shifuController*** 会：
-1. Add: 把 ***edgeNode*** 添加到 ***edgeMap***.
+在任何情况下，当 ***shifuController*** 收到 ***edgeNode*** 连接事件时，***shifuController*** 会：  
+
+1.1 Add: 把 ***edgeNode*** 添加到 ***edgeMap*** 。
 
 #### 2. 删除 ***edgeNode***
 
-当 ***shifuController*** 收到 ***edgeNode*** 删除事件时，***shifuController*** 会：
-1. Remove: 将 ***edgeNode*** 从 ***edgeMap*** 中移除。
+当 ***shifuController*** 收到 ***edgeNode*** 删除事件时，***shifuController*** 会：  
+
+2.1 Remove: 将 ***edgeNode*** 从 ***edgeMap*** 中移除。
 
 ### 正常运行时
 
@@ -124,7 +130,7 @@ metadata:
   labels:
     app: edgedevice-thermometer-deployment
   name: edgedevice-thermometer-deployment
-  namespace: default
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
@@ -163,7 +169,7 @@ metadata:
   labels:
     app: edgedevice-thermometer-deployment
   name: edgedevice-thermometer
-  namespace: default
+  namespace: deviceshifu
 spec:
   ports:
   - port: 80
