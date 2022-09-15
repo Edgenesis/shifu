@@ -56,7 +56,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				return nil, fmt.Errorf("Cannot connect to %v", *base.EdgeDevice.Spec.Address)
 			}
 
-			klog.Infof("Connected to '%v'\n", *base.EdgeDevice.Spec.Address)
+			klog.Infof("Connected to '%v'", *base.EdgeDevice.Spec.Address)
 			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
 				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
@@ -210,7 +210,7 @@ func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 			defer conn.Close()
 			return true, nil
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu\n", protocol)
+			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
 		}
 	}

@@ -91,7 +91,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 }
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	klog.Infof("Received message: %v from topic: %v\n", msg.Payload(), msg.Topic())
+	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	mqttMessageStr = string(msg.Payload())
 	mqttMessageReceiveTimestamp = time.Now()
 	klog.Infof("MESSAGE_STR updated")
@@ -223,7 +223,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				return true, nil
 			}
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu\n", protocol)
+			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
 		}
 	}

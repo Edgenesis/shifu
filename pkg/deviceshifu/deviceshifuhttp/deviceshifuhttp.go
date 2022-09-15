@@ -157,7 +157,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		if handlerProperties != nil {
 			// TODO: handle validation compile
 			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				klog.Infof("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
+				klog.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
 			}
 		}
 
@@ -295,7 +295,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		if handlerProperties != nil {
 			// TODO: handle validation compile
 			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				klog.Infof("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
+				klog.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
 			}
 		}
 
@@ -322,7 +322,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		}
 
 		// TODO: For now, just write tht instruction to the response
-		klog.Infof("resp is nil")
+		klog.Warningf("resp is nil")
 		_, err = w.Write([]byte(handlerInstruction))
 		if err != nil {
 			klog.Errorf("cannot write instruction into responseBody")
@@ -388,7 +388,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				return false, nil
 			}
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu\n", protocol)
+			klog.Warningf("EdgeDevice protocol %v not supported in deviceshif", protocol)
 			return false, nil
 		}
 	}

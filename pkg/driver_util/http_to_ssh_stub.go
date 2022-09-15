@@ -98,7 +98,7 @@ func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 		}
 
 		cmdString := "timeout " + sshExecTimeoutSecond + " " + string(httpCommand)
-		klog.Infof("running command: %v\n", cmdString)
+		klog.Infof("running command: %v", cmdString)
 		var stdout bytes.Buffer
 		var stderr bytes.Buffer
 		session.Stdout = &stdout

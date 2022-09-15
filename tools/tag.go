@@ -7,29 +7,28 @@ arg: [1] workDirectory [2] oldTag [3] newTag
 import (
 	"bufio"
 	"io"
+	"log"
 	"os"
 	"path"
 	"path/filepath"
 	"strings"
-
-	"k8s.io/klog/v2"
 )
 
 func main() {
 	args := os.Args
 	if len(args) < 3 {
-		klog.Fatalf("few parameters")
+		log.Fatalf("few parameters")
 	}
 
 	path, oldTag, newTag := args[1], args[2], args[3]
 	files, err := traverseDir(path)
 	if err != nil {
-		klog.Fatalf("err cannot get all deployment.yaml file! %v", err)
+		log.Fatalf("err cannot get all deployment.yaml file! %v", err)
 	}
 
 	err = updateTag(files, oldTag, newTag)
 	if err != nil {
-		klog.Fatalf("err make an error during update Tag! %v", err)
+		log.Fatalf("err make an error during update Tag! %v", err)
 	}
 }
 
@@ -61,13 +60,13 @@ func updateTag(files []string, oldTag string, newTag string) error {
 	for _, filePath := range files {
 		file, err := os.OpenFile(filePath, os.O_RDWR|os.O_CREATE, 0755)
 		if err != nil {
-			klog.Errorf("err cannot open file %s %v", file.Name(), err)
+			log.Printf("err cannot open file %s %v", file.Name(), err)
 			return err
 		}
 
 		err = replaceTag(file, oldTag, newTag)
 		if err != nil {
-			klog.Errorf("err file %s cannot modify %v", file.Name(), err)
+			log.Printf("err file %s cannot modify %v", file.Name(), err)
 			return err
 		}
 	}
@@ -94,7 +93,7 @@ func replaceTag(file *os.File, oldTag string, newTag string) error {
 				return nil
 			}
 
-			klog.Infof("cannot read file %s %v", file.Name(), err)
+			log.Printf("cannot read file %s %v", file.Name(), err)
 			return err
 		}
 

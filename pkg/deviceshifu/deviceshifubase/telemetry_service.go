@@ -27,7 +27,7 @@ func PushToHTTPTelemetryCollectionService(telemetryServiceProtocol v1alpha1.Prot
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, telemetryCollectionService, message.Body)
 	if err != nil {
-		klog.Errorf("error creating request for telemetry service, error: %v\n" + err.Error())
+		klog.Errorf("error creating request for telemetry service, error: %v" + err.Error())
 		return
 	}
 
@@ -35,7 +35,7 @@ func PushToHTTPTelemetryCollectionService(telemetryServiceProtocol v1alpha1.Prot
 	CopyHeader(req.Header, req.Header)
 	_, err = http.DefaultClient.Do(req)
 	if err != nil {
-		klog.Errorf("HTTP POST error for telemetry service %v, error: %v\n", telemetryCollectionService, err.Error())
+		klog.Errorf("HTTP POST error for telemetry service %v, error: %v", telemetryCollectionService, err.Error())
 		return
 	}
 }

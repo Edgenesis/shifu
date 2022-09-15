@@ -133,7 +133,7 @@ func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 // UpdateEdgeDeviceResourcePhase Update device status
 func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
-	klog.Infof("updating device %v status to: %v\n", ds.Name, edPhase)
+	klog.Infof("updating device %v status to: %v", ds.Name, edPhase)
 	currEdgeDevice := &v1alpha1.EdgeDevice{}
 	err := ds.RestClient.Get().
 		Namespace(ds.EdgeDevice.Namespace).
@@ -259,13 +259,13 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 }
 
 func (ds *DeviceShifuBase) startHTTPServer(stopCh <-chan struct{}) error {
-	fmt.Printf("deviceshifu %s's http server started\n", ds.Name)
+	klog.Infof("deviceshifu %s's http server started", ds.Name)
 	return ds.Server.ListenAndServe()
 }
 
 // Start HTTP server and telemetryCollection
 func (ds *DeviceShifuBase) Start(stopCh <-chan struct{}, fn collectTelemetry) error {
-	klog.Infof("deviceshifu %s started\n", ds.Name)
+	klog.Infof("deviceshifu %s started", ds.Name)
 
 	go func() {
 		err := ds.startHTTPServer(stopCh)

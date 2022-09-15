@@ -120,7 +120,7 @@ func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	sort.Strings(expectedRequestArguments)
 
 	if !reflect.DeepEqual(createdRequestArguments, expectedRequestArguments) {
-		t.Errorf("created request: '%v' does not match the expected req: '%v'\n", createdRequestString, expectedRequestString)
+		t.Errorf("created request: '%v' does not match the expected req: '%v'", createdRequestString, expectedRequestString)
 	}
 }
 

@@ -34,7 +34,7 @@ var StatusSetList = []string{
 
 // Start start http server
 func (md *MockDevice) Start(stopCh <-chan struct{}) error {
-	klog.Infof("mockDevice %s started\n", md.Name)
+	klog.Infof("mockDevice %s started", md.Name)
 
 	go func() {
 		err := md.startHTTPServer(stopCh)
@@ -46,7 +46,7 @@ func (md *MockDevice) Start(stopCh <-chan struct{}) error {
 }
 
 func (md *MockDevice) startHTTPServer(stopCh <-chan struct{}) error {
-	klog.Infof("mockDevice %s's http server started\n", md.Name)
+	klog.Infof("mockDevice %s's http server started", md.Name)
 	return md.server.ListenAndServe()
 }
 
