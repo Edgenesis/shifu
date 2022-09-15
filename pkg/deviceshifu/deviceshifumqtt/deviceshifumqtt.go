@@ -3,15 +3,15 @@ package deviceshifumqtt
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"k8s.io/klog/v2"
 	"net/http"
 	"strings"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"k8s.io/klog/v2"
-
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 // DeviceShifu implemented from deviceshifuBase
@@ -90,7 +90,15 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
-	mqttMessageStr = string(msg.Payload())
+	rawMqttMessageStr := string(msg.Payload())
+	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
+	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
+	if shouldUsePythonCustomProcessing {
+		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
+		mqttMessageStr = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+	} else {
+		mqttMessageStr = rawMqttMessageStr
+	}
 	mqttMessageReceiveTimestamp = time.Now()
 	klog.Infof("MESSAGE_STR updated")
 }
