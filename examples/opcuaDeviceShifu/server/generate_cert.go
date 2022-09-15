@@ -106,7 +106,7 @@ func main() {
 		log.Fatalf("error closing %s: %s", keyFile, err)
 	}
 
-	log.Printf("wrote %s", keyFile)
+	fmt.Printf("wrote %s", keyFile)
 }
 
 func publicKey(priv interface{}) interface{} {
