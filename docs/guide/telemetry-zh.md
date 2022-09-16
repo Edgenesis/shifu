@@ -4,6 +4,8 @@
 
 ## 遥测的权限
 
+Shifu 的遥测模块利用了Kubernetes内置的view的ClusterRole，详情请见[Kubernetes 官方文档](https://kubernetes.io/zh-cn/docs/reference/access-authn-authz/rbac/#user-facing-roles)。
+
 遥测仅允许对大多数对象有只读权限,例如Pod基本信息、Kubernetes信息等。 它不允许查看角色、Secrets等隐私信息，所以您无需担心隐私泄漏问题。
 
 ## 我们收集的数据
