@@ -108,6 +108,11 @@ stages:
   - job: go_build_and_test_windows
     pool:
       vmImage: 'windows-latest'
+    variables:
+      GOBIN:  '$(GOPATH)/bin' # Go binaries path
+      GOROOT: '/usr/local/go1.11' # Go installation path
+      GOPATH: '$(system.defaultWorkingDirectory)/gopath' # Go workspace path
+      modulePath: '$(GOPATH)/src/github.com/$(build.repository.name)' # Path to the module's code
     steps:
       - task: GoTool@0
         inputs:
@@ -118,6 +123,9 @@ stages:
           command: 'get'
           arguments: '-d'
           workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuhttp'
+      - script: |
+          go.exe env
+        displayName: "Print Windows Go Env"
       - task: Go@0
         displayName: "go build http to powershell stub"
         inputs:
