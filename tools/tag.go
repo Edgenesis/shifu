@@ -8,7 +8,6 @@ import (
 	"bufio"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path"
 	"path/filepath"
@@ -18,18 +17,20 @@ import (
 func main() {
 	args := os.Args
 	if len(args) < 3 {
-		log.Fatalf("few parameters")
+		panic("few parameters")
 	}
 
 	path, oldTag, newTag := args[1], args[2], args[3]
 	files, err := traverseDir(path)
 	if err != nil {
-		log.Fatalf("err cannot get all deployment.yaml file! %v", err)
+		fmt.Printf("err cannot get all deployment.yaml file! %v", err)
+		panic(err)
 	}
 
 	err = updateTag(files, oldTag, newTag)
 	if err != nil {
-		log.Fatalf("err make an error during update Tag! %v", err)
+		fmt.Printf("err make an error during update Tag! %v", err)
+		panic(err)
 	}
 }
 

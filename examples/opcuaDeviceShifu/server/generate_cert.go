@@ -34,7 +34,8 @@ func main() {
 
 	priv, err := rsa.GenerateKey(rand.Reader, rsaBits)
 	if err != nil {
-		log.Fatalf("failed to generate private key: %s", err)
+		fmt.Printf("failed to generate private key: %s", err)
+		panic(err)
 	}
 
 	notBefore := time.Now()
@@ -43,7 +44,8 @@ func main() {
 	serialNumberLimit := new(big.Int).Lsh(big.NewInt(1), 128)
 	serialNumber, err := rand.Int(rand.Reader, serialNumberLimit)
 	if err != nil {
-		log.Fatalf("failed to generate serial number: %s", err)
+		fmt.Printf("failed to generate serial number: %s", err)
+		panic(err)
 	}
 
 	template := x509.Certificate{
@@ -74,36 +76,42 @@ func main() {
 
 	derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey(priv), priv)
 	if err != nil {
-		log.Fatalf("Failed to create certificate: %s", err)
+		fmt.Printf("Failed to create certificate: %s", err)
+		panic(err)
 	}
 
 	certOut, err := os.Create(certFile)
 	if err != nil {
-		log.Fatalf("failed to open %s for writing: %s", certFile, err)
+		fmt.Printf("failed to open %s for writing: %s", certFile, err)
+		panic(err)
 	}
 
 	if err := pem.Encode(certOut, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes}); err != nil {
-		log.Fatalf("failed to write data to %s: %s", certFile, err)
+		fmt.Printf("failed to write data to %s: %s", certFile, err)
+		panic(err)
 	}
 
 	if err := certOut.Close(); err != nil {
-		log.Fatalf("error closing %s: %s", certFile, err)
+		fmt.Printf("error closing %s: %s", certFile, err)
+		panic(err)
 	}
 
-	log.Printf("wrote %s", certFile)
+	fmt.Printf("wrote %s", certFile)
 
 	keyOut, err := os.OpenFile(keyFile, os.O_WRONLY|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		log.Printf("failed to open %s for writing: %s", keyFile, err)
-		return
+		panic(err)
 	}
 
 	if err := pem.Encode(keyOut, pemBlockForKey(priv)); err != nil {
-		log.Fatalf("failed to write data to %s: %s", keyFile, err)
+		fmt.Printf("failed to write data to %s: %s", keyFile, err)
+		panic(err)
 	}
 
 	if err := keyOut.Close(); err != nil {
-		log.Fatalf("error closing %s: %s", keyFile, err)
+		fmt.Printf("error closing %s: %s", keyFile, err)
+		panic(err)
 	}
 
 	fmt.Printf("wrote %s", keyFile)
