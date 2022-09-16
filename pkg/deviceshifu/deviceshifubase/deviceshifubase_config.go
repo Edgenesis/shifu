@@ -3,7 +3,6 @@ package deviceshifubase
 import (
 	"context"
 	"errors"
-	"log"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
@@ -13,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog/v2"
 	"knative.dev/pkg/configmap"
 )
 
@@ -110,7 +110,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if driverProperties, ok := cfg[ConfigmapDriverPropertiesStr]; ok {
 		err := yaml.Unmarshal([]byte(driverProperties), &dsc.DriverProperties)
 		if err != nil {
-			log.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
+			klog.Fatalf("parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
 			return nil, err
 		}
 	}
@@ -119,7 +119,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if instructions, ok := cfg[ConfigmapInstructionsStr]; ok {
 		err := yaml.Unmarshal([]byte(instructions), &dsc.Instructions)
 		if err != nil {
-			log.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
+			klog.Fatalf("parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
 			return nil, err
 		}
 	}
@@ -127,7 +127,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if telemetries, ok := cfg[ConfigmapTelemetriesStr]; ok {
 		err = yaml.Unmarshal([]byte(telemetries), &dsc.Telemetries)
 		if err != nil {
-			log.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapTelemetriesStr, err)
+			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapTelemetriesStr, err)
 			return nil, err
 		}
 	}
@@ -146,13 +146,13 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 	}
 
 	if err != nil {
-		log.Fatalf("Error parsing incluster/kubeconfig, error: %v", err.Error())
+		klog.Fatalf("Error parsing incluster/kubeconfig, error: %v", err.Error())
 		return nil, nil, err
 	}
 
 	client, err := NewEdgeDeviceRestClient(config)
 	if err != nil {
-		log.Fatalf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
+		klog.Fatalf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
 		return nil, nil, err
 	}
 
@@ -164,7 +164,7 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 		Do(context.TODO()).
 		Into(ed)
 	if err != nil {
-		log.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
+		klog.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
 		return nil, nil, err
 	}
 	return ed, client, nil
@@ -174,7 +174,7 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	err := v1alpha1.AddToScheme(scheme.Scheme)
 	if err != nil {
-		log.Println("cannot add to scheme, error: ", err)
+		klog.Errorf("cannot add to scheme, error: %v", err)
 		return nil, err
 	}
 	crdConfig := config

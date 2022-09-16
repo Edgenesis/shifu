@@ -2,7 +2,6 @@ package deviceshifuhttp
 
 import (
 	"io"
-	"log"
 	"net/http"
 	"os"
 	"reflect"
@@ -14,18 +13,19 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/klog/v2"
 )
 
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		log.Println("error when generateConfigmapFromSnippet,err: ", err)
+		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
-		log.Fatal(err)
+		klog.Fatal(err)
 	}
 }
 
@@ -38,7 +38,7 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 
 	_, err := New(deviceShifuMetadata)
 	if err != nil {
-		log.Print(err)
+		klog.Errorf("%v", err)
 	} else {
 		t.Errorf("DeviceShifuHTTP Test with empty namespace failed")
 	}
@@ -105,7 +105,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	req, err := http.NewRequest("GET", "http://localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
-	log.Println(req.URL.Query())
+	klog.Infof("%v", req.URL.Query())
 	createdRequestString := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "start")
 	if err != nil {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
@@ -120,7 +120,7 @@ func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	sort.Strings(expectedRequestArguments)
 
 	if !reflect.DeepEqual(createdRequestArguments, expectedRequestArguments) {
-		t.Errorf("created request: '%v' does not match the expected req: '%v'\n", createdRequestString, expectedRequestString)
+		t.Errorf("created request: '%v' does not match the expected req: '%v'", createdRequestString, expectedRequestString)
 	}
 }
 
@@ -131,7 +131,7 @@ func TestCreatehttpURIString(t *testing.T) {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	log.Println(req.URL.Query())
+	klog.Infof("%v", req.URL.Query())
 	createdURIString := createURIFromRequest("localhost:8081", "start", req)
 
 	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
@@ -153,7 +153,7 @@ func TestCreatehttpURIStringNoQuery(t *testing.T) {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	log.Println(req.URL.Query())
+	klog.Infof("%v", req.URL.Query())
 	createdURIString := createURIFromRequest("localhost:8081", "start", req)
 
 	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]

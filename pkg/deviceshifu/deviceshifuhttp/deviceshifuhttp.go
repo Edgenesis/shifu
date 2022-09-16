@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -16,6 +15,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 )
 
 // DeviceShifuHTTP deviceshifu for HTTP
@@ -64,7 +64,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			var defaultTimeoutSeconds = deviceshifubase.DeviceDefaultGolbalTimeoutInSeconds
 			instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
 		} else if *instructionSettings.DefaultTimeoutSeconds < 0 {
-			log.Fatalf("defaultTimeoutSeconds must not be negative number")
+			klog.Fatalf("defaultTimeoutSeconds must not be negative number")
 			return nil, errors.New("defaultTimeout configuration error")
 		}
 
@@ -98,7 +98,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		default:
-			log.Printf("EdgeDevice protocol %v not supported in deviceShifu_http_http\n", protocol)
+			klog.Errorf("EdgeDevice protocol %v not supported in deviceShifu_http_http", protocol)
 			return nil, errors.New("wrong protocol not supported in deviceShifu_http_http")
 		}
 	}
@@ -107,7 +107,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	ds := &DeviceShifuHTTP{base: base}
 
 	if err := ds.base.ValidateTelemetryConfig(); err != nil {
-		log.Println(err)
+		klog.Errorf("%v", err)
 		return ds, err
 	}
 
@@ -157,7 +157,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		if handlerProperties != nil {
 			// TODO: handle validation compile
 			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
+				klog.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
 			}
 		}
 
@@ -171,14 +171,14 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			reqType           = r.Method
 		)
 
-		log.Printf("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
+		klog.Infof("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
 		timeoutStr := r.URL.Query().Get(deviceshifubase.DevuceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
 			timeout, parseErr = strconv.Atoi(timeoutStr)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
-				log.Printf("timeout URI parsing error" + parseErr.Error())
+				klog.Errorf("timeout URI parsing error" + parseErr.Error())
 				return
 			}
 		}
@@ -188,7 +188,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			requestBody, parseErr = io.ReadAll(r.Body)
 			if parseErr != nil {
 				http.Error(w, "Error on parsing body", http.StatusBadRequest)
-				log.Printf("Error on parsing body" + parseErr.Error())
+				klog.Errorf("Error on parsing body" + parseErr.Error())
 				return
 			}
 
@@ -207,7 +207,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpURL, bytes.NewBuffer(requestBody))
 			if reqErr != nil {
 				http.Error(w, reqErr.Error(), http.StatusBadRequest)
-				log.Printf("HTTP GET error" + reqErr.Error())
+				klog.Errorf("HTTP GET error" + reqErr.Error())
 				return
 			}
 
@@ -215,12 +215,12 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-				log.Printf("HTTP POST error" + httpErr.Error())
+				klog.Errorf("HTTP POST error" + httpErr.Error())
 				return
 			}
 		default:
 			http.Error(w, httpErr.Error(), http.StatusBadRequest)
-			log.Println("Request type " + reqType + " is not supported yet!")
+			klog.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
 
@@ -229,16 +229,16 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			w.WriteHeader(resp.StatusCode)
 			_, err := io.Copy(w, resp.Body)
 			if err != nil {
-				log.Println("error when copy requestBody from responseBody, err: ", err)
+				klog.Errorf("error when copy requestBody from responseBody, err: %v", err)
 			}
 			return
 		}
 
 		// TODO: For now, just write tht instruction to the response
-		log.Println("resp is nil")
+		klog.Warningf("resp is nil")
 		_, err := w.Write([]byte(handlerInstruction))
 		if err != nil {
-			log.Println("cannot write instruction into response's body, err: ", err)
+			klog.Errorf("cannot write instruction into response's body, err: %v", err)
 		}
 	}
 }
@@ -295,20 +295,20 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		if handlerProperties != nil {
 			// TODO: handle validation compile
 			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				log.Printf("Properties of command: %v %v\n", handlerInstruction, instructionProperty)
+				klog.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
 			}
 		}
 
-		log.Printf("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
+		klog.Infof("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
 
 		commandString := createHTTPCommandlineRequestString(r, driverExecution, handlerInstruction)
 		postAddressString := "http://" + *handlerEdgeDeviceSpec.Address + "/post"
-		log.Printf("posting '%v' to '%v'", commandString, postAddressString)
+		klog.Infof("posting '%v' to '%v'", commandString, postAddressString)
 		resp, err := handlerHTTPClient.Post(postAddressString, "text/plain", bytes.NewBuffer([]byte(commandString)))
 
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			log.Printf("HTTP error" + err.Error())
+			klog.Errorf("HTTP error" + err.Error())
 		}
 
 		if resp != nil {
@@ -316,16 +316,16 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			w.WriteHeader(resp.StatusCode)
 			_, err := io.Copy(w, resp.Body)
 			if err != nil {
-				log.Println("cannot copy requestBody from requestBody, error: ", err)
+				klog.Errorf("cannot copy requestBody from requestBody, error: %v", err)
 			}
 			return
 		}
 
 		// TODO: For now, just write tht instruction to the response
-		log.Println("resp is nil")
+		klog.Warningf("resp is nil")
 		_, err = w.Write([]byte(handlerInstruction))
 		if err != nil {
-			log.Println("cannot write instruction into responseBody")
+			klog.Errorf("cannot write instruction into responseBody")
 		}
 	}
 }
@@ -364,13 +364,13 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				req, ReqErr := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+address+"/"+instruction, nil)
 				if ReqErr != nil {
-					log.Printf("error checking telemetry: %v, error: %v", telemetry, ReqErr.Error())
+					klog.Errorf("error checking telemetry: %v, error: %v", telemetry, ReqErr.Error())
 					return false, ReqErr
 				}
 
 				resp, err := ds.base.RestClient.Client.Do(req)
 				if err != nil {
-					log.Printf("error checking telemetry: %v, error: %v", telemetry, err.Error())
+					klog.Errorf("error checking telemetry: %v, error: %v", telemetry, err.Error())
 					return false, err
 				}
 
@@ -388,7 +388,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				return false, nil
 			}
 		default:
-			log.Printf("EdgeDevice protocol %v not supported in deviceshifu\n", protocol)
+			klog.Warningf("EdgeDevice protocol %v not supported in deviceshif", protocol)
 			return false, nil
 		}
 	}

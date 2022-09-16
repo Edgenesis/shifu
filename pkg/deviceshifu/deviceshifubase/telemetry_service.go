@@ -3,11 +3,11 @@ package deviceshifubase
 import (
 	"context"
 	"fmt"
-	"log"
 	"net/http"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"k8s.io/klog/v2"
 )
 
 // CopyHeader HTTP header type:
@@ -27,15 +27,15 @@ func PushToHTTPTelemetryCollectionService(telemetryServiceProtocol v1alpha1.Prot
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, telemetryCollectionService, message.Body)
 	if err != nil {
-		log.Printf("error creating request for telemetry service, error: %v\n" + err.Error())
+		klog.Errorf("error creating request for telemetry service, error: %v" + err.Error())
 		return
 	}
 
-	log.Printf("pushing %v to %v", message.Body, telemetryCollectionService)
+	klog.Infof("pushing %v to %v", message.Body, telemetryCollectionService)
 	CopyHeader(req.Header, req.Header)
 	_, err = http.DefaultClient.Do(req)
 	if err != nil {
-		log.Printf("HTTP POST error for telemetry service %v, error: %v\n", telemetryCollectionService, err.Error())
+		klog.Errorf("HTTP POST error for telemetry service %v, error: %v", telemetryCollectionService, err.Error())
 		return
 	}
 }
@@ -70,7 +70,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, e
 			Name(defaultTelemetryCollectionService).
 			Do(context.TODO()).
 			Into(&telemetryService); err != nil {
-			log.Printf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, err)
+			klog.Errorf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, err)
 		}
 
 		defaultTelemetryServiceAddress = *telemetryService.Spec.Address
@@ -99,7 +99,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, e
 					Name(*pushSettings.DeviceShifuTelemetryCollectionService).
 					Do(context.TODO()).
 					Into(&telemetryService); err != nil {
-					log.Printf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
+					klog.Errorf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
 					continue
 				}
 

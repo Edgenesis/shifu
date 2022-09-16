@@ -3,13 +3,13 @@ package deviceshifumqtt
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"k8s.io/klog/v2"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
@@ -55,7 +55,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
 				// return nil, fmt.Errorf("MQTT server cannot be empty")
-				log.Println("MQTT Server Address is empty, use address instead")
+				klog.Errorf("MQTT Server Address is empty, use address instead")
 				mqttServerAddress = *base.EdgeDevice.Spec.Address
 			} else {
 				mqttServerAddress = *mqttSetting.MQTTServerAddress
@@ -91,25 +91,25 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 }
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	log.Printf("Received message: %v from topic: %v\n", msg.Payload(), msg.Topic())
+	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	mqttMessageStr = string(msg.Payload())
 	mqttMessageReceiveTimestamp = time.Now()
-	log.Print("MESSAGE_STR updated")
+	klog.Infof("MESSAGE_STR updated")
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	log.Println("Connected")
+	klog.Infof("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	log.Printf("Connect lost: %v", err)
+	klog.Infof("Connect lost: %v", err)
 }
 
 func sub(client mqtt.Client, topic string) {
 	// topic := "topic/test"
 	token := client.Subscribe(topic, 1, nil)
 	token.Wait()
-	log.Printf("Subscribed to topic: %s", topic)
+	klog.Infof("Subscribed to topic: %s", topic)
 }
 
 // DeviceCommandHandlerMQTT handler for Mqtt
@@ -153,12 +153,12 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			err := json.NewEncoder(w).Encode(returnMessage)
 			if err != nil {
 				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
-				log.Println("Cannot Encode message to json")
+				klog.Errorf("Cannot Encode message to json")
 				return
 			}
 		} else {
 			http.Error(w, "must be GET method", http.StatusBadRequest)
-			log.Println("Request type " + reqType + " is not supported yet!")
+			klog.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
 
@@ -223,7 +223,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				return true, nil
 			}
 		default:
-			log.Printf("EdgeDevice protocol %v not supported in deviceshifu\n", protocol)
+			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
 		}
 	}
