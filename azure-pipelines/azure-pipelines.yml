@@ -123,6 +123,7 @@ stages:
         inputs:
           command: 'build'
           workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/httpstub/powershell'
+          arguments: '-a -o /output/http2powershell.exe'
 
   - job: kind_e2e_test_http
     steps:
