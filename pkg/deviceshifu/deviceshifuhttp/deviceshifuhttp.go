@@ -173,7 +173,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		klog.Infof("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
-		timeoutStr := r.URL.Query().Get(deviceshifubase.DevuceInstructionTimeoutURIQueryStr)
+		timeoutStr := r.URL.Query().Get(deviceshifubase.DeviceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
 			timeout, parseErr = strconv.Atoi(timeoutStr)
 			if parseErr != nil {
@@ -207,7 +207,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpURL, bytes.NewBuffer(requestBody))
 			if reqErr != nil {
 				http.Error(w, reqErr.Error(), http.StatusBadRequest)
-				klog.Errorf("HTTP GET error" + reqErr.Error())
+				klog.Errorf("error creating HTTP request" + reqErr.Error())
 				return
 			}
 
@@ -249,7 +249,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 // if we have localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2
 // and our driverExecution is "/usr/local/bin/python /usr/src/driver/python-car-driver.py"
 // then we will get this command string:
-// /usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency
+// /usr/local/bin/python /usr/src/driver/python-car-driver.py start time=10:00:00 target=machine2 -a -c --no-dependency
 // which is exactly what we need to run if we are operating directly on the device
 func createHTTPCommandlineRequestString(r *http.Request, driverExecution string, instruction string) string {
 	values := r.URL.Query()
@@ -275,7 +275,14 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 			}
 		}
 	}
-	return driverExecution + " --" + instruction + requestStr + flagsStr
+
+	if instruction == deviceshifubase.DeviceDefaultCMDDoNotExec {
+		return strings.TrimSpace(flagsStr)
+	} else if instruction == deviceshifubase.DeviceDefaultCMDStubHealth {
+		return "ls"
+	}
+
+	return driverExecution + " " + instruction + requestStr + flagsStr
 }
 
 // DeviceCommandHandlerHTTPCommandline handler for http commandline
@@ -299,16 +306,52 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			}
 		}
 
+		var (
+			resp              *http.Response
+			httpErr, parseErr error
+			ctx               context.Context
+			cancel            context.CancelFunc
+			timeout           = *instructionSettings.DefaultTimeoutSeconds
+			reqType           = http.MethodPost // For command line interface, we only use POST
+		)
+
 		klog.Infof("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
+		timeoutStr := r.URL.Query().Get(deviceshifubase.DeviceInstructionTimeoutURIQueryStr)
+		if timeoutStr != "" {
+			timeout, parseErr = strconv.Atoi(timeoutStr)
+			if parseErr != nil {
+				http.Error(w, parseErr.Error(), http.StatusBadRequest)
+				klog.Infof("timeout URI parsing error %v", parseErr.Error())
+				return
+			}
+		}
 
 		commandString := createHTTPCommandlineRequestString(r, driverExecution, handlerInstruction)
-		postAddressString := "http://" + *handlerEdgeDeviceSpec.Address + "/post"
-		klog.Infof("posting '%v' to '%v'", commandString, postAddressString)
-		resp, err := handlerHTTPClient.Post(postAddressString, "text/plain", bytes.NewBuffer([]byte(commandString)))
+		// we are passing the 'cmdTimeout' param to HTTP PowerShell stub to control the execution timeout
+		postAddressString := "http://" + *handlerEdgeDeviceSpec.Address + "/?" +
+			deviceshifubase.PowerShellStubTimeoutStr + "=" + timeoutStr
+		klog.Infof("posting HTTP command line '%v' to '%v'", commandString, postAddressString)
 
-		if err != nil {
-			http.Error(w, err.Error(), http.StatusServiceUnavailable)
-			klog.Errorf("HTTP error" + err.Error())
+		if timeout <= 0 {
+			ctx, cancel = context.WithCancel(context.Background())
+		} else {
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+		}
+
+		defer cancel()
+		req, reqErr := http.NewRequestWithContext(ctx, reqType, postAddressString, bytes.NewBuffer([]byte(commandString)))
+		if reqErr != nil {
+			http.Error(w, reqErr.Error(), http.StatusBadRequest)
+			klog.Errorf("error creating HTTP request %v", reqErr.Error())
+			return
+		}
+
+		req.Header.Set("Content-Type", "text/plain")
+		resp, httpErr = handlerHTTPClient.Do(req)
+		if httpErr != nil {
+			http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
+			klog.Errorf("HTTP POST error, %v", httpErr.Error())
+			return
 		}
 
 		if resp != nil {
@@ -321,9 +364,9 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			return
 		}
 
-		// TODO: For now, just write tht instruction to the response
+		// TODO: For now, if response is nil without error, just write the instruction to the response
 		klog.Warningf("resp is nil")
-		_, err = w.Write([]byte(handlerInstruction))
+		_, err := w.Write([]byte(handlerInstruction))
 		if err != nil {
 			klog.Errorf("cannot write instruction into responseBody")
 		}

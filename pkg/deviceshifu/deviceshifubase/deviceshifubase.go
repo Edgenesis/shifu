@@ -58,9 +58,12 @@ const (
 	DeviceKubeconfigDoNotLoadStr             string = "NULL"
 	DeviceNameSpaceDefault                   string = "default"
 	KubernetesConfigDefault                  string = ""
-	DevuceInstructionTimeoutURIQueryStr      string = "timeout"
+	DeviceInstructionTimeoutURIQueryStr      string = "timeout"
 	DeviceDefaultGolbalTimeoutInSeconds      int    = 3
 	DefaultHTTPServerTimeoutInSeconds        int    = 0
+	DeviceDefaultCMDDoNotExec                string = "issue_cmd"
+	DeviceDefaultCMDStubHealth               string = "stub_health"
+	PowerShellStubTimeoutStr                 string = "cmdTimeout"
 )
 
 var (
