@@ -1,4 +1,4 @@
-# 自[v0.0.6]以来的变化日志(https://github.com/Edgenesis/shifu/releases/tag/v0.0.6)
+# 自 [v0.0.6](https://github.com/Edgenesis/shifu/releases/tag/v0.0.6) 以来的变化日志
 
 # ⚠️ 重大变化 ⚠️
 * 将Shifu的项目重构为单一项目目录 by @BtXin in https://github.com/Edgenesis/shifu/pull/217
