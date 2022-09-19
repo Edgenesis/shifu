@@ -24,6 +24,6 @@
 
 ## 新的贡献者
 * @yufeiminds 在 https://github.com/Edgenesis/shifu/pull/245 中做出了他们的第一个贡献。
-* @geffzhang 在 https://github.com/Edgenesis/shifu/pull/259，做出了他们的第一个贡献。
+* @geffzhang 在 https://github.com/Edgenesis/shifu/pull/259 做出了他们的第一个贡献。
 
 **完整的更新日志**：https://github.com/Edgenesis/shifu/compare/v0.1.0...v0.1.1
