@@ -377,8 +377,8 @@ stages:
           kind --version
           kind delete cluster && kind create cluster
           kind load docker-image edgehub/shifu-controller:$(tag)  
-          kind load docker-image edgedevice/edgedevice-http-mqtt:$(tag)
-          
+          kind load docker-image edgehub/deviceshifu-http-mqtt:$(tag)
+
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
           kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
