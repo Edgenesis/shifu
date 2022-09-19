@@ -377,6 +377,7 @@ stages:
           kind --version
           kind delete cluster && kind create cluster
           kind load docker-image edgehub/shifu-controller:$(tag)  
+          kind load docker-image edgehub/deviceshifu-http-mqtt:$(tag)
 
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
