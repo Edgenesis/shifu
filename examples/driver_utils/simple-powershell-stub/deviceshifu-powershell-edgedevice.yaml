@@ -6,5 +6,5 @@ metadata:
 spec:
   sku: "testPowerShell" 
   connection: Ethernet
-  address: 192.168.15.248:11112 #change this accordingly
+  address: 192.168.15.104:11112 #change this accordingly
   protocol: HTTPCommandline

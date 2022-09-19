@@ -30,7 +30,7 @@ type HandlerMetaData struct {
 	properties     *deviceshifubase.DeviceShifuInstruction
 }
 
-//CommandlineHandlerMetadata MetaData for HTTPCommandline handler
+// CommandlineHandlerMetadata MetaData for HTTPCommandline handler
 type CommandlineHandlerMetadata struct {
 	edgeDeviceSpec  v1alpha1.EdgeDeviceSpec
 	instruction     string
@@ -42,7 +42,7 @@ var (
 	instructionSettings *deviceshifubase.DeviceShifuInstructionSettings
 )
 
-//New This function creates a new Device Shifu based on the configuration
+// New This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifuHTTP, error) {
 	if deviceShifuMetadata.Namespace == "" {
 		return nil, fmt.Errorf("DeviceShifuHTTP's namespace can't be empty")
@@ -313,12 +313,23 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			cancel            context.CancelFunc
 			timeout           = *instructionSettings.DefaultTimeoutSeconds
 			reqType           = http.MethodPost // For command line interface, we only use POST
+			toleration        = 1
 		)
 
 		klog.Infof("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
 		timeoutStr := r.URL.Query().Get(deviceshifubase.DeviceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
 			timeout, parseErr = strconv.Atoi(timeoutStr)
+			if parseErr != nil {
+				http.Error(w, parseErr.Error(), http.StatusBadRequest)
+				klog.Infof("timeout URI parsing error %v", parseErr.Error())
+				return
+			}
+		}
+
+		tolerationStr := r.URL.Query().Get(deviceshifubase.PowerShellStubTimeoutTolerationStr)
+		if tolerationStr != "" {
+			toleration, parseErr = strconv.Atoi(tolerationStr)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
 				klog.Infof("timeout URI parsing error %v", parseErr.Error())
@@ -335,7 +346,10 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		if timeout <= 0 {
 			ctx, cancel = context.WithCancel(context.Background())
 		} else {
-			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout)*time.Second)
+			// Special handle for HTTP stub since the connection b/w deviceShifu and stub will have some
+			// latency, cancelling the PowerShell execution and context at the same time will result in context
+			// cancel without an return value
+			ctx, cancel = context.WithTimeout(context.Background(), time.Duration(timeout+toleration)*time.Second)
 		}
 
 		defer cancel()
@@ -379,7 +393,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 	telemetryCollectionResult := false
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolHTTP:
+		case v1alpha1.ProtocolHTTP, v1alpha1.ProtocolHTTPCommandline:
 			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
 			for telemetry, telemetryProperties := range telemetries {
 				if ds.base.EdgeDevice.Spec.Address == nil {
@@ -431,7 +445,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				return false, nil
 			}
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceshif", protocol)
+			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu_http_http", protocol)
 			return false, nil
 		}
 	}

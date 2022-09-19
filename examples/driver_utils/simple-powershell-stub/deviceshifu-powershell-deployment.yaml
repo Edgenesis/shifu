@@ -2,21 +2,21 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: edgedevice-powershell-deployment
-  name: edgedevice-powershell-deployment
-  namespace: default
+    app: deviceshifu-powershell-deployment
+  name: deviceshifu-powershell-deployment
+  namespace: deviceshifu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: edgedevice-powershell-deployment
+      app: deviceshifu-powershell-deployment
   template:
     metadata:
       labels:
-        app: edgedevice-powershell-deployment
+        app: deviceshifu-powershell-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-powershell:v0.0.1
+      - image: edgehub/deviceshifu-http-http:v0.1.1
         name: deviceshifu-http
         ports:
         - containerPort: 8080
@@ -32,5 +32,5 @@ spec:
       volumes:
       - name: edgedevice-config
         configMap:
-          name: powershell-configmap-0.0.1
+          name: deviceshifu-powershell-configmap-0.0.1
       serviceAccountName: edgedevice-sa

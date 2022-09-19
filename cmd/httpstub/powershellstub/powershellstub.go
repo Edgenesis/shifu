@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"log"
+	"k8s.io/klog/v2"
 	"net/http"
 	"os"
 	"os/exec"
@@ -22,12 +22,12 @@ var (
 func init() {
 	if driverHTTPPort == "" {
 		driverHTTPPort = "11112"
-		log.Printf("No HTTP Port specified for driver, default to %v", driverHTTPPort)
+		klog.Infof("No HTTP Port specified for driver, default to %v", driverHTTPPort)
 	}
 
 	if cmdExecTimeoutSecond == "" {
 		cmdExecTimeoutSecond = "5"
-		log.Printf("No SSH exec timeout specified for driver, default to %v seconds", cmdExecTimeoutSecond)
+		klog.Infof("No SSH exec timeout specified for driver, default to %v seconds", cmdExecTimeoutSecond)
 	}
 }
 
@@ -35,18 +35,18 @@ func main() {
 	http.HandleFunc("/", httpCmdlinePostHandler)
 	http.HandleFunc("/fileserve", httpFileServeHandler)
 	http.HandleFunc("/stub_health", httpHealthHandler)
-	log.Fatal(http.ListenAndServe("0.0.0.0:"+driverHTTPPort, nil))
+	klog.Fatal(http.ListenAndServe("0.0.0.0:"+driverHTTPPort, nil))
 }
 
 func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 	values := req.URL.Query()
 	for parameterName, parameterValues := range values {
-		log.Printf("paramname is: %v, value is: %v\n", parameterName, parameterValues[0])
+		klog.Infof("paramname is: %v, value is: %v", parameterName, parameterValues[0])
 	}
 
 	timeoutSeconds, err := strconv.Atoi(cmdExecTimeoutSecond)
 	if err != nil {
-		log.Printf("cannot convert cmdExecTimeoutSecond: %v to integer", cmdExecTimeoutSecond)
+		klog.Infof("cannot convert cmdExecTimeoutSecond: %v to integer", cmdExecTimeoutSecond)
 		resp.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -54,12 +54,12 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 	timeoutValue := req.URL.Query().Get("cmdTimeout")
 
 	if timeoutValue == "" {
-		log.Printf("Url Param 'cmdTimeout' is missing, setting default to: %v", cmdExecTimeoutSecond)
+		klog.Infof("Url Param 'cmdTimeout' is missing, setting default to: %v", cmdExecTimeoutSecond)
 	} else {
 		timeoutSeconds, err = strconv.Atoi(timeoutValue)
-		log.Printf("Setting timeout to: %v", timeoutSeconds)
+		klog.Infof("Setting timeout to: %v", timeoutSeconds)
 		if err != nil {
-			log.Printf("cannot convert timeout param: %v to integer", timeoutValue)
+			klog.Infof("cannot convert timeout param: %v to integer", timeoutValue)
 			resp.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -72,19 +72,19 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 	}
 
 	cmdString := string(httpCommand)
-	log.Printf("running command: %v\n", cmdString)
+	klog.Infof("running command: %v", cmdString)
 	posh := New()
 	stdOut, stdErr, err := posh.execute(timeoutSeconds, cmdString)
-	log.Printf("ElevateProcessCmds:\nStdOut : '%s'\nStdErr: '%s'\nErr: %s", strings.TrimSpace(stdOut), stdErr, err)
+	klog.Infof("ElevateProcessCmds:\nStdOut : '%s'\nStdErr: '%s'\nErr: %s", strings.TrimSpace(stdOut), stdErr, err)
 
 	if err != nil {
-		log.Printf("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stdErr, stdOut)
+		klog.Infof("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stdErr, stdOut)
 		resp.WriteHeader(http.StatusBadRequest)
 		resp.Write(append([]byte(stdErr), []byte(stdOut)...))
 		return
 	}
 
-	log.Printf("cmd: %v success", cmdString)
+	klog.Infof("cmd: %v success", cmdString)
 	resp.WriteHeader(http.StatusOK)
 	resp.Write([]byte(stdOut))
 }
@@ -102,7 +102,7 @@ func httpFileServeHandler(resp http.ResponseWriter, req *http.Request) {
 
 	fileLocationString := string(httpFileLocation)
 
-	log.Printf("File to open: %v", fileLocationString)
+	klog.Infof("File to open: %v", fileLocationString)
 
 	if _, err := os.Stat(fileLocationString); err == nil {
 		fileBytes, err := ioutil.ReadFile(fileLocationString)
@@ -114,11 +114,11 @@ func httpFileServeHandler(resp http.ResponseWriter, req *http.Request) {
 		resp.Write(fileBytes)
 		return
 	} else if errors.Is(err, os.ErrNotExist) {
-		log.Printf("File does not exist: %v", fileLocationString)
+		klog.Infof("File does not exist: %v", fileLocationString)
 		resp.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(resp, "File does not exist: "+fileLocationString+"\n")
 	} else {
-		log.Printf("File may not exist: %v", fileLocationString)
+		klog.Infof("File may not exist: %v", fileLocationString)
 		resp.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(resp, "File may not exist: "+fileLocationString+"\n")
 	}
@@ -160,13 +160,13 @@ func (p *PowerShell) execute(timeoutSeconds int, args ...string) (stdOut string,
 	case <-timeout:
 		// Timeout happened first, kill the process and print a message.
 		cmd.Process.Kill()
-		log.Println("Command timed out")
+		klog.Infof("Command timed out")
 		err = fmt.Errorf("command timed out")
 	case err = <-done:
 		// Command completed before timeout. Print output and error if it exists.
 		// fmt.Println("Output:", stdout.String())
 		if err != nil {
-			fmt.Println("Non-zero exit code:", err)
+			klog.Infof("Non-zero exit code: %v", err)
 		}
 	}
 	// err = cmd.Run()

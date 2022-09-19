@@ -64,6 +64,7 @@ const (
 	DeviceDefaultCMDDoNotExec                string = "issue_cmd"
 	DeviceDefaultCMDStubHealth               string = "stub_health"
 	PowerShellStubTimeoutStr                 string = "cmdTimeout"
+	PowerShellStubTimeoutTolerationStr       string = "stub_toleration"
 )
 
 var (

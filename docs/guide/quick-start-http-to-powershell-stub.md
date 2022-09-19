@@ -18,12 +18,12 @@ The main function for this stub is to take whatever passed to it in the HTTP bod
 
 `386`:
 ```bash
-GOOS=windows GOARCH=386 go build -a -o /output/http2powershell.exe http_to_powershell_stub.go
+GOOS=windows GOARCH=386 go build -a -o http2powershell.exe cmd/httpstub/powershellstub/powershellstub.go
 ```
 
 `amd64`:
 ```bash
-GOOS=windows GOARCH=amd64 go build -a -o /output/http2powershell.exe http_to_powershell_stub.go
+GOOS=windows GOARCH=amd64 go build -a -o http2powershell.exe cmd/httpstub/powershellstub/powershellstub.go
 ```
 
 ## Usage:
@@ -87,7 +87,7 @@ The request will then passes from the HTTP stub into the `PowerShell` of the `Wi
 
 `> powershell.exe ping 8.8.8.8`
 
-Note that the default timeout `EDGEDEVICE_DRIVER_EXEC_TIMEOUT_SECOND` can be overwritten by the `cmdTimeout` flag in URL, for example:
+Note that the default timeout `EDGEDEVICE_DRIVER_EXEC_TIMEOUT_SECOND` can be overwritten by the `timeout` flag in URL, for example:
 Without flag(command timeout, incomplete output):
 ```bash
 root@nginx:/# curl "example.com/issue_cmd?flags_no_parameter=ping,-n,6,8.8.8.8"   
@@ -102,7 +102,7 @@ Reply from 8.8.8.8: bytes=32 time=59ms TTL=114
 
 With flag(complete output):
 ```bash
-root@nginx:/# curl "example.com/issue_cmd?cmdTimeout=10&flags_no_parameter=ping,-n,6,8.8.8.8" 
+root@nginx:/# curl "example.com/issue_cmd?timeout=10&flags_no_parameter=ping,-n,6,8.8.8.8" 
 
 Pinging 8.8.8.8 with 32 bytes of data:
 Reply from 8.8.8.8: bytes=32 time=60ms TTL=114
@@ -116,4 +116,9 @@ Ping statistics for 8.8.8.8:
     Packets: Sent = 6, Received = 6, Lost = 0 (0% loss),
 Approximate round trip times in milli-seconds:
     Minimum = 59ms, Maximum = 60ms, Average = 59ms
+```
+
+We also added a parameter `stub_toleration` to handle latency issue between deviceShifu and the stub. By default it is set to `1` second. You can override this using the following:
+```bash
+root@nginx:/# curl "example.com/issue_cmd?timeout=10&flags_no_parameter=ping,-n,6,8.8.8.8&stub_toleration=0" 
 ```

@@ -118,12 +118,6 @@ stages:
           command: 'get'
           arguments: '-d'
           workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuhttp'
-      - script: |
-          go.exe env
-        displayName: "Print Windows Go Env"
-      - script: |
-          go.exe build -a -o http2powershell.exe .\cmd\httpstub\powershellstub\
-        displayName: "Print Windows Go Env"
       - task: Go@0
         displayName: "go build http to powershell stub"
         inputs:
