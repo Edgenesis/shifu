@@ -141,7 +141,7 @@
 
 1. **设备连接（用户操作不在下图中）**  
 1.1 连接: ***edgeDevice*** 物理连接到 ***edgeNode*** 。  
-1.2 设备连接: ***shifud*** 检测到设备连接事件，将时间发送给 ***shifuController*** 。  
+1.2 设备连接: ***shifud*** 检测到设备连接事件，将事件发送给 ***shifuController*** 。  
 1.3 创建: ***shifuController*** 创建一个 ***edgeDevice*** 的 ***standalone/swarm mode*** 的 ***deviceShifu*** 。  
 1.4 管理: ***deviceShifu*** 开始管理新连接的 ***edgeDevice*** 。
 

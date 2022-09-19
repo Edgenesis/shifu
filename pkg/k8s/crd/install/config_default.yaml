@@ -438,7 +438,7 @@ spec:
         - --telemetry-interval=60
         command:
         - /manager
-        image: edgehub/shifu-controller:v0.1.0
+        image: edgehub/shifu-controller:v0.1.1
         livenessProbe:
           httpGet:
             path: /healthz
