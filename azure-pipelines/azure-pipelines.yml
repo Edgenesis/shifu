@@ -125,9 +125,8 @@ stages:
           workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/httpstub/powershellstub'
           arguments: '-a -o $(System.DefaultWorkingDirectory)/output/http2powershell.exe'
       - script: |
-          # START "" $(System.DefaultWorkingDirectory)/output/http2powershell.exe
+          START "" $(System.DefaultWorkingDirectory)/output/http2powershell.exe
           curl.exe -d "ls" "http://localhost:11112/issue_cmd"
-          curl.exe -d "ping 8.8.8.8" "http://localhost:11112/issue_cmd?cmdTimeout=1" -v
         displayName: test powershell stub
 
   - job: kind_e2e_test_http
