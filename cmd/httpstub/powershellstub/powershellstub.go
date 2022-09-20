@@ -66,7 +66,6 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	// defer session.Close()
 	httpCommand, err := ioutil.ReadAll(req.Body)
 	if err != nil {
 		panic(err)
@@ -81,18 +80,27 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 	if err != nil {
 		klog.Infof("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stdErr, stdOut)
 		resp.WriteHeader(http.StatusBadRequest)
-		resp.Write(append([]byte(stdErr), []byte(stdOut)...))
+		_, writeErr := resp.Write(append([]byte(stdErr), []byte(stdOut)...))
+		if writeErr != nil {
+			klog.Info("Failed to write std err and std out to response")
+		}
 		return
 	}
 
 	klog.Infof("cmd: %v success", cmdString)
 	resp.WriteHeader(http.StatusOK)
-	resp.Write([]byte(stdOut))
+	_, writeErr := resp.Write([]byte(stdOut))
+	if writeErr != nil {
+		klog.Info("Failed to write std err and std out to response")
+	}
 }
 
 func httpHealthHandler(resp http.ResponseWriter, req *http.Request) {
 	resp.WriteHeader(http.StatusOK)
-	resp.Write([]byte("Stub is Running!"))
+	_, writeErr := resp.Write([]byte("Stub is Running!"))
+	if writeErr != nil {
+		klog.Info("Failed to write stub running status to response")
+	}
 }
 
 func httpFileServeHandler(resp http.ResponseWriter, req *http.Request) {
@@ -112,7 +120,10 @@ func httpFileServeHandler(resp http.ResponseWriter, req *http.Request) {
 		}
 		resp.WriteHeader(http.StatusOK)
 		resp.Header().Set("Content-Type", "application/octet-stream")
-		resp.Write(fileBytes)
+		_, writeErr := resp.Write(fileBytes)
+		if writeErr != nil {
+			klog.Info("Failed to write fileBytes to response")
+		}
 		return
 	} else if errors.Is(err, os.ErrNotExist) {
 		klog.Infof("File does not exist: %v", fileLocationString)
@@ -146,7 +157,9 @@ func (p *PowerShell) execute(timeoutSeconds int, args ...string) (stdOut string,
 	cmd.Stdout = &stdout
 	cmd.Stderr = &stderr
 
-	cmd.Start()
+	if err := cmd.Start(); err != nil {
+		klog.Infof("Failed to start PowerShell command, args: %v", args)
+	}
 
 	// Use a channel to signal completion so we can use a select statement
 	done := make(chan error)
@@ -160,7 +173,10 @@ func (p *PowerShell) execute(timeoutSeconds int, args ...string) (stdOut string,
 	select {
 	case <-timeout:
 		// Timeout happened first, kill the process and print a message.
-		cmd.Process.Kill()
+		if pKillErr := cmd.Process.Kill(); pKillErr != nil {
+			klog.Infof("Failed to kill the process after timeout, error: %v", err)
+		}
+
 		klog.Infof("Command timed out")
 		err = fmt.Errorf("command timed out")
 	case err = <-done:
@@ -170,7 +186,7 @@ func (p *PowerShell) execute(timeoutSeconds int, args ...string) (stdOut string,
 			klog.Infof("Non-zero exit code: %v", err)
 		}
 	}
-	// err = cmd.Run()
+
 	stdOut, stdErr = stdout.String(), stderr.String()
 	return
 }
