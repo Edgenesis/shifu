@@ -101,7 +101,7 @@ By default, `deviceShifu` will provide raw data from physical device to the appl
 To make `deviceShifu` able to "translate" the raw data to a more application-friendly format as well as filter out unneeded data, we can provide customized handlers to `deviceShifu`. For example, using Python, we add customized handlers like this:
 
 1. in `deviceshifu/python_customized_handlers/customized_handlers.py`, add a new function with the function name being instruction name.
-2. make sure the function takes a stirng (raw_data) and returns a string (processed_data which app-friendly).
+2. make sure the function takes a string (raw_data) and returns a string (processed_data which app-friendly).
 
 
 By default, `deviceShifu` will use the default command handler to process the data of each instruction, and calling the endpoint of the instruction will give a response of raw data from device. 
