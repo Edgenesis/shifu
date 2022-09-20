@@ -123,7 +123,11 @@ stages:
         inputs:
           command: 'build'
           workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/httpstub/powershellstub'
-          arguments: '-a -o /output/http2powershell.exe'
+          arguments: '-a -o $(System.DefaultWorkingDirectory)/output/http2powershell.exe'
+      - script: |
+          START "" $(System.DefaultWorkingDirectory)/output/http2powershell.exe
+          curl.exe -d "ls" "http://localhost:11112/issue_cmd"
+        displayName: test powershell stub
 
   - job: kind_e2e_test_http
     steps:
