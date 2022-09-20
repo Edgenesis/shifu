@@ -108,6 +108,8 @@ By default, `deviceShifu` will use the default command handler to process the da
 
 If user registers the custom handler, `deviceShifu` will switch to use the custom handler for that instruction. As a result, a call to the endpoint of that instruction will respond the processed data instead of raw data.
 
+As for error handling, we expect the `deviceShifu` to log out an error on a handler failure. 
+
 **customized_handlers.py**\
 We add a function to process data from instruction ```humidity```:
 ```python
