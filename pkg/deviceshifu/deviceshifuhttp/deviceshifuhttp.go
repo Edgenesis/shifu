@@ -376,7 +376,8 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 
 				if resp != nil {
 					if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
-						if telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]; exist {
+						telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
+						if exist && telemetryCollectionService != "" {
 							deviceshifubase.PushToHTTPTelemetryCollectionService(protocol, resp, telemetryCollectionService)
 						}
 
@@ -388,7 +389,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				return false, nil
 			}
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceshif", protocol)
+			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
 		}
 	}
