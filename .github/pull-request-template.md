@@ -9,6 +9,9 @@
 **Which issue this PR fixes** *(optional, in `fixes #<issue number>(, fixes #<issue_number>, ...)` format, will close that issue when PR gets merged)*: fixes #
 
 **How is this PR tested**
+- [ ] unit test
+- [ ] e2e test
+- [ ] other (please specify)
 
 **Special notes for your reviewer**:
 
