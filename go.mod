@@ -6,8 +6,8 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.1
 	github.com/gopcua/opcua v0.3.5
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/apimachinery v0.25.1
-	k8s.io/client-go v0.25.1
+	k8s.io/apimachinery v0.25.2
+	k8s.io/client-go v0.25.2
 	knative.dev/pkg v0.0.0-20210915055909-d8349b0909c4
 )
 
@@ -80,7 +80,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.25.1 // indirect
+	k8s.io/api v0.25.2 // indirect
 	k8s.io/apiextensions-apiserver v0.25.0 // indirect
 	k8s.io/component-base v0.25.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
