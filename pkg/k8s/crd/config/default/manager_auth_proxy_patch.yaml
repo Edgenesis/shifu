@@ -26,4 +26,4 @@ spec:
         - "--leader-elect"
         - "--enable-telemetry"
         - "--telemetry-interval=60"
-        - "--source=product"
+        - "--source=shifu_product"
