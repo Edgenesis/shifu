@@ -95,6 +95,8 @@ spec:
                     description: SocketSetting defines Socket specific settings when
                       connecting to an EdgeDevice
                     properties:
+                      bufferLength:
+                        type: integer
                       encoding:
                         type: string
                       networkType:

@@ -10,5 +10,6 @@ spec:
   protocol: Socket
   protocolSettings:
     SocketSetting:
-      encoding: utf-8
+      encoding: hex
       networkType: tcp
+      bufferLength: 10

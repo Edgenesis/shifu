@@ -47,8 +47,9 @@ type OPCUASetting struct {
 
 // SocketSetting defines Socket specific settings when connecting to an EdgeDevice
 type SocketSetting struct {
-	Encoding    *string `json:"encoding,omitempty"`
-	NetworkType *string `json:"networkType,omitempty"`
+	Encoding     *string `json:"encoding,omitempty"`
+	BufferLength *int    `json:"bufferLength,omitempty"`
+	NetworkType  *string `json:"networkType,omitempty"`
 }
 
 // ProtocolSettings defines protocol settings when connecting to an EdgeDevice

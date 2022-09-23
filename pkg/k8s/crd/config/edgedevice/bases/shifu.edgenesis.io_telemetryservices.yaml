@@ -42,7 +42,7 @@ spec:
                   type: string
                 type: object
               serviceSettings:
-                description: ProtocolSettings defines protocol settings when connecting
+                description: ServiceSettings defines protocol settings when connecting
                   to an EdgeDevice
                 properties:
                   HTTPSetting:

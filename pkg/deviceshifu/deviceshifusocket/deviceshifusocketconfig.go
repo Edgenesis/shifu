@@ -11,3 +11,12 @@ type ReturnBody struct {
 	Message string `json:"message"`
 	Status  int    `json:"status"`
 }
+
+const (
+	EncodeUTF8Str = "utf-8"
+	EncodeHexStr  = "hex"
+)
+
+const (
+	DefaultBufferLength = 1024
+)
