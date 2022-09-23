@@ -3,6 +3,7 @@ package deviceshifusocket
 import (
 	"io"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
@@ -79,5 +80,48 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 	if err := mockds.Stop(); err != nil {
 		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
+	}
+}
+
+func TestPraseCommandWithEncode(t *testing.T) {
+	input := "1230000abc"
+	var outputHex = []byte{18, 48, 0, 10, 188}
+
+	output, err := praseCommandWithEncode(input, EncodeHexStr)
+	if err != nil {
+		t.Errorf("%+v", err)
+	}
+	if !reflect.DeepEqual(output, outputHex) {
+		t.Errorf("not match with current output, output: %v", output)
+	}
+
+	output, err = praseCommandWithEncode(input, EncodeUTF8Str)
+	if err != nil {
+		t.Errorf("%+v", err)
+	}
+	if input != string(output) {
+		t.Errorf("not match with current output, output: %v", output)
+	}
+}
+
+func TestEncodeMessageWithEncoding(t *testing.T) {
+	var inputHex = []byte{18, 48, 0, 10, 188}
+	var output = "1230000abc"
+
+	output1, err := encodeMessageWithEncoding(inputHex, EncodeHexStr)
+	if err != nil {
+		t.Errorf("%+v", err)
+	}
+	if output1 != output {
+		t.Errorf("not match with current output, output: %v", output)
+	}
+
+	var inputUtf8 = []byte{49, 50, 51, 48, 48, 48, 48, 97, 98, 99}
+	output2, err := encodeMessageWithEncoding(inputUtf8, EncodeUTF8Str)
+	if err != nil {
+		t.Errorf("%+v", err)
+	}
+	if output2 != output {
+		t.Errorf("not match with current output, output: %v", output)
 	}
 }
