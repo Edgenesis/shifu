@@ -55,12 +55,14 @@ func main() {
 	var enableLeaderElection bool
 	var enableTelemetry bool
 	var probeAddr string
+	var sourceStr string
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&enableTelemetry, "enable-telemetry", false, "Collect telemetry")
+	flag.StringVar(&sourceStr, "source", utils.DEFAULT_SOURCE, "Collect default source")
 	flag.IntVar(&utils.TelemetryIntervalInSecond, "telemetry-interval", 60, "Telemetry Interval")
 	opts := zap.Options{
 		Development: true,
@@ -69,7 +71,7 @@ func main() {
 	flag.Parse()
 
 	if enableTelemetry {
-		go telemetry.StartTelemetry()
+		go telemetry.StartTelemetry(sourceStr)
 	}
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))

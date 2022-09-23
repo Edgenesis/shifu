@@ -13,7 +13,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func StartTelemetry() {
+func StartTelemetry(source string) {
 	for {
 		publicIP, err := utils.GetPublicIPAddr(utils.URL_EXTERNAL_IP)
 		if err != nil {
@@ -73,7 +73,7 @@ func StartTelemetry() {
 
 		controllerTelemetry := types.TelemetryResponse{
 			IP:          publicIP,
-			Source:      utils.SOURCE_SHIFU_CONTROLLER,
+			Source:      source,
 			Task:        utils.TASK_RUN_DEMO_KIND,
 			ClusterInfo: clusterInfoTelemetry,
 		}
