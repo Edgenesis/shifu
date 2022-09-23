@@ -55,7 +55,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			if bufferLength == nil {
 				klog.Errorf("Socket bufferLength if empty, default to 1024")
 				var defaultBufferLength = DefaultBufferLength
-				bufferLength = &defaultBufferLength
+				*bufferLength = defaultBufferLength
 			}
 
 			socketConnection, err := net.Dial(*connectionType, *base.EdgeDevice.Spec.Address)
