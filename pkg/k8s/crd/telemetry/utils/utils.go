@@ -20,7 +20,7 @@ const (
 	URL_SHIFU_TELEMETRY    = "https://telemetry.shifu.run/shifu-telemetry/"
 	URL_DEFAULT_PUBLIC_IP  = "0.0.0.0"
 	TASK_RUN_DEMO_KIND     = "run_shifu_release"
-	DEFAULT_SOURCE         = "shifu_product"
+	DEFAULT_SOURCE         = "default"
 	HTTP_CONTENT_TYPE_JSON = "application/json"
 )
 

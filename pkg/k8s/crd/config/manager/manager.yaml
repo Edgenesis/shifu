@@ -31,7 +31,7 @@ spec:
         - --leader-elect
         - --enable-telemetry
         - --telemetry-interval=60
-        - --source=shifu_product
+        - --source=default
         image: controller:latest
         name: manager
         securityContext:
