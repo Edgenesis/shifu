@@ -47,7 +47,9 @@ type OPCUASetting struct {
 
 // SocketSetting defines Socket specific settings when connecting to an EdgeDevice
 type SocketSetting struct {
-	Encoding     *string `json:"encoding,omitempty"`
+	// +kubebuilder:default="utf-8"
+	Encoding *string `json:"encoding,omitempty"`
+	// +kubebuilder:default=1024
 	BufferLength *int    `json:"bufferLength,omitempty"`
 	NetworkType  *string `json:"networkType,omitempty"`
 }

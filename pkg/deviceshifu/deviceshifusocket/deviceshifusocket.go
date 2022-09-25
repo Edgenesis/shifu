@@ -41,21 +41,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		case v1alpha1.ProtocolSocket:
 			// Open the connection:
 			connectionType := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
-			encoding := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.Encoding
-			bufferLength := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.BufferLength
 			if connectionType == nil || *connectionType != "tcp" {
 				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
-			}
-
-			if encoding == nil {
-				klog.Errorf("Socket encoding not specified, default to UTF-8")
-				return nil, fmt.Errorf("Encoding error")
-			}
-
-			if bufferLength == nil {
-				klog.Errorf("Socket bufferLength if empty, default to 1024")
-				var defaultBufferLength = DefaultBufferLength
-				*bufferLength = defaultBufferLength
 			}
 
 			socketConnection, err := net.Dial(*connectionType, *base.EdgeDevice.Spec.Address)
@@ -113,7 +100,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 			}
 		}
 
-		command, err := praseCommandWithEncode(socketRequest.Command, *settings.Encoding)
+		command, err := decodeCommand(socketRequest.Command, *settings.Encoding)
 		if err != nil {
 			klog.Errorf("cannot prase Command from body, error: %v", err)
 			http.Error(w, "Failed tprase Command from body, error:  "+err.Error(), http.StatusBadRequest)
@@ -136,10 +123,10 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 			return
 		}
 
-		outputMessage, err := encodeMessageWithEncoding(message, *settings.Encoding)
+		outputMessage, err := encodeMessage(message, *settings.Encoding)
 		if err != nil {
-			klog.Errorf("Error when encode message with Encoding, %v", err)
-			http.Error(w, "Failed to encode message with Encoding, error: "+err.Error(), http.StatusBadRequest)
+			klog.Errorf("Error when encode message with Encoding, Encoding %v, error: %v", *settings.Encoding, err)
+			http.Error(w, "Failed to encode message with Encoding,  Encoding "+*settings.Encoding+", error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -195,7 +182,7 @@ func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
 }
 
-func praseCommandWithEncode(input string, encode string) ([]byte, error) {
+func decodeCommand(input string, encode string) ([]byte, error) {
 	var output []byte
 	var err error
 
@@ -210,7 +197,7 @@ func praseCommandWithEncode(input string, encode string) ([]byte, error) {
 	return output, err
 }
 
-func encodeMessageWithEncoding(input []byte, encode string) (string, error) {
+func encodeMessage(input []byte, encode string) (string, error) {
 	var output string
 	var err error
 
