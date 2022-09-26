@@ -43,18 +43,18 @@ PLC4X supports both `read` and `write` requests.
 For read, the method signature looks like:
 ```go
 // Prepare a read-request
-	readRequest, err := connection.ReadRequestBuilder().
-		AddQuery("field", "holding-register:26:REAL").
-		AddQuery("field", "holding-register:3:REAL").
-		Build()
+readRequest, err := connection.ReadRequestBuilder().
+	AddQuery("field", "holding-register:26:REAL").
+	AddQuery("field", "holding-register:3:REAL").
+	Build()
 ```
 For write, the method signature looks like:
 ```go
 // Prepare a write-request
-	writeRequest, err := connection.WriteRequestBuilder().
-		AddQuery("field", "holding-register:26:REAL", 2.7182818284).
-		AddQuery("field", "holding-register:3:REAL", 3.141592657).
-		Build()
+writeRequest, err := connection.WriteRequestBuilder().
+	AddQuery("field", "holding-register:26:REAL", 2.7182818284).
+	AddQuery("field", "holding-register:3:REAL", 3.141592657).
+	Build()
 ```
 
 Thus, we can construct the REST request as the following format:
