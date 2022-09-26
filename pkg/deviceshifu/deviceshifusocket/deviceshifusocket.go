@@ -126,7 +126,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		outputMessage, err := encodeMessage(message, *settings.Encoding)
 		if err != nil {
 			klog.Errorf("Error when encode message with Encoding, Encoding %v, error: %v", *settings.Encoding, err)
-			http.Error(w, "Failed to encode message with Encoding,  Encoding "+*settings.Encoding+", error: "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "Failed to encode message with Encoding,  Encoding "+string(*settings.Encoding)+", error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -182,14 +182,14 @@ func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
 }
 
-func decodeCommand(input string, encode string) ([]byte, error) {
+func decodeCommand(input string, encode v1alpha1.Encoding) ([]byte, error) {
 	var output []byte
 	var err error
 
 	switch encode {
-	case v1alpha1.EncodeHexStr:
+	case v1alpha1.HEX:
 		output, err = hex.DecodeString(input)
-	case v1alpha1.EncodeUTF8Str:
+	case v1alpha1.UTF8:
 		fallthrough
 	default:
 		output = []byte(input)
@@ -197,14 +197,14 @@ func decodeCommand(input string, encode string) ([]byte, error) {
 	return output, err
 }
 
-func encodeMessage(input []byte, encode string) (string, error) {
+func encodeMessage(input []byte, encode v1alpha1.Encoding) (string, error) {
 	var output string
 	var err error
 
 	switch encode {
-	case v1alpha1.EncodeHexStr:
+	case v1alpha1.HEX:
 		output = hex.EncodeToString(input)
-	case v1alpha1.EncodeUTF8Str:
+	case v1alpha1.UTF8:
 		fallthrough
 	default:
 		output = string(input)

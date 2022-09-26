@@ -88,7 +88,7 @@ func TestDecodeCommand(t *testing.T) {
 	input := "1230000abc"
 	var outputHex = []byte{18, 48, 0, 10, 188}
 
-	output, err := decodeCommand(input, v1alpha1.EncodeHexStr)
+	output, err := decodeCommand(input, v1alpha1.HEX)
 	if err != nil {
 		t.Errorf("Error when decodeCommand on test1, error:%v", err)
 	}
@@ -96,7 +96,7 @@ func TestDecodeCommand(t *testing.T) {
 		t.Errorf("not match with current output, output: %v", output)
 	}
 
-	output, err = decodeCommand(input, v1alpha1.EncodeUTF8Str)
+	output, err = decodeCommand(input, v1alpha1.UTF8)
 	if err != nil {
 		t.Errorf("Error when decodeCommand on test2, error: %v", err)
 	}
@@ -109,7 +109,7 @@ func TestEncodeMessage(t *testing.T) {
 	var inputHex = []byte{18, 48, 0, 10, 188}
 	var output = "1230000abc"
 
-	output1, err := encodeMessage(inputHex, v1alpha1.EncodeHexStr)
+	output1, err := encodeMessage(inputHex, v1alpha1.HEX)
 	if err != nil {
 		t.Errorf("Error when decodeCommand on test1, error: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestEncodeMessage(t *testing.T) {
 	}
 
 	var inputUtf8 = []byte{49, 50, 51, 48, 48, 48, 48, 97, 98, 99}
-	output2, err := encodeMessage(inputUtf8, v1alpha1.EncodeUTF8Str)
+	output2, err := encodeMessage(inputUtf8, v1alpha1.UTF8)
 	if err != nil {
 		t.Errorf("Error when decodeCommand on test1, error: %v", err)
 	}
