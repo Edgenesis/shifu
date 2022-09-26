@@ -8,6 +8,7 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -87,7 +88,7 @@ func TestDecodeCommand(t *testing.T) {
 	input := "1230000abc"
 	var outputHex = []byte{18, 48, 0, 10, 188}
 
-	output, err := decodeCommand(input, EncodeHexStr)
+	output, err := decodeCommand(input, v1alpha1.EncodeHexStr)
 	if err != nil {
 		t.Errorf("Error when decodeCommand on test1, error:%v", err)
 	}
@@ -95,7 +96,7 @@ func TestDecodeCommand(t *testing.T) {
 		t.Errorf("not match with current output, output: %v", output)
 	}
 
-	output, err = decodeCommand(input, EncodeUTF8Str)
+	output, err = decodeCommand(input, v1alpha1.EncodeUTF8Str)
 	if err != nil {
 		t.Errorf("Error when decodeCommand on test2, error: %v", err)
 	}
@@ -108,7 +109,7 @@ func TestEncodeMessage(t *testing.T) {
 	var inputHex = []byte{18, 48, 0, 10, 188}
 	var output = "1230000abc"
 
-	output1, err := encodeMessage(inputHex, EncodeHexStr)
+	output1, err := encodeMessage(inputHex, v1alpha1.EncodeHexStr)
 	if err != nil {
 		t.Errorf("Error when decodeCommand on test1, error: %v", err)
 	}
@@ -117,7 +118,7 @@ func TestEncodeMessage(t *testing.T) {
 	}
 
 	var inputUtf8 = []byte{49, 50, 51, 48, 48, 48, 48, 97, 98, 99}
-	output2, err := encodeMessage(inputUtf8, EncodeUTF8Str)
+	output2, err := encodeMessage(inputUtf8, v1alpha1.EncodeUTF8Str)
 	if err != nil {
 		t.Errorf("Error when decodeCommand on test1, error: %v", err)
 	}

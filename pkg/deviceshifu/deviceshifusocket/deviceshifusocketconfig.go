@@ -13,10 +13,5 @@ type ReturnBody struct {
 }
 
 const (
-	EncodeUTF8Str = "utf-8"
-	EncodeHexStr  = "hex"
-)
-
-const (
 	DefaultBufferLength = 1024
 )

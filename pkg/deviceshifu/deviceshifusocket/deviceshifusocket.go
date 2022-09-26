@@ -102,8 +102,8 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 
 		command, err := decodeCommand(socketRequest.Command, *settings.Encoding)
 		if err != nil {
-			klog.Errorf("cannot prase Command from body, error: %v", err)
-			http.Error(w, "Failed tprase Command from body, error:  "+err.Error(), http.StatusBadRequest)
+			klog.Errorf("cannot decode Command from body, error: %v", err)
+			http.Error(w, "Failed to decode Command from body, error:  "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
@@ -116,10 +116,10 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		}
 
 		message := make([]byte, *settings.BufferLength)
-		_, err = bufio.NewReader(*connection).Read(message)
-		if err != nil {
-			klog.Errorf("Error when Read data from connection to buffer, %v", err)
-			http.Error(w, "Failed to Read data from connection to buffer, error: "+err.Error(), http.StatusBadRequest)
+		n, _ := bufio.NewReader(*connection).Read(message)
+		if n <= 0 {
+			klog.Errorf("Error when Read data from connection to buffer")
+			http.Error(w, "Failed to Read data from connection to buffer, for Read 0 byte from buffer", http.StatusBadRequest)
 			return
 		}
 
@@ -187,9 +187,9 @@ func decodeCommand(input string, encode string) ([]byte, error) {
 	var err error
 
 	switch encode {
-	case EncodeHexStr:
+	case v1alpha1.EncodeHexStr:
 		output, err = hex.DecodeString(input)
-	case EncodeUTF8Str:
+	case v1alpha1.EncodeUTF8Str:
 		fallthrough
 	default:
 		output = []byte(input)
@@ -202,13 +202,12 @@ func encodeMessage(input []byte, encode string) (string, error) {
 	var err error
 
 	switch encode {
-	case EncodeHexStr:
+	case v1alpha1.EncodeHexStr:
 		output = hex.EncodeToString(input)
-	case EncodeUTF8Str:
+	case v1alpha1.EncodeUTF8Str:
 		fallthrough
 	default:
 		output = string(input)
 	}
-
 	return output, err
 }

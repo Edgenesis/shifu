@@ -114,6 +114,12 @@ const (
 	ProtocolUSB             Protocol = "USB"
 )
 
+// SocketEncodingStr
+const (
+	EncodeUTF8Str = "utf-8"
+	EncodeHexStr  = "hex"
+)
+
 // EdgeDevicePhase is a simple, high-level summary of where the EdgeDevice is in its lifecycle.
 type EdgeDevicePhase string
 
