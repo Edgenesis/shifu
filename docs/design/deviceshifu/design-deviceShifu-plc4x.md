@@ -45,6 +45,7 @@ For read, the method signature looks like:
 // Prepare a read-request
 	readRequest, err := connection.ReadRequestBuilder().
 		AddQuery("field", "holding-register:26:REAL").
+		AddQuery("field", "holding-register:3:REAL").
 		Build()
 ```
 For write, the method signature looks like:
@@ -52,18 +53,24 @@ For write, the method signature looks like:
 // Prepare a write-request
 	writeRequest, err := connection.WriteRequestBuilder().
 		AddQuery("field", "holding-register:26:REAL", 2.7182818284).
+		AddQuery("field", "holding-register:3:REAL", 3.141592657).
 		Build()
 ```
 
 Thus, we can construct the REST request as the following format:
 ```
 For read:
-http://device-plc/read?${field}
-e.g: http://device-plc/read?holding-register:26:REAL
+http://device-plc/read?${field1}?${field2}
+e.g: http://device-plc/read?holding-register:26:REAL?holding-register:3:REAL
 For write:
-http://device-plc/write?${field}=${value}
-e.g: http://device-plc/write?holding-register:26:REAL=2.7182818284
+http://device-plc/write?${field1}=${value1}?${field2}=${value2}
+e.g: http://device-plc/write?holding-register:26:REAL=2.7182818284?holding-register:3:REAL=3.141592657
 ```
+The `read` , `write` after `http://device-plc/` will be served as a instruction router.
+`?` would be served as query delimiter, whatever comes between `?` will be seen as the query.
+
+For `read`, the query would only contain the fields requests reading from. 
+For `write`, the query would contain the fields requests trying to write and the value it tries to write. 
 
 ## Testing Plan
 We can use existing mock-plc device, create a deviceShifu-PLC4X image add a e2e test to current azure-pipeline to run test against deviceShifu-PLC4X.
