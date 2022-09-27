@@ -25,7 +25,8 @@ type ProtocolSettings struct {
 
 // PLC4XSetting defines PLC4X specific settings when connecting to an EdgeDevice
 type PLC4XSetting struct {
-    DriverType *string `json:"driverType,omitempty"`
+    //DrvierType is an enum of all the supported protocols
+    DriverType *DriverType `json:"driverType,omitempty"`
 }
 ```
 DeviceShifu-PLC4X will maintain an enum of protocols and match the driver base on the setting:
