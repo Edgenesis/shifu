@@ -47,7 +47,7 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 
 	timeoutSeconds, err := strconv.Atoi(cmdExecTimeoutSecond)
 	if err != nil {
-		klog.Infof("cannot convert cmdExecTimeoutSecond: %v to integer", cmdExecTimeoutSecond)
+		klog.Errorf("cannot convert cmdExecTimeoutSecond: %v to integer", cmdExecTimeoutSecond)
 		resp.WriteHeader(http.StatusBadRequest)
 		return
 	}
@@ -60,7 +60,7 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 		timeoutSeconds, err = strconv.Atoi(timeoutValue)
 		klog.Infof("Setting timeout to: %v", timeoutSeconds)
 		if err != nil {
-			klog.Infof("cannot convert timeout param: %v to integer", timeoutValue)
+			klog.Errorf("cannot convert timeout param: %v to integer", timeoutValue)
 			resp.WriteHeader(http.StatusBadRequest)
 			return
 		}
@@ -68,7 +68,7 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 
 	httpCommand, err := ioutil.ReadAll(req.Body)
 	if err != nil {
-		panic(err)
+		klog.Fatal(err)
 	}
 
 	cmdString := string(httpCommand)
@@ -79,7 +79,7 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 
 	if err != nil {
 		klog.Infof("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stdErr, stdOut)
-		resp.WriteHeader(http.StatusBadRequest)
+		resp.WriteHeader(http.StatusInternalServerError)
 		_, writeErr := resp.Write(append([]byte(stdErr), []byte(stdOut)...))
 		if writeErr != nil {
 			klog.Info("Failed to write std err and std out to response")
