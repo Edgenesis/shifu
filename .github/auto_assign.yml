@@ -10,6 +10,7 @@ reviewers:
   - seanli33056
   - tomqin93
   - BtXin
+  - kris21he
 
 # A list of keywords to be skipped the process that add reviewers if pull requests include it 
 skipKeywords:
