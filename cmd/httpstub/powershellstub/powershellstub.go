@@ -78,11 +78,11 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 	klog.Infof("ElevateProcessCmds:\nStdOut : '%s'\nStdErr: '%s'\nErr: %s", strings.TrimSpace(stdOut), stdErr, err)
 
 	if err != nil {
-		klog.Infof("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stdErr, stdOut)
+		klog.Errorf("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stdErr, stdOut)
 		resp.WriteHeader(http.StatusInternalServerError)
 		_, writeErr := resp.Write(append([]byte(stdErr), []byte(stdOut)...))
 		if writeErr != nil {
-			klog.Info("Failed to write std err and std out to response")
+			klog.Errorf("Failed to write std err and std out to response")
 		}
 		return
 	}
@@ -91,7 +91,7 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 	resp.WriteHeader(http.StatusOK)
 	_, writeErr := resp.Write([]byte(stdOut))
 	if writeErr != nil {
-		klog.Info("Failed to write std err and std out to response")
+		klog.Errorf("Failed to write std err and std out to response")
 	}
 }
 
@@ -99,7 +99,7 @@ func httpHealthHandler(resp http.ResponseWriter, req *http.Request) {
 	resp.WriteHeader(http.StatusOK)
 	_, writeErr := resp.Write([]byte("Stub is Running!"))
 	if writeErr != nil {
-		klog.Info("Failed to write stub running status to response")
+		klog.Errorf("Failed to write stub running status to response")
 	}
 }
 
@@ -122,15 +122,15 @@ func httpFileServeHandler(resp http.ResponseWriter, req *http.Request) {
 		resp.Header().Set("Content-Type", "application/octet-stream")
 		_, writeErr := resp.Write(fileBytes)
 		if writeErr != nil {
-			klog.Info("Failed to write fileBytes to response")
+			klog.Errorf("Failed to write fileBytes to response")
 		}
 		return
 	} else if errors.Is(err, os.ErrNotExist) {
-		klog.Infof("File does not exist: %v", fileLocationString)
+		klog.Errorf("File does not exist: %v", fileLocationString)
 		resp.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(resp, "File does not exist: "+fileLocationString+"\n")
 	} else {
-		klog.Infof("File may not exist: %v", fileLocationString)
+		klog.Errorf("File may not exist: %v", fileLocationString)
 		resp.WriteHeader(http.StatusNotFound)
 		fmt.Fprintf(resp, "File may not exist: "+fileLocationString+"\n")
 	}
@@ -158,7 +158,7 @@ func (p *PowerShell) execute(timeoutSeconds int, args ...string) (stdOut string,
 	cmd.Stderr = &stderr
 
 	if err := cmd.Start(); err != nil {
-		klog.Infof("Failed to start PowerShell command, args: %v", args)
+		klog.Errorf("Failed to start PowerShell command, args: %v", args)
 	}
 
 	// Use a channel to signal completion so we can use a select statement
@@ -174,16 +174,16 @@ func (p *PowerShell) execute(timeoutSeconds int, args ...string) (stdOut string,
 	case <-timeout:
 		// Timeout happened first, kill the process and print a message.
 		if pKillErr := cmd.Process.Kill(); pKillErr != nil {
-			klog.Infof("Failed to kill the process after timeout, error: %v", err)
+			klog.Errorf("Failed to kill the process after timeout, error: %v", err)
 		}
 
-		klog.Infof("Command timed out")
+		klog.Errorf("Command timed out")
 		err = fmt.Errorf("command timed out")
 	case err = <-done:
 		// Command completed before timeout. Print output and error if it exists.
 		// fmt.Println("Output:", stdout.String())
 		if err != nil {
-			klog.Infof("Non-zero exit code: %v", err)
+			klog.Errorf("Non-zero exit code: %v", err)
 		}
 	}
 
