@@ -433,7 +433,8 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 
 				if resp != nil {
 					if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
-						if telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]; exist {
+						telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
+						if exist && telemetryCollectionService != "" {
 							deviceshifubase.PushToHTTPTelemetryCollectionService(protocol, resp, telemetryCollectionService)
 						}
 
