@@ -3,7 +3,7 @@
 DeviceShifu-PLC4X allows shifu utilize [apache plc4x](https://plc4x.apache.org/) project to integrate PLC devices with various protocols such as S7, Modbus, etc.
 
 ## Goal
-Create a deviceShifu-PLC4X type using PLC4X library and allow user to connect PLC devices easily
+Create a deviceShifu-PLC4X type using PLC4X library and allow user to connect PLC devices with all the [supported protocols](https://plc4x.apache.org/users/protocols/index.html) with only this single deviceShifu-PLC4X.
 
 ## General Design
 
