@@ -29,7 +29,7 @@ type HTTPSetting struct {
 	Password *string `json:"password,omitempty"`
 }
 
-// ServiceSettings defines protocol settings when connecting to an EdgeDevice
+// ServiceSettings defines service settings on telemetry
 type ServiceSettings struct {
 	HTTPSetting *HTTPSetting `json:"HTTPSetting,omitempty"`
 }
