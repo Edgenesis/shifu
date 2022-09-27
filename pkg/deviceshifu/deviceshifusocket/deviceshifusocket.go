@@ -111,7 +111,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		_, err = (*connection).Write(command)
 		if err != nil {
 			klog.Errorf("cannot write command into socket, error: %v", err)
-			http.Error(w, "Failed to send message to socket, error: "+err.Error(), http.StatusBadRequest)
+			http.Error(w, "Failed to send message to socket, error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
@@ -119,7 +119,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		n, _ := bufio.NewReader(*connection).Read(message)
 		if n <= 0 {
 			klog.Errorf("Error when Read data from connection to buffer")
-			http.Error(w, "Failed to Read data from connection to buffer, for Read 0 byte from buffer", http.StatusBadRequest)
+			http.Error(w, "Failed to Read data from connection to buffer, for Read 0 byte from buffer", http.StatusInternalServerError)
 			return
 		}
 
