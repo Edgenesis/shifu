@@ -13,7 +13,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func StartTelemetry() {
+func StartUserMetricsCollection() {
 	for {
 		time.Sleep(time.Duration(utils.TelemetryIntervalInSecond) * time.Second)
 
