@@ -1,6 +1,6 @@
 package types
 
-type TelemetryResponse struct {
+type UserMetricsResponse struct {
 	IP          string      `json:"ip"`
 	Source      string      `json:"source"`
 	Task        string      `json:"task"`

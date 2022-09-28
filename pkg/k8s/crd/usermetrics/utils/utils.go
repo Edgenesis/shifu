@@ -53,7 +53,7 @@ func GetPublicIPAddr(url string) (string, error) {
 	return "", errors.New("Did not find IP in return query")
 }
 
-func SendTelemetry(telemetry types.TelemetryResponse) error {
+func SendUserMetrics(telemetry types.UserMetricsResponse) error {
 	postBodyJson, err := json.Marshal(telemetry)
 	if err != nil {
 		klog.Errorf("Error marshaling telemetry")

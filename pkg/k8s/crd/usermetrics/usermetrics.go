@@ -73,14 +73,14 @@ func StartUserMetricsCollection(source string) {
 			Platform:          kVersion.Platform,
 		}
 
-		controllerTelemetry := types.TelemetryResponse{
+		controllerTelemetry := types.UserMetricsResponse{
 			IP:          publicIP,
 			Source:      source,
 			Task:        utils.TASK_RUN_DEMO_KIND,
 			ClusterInfo: clusterInfoTelemetry,
 		}
 
-		if result := utils.SendTelemetry(controllerTelemetry); result == nil {
+		if result := utils.SendUserMetrics(controllerTelemetry); result == nil {
 			klog.Infoln("telemetry done")
 		}
 	}
