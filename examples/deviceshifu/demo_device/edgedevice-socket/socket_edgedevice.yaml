@@ -12,3 +12,4 @@ spec:
     SocketSetting:
       encoding: utf-8
       networkType: tcp
+      bufferLength: 10

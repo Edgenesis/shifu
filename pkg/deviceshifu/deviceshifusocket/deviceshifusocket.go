@@ -2,11 +2,11 @@ package deviceshifusocket
 
 import (
 	"bufio"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"net"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
@@ -41,14 +41,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		case v1alpha1.ProtocolSocket:
 			// Open the connection:
 			connectionType := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
-			encoding := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.Encoding
 			if connectionType == nil || *connectionType != "tcp" {
 				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
-			}
-
-			if encoding == nil {
-				klog.Errorf("Socket encoding not specified, default to UTF-8")
-				return nil, fmt.Errorf("Encoding error")
 			}
 
 			socketConnection, err := net.Dial(*connectionType, *base.EdgeDevice.Spec.Address)
@@ -76,27 +70,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	return ds, nil
 }
 
-func createURIFromRequest(address string, handlerInstruction string, r *http.Request) string {
-
-	queryStr := "?"
-
-	for queryName, queryValues := range r.URL.Query() {
-		for _, queryValue := range queryValues {
-			queryStr += queryName + "=" + queryValue + "&"
-		}
-	}
-
-	queryStr = strings.TrimSuffix(queryStr, "&")
-
-	if queryStr == "?" {
-		return "http://" + address + "/" + handlerInstruction
-	}
-
-	return "http://" + address + "/" + handlerInstruction + queryStr
-}
-
 func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var settings = HandlerMetaData.edgeDeviceSpec.ProtocolSettings.SocketSetting
 		headerContentType := r.Header.Get("Content-Type")
 		if headerContentType != "application/json" {
 			http.Error(w, "content-type is not application/json", http.StatusBadRequest)
@@ -114,7 +90,6 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 
 		klog.Infof("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
 		connection := HandlerMetaData.connection
-		command := socketRequest.Command
 		timeout := socketRequest.Timeout
 		if timeout > 0 {
 			err := (*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
@@ -125,23 +100,38 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 			}
 		}
 
-		klog.Infof("Sending %v", []byte(command+"\n"))
-		_, err = (*connection).Write([]byte(command + "\n"))
+		command, err := decodeCommand(socketRequest.Command, *settings.Encoding)
 		if err != nil {
-			klog.Errorf("cannot write command into socket, error: %v", err)
-			http.Error(w, "Failed to send message to socket, error: "+err.Error(), http.StatusBadRequest)
+			klog.Errorf("cannot decode Command from body, error: %v", err)
+			http.Error(w, "Failed to decode Command from body, error:  "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		message, err := bufio.NewReader(*connection).ReadString('\n')
+		klog.Infof("Sending %v", command)
+		_, err = (*connection).Write(command)
 		if err != nil {
-			klog.Errorf("Failed to ReadString from Socket, current message: %v", message)
-			http.Error(w, "Failed to read message from socket, error: "+err.Error(), http.StatusBadRequest)
+			klog.Errorf("cannot write command into socket, error: %v", err)
+			http.Error(w, "Failed to send message to socket, error: "+err.Error(), http.StatusInternalServerError)
+			return
+		}
+
+		message := make([]byte, *settings.BufferLength)
+		n, _ := bufio.NewReader(*connection).Read(message)
+		if n <= 0 {
+			klog.Errorf("Error when Read data from connection to buffer")
+			http.Error(w, "Failed to Read data from connection to buffer, for Read 0 byte from buffer", http.StatusInternalServerError)
+			return
+		}
+
+		outputMessage, err := encodeMessage(message, *settings.Encoding)
+		if err != nil {
+			klog.Errorf("Error when encode message with Encoding, Encoding %v, error: %v", *settings.Encoding, err)
+			http.Error(w, "Failed to encode message with Encoding,  Encoding "+string(*settings.Encoding)+", error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
 		returnMessage := ReturnBody{
-			Message: message,
+			Message: outputMessage,
 			Status:  http.StatusOK,
 		}
 
@@ -153,41 +143,6 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 			http.Error(w, "Failed encode message to json, error: "+err.Error(), http.StatusBadRequest)
 		}
 	}
-}
-
-// this function gathers the instruction name and its arguments from user input via HTTP and create the direct call command
-// "flags_no_parameter" is a special key where it contains all flags
-// e.g.:
-// if we have localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2
-// and our driverExecution is "/usr/local/bin/python /usr/src/driver/python-car-driver.py"
-// then we will get this command string:
-// /usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency
-// which is exactly what we need to run if we are operating directly on the device
-func createHTTPCommandlineRequestString(r *http.Request, driverExecution string, instruction string) string {
-	values := r.URL.Query()
-	requestStr := ""
-	flagsStr := ""
-	for parameterName, parameterValues := range values {
-		if parameterName == "flags_no_parameter" {
-			if len(parameterValues) == 1 {
-				flagsStr = " " + strings.Replace(parameterValues[0], ",", " ", -1)
-			} else {
-				for _, parameterValue := range parameterValues {
-					flagsStr += " " + parameterValue
-				}
-			}
-		} else {
-			if len(parameterValues) < 1 {
-				continue
-			}
-
-			requestStr += " " + parameterName + "="
-			for _, parameterValue := range parameterValues {
-				requestStr += parameterValue
-			}
-		}
-	}
-	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
 // TODO: update configs
@@ -225,4 +180,34 @@ func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 // Stop stop http server
 func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
+}
+
+func decodeCommand(input string, encode v1alpha1.Encoding) ([]byte, error) {
+	var output []byte
+	var err error
+
+	switch encode {
+	case v1alpha1.HEX:
+		output, err = hex.DecodeString(input)
+	case v1alpha1.UTF8:
+		fallthrough
+	default:
+		output = []byte(input)
+	}
+	return output, err
+}
+
+func encodeMessage(input []byte, encode v1alpha1.Encoding) (string, error) {
+	var output string
+	var err error
+
+	switch encode {
+	case v1alpha1.HEX:
+		output = hex.EncodeToString(input)
+	case v1alpha1.UTF8:
+		fallthrough
+	default:
+		output = string(input)
+	}
+	return output, err
 }

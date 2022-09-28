@@ -426,7 +426,7 @@ stages:
   variables:
   - name: release_tag
     ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
-      value: 'latest'
+      value: 'nightly'
     ${{ else }}:
       value: $[replace(variables['build.sourcebranch'], 'refs/tags/', '')]
   jobs:

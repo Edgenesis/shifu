@@ -11,3 +11,7 @@ type ReturnBody struct {
 	Message string `json:"message"`
 	Status  int    `json:"status"`
 }
+
+const (
+	DefaultBufferLength = 1024
+)
