@@ -100,7 +100,11 @@ spec:
                     description: SocketSetting defines Socket specific settings when
                       connecting to an EdgeDevice
                     properties:
+                      bufferLength:
+                        default: 1024
+                        type: integer
                       encoding:
+                        default: utf-8
                         type: string
                       networkType:
                         type: string

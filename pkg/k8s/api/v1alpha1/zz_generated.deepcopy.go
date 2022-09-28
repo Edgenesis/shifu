@@ -360,7 +360,12 @@ func (in *SocketSetting) DeepCopyInto(out *SocketSetting) {
 	*out = *in
 	if in.Encoding != nil {
 		in, out := &in.Encoding, &out.Encoding
-		*out = new(string)
+		*out = new(Encoding)
+		**out = **in
+	}
+	if in.BufferLength != nil {
+		in, out := &in.BufferLength, &out.BufferLength
+		*out = new(int)
 		**out = **in
 	}
 	if in.NetworkType != nil {

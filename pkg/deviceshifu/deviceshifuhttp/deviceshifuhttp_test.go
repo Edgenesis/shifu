@@ -113,7 +113,7 @@ func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 
 	createdRequestArguments := strings.Fields(createdRequestString)
 
-	expectedRequestString := "/usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency"
+	expectedRequestString := "/usr/local/bin/python /usr/src/driver/python-car-driver.py start time=10:00:00 target=machine2 -a -c --no-dependency"
 	expectedRequestArguments := strings.Fields(expectedRequestString)
 
 	sort.Strings(createdRequestArguments)
@@ -121,6 +121,18 @@ func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 
 	if !reflect.DeepEqual(createdRequestArguments, expectedRequestArguments) {
 		t.Errorf("created request: '%v' does not match the expected req: '%v'", createdRequestString, expectedRequestString)
+	}
+}
+
+func TestCreateHTTPCommandlineRequestString2(t *testing.T) {
+	req, err := http.NewRequest("GET", "http://localhost:8081/issue_cmd?cmdTimeout=10&flags_no_parameter=ping,8.8.8.8,-t", nil)
+	createdReq := createHTTPCommandlineRequestString(req, "poweshell.exe", deviceshifubase.DeviceDefaultCMDDoNotExec)
+	if err != nil {
+		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+	}
+	expectedReq := "ping 8.8.8.8 -t"
+	if createdReq != expectedReq {
+		t.Errorf("created request: '%v' does not match the expected req: '%v'\n", createdReq, expectedReq)
 	}
 }
 

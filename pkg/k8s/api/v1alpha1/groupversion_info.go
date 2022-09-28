@@ -15,8 +15,8 @@ limitations under the License.
 */
 
 // Package v1alpha1 contains API Schema definitions for the shifu v1alpha1 API group
-//+kubebuilder:object:generate=true
-//+groupName=shifu.edgenesis.io
+// +kubebuilder:object:generate=true
+// +groupName=shifu.edgenesis.io
 package v1alpha1
 
 import (
