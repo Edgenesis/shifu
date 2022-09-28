@@ -55,20 +55,6 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 	}
 }
 
-func TestDeviceShifuNegativeInstructionTimeout(t *testing.T) {
-	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		Name:           "TestDeviceShifuEmptyNamespace",
-		ConfigFilePath: "etc/edgedevice/config",
-		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
-		Namespace:      "TestStartNamespace",
-	}
-
-	_, err := New(deviceShifuMetadata)
-	if err != nil {
-		t.Errorf("DeviceShifuHTTP Test with default instruction timeouts failed")
-	}
-}
-
 func TestStart(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		Name:           "TestStart",
