@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"gopkg.in/yaml.v2"
+	"gopkg.in/yaml.v3"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
