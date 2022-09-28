@@ -52,6 +52,9 @@ stages:
           arguments: '-d'
           workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuhttp'
       - script: |
+          sudo apt-get install libpcap-dev
+        displayName: "Install pcap"
+      - script: |
           make test
         displayName: "Go test"
       - task: Go@0
