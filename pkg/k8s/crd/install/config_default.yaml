@@ -97,6 +97,11 @@ spec:
                       Username:
                         type: string
                     type: object
+                  PLC4XSetting:
+                    properties:
+                      protocol:
+                        type: string
+                    type: object
                   SocketSetting:
                     description: SocketSetting defines Socket specific settings when
                       connecting to an EdgeDevice
@@ -166,7 +171,7 @@ spec:
                   type: string
                 type: object
               serviceSettings:
-                description: ProtocolSettings defines protocol settings when connecting
+                description: ServiceSettings defines protocol settings when connecting
                   to an EdgeDevice
                 properties:
                   HTTPSetting:
