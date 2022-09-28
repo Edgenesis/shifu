@@ -20,7 +20,7 @@ Telemetry only allows read-only access to most objects, such as Pod basic inform
 
 ## Setting
 
-You can modify telemetry interval by edit `--enable-telemetry` on `pkg/k8s/crd/install/shifu_install.yaml` manually.
+You can modify telemetry interval by edit `--telemetry-interval=60` on `pkg/k8s/crd/install/shifu_install.yaml` manually.
 
 Or you can also edit via `kubectl edit deployment -n shifu-crd-system shifu-crd-controller-manager` after installation
 ```yaml
@@ -39,9 +39,9 @@ spec:
       - args:
         - --telemetry-interval=60 ## Edit this line
 ```
-## To turn-off Telemetry
+## To turn-off User-metrics-collection
 
-If you want to turn off temeletry, please delete `--enable-telemetry` on `pkg/k8s/crd/install/shifu_install.yaml` manually.
+If you want to turn off user metrics collection, please delete `--enable-user-metrics` on `pkg/k8s/crd/install/shifu_install.yaml` manually.
 
 Or you can also edit via `kubectl edit deployment -n shifu-crd-system shifu-crd-controller-manager` after installation
 
@@ -59,5 +59,5 @@ spec:
       image: quay.io/brancz/kube-rbac-proxy:v0.12.0
       name: kube-rbac-proxy
       - args:
-        - --enable-telemetry ## delete on demand
+        - --enable-user-metrics ## delete on demand
 ```

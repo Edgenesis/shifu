@@ -29,7 +29,7 @@ spec:
         - /manager
         args:
         - --leader-elect
-        - --enable-telemetry
+        - --enable-user-metrics
         - --telemetry-interval=60
         image: controller:latest
         name: manager
