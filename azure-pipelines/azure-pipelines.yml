@@ -40,7 +40,7 @@ pool:
 stages:
 - stage: go_test_and_kind_e2e_test
   jobs:
-  - job: go_setup
+  - job: go_build_and_test
     steps:
       - task: GoTool@0
         inputs:
@@ -103,8 +103,32 @@ stages:
         displayName: "go build http to ssh stub"
         inputs:
           command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/driver_util'
-  
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/httpstub/sshstub'
+
+  - job: go_build_and_test_windows
+    pool:
+      vmImage: 'windows-latest'
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.18.4'
+      - task: Go@0
+        displayName: "go get"
+        inputs:
+          command: 'get'
+          arguments: '-d'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuhttp'
+      - task: Go@0
+        displayName: "go build http to powershell stub"
+        inputs:
+          command: 'build'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/httpstub/powershellstub'
+          arguments: '-a -o $(System.DefaultWorkingDirectory)/output/http2powershell.exe'
+      - script: |
+          START "" $(System.DefaultWorkingDirectory)/output/http2powershell.exe
+          curl.exe -d "ls" "http://localhost:11112/issue_cmd"
+        displayName: test powershell stub
+
   - job: kind_e2e_test_http
     steps:
       - script: |
@@ -402,7 +426,7 @@ stages:
   variables:
   - name: release_tag
     ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
-      value: 'latest'
+      value: 'nightly'
     ${{ else }}:
       value: $[replace(variables['build.sourcebranch'], 'refs/tags/', '')]
   jobs:

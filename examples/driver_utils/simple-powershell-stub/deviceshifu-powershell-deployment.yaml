@@ -2,41 +2,35 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: deviceshifu-mqtt-deployment
-  name: deviceshifu-mqtt-deployment
+    app: deviceshifu-powershell-deployment
+  name: deviceshifu-powershell-deployment
   namespace: deviceshifu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: deviceshifu-mqtt-deployment
+      app: deviceshifu-powershell-deployment
   template:
     metadata:
       labels:
-        app: deviceshifu-mqtt-deployment
+        app: deviceshifu-powershell-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-mqtt:nightly
+      - image: edgehub/deviceshifu-http-http:nightly
         name: deviceshifu-http
         ports:
         - containerPort: 8080
         volumeMounts:
-        - name: deviceshifu-config
+        - name: edgedevice-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
         env:
         - name: EDGEDEVICE_NAME
-          value: "edgedevice-mqtt"
+          value: "edgedevice-powershell"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
-        readinessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 10
       volumes:
-      - name: deviceshifu-config
+      - name: edgedevice-config
         configMap:
-          name: mqtt-configmap-0.0.1
+          name: deviceshifu-powershell-configmap-0.0.1
       serviceAccountName: edgedevice-sa
