@@ -439,6 +439,7 @@ spec:
         - --leader-elect
         - --enable-telemetry
         - --telemetry-interval=60
+        - --source=default
         command:
         - /manager
         image: edgehub/shifu-controller:nightly
