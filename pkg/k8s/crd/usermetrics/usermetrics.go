@@ -1,11 +1,11 @@
-package telemetry
+package usermetrics
 
 import (
 	"context"
 	"time"
 
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/types"
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/utils"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/types"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/utils"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"

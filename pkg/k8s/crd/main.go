@@ -22,8 +22,8 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/k8s/controllers"
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry"
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/utils"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/utils"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -73,7 +73,7 @@ func main() {
 	flag.Parse()
 
 	if enableUserMetrics {
-		go telemetry.StartUserMetricsCollection(sourceStr)
+		go usermetrics.StartUserMetricsCollection(sourceStr)
 	}
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))

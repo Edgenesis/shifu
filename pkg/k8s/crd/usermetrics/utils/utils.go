@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/types"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/types"
 	"k8s.io/klog/v2"
 )
 
