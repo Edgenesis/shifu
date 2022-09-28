@@ -18,6 +18,8 @@ jobs:
           go-version: '1.18'
       - name: Run coverage
         run: make test
+      - name: Install pcap
+        run: sudo apt-get install libpcap-dev
       - name: Codecov
         uses: codecov/codecov-action@v3.1.0
         with:
