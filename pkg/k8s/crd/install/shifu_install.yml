@@ -101,7 +101,11 @@ spec:
                     description: SocketSetting defines Socket specific settings when
                       connecting to an EdgeDevice
                     properties:
+                      bufferLength:
+                        default: 1024
+                        type: integer
                       encoding:
+                        default: utf-8
                         type: string
                       networkType:
                         type: string
@@ -439,7 +443,7 @@ spec:
         - --source=default
         command:
         - /manager
-        image: edgehub/shifu-controller:v0.1.1
+        image: edgehub/shifu-controller:nightly
         livenessProbe:
           httpGet:
             path: /healthz

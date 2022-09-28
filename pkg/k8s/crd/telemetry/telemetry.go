@@ -15,6 +15,8 @@ import (
 
 func StartTelemetry(source string) {
 	for {
+		time.Sleep(time.Duration(utils.TelemetryIntervalInSecond) * time.Second)
+
 		publicIP, err := utils.GetPublicIPAddr(utils.URL_EXTERNAL_IP)
 		if err != nil {
 			klog.Errorf("issue getting Public IP")
@@ -81,7 +83,5 @@ func StartTelemetry(source string) {
 		if result := utils.SendTelemetry(controllerTelemetry); result == nil {
 			klog.Infoln("telemetry done")
 		}
-
-		time.Sleep(time.Duration(utils.TelemetryIntervalInSecond) * time.Second)
 	}
 }
