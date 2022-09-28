@@ -39,7 +39,7 @@ spec:
       - args:
         - --telemetry-interval=60 ## Edit this line
 ```
-## To turn-off User-metrics-collection
+## To turn-off user-metrics-collection
 
 If you want to turn off user metrics collection, please delete `--enable-user-metrics` on `pkg/k8s/crd/install/shifu_install.yaml` manually.
 
