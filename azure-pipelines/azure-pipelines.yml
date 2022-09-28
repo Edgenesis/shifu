@@ -423,8 +423,8 @@ stages:
           kubectl delete -f examples/deviceshifu/demo_device/edgedevice-mqtt
           kubectl delete po mosquitto -n devices
         displayName: "Shifu demo device MQTT E2E test"
-        
-  - job:
+
+  - job: build_test_plc4x
     steps:
       - script: |
           tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
