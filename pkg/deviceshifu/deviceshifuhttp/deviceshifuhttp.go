@@ -53,21 +53,22 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, err
 	}
 
+	instructionSettings = base.DeviceShifuConfig.Instructions.InstructionSettings
+	if instructionSettings == nil {
+		instructionSettings = &deviceshifubase.DeviceShifuInstructionSettings{}
+	}
+
+	if instructionSettings.DefaultTimeoutSeconds == nil {
+		var defaultTimeoutSeconds = deviceshifubase.DeviceDefaultGlobalTimeoutInSeconds
+		instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
+	}
+
+	if err := base.ValidateTelemetryConfig(); err != nil {
+		klog.Errorf("%v", err)
+		return nil, err
+	}
+
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
-
-		instructionSettings = base.DeviceShifuConfig.Instructions.InstructionSettings
-		if instructionSettings == nil {
-			instructionSettings = &deviceshifubase.DeviceShifuInstructionSettings{}
-		}
-
-		if instructionSettings.DefaultTimeoutSeconds == nil {
-			var defaultTimeoutSeconds = deviceshifubase.DeviceDefaultGolbalTimeoutInSeconds
-			instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
-		} else if *instructionSettings.DefaultTimeoutSeconds < 0 {
-			klog.Fatalf("defaultTimeoutSeconds must not be negative number")
-			return nil, errors.New("defaultTimeout configuration error")
-		}
-
 		// switch for different Shifu Protocols
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolHTTP:
@@ -105,11 +106,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	deviceshifubase.BindDefaultHandler(mux)
 
 	ds := &DeviceShifuHTTP{base: base}
-
-	if err := ds.base.ValidateTelemetryConfig(); err != nil {
-		klog.Errorf("%v", err)
-		return ds, err
-	}
 
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil

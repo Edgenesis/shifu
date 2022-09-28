@@ -5,7 +5,7 @@ data:
     driverExecution: python mock_driver.py
   instructions: |
     instructionSettings:
-      defaultTimeoutSeconds: 4
+      defaultTimeoutSeconds: -1
     instructions:
       get_reading:
       get_status:

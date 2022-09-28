@@ -19,7 +19,18 @@ import (
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
+		klog.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
+		os.Exit(-1)
+	}
+	m.Run()
+	err = os.RemoveAll(MockDeviceConfigPath)
+	if err != nil {
+		klog.Fatal(err)
+	}
+
+	err = GenerateConfigMapFromSnippet(MockDeviceCmStr2, MockDeviceConfigFolder)
+	if err != nil {
+		klog.Errorf("error when generateConfigmapFromSnippet2, err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
@@ -41,6 +52,20 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 		klog.Errorf("%v", err)
 	} else {
 		t.Errorf("DeviceShifuHTTP Test with empty namespace failed")
+	}
+}
+
+func TestDeviceShifuNegativeInstructionTimeout(t *testing.T) {
+	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
+		Name:           "TestDeviceShifuEmptyNamespace",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
+		Namespace:      "TestStartNamespace",
+	}
+
+	_, err := New(deviceShifuMetadata)
+	if err != nil {
+		t.Errorf("DeviceShifuHTTP Test with default instruction timeouts failed")
 	}
 }
 
