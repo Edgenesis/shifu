@@ -26,3 +26,4 @@ spec:
         - "--leader-elect"
         - "--enable-user-metrics"
         - "--telemetry-interval=60"
+        - "--source=default"

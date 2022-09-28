@@ -13,7 +13,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func StartUserMetricsCollection() {
+func StartUserMetricsCollection(source string) {
 	for {
 		time.Sleep(time.Duration(utils.TelemetryIntervalInSecond) * time.Second)
 
@@ -75,7 +75,7 @@ func StartUserMetricsCollection() {
 
 		controllerTelemetry := types.TelemetryResponse{
 			IP:          publicIP,
-			Source:      utils.SOURCE_SHIFU_CONTROLLER,
+			Source:      source,
 			Task:        utils.TASK_RUN_DEMO_KIND,
 			ClusterInfo: clusterInfoTelemetry,
 		}
