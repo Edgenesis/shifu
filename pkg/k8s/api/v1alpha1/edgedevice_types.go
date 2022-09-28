@@ -45,6 +45,10 @@ type OPCUASetting struct {
 	ConnectionTimeoutInMilliseconds *int64  `json:"ConnectionTimeoutInMilliseconds,omitempty"`
 }
 
+type PLC4XSetting struct {
+	Protocol *string `json:"protocol,omitempty"`
+}
+
 // SocketSetting defines Socket specific settings when connecting to an EdgeDevice
 type SocketSetting struct {
 	Encoding    *string `json:"encoding,omitempty"`
@@ -56,6 +60,7 @@ type ProtocolSettings struct {
 	MQTTSetting   *MQTTSetting   `json:"MQTTSetting,omitempty"`
 	OPCUASetting  *OPCUASetting  `json:"OPCUASetting,omitempty"`
 	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
+	PLC4XSetting  *PLC4XSetting  `json:"PLC4XSetting,omitempty"`
 }
 
 // EdgeDeviceSpec defines the desired state of EdgeDevice
@@ -108,6 +113,7 @@ const (
 	ProtocolMQTT            Protocol = "MQTT"
 	ProtocolOPCUA           Protocol = "OPCUA"
 	ProtocolSocket          Protocol = "Socket"
+	ProtocolPLC4X           Protocol = "PLC4X"
 	ProtocolUSB             Protocol = "USB"
 )
 
