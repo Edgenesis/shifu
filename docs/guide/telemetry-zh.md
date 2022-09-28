@@ -40,9 +40,9 @@ spec:
       - args:
         - --telemetry-interval=60 ## 编辑此行
 ```
-## 关闭遥测
+## 关闭用户指标收集
 
-如果要关闭 telemetry，请手动删除 `pkg/k8s/crd/install/shifu_install.yaml` 上的 `--enable-telemetry`。
+如果要关闭 user-metrics-collection，请手动删除 `pkg/k8s/crd/install/shifu_install.yaml` 上的 `--enable-user-metrics`。
 
 或者您也可以在安装后通过 `kubectl edit deployment -n shifu-crd-system shifu-crd-controller-manager` 进行编辑
 
@@ -60,5 +60,5 @@ spec:
       image: quay.io/brancz/kube-rbac-proxy:v0.12.0
       name: kube-rbac-proxy
       - args:
-        - --enable-telemetry ## 删除此行
+        - --enable-user-metrics ## 删除此行
 ```

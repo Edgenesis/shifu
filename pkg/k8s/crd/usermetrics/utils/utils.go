@@ -10,7 +10,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/types"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/types"
 	"k8s.io/klog/v2"
 )
 
@@ -53,7 +53,7 @@ func GetPublicIPAddr(url string) (string, error) {
 	return "", errors.New("Did not find IP in return query")
 }
 
-func SendTelemetry(telemetry types.TelemetryResponse) error {
+func SendUserMetrics(telemetry types.UserMetricsResponse) error {
 	postBodyJson, err := json.Marshal(telemetry)
 	if err != nil {
 		klog.Errorf("Error marshaling telemetry")

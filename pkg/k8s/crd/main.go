@@ -22,8 +22,8 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/k8s/controllers"
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry"
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/utils"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/utils"
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
@@ -54,7 +54,7 @@ func main() {
 	var (
 		metricsAddr          string
 		enableLeaderElection bool
-		enableTelemetry      bool
+		enableUserMetrics    bool
 		probeAddr            string
 		sourceStr            string
 	)
@@ -63,7 +63,7 @@ func main() {
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
 		"Enable leader election for controller manager. "+
 			"Enabling this will ensure there is only one active controller manager.")
-	flag.BoolVar(&enableTelemetry, "enable-telemetry", false, "Collect telemetry")
+	flag.BoolVar(&enableUserMetrics, "enable-user-metrics", false, "Collect user metrics")
 	flag.StringVar(&sourceStr, "source", utils.DEFAULT_SOURCE, "Collect default source")
 	flag.IntVar(&utils.TelemetryIntervalInSecond, "telemetry-interval", 60, "Telemetry Interval")
 	opts := zap.Options{
@@ -72,8 +72,8 @@ func main() {
 	opts.BindFlags(flag.CommandLine)
 	flag.Parse()
 
-	if enableTelemetry {
-		go telemetry.StartTelemetry(sourceStr)
+	if enableUserMetrics {
+		go usermetrics.StartUserMetricsCollection(sourceStr)
 	}
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))

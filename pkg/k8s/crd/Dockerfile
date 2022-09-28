@@ -14,7 +14,7 @@ RUN go mod download
 
 # Copy the go source
 COPY pkg/k8s/crd/main.go main.go
-COPY pkg/k8s/crd/telemetry pkg/k8s/crd/telemetry
+COPY pkg/k8s/crd/usermetrics pkg/k8s/crd/usermetrics
 COPY pkg/k8s/api pkg/k8s/api
 COPY pkg/k8s/controllers pkg/k8s/controllers
 

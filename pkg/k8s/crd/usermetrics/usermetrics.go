@@ -1,11 +1,11 @@
-package telemetry
+package usermetrics
 
 import (
 	"context"
 	"time"
 
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/types"
-	"github.com/edgenesis/shifu/pkg/k8s/crd/telemetry/utils"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/types"
+	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/utils"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
@@ -13,7 +13,7 @@ import (
 	"k8s.io/klog/v2"
 )
 
-func StartTelemetry(source string) {
+func StartUserMetricsCollection(source string) {
 	for {
 		time.Sleep(time.Duration(utils.TelemetryIntervalInSecond) * time.Second)
 
@@ -73,14 +73,14 @@ func StartTelemetry(source string) {
 			Platform:          kVersion.Platform,
 		}
 
-		controllerTelemetry := types.TelemetryResponse{
+		controllerTelemetry := types.UserMetricsResponse{
 			IP:          publicIP,
 			Source:      source,
 			Task:        utils.TASK_RUN_DEMO_KIND,
 			ClusterInfo: clusterInfoTelemetry,
 		}
 
-		if result := utils.SendTelemetry(controllerTelemetry); result == nil {
+		if result := utils.SendUserMetrics(controllerTelemetry); result == nil {
 			klog.Infoln("telemetry done")
 		}
 	}
