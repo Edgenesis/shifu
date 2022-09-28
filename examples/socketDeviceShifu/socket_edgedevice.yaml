@@ -6,9 +6,10 @@ metadata:
 spec:
   sku: "testSocket" 
   connection: Ethernet
-  address: 192.168.15.248:11122 #change this accordingly
+  address: 192.168.14.163:11122 #change this accordingly
   protocol: Socket
   protocolSettings:
     SocketSetting:
-      encoding: utf-8
+      encoding: hex
       networkType: tcp
+      bufferLength: 10

@@ -1,6 +1,6 @@
 #!bin/bash
 
-default='{"message":"123\n","status":200}' 
+default='{"message":"1234567890","status":200}' 
 
 for i in {1..5} 
 do
