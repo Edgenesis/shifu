@@ -15,6 +15,7 @@ import (
 // Str and default value
 const (
 	MockDeviceCmStr              = "configmap_snippet.yaml"
+	MockDeviceCmStr2             = "configmap_snippet2.yaml"
 	MockDeviceWritFilePermission = 0644
 	MockDeviceConfigPath         = "etc"
 )
