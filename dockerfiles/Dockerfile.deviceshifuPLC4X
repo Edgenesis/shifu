@@ -22,7 +22,7 @@ ARG TARGETARCH
 
 RUN CGO_ENABLED=1 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -v -o /output/deviceshifu cmd/deviceshifu/cmdplc4x/main.go
 
-FROM gcr.io/distroless/static-debian11
+FROM ubuntu
 WORKDIR /
 COPY --from=builder /output/deviceshifu deviceshifu
 

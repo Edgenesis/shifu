@@ -116,9 +116,9 @@ func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 
 func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		klog.Infof("Url: %v", r.URL.String())
+		klog.Infof("Url: %v", r.RequestURI)
 
-		params, err := utils.ParseHTTPGetParams(r.URL.String())
+		params, err := utils.ParseHTTPGetParams(r.RequestURI)
 		if err != nil {
 			klog.Errorf("Error when parse request url, error: %v", err)
 			http.Error(w, "Error when parse request url, error: "+err.Error(), http.StatusBadRequest)

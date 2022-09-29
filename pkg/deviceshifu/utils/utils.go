@@ -1,27 +1,34 @@
 package utils
 
 import (
-	"net/url"
+	"fmt"
+	"log"
+	"strings"
 )
 
 func ParseHTTPGetParams(urlStr string) (map[string]string, error) {
-	urlInfo, err := url.Parse(urlStr)
-	if err != nil {
-		return nil, err
+	var paramStr string
+	log.Println(urlStr)
+	url := strings.Split(urlStr, "?")
+
+	if len(url) <= 0 {
+		return nil, fmt.Errorf("empty Query")
+	} else if len(url) == 1 {
+		paramStr = url[0]
+	} else {
+		paramStr = url[1]
 	}
 
-	values, err := url.ParseQuery(urlInfo.RawQuery)
-	if err != nil {
-		return nil, err
-	}
+	params := strings.Split(paramStr, "&")
 
-	result := make(map[string]string, len(values))
+	result := make(map[string]string, len(params))
 
-	for key, value := range values {
-		if len(value) == 0 {
-			result[key] = ""
-		} else {
-			result[key] = value[0]
+	for _, item := range params {
+		info := strings.Split(item, "=")
+		if len(info) == 2 {
+			result[info[0]] = info[1]
+		} else if len(info) == 1 {
+			result[info[0]] = ""
 		}
 	}
 
