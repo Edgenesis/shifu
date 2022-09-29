@@ -94,7 +94,11 @@ spec:
                     description: SocketSetting defines Socket specific settings when
                       connecting to an EdgeDevice
                     properties:
+                      bufferLength:
+                        default: 1024
+                        type: integer
                       encoding:
+                        default: utf-8
                         type: string
                       networkType:
                         type: string
@@ -159,8 +163,7 @@ spec:
                   type: string
                 type: object
               serviceSettings:
-                description: ProtocolSettings defines protocol settings when connecting
-                  to an EdgeDevice
+                description: ServiceSettings defines service settings on telemetry
                 properties:
                   HTTPSetting:
                     description: HTTPSetting defines HTTP specific settings when connecting

@@ -47,8 +47,11 @@ type OPCUASetting struct {
 
 // SocketSetting defines Socket specific settings when connecting to an EdgeDevice
 type SocketSetting struct {
-	Encoding    *string `json:"encoding,omitempty"`
-	NetworkType *string `json:"networkType,omitempty"`
+	// +kubebuilder:default="utf-8"
+	Encoding *Encoding `json:"encoding,omitempty"`
+	// +kubebuilder:default=1024
+	BufferLength *int    `json:"bufferLength,omitempty"`
+	NetworkType  *string `json:"networkType,omitempty"`
 }
 
 // ProtocolSettings defines protocol settings when connecting to an EdgeDevice
@@ -109,6 +112,14 @@ const (
 	ProtocolOPCUA           Protocol = "OPCUA"
 	ProtocolSocket          Protocol = "Socket"
 	ProtocolUSB             Protocol = "USB"
+)
+
+type Encoding string
+
+// SocketEncodingStr
+const (
+	UTF8 Encoding = "utf-8"
+	HEX  Encoding = "hex"
 )
 
 // EdgeDevicePhase is a simple, high-level summary of where the EdgeDevice is in its lifecycle.

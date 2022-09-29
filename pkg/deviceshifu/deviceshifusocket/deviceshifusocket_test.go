@@ -2,15 +2,13 @@ package deviceshifusocket
 
 import (
 	"io"
-	"net/http"
 	"os"
 	"reflect"
-	"sort"
-	"strings"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -86,64 +84,45 @@ func TestDeviceHealthHandler(t *testing.T) {
 	}
 }
 
-func TestCreateHTTPCommandlineRequestString(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
-	klog.Infof("%v", req.URL.Query())
-	createdRequestString := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "start")
+func TestDecodeCommand(t *testing.T) {
+	input := "1230000abc"
+	var outputHex = []byte{18, 48, 0, 10, 188}
+
+	output, err := decodeCommand(input, v1alpha1.HEX)
 	if err != nil {
-		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+		t.Errorf("Error when decodeCommand on test1, error:%v", err)
+	}
+	if !reflect.DeepEqual(output, outputHex) {
+		t.Errorf("not match with current output, output: %v", output)
 	}
 
-	createdRequestArguments := strings.Fields(createdRequestString)
-
-	expectedRequestString := "/usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency"
-	expectedRequestArguments := strings.Fields(expectedRequestString)
-
-	sort.Strings(createdRequestArguments)
-	sort.Strings(expectedRequestArguments)
-
-	if !reflect.DeepEqual(createdRequestArguments, expectedRequestArguments) {
-		t.Errorf("created request: '%v' does not match the expected req: '%v'", createdRequestString, expectedRequestString)
+	output, err = decodeCommand(input, v1alpha1.UTF8)
+	if err != nil {
+		t.Errorf("Error when decodeCommand on test2, error: %v", err)
+	}
+	if input != string(output) {
+		t.Errorf("not match with current output, output: %v", output)
 	}
 }
 
-func TestCreatehttpURIString(t *testing.T) {
-	expectedURIString := "http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2"
-	req, err := http.NewRequest("POST", expectedURIString, nil)
+func TestEncodeMessage(t *testing.T) {
+	var inputHex = []byte{18, 48, 0, 10, 188}
+	var output = "1230000abc"
+
+	output1, err := encodeMessage(inputHex, v1alpha1.HEX)
 	if err != nil {
-		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+		t.Errorf("Error when decodeCommand on test1, error: %v", err)
+	}
+	if output1 != output {
+		t.Errorf("not match with current output, output: %v", output)
 	}
 
-	klog.Infof("%v", req.URL.Query())
-	createdURIString := createURIFromRequest("localhost:8081", "start", req)
-
-	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
-	createdQueries := strings.Split(strings.Split(createdURIString, "?")[1], "&")
-	expectedURIStringWithoutQueries := strings.Split(expectedURIString, "?")[0]
-	expectedQueries := strings.Split(strings.Split(expectedURIString, "?")[1], "&")
-
-	sort.Strings(createdQueries)
-	sort.Strings(expectedQueries)
-	if createdURIStringWithoutQueries != expectedURIStringWithoutQueries || !reflect.DeepEqual(createdQueries, expectedQueries) {
-		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdURIString, expectedURIString)
-	}
-}
-
-func TestCreatehttpURIStringNoQuery(t *testing.T) {
-	expectedURIString := "http://localhost:8081/start"
-	req, err := http.NewRequest("POST", expectedURIString, nil)
+	var inputUtf8 = []byte{49, 50, 51, 48, 48, 48, 48, 97, 98, 99}
+	output2, err := encodeMessage(inputUtf8, v1alpha1.UTF8)
 	if err != nil {
-		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+		t.Errorf("Error when decodeCommand on test1, error: %v", err)
 	}
-
-	klog.Infof("%v", req.URL.Query())
-	createdURIString := createURIFromRequest("localhost:8081", "start", req)
-
-	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
-	expectedURIStringWithoutQueries := strings.Split(expectedURIString, "?")[0]
-
-	if createdURIStringWithoutQueries != expectedURIStringWithoutQueries {
-		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdURIString, expectedURIString)
+	if output2 != output {
+		t.Errorf("not match with current output, output: %v", output)
 	}
-
 }

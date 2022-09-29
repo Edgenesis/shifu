@@ -1,7 +1,6 @@
 package deviceshifuhttp
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
@@ -16,6 +15,7 @@ import (
 // Str and default value
 const (
 	MockDeviceCmStr              = "configmap_snippet.yaml"
+	MockDeviceCmStr2             = "configmap_snippet2.yaml"
 	MockDeviceWritFilePermission = 0644
 	MockDeviceConfigPath         = "etc"
 )
@@ -133,7 +133,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 }
 
 func GenerateConfigMapFromSnippet(fileName string, folder string) error {
-	snippetFile, err := ioutil.ReadFile(fileName)
+	snippetFile, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}

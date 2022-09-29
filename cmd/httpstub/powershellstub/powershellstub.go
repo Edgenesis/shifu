@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"os/exec"
@@ -66,7 +66,7 @@ func httpCmdlinePostHandler(resp http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	httpCommand, err := ioutil.ReadAll(req.Body)
+	httpCommand, err := io.ReadAll(req.Body)
 	if err != nil {
 		klog.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func httpHealthHandler(resp http.ResponseWriter, req *http.Request) {
 }
 
 func httpFileServeHandler(resp http.ResponseWriter, req *http.Request) {
-	httpFileLocation, err := ioutil.ReadAll(req.Body)
+	httpFileLocation, err := io.ReadAll(req.Body)
 	if err != nil {
 		panic(err)
 	}
@@ -114,7 +114,7 @@ func httpFileServeHandler(resp http.ResponseWriter, req *http.Request) {
 	klog.Infof("File to open: %v", fileLocationString)
 
 	if _, err := os.Stat(fileLocationString); err == nil {
-		fileBytes, err := ioutil.ReadFile(fileLocationString)
+		fileBytes, err := os.ReadFile(fileLocationString)
 		if err != nil {
 			panic(err)
 		}

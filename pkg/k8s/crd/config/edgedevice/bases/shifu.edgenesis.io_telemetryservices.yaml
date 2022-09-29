@@ -42,8 +42,7 @@ spec:
                   type: string
                 type: object
               serviceSettings:
-                description: ProtocolSettings defines protocol settings when connecting
-                  to an EdgeDevice
+                description: ServiceSettings defines service settings on telemetry
                 properties:
                   HTTPSetting:
                     description: HTTPSetting defines HTTP specific settings when connecting
