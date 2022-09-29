@@ -40,6 +40,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		driverManager := plc4go.NewPlcDriverManager()
 
 		drivers.RegisterS7Driver(driverManager)
+		// drivers.
 		address := *protocol + "://" + *base.EdgeDevice.Spec.Address
 
 		connectionRequestChanel := driverManager.GetConnection(address)
@@ -115,6 +116,8 @@ func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 
 func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		klog.Infof("Url: %v", r.URL.String())
+
 		params, err := utils.ParseHTTPGetParams(r.URL.String())
 		if err != nil {
 			klog.Errorf("Error when parse request url, error: %v", err)
@@ -122,6 +125,8 @@ func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 			return
 		}
 		request := (*ds.conn).GetConnection().ReadRequestBuilder()
+
+		klog.Infof("Params: %v", params)
 
 		for key := range params {
 			fieldId := fmt.Sprintf("field_%s", key)

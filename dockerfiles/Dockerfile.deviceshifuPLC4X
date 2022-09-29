@@ -1,10 +1,9 @@
 # Build the manager binary
-FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder
+FROM --platform=$BUILDPLATFORM golang:1.19.1 as builder
 
 WORKDIR /shifu
 
 ENV GO111MODULE=on
-ENV GOPRIVATE=github.com/Edgenesis
 
 COPY go.mod go.mod
 COPY go.sum go.sum
@@ -21,12 +20,15 @@ RUN go mod download
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN  GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/deviceshifu cmd/deviceshifu/cmdplc4x/main.go
+RUN CGO_ENABLED=1 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -v -o /output/deviceshifu cmd/deviceshifu/cmdplc4x/main.go
 
 FROM gcr.io/distroless/static-debian11
 WORKDIR /
 COPY --from=builder /output/deviceshifu deviceshifu
 
-# Command to run the executable
+COPY --from=builder /usr/lib/aarch64-linux-gnu/libpcap.so.0.8 /usr/lib/aarch64-linux-gnu/libpcap.so.0.8
+COPY --from=builder /lib/aarch64-linux-gnu/libdbus-1.so.3 /lib/aarch64-linux-gnu/libdbus-1.so.3
+
+# Command to run the executable libdbus-1.so.3
 USER 65532:65532
 ENTRYPOINT ["/deviceshifu"]
