@@ -41,7 +41,7 @@ func PushToHTTPTelemetryCollectionService(telemetryServiceProtocol v1alpha1.Prot
 }
 
 func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, error) {
-	validAddressMap := make(map[string]string)
+	serviceAddressCache := make(map[string]string)
 	res := make(map[string]string)
 	defaultPushToServer := false
 	defaultTelemetryCollectionService := ""
@@ -74,7 +74,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, e
 		}
 
 		defaultTelemetryServiceAddress = *telemetryService.Spec.Address
-		validAddressMap[defaultTelemetryCollectionService] = defaultTelemetryServiceAddress
+		serviceAddressCache[defaultTelemetryCollectionService] = defaultTelemetryServiceAddress
 	}
 
 	for telemetryName, telemetries := range telemetries.DeviceShifuTelemetries {
@@ -89,7 +89,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, e
 
 			if pushSettings.DeviceShifuTelemetryCollectionService != nil &&
 				len(*pushSettings.DeviceShifuTelemetryCollectionService) != 0 {
-				if telemetryServiceAddress, exist := validAddressMap[*pushSettings.DeviceShifuTelemetryCollectionService]; exist {
+				if telemetryServiceAddress, exist := serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService]; exist {
 					res[telemetryName] = telemetryServiceAddress
 					continue
 				}
@@ -105,7 +105,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, e
 					continue
 				}
 
-				validAddressMap[*pushSettings.DeviceShifuTelemetryCollectionService] = *telemetryService.Spec.Address
+				serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService] = *telemetryService.Spec.Address
 				res[telemetryName] = *telemetryService.Spec.Address
 				continue
 			}

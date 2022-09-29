@@ -22,6 +22,14 @@ func strPointer(s string) *string {
 	return &s
 }
 
+func intPointer(i int) *int {
+	return &i
+}
+
+func int64Pointer(i int64) *int64 {
+	return &i
+}
+
 func mockTestServer(response string, statusCode int, t *testing.T) *httptest.Server {
 	// status := &metav1.Status{
 	// 	TypeMeta: metav1.TypeMeta{APIVersion: "v1", Kind: "Status"},
