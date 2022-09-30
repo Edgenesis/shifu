@@ -15,19 +15,26 @@ RUN apt-get update
 RUN apt-get install libpcap-dev -y
 
 RUN go mod download
+RUN mkdir -p /output/lib
+RUN cp $(whereis liblz4.so.1 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis liblzma.so.5 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libzstd.so.1 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libpcap.so.0.8 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libdbus-1.so.3 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libsystemd.so.0 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libgcrypt.so.20 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libgpg-error.so.0 | awk '{ print $2 }') /output/lib
 
 # Build the Go app
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN CGO_ENABLED=1 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -v -o /output/deviceshifu cmd/deviceshifu/cmdplc4x/main.go
+RUN CGO_ENABLED=1 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -v -o /output/deviceshifu  cmd/deviceshifu/cmdplc4x/main.go
 
-FROM ubuntu
+FROM gcr.io/distroless/base
 WORKDIR /
 COPY --from=builder /output/deviceshifu deviceshifu
-
-COPY --from=builder /usr/lib/aarch64-linux-gnu/libpcap.so.0.8 /usr/lib/aarch64-linux-gnu/libpcap.so.0.8
-COPY --from=builder /lib/aarch64-linux-gnu/libdbus-1.so.3 /lib/aarch64-linux-gnu/libdbus-1.so.3
+COPY --from=builder /output/lib /lib
 
 # Command to run the executable libdbus-1.so.3
 USER 65532:65532
