@@ -6,7 +6,7 @@ import (
 )
 
 func TestParseHTTPGetParams(t *testing.T) {
-	url := "http://www.example.com?a=1&b=22&c=3&a=5&d="
+	url := "http://www.example.com?a=1&b=22&c=3&d="
 	currentParam := map[string]string{
 		"a": "1",
 		"b": "22",
