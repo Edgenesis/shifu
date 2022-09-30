@@ -136,42 +136,46 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 
 // NewEdgeDevice new edgeDevice
 func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *rest.RESTClient, error) {
-	var config *rest.Config
-	var err error
-
-	if edgeDeviceConfig.KubeconfigPath != "" {
-		config, err = clientcmd.BuildConfigFromFlags("", edgeDeviceConfig.KubeconfigPath)
-	} else {
-		config, err = rest.InClusterConfig()
-	}
-
+	config, err := getRestConfig(edgeDeviceConfig.KubeconfigPath)
 	if err != nil {
 		klog.Fatalf("Error parsing incluster/kubeconfig, error: %v", err.Error())
 		return nil, nil, err
 	}
 
-	client, err := NewEdgeDeviceRestClient(config)
+	client, err := newEdgeDeviceRestClient(config)
 	if err != nil {
 		klog.Fatalf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
 		return nil, nil, err
 	}
-
-	ed := &v1alpha1.EdgeDevice{}
-	err = client.Get().
-		Namespace(edgeDeviceConfig.NameSpace).
-		Resource(EdgedeviceResourceStr).
-		Name(edgeDeviceConfig.DeviceName).
-		Do(context.TODO()).
-		Into(ed)
+	device, err := createDevice(client, edgeDeviceConfig)
 	if err != nil {
 		klog.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
 		return nil, nil, err
 	}
-	return ed, client, nil
+	return device, client, nil
 }
 
-// NewEdgeDeviceRestClient new edgeDevice rest Client
-func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
+func createDevice(client *rest.RESTClient, config *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, error) {
+	ed := &v1alpha1.EdgeDevice{}
+	err := client.Get().
+		Namespace(config.NameSpace).
+		Resource(EdgedeviceResourceStr).
+		Name(config.DeviceName).
+		Do(context.TODO()).
+		Into(ed)
+	return ed, err
+}
+
+func getRestConfig(kubeConfigPath string) (*rest.Config, error) {
+	if kubeConfigPath != "" {
+		return clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	} else {
+		return rest.InClusterConfig()
+	}
+}
+
+// newEdgeDeviceRestClient new edgeDevice rest Client
+func newEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	err := v1alpha1.AddToScheme(scheme.Scheme)
 	if err != nil {
 		klog.Errorf("cannot add to scheme, error: %v", err)

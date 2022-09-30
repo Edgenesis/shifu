@@ -2,12 +2,27 @@ package deviceshifubase
 
 import (
 	"errors"
+	"os"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/klog/v2"
 )
+
+func TestMain(m *testing.M) {
+	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
+	if err != nil {
+		klog.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
+		os.Exit(-1)
+	}
+	m.Run()
+	err = os.RemoveAll(MockDeviceConfigPath)
+	if err != nil {
+		klog.Fatal(err)
+	}
+}
 
 func TestValidateTelemetryConfig(t *testing.T) {
 	testCases := []struct {
@@ -158,6 +173,45 @@ func TestStartTelemetryCollection(t *testing.T) {
 			} else {
 				assert.Nil(t, err)
 			}
+		})
+	}
+
+}
+
+func TestNew(t *testing.T) {
+	os.Setenv("KUBERNETES_SERVICE_HOST", "localhost")
+	os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
+	testCases := []struct {
+		Name      string
+		metaData  *DeviceShifuMetaData
+		expErrStr string
+	}{
+		{
+			"case 1 have empty name can not new device base",
+			&DeviceShifuMetaData{},
+			"DeviceShifu's name can't be empty",
+		},
+		{
+			"case 2 have empty configpath meta new device base",
+			&DeviceShifuMetaData{
+				Name: "test",
+			},
+			"Error parsing ConfigMap at /etc/edgedevice/config",
+		},
+	}
+	for _, c := range testCases {
+		t.Run(c.Name, func(t *testing.T) {
+			base, mux, err := New(c.metaData)
+			if len(c.expErrStr) > 0 {
+				assert.Equal(t, c.expErrStr, err.Error())
+				assert.Nil(t, base)
+				assert.Nil(t, mux)
+			} else {
+				assert.Equal(t, c.expErrStr, err.Error())
+				assert.NotNil(t, base)
+				assert.NotNil(t, mux)
+			}
+
 		})
 	}
 
