@@ -1,7 +1,6 @@
 package deviceshifuplc4x
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"testing"
@@ -65,7 +64,7 @@ func TestStart(t *testing.T) {
 }
 
 func GenerateConfigMapFromSnippet(fileName string, folder string) error {
-	snippetFile, err := ioutil.ReadFile(fileName)
+	snippetFile, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}

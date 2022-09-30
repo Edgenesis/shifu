@@ -1,7 +1,7 @@
 package main
 
 import (
-	"io/ioutil"
+	"io"
 	"log"
 	"net/http"
 	"strconv"
@@ -13,7 +13,7 @@ func main() {
 	req, _ := http.NewRequest("GET", targetURL, nil)
 	for {
 		res, _ := http.DefaultClient.Do(req)
-		body, _ := ioutil.ReadAll(res.Body)
+		body, _ := io.ReadAll(res.Body)
 		temperature, _ := strconv.Atoi(string(body))
 		if temperature > 20 {
 			log.Println("High temperature:", temperature)

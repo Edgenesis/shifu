@@ -440,9 +440,6 @@ stages:
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-plc4x:$(tag) --load
         displayName: build edgehub/deviceshifu-http-plc4x
-      - script: |
-          docker run edgehub/deviceshifu-http-plc4x:$(tag)
-        displayName: testRun
 
 - stage: docker_build_muiltiarch_and_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
