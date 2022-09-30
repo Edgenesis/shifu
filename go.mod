@@ -3,25 +3,22 @@ module github.com/edgenesis/shifu
 go 1.19
 
 require (
+	github.com/apache/plc4x/plc4go v0.0.0-20220929155823-14e7d8450c87
 	github.com/eclipse/paho.mqtt.golang v1.4.1
-	github.com/gopcua/opcua v0.3.5
+	github.com/gopcua/opcua v0.3.6
+	github.com/onsi/ginkgo v1.16.5
+	github.com/onsi/gomega v1.20.2
+	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v0.25.2
-	knative.dev/pkg v0.0.0-20210915055909-d8349b0909c4
-)
-
-require (
-	github.com/apache/plc4x/plc4go v0.0.0-20220927100957-9878491a9052
-	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.20.2
-	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
-	k8s.io/klog/v2 v2.70.1
+	k8s.io/klog/v2 v2.80.1
+	knative.dev/pkg v0.0.0-20220929013917-2b8e4ad44f04
 	sigs.k8s.io/controller-runtime v0.13.0
 )
 
 require (
-	cloud.google.com/go v0.97.0 // indirect
+	cloud.google.com/go v0.98.0 // indirect
 	github.com/Azure/go-autorest v14.2.0+incompatible // indirect
 	github.com/Azure/go-autorest/autorest v0.11.27 // indirect
 	github.com/Azure/go-autorest/autorest/adal v0.9.20 // indirect
