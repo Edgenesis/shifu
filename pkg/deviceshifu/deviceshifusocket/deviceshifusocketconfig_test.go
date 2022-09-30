@@ -1,7 +1,6 @@
 package deviceshifusocket
 
 import (
-	"io/ioutil"
 	"os"
 	"path"
 	"reflect"
@@ -86,7 +85,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 }
 
 func GenerateConfigMapFromSnippet(fileName string, folder string) error {
-	snippetFile, err := ioutil.ReadFile(fileName)
+	snippetFile, err := os.ReadFile(fileName)
 	if err != nil {
 		return err
 	}

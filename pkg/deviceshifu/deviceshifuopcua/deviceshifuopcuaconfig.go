@@ -5,8 +5,7 @@ import (
 )
 
 const (
-	opcuaInstructionsStr = "opcuaInstructions"
-	opcuaID              = "OPCUANodeID"
+	opcuaID = "OPCUANodeID"
 )
 
 // OPCUAInstructions OPCUA Instructions

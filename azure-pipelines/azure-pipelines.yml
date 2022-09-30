@@ -44,7 +44,7 @@ stages:
     steps:
       - task: GoTool@0
         inputs:
-          version: '1.18.4'
+          version: '1.19.1'
       - task: Go@0
         displayName: "go get"
         inputs:
@@ -114,7 +114,7 @@ stages:
     steps:
       - task: GoTool@0
         inputs:
-          version: '1.18.4'
+          version: '1.19.1'
       - task: Go@0
         displayName: "go get"
         inputs:
@@ -446,7 +446,7 @@ stages:
   variables:
   - name: release_tag
     ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
-      value: 'latest'
+      value: 'nightly'
     ${{ else }}:
       value: $[replace(variables['build.sourcebranch'], 'refs/tags/', '')]
   jobs:

@@ -2,7 +2,7 @@ package main
 
 import (
 	"bytes"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"os"
@@ -42,7 +42,7 @@ func init() {
 }
 
 func main() {
-	key, err := ioutil.ReadFile(privateSSHKeyFile)
+	key, err := os.ReadFile(privateSSHKeyFile)
 	if err != nil {
 		klog.Fatalf("unable to read private key: %v", err)
 	}
@@ -92,7 +92,7 @@ func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 		}
 
 		defer session.Close()
-		httpCommand, err := ioutil.ReadAll(req.Body)
+		httpCommand, err := io.ReadAll(req.Body)
 		if err != nil {
 			panic(err)
 		}
