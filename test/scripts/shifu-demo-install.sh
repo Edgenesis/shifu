@@ -37,4 +37,4 @@ tar -xvf shifu_demo_aio_${OS}_${ARCH}.tar -C testdir
 
 cd testdir
 
-bash scripts/deviceshifu-demo-aio.sh run_demo 
+bash scripts/deviceshifu-demo-aio.sh run_demo
