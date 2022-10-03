@@ -11,9 +11,9 @@
 * 自定义 deviceShifu 设计 by @saiyan86 and @seanli33056 in https://github.com/Edgenesis/shifu/pull/221
 * Bump k8s.io/client-go from 0.25.1 to 0.25.2 by @dependabot in https://github.com/Edgenesis/shifu/pull/266
 * deviceshifu-plc4x 的设计 by @BtXin in https://github.com/Edgenesis/shifu/pull/270
-* 更新COMDEOWNERS, 加入 kris21he by @tomqin93 in https://github.com/Edgenesis/shifu/pull/272
+* 更新CODEOWNERS, 加入 kris21he by @tomqin93 in https://github.com/Edgenesis/shifu/pull/272
 * deviceShifu 的 PowerShell控制组件 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/255
-* 在 mai 分支里使用 nightly 标签 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/276
+* 在 main 分支里使用 nightly 标签 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/276
 * 实现 socket deviceShifu 的编码和缓存长度设置 by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/268
 * 加入用户指标的数据来源 by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/269
 * 将遥测重命名到用户指标 by @BtXin in https://github.com/Edgenesis/shifu/pull/274
