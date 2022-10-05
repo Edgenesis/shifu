@@ -149,7 +149,8 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 	}
 	device, err := createDevice(client, edgeDeviceConfig)
 	if err != nil {
-		klog.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
+		//TODO check if it is proper to make klog.Errorf instead fo klog.Fatalf
+		klog.Errorf("Error GET EdgeDevice resource, error: %v", err.Error())
 		return nil, nil, err
 	}
 	return device, client, nil

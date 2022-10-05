@@ -1,13 +1,20 @@
 package deviceshifubase
 
 import (
+	"encoding/json"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"path"
 	"reflect"
 	"testing"
 
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 	"k8s.io/klog/v2"
 
 	"gopkg.in/yaml.v3"
@@ -18,6 +25,7 @@ const (
 	MockDeviceCmStr              = "configmap_snippet.yaml"
 	MockDeviceWritFilePermission = 0644
 	MockDeviceConfigPath         = "etc"
+	MockConfigFile               = "mockconfig"
 )
 
 var MockDeviceConfigFolder = path.Join("etc", "edgedevice", "config")
@@ -124,37 +132,6 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 	return nil
 }
 
-func Test_createDevice(t *testing.T) {
-	testCases := []struct {
-		Name      string
-		path      string
-		expErrStr string
-	}{
-		{
-			"case 1 have empty kubepath get config failure",
-			"",
-			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
-		},
-		{
-			"case 2 use kubepath get config failure",
-			"kubepath",
-			"stat kubepath: no such file or directory",
-		},
-	}
-
-	for _, c := range testCases {
-		t.Run(c.Name, func(t *testing.T) {
-			config, err := getRestConfig(c.path)
-			if len(c.expErrStr) > 0 {
-				assert.Equal(t, c.expErrStr, err.Error())
-				assert.Nil(t, config)
-			} else {
-				assert.Nil(t, err)
-			}
-		})
-	}
-}
-
 func Test_getRestConfig(t *testing.T) {
 	testCases := []struct {
 		Name      string
@@ -212,4 +189,100 @@ func Test_newEdgeDeviceRestClient(t *testing.T) {
 			assert.Equal(t, res.APIVersion().Version, c.expResult)
 		})
 	}
+}
+
+func TestNewEdgeDevice(t *testing.T) {
+
+	ms := mockHttpServer(t)
+	defer ms.Close()
+
+	writeMockConfigFile(ms.URL)
+
+	testCases := []struct {
+		Name      string
+		config    *EdgeDeviceConfig
+		expErrStr string
+	}{
+		{
+			"case 1 have empty kubepath get config failure",
+			&EdgeDeviceConfig{
+				NameSpace:      "test",
+				DeviceName:     "httpdevice",
+				KubeconfigPath: MockConfigFile,
+			},
+			// TODO, need to make this converting valid
+			"converting (v1.Status) to (v1alpha1.EdgeDevice): unknown conversion",
+		},
+	}
+
+	for _, c := range testCases {
+		t.Run(c.Name, func(t *testing.T) {
+			config, _, err := NewEdgeDevice(c.config)
+			if len(c.expErrStr) > 0 {
+				assert.Equal(t, c.expErrStr, err.Error())
+				assert.Nil(t, config)
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
+}
+
+type MockResponse struct {
+	Kind       string `json:"kind,omitempty"`
+	APIVersion string `json:"apiVersion,omitempty"`
+	Status     string `json:"status,omiteempty"`
+	v1alpha1.EdgeDevice
+}
+
+func mockHttpServer(t *testing.T) *httptest.Server {
+	mockrs := MockResponse{
+		Kind:       "Status",
+		APIVersion: "v1",
+		Status:     "Success",
+		EdgeDevice: v1alpha1.EdgeDevice{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      "test_name",
+				Namespace: "test_namespace",
+			},
+			Status: v1alpha1.EdgeDeviceStatus{
+				EdgeDevicePhase: (*v1alpha1.EdgeDevicePhase)(strPointer("Success")),
+			},
+		},
+	}
+
+	dsByte, _ := json.Marshal(mockrs)
+
+	// Implements the http.Handler interface to be passed to httptest.NewServer
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch path {
+		case "/apis/shifu.edgenesis.io/v1alpha1/namespaces/test/edgedevices/httpdevice":
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			w.Write(dsByte)
+			break
+		default:
+			t.Errorf("Not expected to request: %s", r.URL.Path)
+		}
+	}))
+	return server
+}
+
+func writeMockConfigFile(serverURL string) {
+	fakeConfig := clientcmdapi.NewConfig()
+	fakeConfig.APIVersion = "v1"
+	fakeConfig.CurrentContext = "alpha"
+
+	fakeConfig.Clusters["alpha"] = &clientcmdapi.Cluster{
+		Server:                serverURL,
+		InsecureSkipTLSVerify: true,
+	}
+
+	fakeConfig.Contexts["alpha"] = &clientcmdapi.Context{
+		Cluster: "alpha",
+	}
+
+	clientcmd.WriteToFile(*fakeConfig, MockConfigFile)
+
 }
