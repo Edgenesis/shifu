@@ -196,7 +196,7 @@ func TestNewEdgeDevice(t *testing.T) {
 	ms := mockHttpServer(t)
 	defer ms.Close()
 
-	writeMockConfigFile(ms.URL)
+	writeMockConfigFile(t, ms.URL)
 
 	testCases := []struct {
 		Name      string
@@ -231,7 +231,7 @@ func TestNewEdgeDevice(t *testing.T) {
 type MockResponse struct {
 	Kind       string `json:"kind,omitempty"`
 	APIVersion string `json:"apiVersion,omitempty"`
-	Status     string `json:"status,omiteempty"`
+	Status     string `json:"status,omitempty"`
 	v1alpha1.EdgeDevice
 }
 
@@ -260,8 +260,10 @@ func mockHttpServer(t *testing.T) *httptest.Server {
 		case "/apis/shifu.edgenesis.io/v1alpha1/namespaces/test/edgedevices/httpdevice":
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			w.Write(dsByte)
-			break
+			_, err := w.Write(dsByte)
+			if err != nil {
+				t.Errorf("failed to write response")
+			}
 		default:
 			t.Errorf("Not expected to request: %s", r.URL.Path)
 		}
@@ -269,7 +271,7 @@ func mockHttpServer(t *testing.T) *httptest.Server {
 	return server
 }
 
-func writeMockConfigFile(serverURL string) {
+func writeMockConfigFile(t *testing.T, serverURL string) {
 	fakeConfig := clientcmdapi.NewConfig()
 	fakeConfig.APIVersion = "v1"
 	fakeConfig.CurrentContext = "alpha"
@@ -283,6 +285,9 @@ func writeMockConfigFile(serverURL string) {
 		Cluster: "alpha",
 	}
 
-	clientcmd.WriteToFile(*fakeConfig, MockConfigFile)
+	err := clientcmd.WriteToFile(*fakeConfig, MockConfigFile)
+	if err != nil {
+		t.Errorf("write mock file failed")
+	}
 
 }
