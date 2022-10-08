@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/ut"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
@@ -195,9 +196,25 @@ func TestCreatehttpURIStringNoQuery(t *testing.T) {
 	}
 }
 
-func Test_commandHandleHTTPFunc(t *testing.T) {
+// This function is for one method debug using to initialize new device and get some local var have values
+// func initTestEnv() {
+// 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
+// 	if err != nil {
+// 		klog.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
+// 		os.Exit(-1)
+// 	}
+// 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
+// 		Name:           "TestStart",
+// 		ConfigFilePath: "etc/edgedevice/config",
+// 		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
+// 		Namespace:      "TestStartNamespace",
+// 	}
 
-	hs := mockHandlerServer()
+// 	New(deviceShifuMetadata)
+// }
+
+func Test_commandHandleHTTPFunc(t *testing.T) {
+	hs := mockHandlerServer(t)
 	defer hs.Close()
 	addr := strings.Split(hs.URL, "//")[1]
 
@@ -216,7 +233,7 @@ func Test_commandHandleHTTPFunc(t *testing.T) {
 		},
 	}
 
-	ds := mockDeviceServer(mockHandlerHTTP)
+	ds := mockDeviceServer(mockHandlerHTTP, t)
 	defer ds.Close()
 	dc, err := mockRestClient(ds.URL, "testing")
 	if err != nil {
@@ -227,21 +244,25 @@ func Test_commandHandleHTTPFunc(t *testing.T) {
 	r := dc.Get().Param("timeout", "1").Do(context.TODO())
 	assert.Nil(t, r.Error())
 
+	// test invalid timeout case
 	r = dc.Get().Param("timeout", "aa").Do(context.TODO())
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
+	// test no timeout case
 	r = dc.Get().Do(context.TODO())
 	assert.Nil(t, r.Error())
 
+	// test post method
 	r = dc.Post().Do(context.TODO())
 	assert.Nil(t, r.Error())
 
-	r = dc.Put().Do(context.TODO())
-	assert.Nil(t, r.Error())
+	// test not supported http method case
+	r = dc.Delete().Do(context.TODO())
+	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 }
 
 func Test_commandHandleFuncHTTPCommandLine(t *testing.T) {
-	hs := mockHandlerServer()
+	hs := mockHandlerServer(t)
 	defer hs.Close()
 	addr := strings.Split(hs.URL, "//")[1]
 
@@ -260,7 +281,7 @@ func Test_commandHandleFuncHTTPCommandLine(t *testing.T) {
 		},
 	}
 
-	ds := mockDeviceServer(mockHandlerHTTPCli)
+	ds := mockDeviceServer(mockHandlerHTTPCli, t)
 	defer ds.Close()
 	dc, err := mockRestClient(ds.URL, "testing")
 	if err != nil {
@@ -298,30 +319,26 @@ type MockCommandHandler interface {
 	commandHandleFunc() http.HandlerFunc
 }
 
-func mockDeviceServer(h MockCommandHandler) *httptest.Server {
+func mockDeviceServer(h MockCommandHandler, t *testing.T) *httptest.Server {
 	// catch device http request and response properly with specific paths
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		method := r.Method
-		if method == "GET" || method == "POST" {
-			path := r.URL.Path
-			switch path {
-			case "/testing/apps/v1":
-				println("ds get testing call, calling the handler server")
-				f := h.commandHandleFunc()
-				f.ServeHTTP(w, r)
-			default:
-				w.Header().Add("Content-Type", "application/json")
-				w.WriteHeader(http.StatusOK)
-				println("ds default request, path:", path)
-			}
-		} else {
-			println("invalid method")
+		path := r.URL.Path
+		switch path {
+		case "/testing/apps/v1":
+			klog.Info("ds get testing call, calling the handler server")
+			assert.Equal(t, "/testing/apps/v1", path)
+			f := h.commandHandleFunc()
+			f.ServeHTTP(w, r)
+		default:
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			klog.Info("ds default request, path:", path)
 		}
 	}))
 	return server
 }
 
-func mockHandlerServer() *httptest.Server {
+func mockHandlerServer(t *testing.T) *httptest.Server {
 	// catch handler http request and response properly with specific paths
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
@@ -329,10 +346,11 @@ func mockHandlerServer() *httptest.Server {
 		case "/test_instruction":
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			println("handler get the instruction and executed.")
+			assert.Equal(t, "/test_instruction", path)
+			klog.Info("handler get the instruction and executed.")
 		default:
 			w.WriteHeader(http.StatusOK)
-			println("hs get default request, path:", path)
+			klog.Info("hs get default request, path:", path)
 		}
 
 	}))
@@ -355,7 +373,7 @@ func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
 }
 
 func Test_collectHTTPTelemtries(t *testing.T) {
-	ts := mockTelemetryServer()
+	ts := mockTelemetryServer(t)
 	addr := strings.Split(ts.URL, "//")[1]
 	mockDevice := &DeviceShifuHTTP{
 		base: &deviceshifubase.DeviceShifuBase{
@@ -366,25 +384,25 @@ func Test_collectHTTPTelemtries(t *testing.T) {
 				},
 				Spec: v1alpha1.EdgeDeviceSpec{
 					Address:  &addr,
-					Protocol: (*v1alpha1.Protocol)(strPointer(string(v1alpha1.ProtocolHTTP))),
+					Protocol: (*v1alpha1.Protocol)(ut.StrPointer(string(v1alpha1.ProtocolHTTP))),
 				},
 			},
 			DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
 				Telemetries: &deviceshifubase.DeviceShifuTelemetries{
 					DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
-						DeviceShifuTelemetryTimeoutInMilliseconds:    int64Pointer(10),
-						DeviceShifuTelemetryDefaultPushToServer:      boolPointer(true),
-						DeviceShifuTelemetryDefaultCollectionService: strPointer("test_endpoint-1"),
+						DeviceShifuTelemetryTimeoutInMilliseconds:    ut.Int64Pointer(10),
+						DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(true),
+						DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer("test_endpoint-1"),
 					},
 					DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
 						"device_healthy": {
 							DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
-								DeviceInstructionName: strPointer("mock_testing"),
+								DeviceInstructionName: ut.StrPointer("telemetry_health"),
 								PushSettings: &deviceshifubase.DeviceShifuTelemetryPushSettings{
-									DeviceShifuTelemetryPushToServer:      boolPointer(false),
-									DeviceShifuTelemetryCollectionService: strPointer("test_endpoint-1"),
+									DeviceShifuTelemetryPushToServer:      ut.BoolPointer(false),
+									DeviceShifuTelemetryCollectionService: ut.StrPointer("test_endpoint-1"),
 								},
-								InitialDelayMs: intPointer(1),
+								InitialDelayMs: ut.IntPointer(1),
 							},
 						},
 					},
@@ -400,34 +418,19 @@ func Test_collectHTTPTelemtries(t *testing.T) {
 
 }
 
-func boolPointer(b bool) *bool {
-	return &b
-}
-
-func strPointer(s string) *string {
-	return &s
-}
-
-func intPointer(i int) *int {
-	return &i
-}
-
-func int64Pointer(i int64) *int64 {
-	return &i
-}
-
-func mockTelemetryServer() *httptest.Server {
+func mockTelemetryServer(t *testing.T) *httptest.Server {
 	// catch handler http request and response properly with specific paths
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		switch path {
-		case "/telemetry":
+		case "/telemetry_health":
+			klog.Info("telemetry detected.")
+			assert.Equal(t, "/telemetry_health", path)
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			println("handler get the instruction and executed.")
 		default:
 			w.WriteHeader(http.StatusOK)
-			println("hs get default request, path:", path)
+			klog.Info("ts get default request, path:", path)
 		}
 
 	}))
@@ -441,9 +444,6 @@ func mockRestClientFor(host string, resp string, t *testing.T) *rest.RESTClient 
 			GroupVersion:         &v1.SchemeGroupVersion,
 			NegotiatedSerializer: scheme.Codecs.WithoutConversion(),
 		},
-		Username: "user",
-		Password: "pass",
 	})
-
 	return c
 }

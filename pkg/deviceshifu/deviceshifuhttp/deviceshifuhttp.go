@@ -215,7 +215,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 		default:
-			http.Error(w, httpErr.Error(), http.StatusBadRequest)
+			http.Error(w, "not supported yet", http.StatusBadRequest)
 			klog.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
@@ -360,7 +360,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		resp, httpErr = handlerHTTPClient.Do(req)
 		if httpErr != nil {
 			http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-			klog.Errorf("HTTP POST error, %v", httpErr.Error())
+			klog.Errorf("HTTP error, %v", httpErr.Error())
 			return
 		}
 
