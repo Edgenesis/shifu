@@ -31,11 +31,6 @@ func int64Pointer(i int64) *int64 {
 }
 
 func mockTestServer(response string, statusCode int, t *testing.T) *httptest.Server {
-	// status := &metav1.Status{
-	// 	TypeMeta: metav1.TypeMeta{APIVersion: "v1", Kind: "Status"},
-	// 	Status:   fmt.Sprintf("%s", response),
-	// }
-	// expectedBody, _ := runtime.Encode(scheme.Codecs.LegacyCodec(v1.SchemeGroupVersion), status)
 	fakeHandler := utiltesting.FakeHandler{
 		StatusCode:   statusCode,
 		ResponseBody: string(response),
