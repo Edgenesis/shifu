@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	v1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -194,7 +195,7 @@ func TestCreatehttpURIStringNoQuery(t *testing.T) {
 	}
 }
 
-func Test_commandHandleFunc(t *testing.T) {
+func Test_commandHandleHTTPFunc(t *testing.T) {
 
 	hs := mockHandlerServer()
 	defer hs.Close()
@@ -204,18 +205,18 @@ func Test_commandHandleFunc(t *testing.T) {
 	if err != nil {
 		t.Errorf("create handler client error: %s", err.Error())
 	}
-	mockHandler := &DeviceCommandHandlerHTTP{
+	mockHandlerHTTP := &DeviceCommandHandlerHTTP{
 		client: hc,
 		HandlerMetaData: &HandlerMetaData{
 			edgeDeviceSpec: v1alpha1.EdgeDeviceSpec{
 				Address: &addr,
 			},
 			instruction: "test_instruction",
-			properties:  &deviceshifubase.DeviceShifuInstruction{},
+			properties:  mockDeviceShifuInstruction(),
 		},
 	}
 
-	ds := mockDeviceServer(mockHandler)
+	ds := mockDeviceServer(mockHandlerHTTP)
 	defer ds.Close()
 	dc, err := mockRestClient(ds.URL, "testing")
 	if err != nil {
@@ -223,14 +224,59 @@ func Test_commandHandleFunc(t *testing.T) {
 	}
 
 	// start device client testing
-	r := dc.Get().Do(context.TODO())
+	r := dc.Get().Param("timeout", "1").Do(context.TODO())
+	assert.Nil(t, r.Error())
+
+	r = dc.Get().Param("timeout", "aa").Do(context.TODO())
+	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
+
+	r = dc.Get().Do(context.TODO())
 	assert.Nil(t, r.Error())
 
 	r = dc.Post().Do(context.TODO())
 	assert.Nil(t, r.Error())
 
-	r = dc.Delete().Do(context.TODO())
-	assert.Equal(t, "Delete \""+ds.URL+"/testing/apps/v1\": EOF", r.Error().Error())
+	r = dc.Put().Do(context.TODO())
+	assert.Nil(t, r.Error())
+}
+
+func Test_commandHandleFuncHTTPCommandLine(t *testing.T) {
+	hs := mockHandlerServer()
+	defer hs.Close()
+	addr := strings.Split(hs.URL, "//")[1]
+
+	hc, err := mockRestClient(addr, "")
+	if err != nil {
+		t.Errorf("create handler client error: %s", err.Error())
+	}
+	mockHandlerHTTPCli := &DeviceCommandHandlerHTTPCommandline{
+		client: hc,
+		CommandlineHandlerMetadata: &CommandlineHandlerMetadata{
+			edgeDeviceSpec: v1alpha1.EdgeDeviceSpec{
+				Address: &addr,
+			},
+			instruction: "test_instruction",
+			properties:  mockDeviceShifuInstruction(),
+		},
+	}
+
+	ds := mockDeviceServer(mockHandlerHTTPCli)
+	defer ds.Close()
+	dc, err := mockRestClient(ds.URL, "testing")
+	if err != nil {
+		t.Errorf("create device client error: %s", err.Error())
+	}
+
+	// start device client testing
+	r := dc.Post().Param("timeout", "1").Param("stub_toleration", "1").Do(context.TODO())
+	assert.Nil(t, r.Error())
+
+	r = dc.Post().Param("timeout", "aa").Param("stub_toleration", "1").Do(context.TODO())
+	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
+
+	r = dc.Post().Param("timeout", "-1").Param("stub_toleration", "aa").Do(context.TODO())
+	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
+
 }
 
 func mockRestClient(url string, path string) (*rest.RESTClient, error) {
@@ -248,19 +294,28 @@ func mockRestClient(url string, path string) (*rest.RESTClient, error) {
 	)
 }
 
-func mockDeviceServer(mockHandler *DeviceCommandHandlerHTTP) *httptest.Server {
+type MockCommandHandler interface {
+	commandHandleFunc() http.HandlerFunc
+}
+
+func mockDeviceServer(h MockCommandHandler) *httptest.Server {
 	// catch device http request and response properly with specific paths
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		path := r.URL.Path
-		switch path {
-		case "/testing/apps/v1":
-			println("ds get testing call, calling the handler server")
-			f := mockHandler.commandHandleFunc()
-			f.ServeHTTP(w, r)
-		default:
-			w.Header().Add("Content-Type", "application/json")
-			w.WriteHeader(http.StatusOK)
-			println("ds default")
+		method := r.Method
+		if method == "GET" || method == "POST" {
+			path := r.URL.Path
+			switch path {
+			case "/testing/apps/v1":
+				println("ds get testing call, calling the handler server")
+				f := h.commandHandleFunc()
+				f.ServeHTTP(w, r)
+			default:
+				w.Header().Add("Content-Type", "application/json")
+				w.WriteHeader(http.StatusOK)
+				println("ds default request, path:", path)
+			}
+		} else {
+			println("invalid method")
 		}
 	}))
 	return server
@@ -277,9 +332,118 @@ func mockHandlerServer() *httptest.Server {
 			println("handler get the instruction and executed.")
 		default:
 			w.WriteHeader(http.StatusOK)
-			println("hs get default request")
+			println("hs get default request, path:", path)
 		}
 
 	}))
 	return server
+}
+
+func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
+	return &deviceshifubase.DeviceShifuInstruction{
+		DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
+			{
+				ValueType:    "testing",
+				ReadWrite:    "rw",
+				DefaultValue: "0",
+			},
+		},
+		DeviceShifuProtocolProperties: map[string]string{
+			"test_key": "test_value",
+		},
+	}
+}
+
+func Test_collectHTTPTelemtries(t *testing.T) {
+	ts := mockTelemetryServer()
+	addr := strings.Split(ts.URL, "//")[1]
+	mockDevice := &DeviceShifuHTTP{
+		base: &deviceshifubase.DeviceShifuBase{
+			Name: "test",
+			EdgeDevice: &v1alpha1.EdgeDevice{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: "test_namespace",
+				},
+				Spec: v1alpha1.EdgeDeviceSpec{
+					Address:  &addr,
+					Protocol: (*v1alpha1.Protocol)(strPointer(string(v1alpha1.ProtocolHTTP))),
+				},
+			},
+			DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
+				Telemetries: &deviceshifubase.DeviceShifuTelemetries{
+					DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
+						DeviceShifuTelemetryTimeoutInMilliseconds:    int64Pointer(10),
+						DeviceShifuTelemetryDefaultPushToServer:      boolPointer(true),
+						DeviceShifuTelemetryDefaultCollectionService: strPointer("test_endpoint-1"),
+					},
+					DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
+						"device_healthy": {
+							DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
+								DeviceInstructionName: strPointer("mock_testing"),
+								PushSettings: &deviceshifubase.DeviceShifuTelemetryPushSettings{
+									DeviceShifuTelemetryPushToServer:      boolPointer(false),
+									DeviceShifuTelemetryCollectionService: strPointer("test_endpoint-1"),
+								},
+								InitialDelayMs: intPointer(1),
+							},
+						},
+					},
+				},
+			},
+			RestClient: mockRestClientFor(addr, "{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
+		},
+	}
+
+	res, err := mockDevice.collectHTTPTelemtries()
+	assert.Equal(t, true, res)
+	assert.Nil(t, err)
+
+}
+
+func boolPointer(b bool) *bool {
+	return &b
+}
+
+func strPointer(s string) *string {
+	return &s
+}
+
+func intPointer(i int) *int {
+	return &i
+}
+
+func int64Pointer(i int64) *int64 {
+	return &i
+}
+
+func mockTelemetryServer() *httptest.Server {
+	// catch handler http request and response properly with specific paths
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch path {
+		case "/telemetry":
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			println("handler get the instruction and executed.")
+		default:
+			w.WriteHeader(http.StatusOK)
+			println("hs get default request, path:", path)
+		}
+
+	}))
+	return server
+}
+
+func mockRestClientFor(host string, resp string, t *testing.T) *rest.RESTClient {
+	c, _ := rest.RESTClientFor(&rest.Config{
+		Host: host,
+		ContentConfig: rest.ContentConfig{
+			GroupVersion:         &v1.SchemeGroupVersion,
+			NegotiatedSerializer: scheme.Codecs.WithoutConversion(),
+		},
+		Username: "user",
+		Password: "pass",
+	})
+
+	return c
 }
