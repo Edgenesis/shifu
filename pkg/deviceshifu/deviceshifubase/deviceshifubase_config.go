@@ -138,33 +138,27 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *rest.RESTClient, error) {
 	config, err := getRestConfig(edgeDeviceConfig.KubeconfigPath)
 	if err != nil {
-		klog.Fatalf("Error parsing incluster/kubeconfig, error: %v", err.Error())
+		klog.Errorf("Error parsing incluster/kubeconfig, error: %v", err.Error())
 		return nil, nil, err
 	}
 
 	client, err := newEdgeDeviceRestClient(config)
 	if err != nil {
-		klog.Fatalf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
+		klog.Errorf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
 		return nil, nil, err
 	}
-	device, err := createDevice(client, edgeDeviceConfig)
+	ed := &v1alpha1.EdgeDevice{}
+	err = client.Get().
+		Namespace(edgeDeviceConfig.NameSpace).
+		Resource(EdgedeviceResourceStr).
+		Name(edgeDeviceConfig.DeviceName).
+		Do(context.TODO()).
+		Into(ed)
 	if err != nil {
-		//TODO check if it is proper to make klog.Errorf instead fo klog.Fatalf
 		klog.Errorf("Error GET EdgeDevice resource, error: %v", err.Error())
 		return nil, nil, err
 	}
-	return device, client, nil
-}
-
-func createDevice(client *rest.RESTClient, config *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, error) {
-	ed := &v1alpha1.EdgeDevice{}
-	err := client.Get().
-		Namespace(config.NameSpace).
-		Resource(EdgedeviceResourceStr).
-		Name(config.DeviceName).
-		Do(context.TODO()).
-		Into(ed)
-	return ed, err
+	return ed, client, nil
 }
 
 func getRestConfig(kubeConfigPath string) (*rest.Config, error) {

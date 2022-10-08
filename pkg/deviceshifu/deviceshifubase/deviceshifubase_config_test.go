@@ -204,42 +204,37 @@ func TestNewEdgeDevice(t *testing.T) {
 		expErrStr string
 	}{
 		{
-			"case 1 have empty kubepath get config failure",
+			"case 1 have mock config can get mock edge device",
 			&EdgeDeviceConfig{
 				NameSpace:      "test",
 				DeviceName:     "httpdevice",
 				KubeconfigPath: MockConfigFile,
 			},
-			// TODO, need to make this converting valid
-			"converting (v1.Status) to (v1alpha1.EdgeDevice): unknown conversion",
+			"",
 		},
 	}
 
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
-			config, _, err := NewEdgeDevice(c.config)
+			ds, _, err := NewEdgeDevice(c.config)
 			if len(c.expErrStr) > 0 {
 				assert.Equal(t, c.expErrStr, err.Error())
-				assert.Nil(t, config)
+				assert.Nil(t, ds)
 			} else {
 				assert.Nil(t, err)
+				assert.Equal(t, "test_namespace", ds.Namespace)
+				assert.Equal(t, "test_name", ds.Name)
 			}
 		})
 	}
 }
 
 type MockResponse struct {
-	Kind       string `json:"kind,omitempty"`
-	APIVersion string `json:"apiVersion,omitempty"`
-	Status     string `json:"status,omitempty"`
 	v1alpha1.EdgeDevice
 }
 
 func mockHttpServer(t *testing.T) *httptest.Server {
 	mockrs := MockResponse{
-		Kind:       "Status",
-		APIVersion: "v1",
-		Status:     "Success",
 		EdgeDevice: v1alpha1.EdgeDevice{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      "test_name",
