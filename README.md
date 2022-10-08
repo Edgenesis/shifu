@@ -22,7 +22,7 @@
 
 ## Why ***Shifu***
 
-***Shifu*** makes it extremely simple to manage and control your IoT devices via ***deviceShifu***, a digital twin for your device. When you connect an IoT device, ***Shifu*** will recognize it and start a ***deviceShifu*** of the device as a [Kubernetes Pod](https://kubernetes.io/docs/concepts/workloads/pods/).
+***Shifu*** makes it extremely simple to manage and control your IoT devices via ***deviceShifu***, a digital twin for your device. When you connect to an IoT device, ***Shifu*** will recognize it and start a ***deviceShifu*** of the device as a [Kubernetes Pod](https://kubernetes.io/docs/concepts/workloads/pods/).
 
 ***deviceShifu*** provides you with a high-level abstraction to interact with your device. By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything it is designed for, and much more! For example, you can have your device actively push its telemetry to any endpoint of your choice.
 
