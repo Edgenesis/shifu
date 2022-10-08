@@ -5,17 +5,22 @@ go 1.19
 require (
 	github.com/apache/plc4x/plc4go v0.0.0-20220929155823-14e7d8450c87
 	github.com/eclipse/paho.mqtt.golang v1.4.1
-	github.com/gopcua/opcua v0.3.6
-	github.com/onsi/ginkgo v1.16.5
-	github.com/onsi/gomega v1.20.2
-	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
+	github.com/gopcua/opcua v0.3.7
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.25.2
 	k8s.io/client-go v0.25.2
-	k8s.io/klog/v2 v2.80.1
 	knative.dev/pkg v0.0.0-20220929013917-2b8e4ad44f04
+)
+
+require (
+	github.com/onsi/ginkgo v1.16.5
+	github.com/onsi/gomega v1.21.1
+	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
+	k8s.io/klog/v2 v2.80.1
 	sigs.k8s.io/controller-runtime v0.13.0
 )
+
+require github.com/pmezard/go-difflib v1.0.0 // indirect
 
 require (
 	cloud.google.com/go v0.98.0 // indirect
@@ -70,6 +75,7 @@ require (
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rs/zerolog v1.28.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stretchr/testify v1.8.0
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
@@ -86,7 +92,7 @@ require (
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/tomb.v1 v1.0.0-20141024135613-dd632973f1e7 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.25.2 // indirect
+	k8s.io/api v0.25.2
 	k8s.io/apiextensions-apiserver v0.25.0 // indirect
 	k8s.io/component-base v0.25.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
