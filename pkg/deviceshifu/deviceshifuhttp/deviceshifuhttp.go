@@ -211,7 +211,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-				klog.Errorf("HTTP POST error" + httpErr.Error())
+				klog.Errorf("HTTP error" + httpErr.Error())
 				return
 			}
 		default:

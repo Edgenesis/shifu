@@ -1,8 +1,10 @@
 package deviceshifuhttp
 
 import (
+	"context"
 	"io"
 	"net/http"
+	"net/http/httptest"
 	"os"
 	"reflect"
 	"sort"
@@ -11,8 +13,13 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/stretchr/testify/assert"
 
+	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 )
 
@@ -185,4 +192,94 @@ func TestCreatehttpURIStringNoQuery(t *testing.T) {
 	if createdURIStringWithoutQueries != expectedURIStringWithoutQueries {
 		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdURIString, expectedURIString)
 	}
+}
+
+func Test_commandHandleFunc(t *testing.T) {
+
+	hs := mockHandlerServer()
+	defer hs.Close()
+	addr := strings.Split(hs.URL, "//")[1]
+
+	hc, err := mockRestClient(addr, "")
+	if err != nil {
+		t.Errorf("create handler client error: %s", err.Error())
+	}
+	mockHandler := &DeviceCommandHandlerHTTP{
+		client: hc,
+		HandlerMetaData: &HandlerMetaData{
+			edgeDeviceSpec: v1alpha1.EdgeDeviceSpec{
+				Address: &addr,
+			},
+			instruction: "test_instruction",
+			properties:  &deviceshifubase.DeviceShifuInstruction{},
+		},
+	}
+
+	ds := mockDeviceServer(mockHandler)
+	defer ds.Close()
+	dc, err := mockRestClient(ds.URL, "testing")
+	if err != nil {
+		t.Errorf("create device client error: %s", err.Error())
+	}
+
+	// start device client testing
+	r := dc.Get().Do(context.TODO())
+	assert.Nil(t, r.Error())
+
+	r = dc.Post().Do(context.TODO())
+	assert.Nil(t, r.Error())
+
+	r = dc.Delete().Do(context.TODO())
+	assert.Equal(t, "Delete \""+ds.URL+"/testing/apps/v1\": EOF", r.Error().Error())
+}
+
+func mockRestClient(url string, path string) (*rest.RESTClient, error) {
+	return rest.RESTClientFor(
+		&rest.Config{
+			Host:    url,
+			APIPath: path,
+			ContentConfig: rest.ContentConfig{
+				GroupVersion:         &v1.SchemeGroupVersion,
+				NegotiatedSerializer: scheme.Codecs.WithoutConversion(),
+			},
+			Username: "user",
+			Password: "pass",
+		},
+	)
+}
+
+func mockDeviceServer(mockHandler *DeviceCommandHandlerHTTP) *httptest.Server {
+	// catch device http request and response properly with specific paths
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch path {
+		case "/testing/apps/v1":
+			println("ds get testing call, calling the handler server")
+			f := mockHandler.commandHandleFunc()
+			f.ServeHTTP(w, r)
+		default:
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			println("ds default")
+		}
+	}))
+	return server
+}
+
+func mockHandlerServer() *httptest.Server {
+	// catch handler http request and response properly with specific paths
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch path {
+		case "/test_instruction":
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			println("handler get the instruction and executed.")
+		default:
+			w.WriteHeader(http.StatusOK)
+			println("hs get default request")
+		}
+
+	}))
+	return server
 }
