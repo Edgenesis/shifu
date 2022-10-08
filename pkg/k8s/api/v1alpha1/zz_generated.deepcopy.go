@@ -285,7 +285,7 @@ func (in *PLC4XSetting) DeepCopyInto(out *PLC4XSetting) {
 	*out = *in
 	if in.Protocol != nil {
 		in, out := &in.Protocol, &out.Protocol
-		*out = new(string)
+		*out = new(Plc4xProtocol)
 		**out = **in
 	}
 }

@@ -37,11 +37,31 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		}
 
 		protocol := base.EdgeDevice.Spec.ProtocolSettings.PLC4XSetting.Protocol
+
 		driverManager := plc4go.NewPlcDriverManager()
 
-		drivers.RegisterS7Driver(driverManager)
-		// drivers.
-		address := *protocol + "://" + *base.EdgeDevice.Spec.Address
+		switch *protocol {
+		case v1alpha1.Plc4xProtocolS7:
+			drivers.RegisterS7Driver(driverManager)
+		case v1alpha1.Plc4xProtocolADS:
+			drivers.RegisterAdsDriver(driverManager)
+		case v1alpha1.Plc4xProtocolBACnet:
+			drivers.RegisterBacnetDriver(driverManager)
+		case v1alpha1.Plc4xProtocolCBus:
+			drivers.RegisterCBusDriver(driverManager)
+		case v1alpha1.Plc4xProtocolEip:
+			drivers.RegisterEipDriver(driverManager)
+		case v1alpha1.Plc4xProtocolKnx:
+			drivers.RegisterKnxDriver(driverManager)
+		case v1alpha1.Plc4xProtocolModbusAscii:
+			drivers.RegisterModbusAsciiDriver(driverManager)
+		case v1alpha1.Plc4xProtocolModbusRTU:
+			drivers.RegisterModbusRtuDriver(driverManager)
+		case v1alpha1.Plc4xProtocolModbusTcp:
+			drivers.RegisterModbusTcpDriver(driverManager)
+		}
+
+		address := string(*protocol) + "://" + *base.EdgeDevice.Spec.Address
 
 		connectionRequestChanel := driverManager.GetConnection(address)
 
