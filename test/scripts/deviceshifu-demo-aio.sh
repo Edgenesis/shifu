@@ -180,7 +180,7 @@ elif [[ $1 = "run_demo" ]]; then
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"after kind load Util images\"}" > /dev/null 2>&1 || true
 
-    ${BIN_DIR}/ kubectl apply -f $RUN_DIR/$SHIFU_DIR/shifu_install.yml
+    ${BIN_DIR}/kubectl apply -f $RUN_DIR/$SHIFU_DIR/shifu_install.yml
     ${BIN_DIR}/kubectl apply -f $RUN_DIR/$SHIFU_DIR/demo_device/edgedevice-agv
 
     curl -X POST https://telemetry.shifu.run/demo-stat/ \
