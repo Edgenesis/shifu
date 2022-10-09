@@ -36,7 +36,7 @@ variables:
 
 pool:
    vmImage: 'ubuntu-latest'
-   
+
 stages:
 - stage: go_test_and_kind_e2e_test
   jobs:
