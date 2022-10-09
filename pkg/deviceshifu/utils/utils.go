@@ -2,13 +2,17 @@ package utils
 
 import (
 	"fmt"
-	"log"
 	"strings"
+
+	"k8s.io/klog/v2"
 )
 
+// ParseHTTPGetParams Parse Params from HTTP get request
+// for example example.com?a=1&b=2
+// reply map[string]string{a:1,b:2},nil
 func ParseHTTPGetParams(urlStr string) (map[string]string, error) {
 	var paramStr string
-	log.Println(urlStr)
+	klog.Infof("url: ", urlStr)
 	url := strings.Split(urlStr, "?")
 
 	if len(url) <= 0 {

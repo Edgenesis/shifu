@@ -59,7 +59,7 @@ const (
 	Plc4xProtocolEip         Plc4xProtocol = "eip"
 	Plc4xProtocolKnx         Plc4xProtocol = "knx"
 	Plc4xProtocolModbusAscii Plc4xProtocol = "modbus-ascii"
-	Plc4xProtocolModbusRTU   Plc4xProtocol = "modbus-rut"
+	Plc4xProtocolModbusRTU   Plc4xProtocol = "modbus-rtu"
 	Plc4xProtocolModbusTcp   Plc4xProtocol = "modbus-tcp"
 )
 
