@@ -196,6 +196,7 @@ func TestCreatehttpURIStringNoQuery(t *testing.T) {
 	}
 }
 
+// TODO will remove this after the test method didn't depends on the device initialization
 // This function is for one method debug using to initialize new device and get some local var have values
 // func initTestEnv() {
 // 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
