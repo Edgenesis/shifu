@@ -96,6 +96,7 @@ clean-images:
 tag:
 	go run tools/tag.go ${PROJECT_ROOT} ${IMAGE_VERSION} $(VERSION)
 	cd pkg/k8s/crd/ && (make generate-controller-yaml IMG=edgehub/shifu-controller:$(VERSION) generate-install-yaml)
+	sed -i -e "s/${IMAGE_VERSION}/${VERSION}/s" ./test/scripts/deviceshifu-demo-aio.sh
 	echo $(VERSION) > version.txt
 
 ## Location to install dependencies to
