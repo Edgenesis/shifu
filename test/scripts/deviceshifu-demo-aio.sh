@@ -7,13 +7,14 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-SHIFU_IMG_VERSION=v0.1.1
+SHIFU_IMG_VERSION=v0.2.1
 BUILD_DIR=build_dir
 IMG_DIR=images
 RUN_DIR=run_dir
 UTIL_DIR=util_dir
 SHIFU_DIR=shifu
 RESOURCE_DIR=resource
+BIN_DIR=/usr/local/bin
 
 SHIFU_IMG_LIST=(
     'edgehub/deviceshifu-http-http'
@@ -30,7 +31,8 @@ SHIFU_IMG_LIST=(
     'edgehub/mockdevice-opcua'
 )
 
-KIND_IMG="kindest/node:v1.24.0"
+KIND_IMG="kindest/node:v1.25.2"
+KIND_VERSION="v0.16.0"
 
 UTIL_IMG_LIST=(
     'quay.io/brancz/kube-rbac-proxy:v0.12.0'
@@ -107,7 +109,7 @@ if [ $1 = "build_demo" ]; then
     done
 
     mkdir -p $BUILD_DIR/$UTIL_DIR
-    curl -Lo $BUILD_DIR/$UTIL_DIR/kind https://kind.sigs.k8s.io/dl/v0.14.0/kind-$build_os-$build_arch
+    curl -Lo $BUILD_DIR/$UTIL_DIR/kind https://kind.sigs.k8s.io/dl/$KIND_VERSION/kind-$build_os-$build_arch
     curl -Lo $BUILD_DIR/$UTIL_DIR/kubectl "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/$build_os/$build_arch/kubectl"
 
     mkdir -p $BUILD_DIR/$SHIFU_DIR
@@ -140,8 +142,8 @@ elif [[ $1 = "run_demo" ]]; then
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"after untar\"}" > /dev/null 2>&1 || true
 
     echo "installing kind, kubectl"
-    (cd $RUN_DIR/$UTIL_DIR && chmod +x ./kind && mv ./kind /usr/local/bin/kind)
-    (cd $RUN_DIR/$UTIL_DIR && chmod +x ./kubectl && mv ./kubectl /usr/local/bin/kubectl)
+    (cd $RUN_DIR/$UTIL_DIR && chmod +x ./kind && mv ./kind ${BIN_DIR}/kind)
+    (cd $RUN_DIR/$UTIL_DIR && chmod +x ./kubectl && mv ./kubectl ${BIN_DIR}/kubectl)
     (cd $RUN_DIR/$UTIL_DIR && ls -lh)
 
     curl -X POST https://telemetry.shifu.run/demo-stat/ \
@@ -150,8 +152,8 @@ elif [[ $1 = "run_demo" ]]; then
 
     (cd $RUN_DIR/$IMG_DIR && for f in *.tar.gz; do docker load < $f; done)
 
-    kind delete cluster
-    kind create cluster --image=$KIND_IMG
+    ${BIN_DIR}/kind delete cluster
+    ${BIN_DIR}/kind create cluster --image=$KIND_IMG
 
     curl -X POST https://telemetry.shifu.run/demo-stat/ \
         -H 'Content-Type: application/json' \
@@ -159,7 +161,7 @@ elif [[ $1 = "run_demo" ]]; then
 
     for shifu_image in "${SHIFU_IMG_LIST[@]}"
     do
-        kind load docker-image $shifu_image:$SHIFU_IMG_VERSION
+        ${BIN_DIR}/kind load docker-image $shifu_image:$SHIFU_IMG_VERSION
     done
 
     curl -X POST https://telemetry.shifu.run/demo-stat/ \
@@ -171,7 +173,7 @@ elif [[ $1 = "run_demo" ]]; then
         if [ $util_image = $KIND_IMG ];then
             continue
         fi
-        kind load docker-image $util_image
+        ${BIN_DIR}/kind load docker-image $util_image
     done
 
     curl -X POST https://telemetry.shifu.run/demo-stat/ \
@@ -187,7 +189,7 @@ elif [[ $1 = "run_demo" ]]; then
 
     echo "Finished setting up Demo !"
 elif [[ $1 = "delete_demo" ]]; then
-    kind delete cluster
+    ${BIN_DIR}/kind delete cluster
     for shifu_image in "${SHIFU_IMG_LIST[@]}"
     do
         docker rmi $shifu_image:$SHIFU_IMG_VERSION
