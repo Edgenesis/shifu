@@ -40,7 +40,7 @@ func mockRestClientFor(resp string, t *testing.T) *rest.RESTClient {
 	return c
 }
 
-func Test_getTelemetryCollectionServiceMap(t *testing.T) {
+func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 	//test cases
 	// case 1 no setting
 	// case 2 has default with false

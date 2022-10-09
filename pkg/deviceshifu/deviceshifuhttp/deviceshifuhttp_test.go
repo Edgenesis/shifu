@@ -213,7 +213,7 @@ func TestCreatehttpURIStringNoQuery(t *testing.T) {
 // 	New(deviceShifuMetadata)
 // }
 
-func Test_commandHandleHTTPFunc(t *testing.T) {
+func TestCommandHandleHTTPFunc(t *testing.T) {
 	hs := mockHandlerServer(t)
 	defer hs.Close()
 	addr := strings.Split(hs.URL, "//")[1]
@@ -255,7 +255,7 @@ func Test_commandHandleHTTPFunc(t *testing.T) {
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 }
 
-func Test_commandHandleFuncHTTPCommandLine(t *testing.T) {
+func TestCommandHandleFuncHTTPCommandLine(t *testing.T) {
 	hs := mockHandlerServer(t)
 	defer hs.Close()
 	addr := strings.Split(hs.URL, "//")[1]
@@ -364,7 +364,7 @@ func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
 	}
 }
 
-func Test_collectHTTPTelemtries(t *testing.T) {
+func TestCollectHTTPTelemtries(t *testing.T) {
 	ts := mockTelemetryServer(t)
 	addr := strings.Split(ts.URL, "//")[1]
 	mockDevice := &DeviceShifuHTTP{
