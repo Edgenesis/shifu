@@ -33,16 +33,9 @@ pr:
 variables:
   name: tag
   value: 
-    
-strategy:
-  matrix:
-    linux:
-      imageName: 'ubuntu-latest'
-    mac:
-      imageName: 'macOS-12'
 
 pool:
-  vmImage: $(imageName)
+   vmImage: 'ubuntu-latest'
 
 stages:
 - stage: go_test_and_kind_e2e_test
