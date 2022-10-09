@@ -38,6 +38,141 @@ pool:
    vmImage: 'ubuntu-latest'
 
 stages:
+- stage: docker_build_shifu_demo_push
+  # condition: and(succeeded(), variables['build.retainedByRelease'])
+  jobs:
+  - job: docker_push_shifu_demo
+    steps:
+    - task: DockerInstaller@0
+      displayName: Docker Installer
+      inputs:
+        dockerVersion: 20.10.9
+        releaseType: stable
+
+    - script: |
+        set -e
+        bash test/scripts/deviceshifu-demo-aio.sh build_demo amd64
+        bash test/scripts/deviceshifu-demo-aio.sh build_demo arm64
+        ls -al
+      displayName: 'Run the build script'
+    - script: |
+        set -e
+        mkdir testdir && tar -xvf shifu_demo_aio_linux_amd64.tar -C testdir && cd testdir
+        chmod +x scripts/deviceshifu-demo-aio.sh && sudo ./scripts/deviceshifu-demo-aio.sh run_demo
+      displayName: 'test run_demo'
+    - script: |
+        set -e
+        sudo kubectl run nginx --image=nginx:1.21 -n deviceshifu
+        sudo kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
+        sudo kubectl wait --for=condition=Available deploy/deviceshifu-agv-deployment -n deviceshifu --timeout=150s
+        sudo kubectl wait --for=condition=Available deploy/agv -n devices --timeout=150s
+        sudo kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
+        sudo kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
+      displayName: 'test run_demo result'
+    - task: CopyFilesOverSSH@0
+      condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+      inputs:
+        sshEndpoint: 'shifurun-ssh'
+        contents: |
+          shifu_demo_aio_linux_amd64.tar
+          shifu_demo_aio_linux_arm64.tar
+        targetFolder: '/home/ubuntu/demo-files'
+        readyTimeout: '20000'
+        failOnEmptySource: true
+
+    - task: SSH@0
+      condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+      inputs:
+        sshEndpoint: 'shifurun-ssh'
+        runOptions: 'inline'
+        inline: 'sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content'
+        readyTimeout: '20000'
+
+  - job: docker_push_shifu_demo_mac
+    pool: 
+      vmImage: 'macOS-12'
+    steps:
+    - script: |
+        brew --version
+        brew update
+        brew --version
+        dockerInstallationScriptName='docker.rb'
+        dockerInstallationScriptUrl="https://raw.githubusercontent.com/Homebrew/homebrew-cask/fe866ec0765de141599745f03e215452db7f511b/Casks/$dockerInstallationScriptName"
+        # dockerInstallationScriptUrl="https://raw.githubusercontent.com/Homebrew/homebrew-cask/master/Casks/$dockerInstallationScriptName"
+        curl -L  $dockerInstallationScriptUrl > $dockerInstallationScriptName && brew install --cask $dockerInstallationScriptName
+        echo 'Installing Docker Desktop for Mac ...'
+        start=$SECONDS
+        sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --install-privileged-components
+        open -a /Applications/Docker.app --args --unattended --accept-license
+        end=$SECONDS
+        duration=$(( end - start ))
+        echo "Docker Desktop for Mac has been installed in $duration seconds"
+        echo 'Starting Docker service ...'
+        start=$SECONDS
+        retries=0
+        maxRetries=100
+        sudo bash -c `
+        set -x
+        command -v docker || echo 'test docker command 1: not found'
+        i=0
+        while ! /Applications/Docker.app/Contents/Resources/bin/docker system info &>/dev/null; do
+        (( i++ == 0 )) && printf %s '-- Waiting for Docker to finish starting up...' || printf '.'
+        command -v docker || echo 'test docker command loop: not found'
+        sleep 5
+        if [ $i -gt 180 ];then sudo /Applications/Docker.app/Contents/MacOS/com.docker.diagnose check;uname -a;system_profiler SPHardwareDataType;echo "::error::-- Wait docker start $i s too long, exit"; exit 1; fi
+        done
+        echo "::notice::-- Docker is ready.Wait time is $i s"
+        uname -a || true
+        system_profiler SPHardwareDataType || true
+        `
+        end=$SECONDS
+        duration=$(( end - start ))
+        echo "Docker service has started after $duration seconds"
+        docker --version
+        docker-compose --version
+      displayName: Install and start Docker
+    - checkout: self
+      submodules: true
+
+    - script: |
+        set -e
+        git submodule update --remote
+        bash test/scripts/deviceshifu-demo-aio_build.sh build_demo amd64
+        bash test/scripts/deviceshifu-demo-aio_build.sh build_demo arm64
+        ls -al
+      displayName: 'Run the build script'
+    - script: |
+        set -e
+        mkdir testdir && tar -xvf shifu_demo_aio_darwin_amd64.tar -C testdir && cd testdir
+        chmod +x scripts/deviceshifu-demo-aio.sh && sudo ./scripts/deviceshifu-demo-aio.sh run_demo
+      displayName: 'test run_demo'
+    - script: |
+        set -e
+        sudo kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
+        sudo kubectl wait --for=condition=Available deploy/deviceshifu-agv-deployment -n deviceshifu --timeout=150s
+        sudo kubectl wait --for=condition=Available deploy/agv -n devices --timeout=150s
+        sudo kubectl run nginx --image=nginx:1.21 -n deviceshifu
+        sudo kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
+        sudo kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
+      displayName: 'test run_demo result'
+      
+    - task: CopyFilesOverSSH@0
+      inputs:
+        sshEndpoint: 'shifurun-ssh'
+        contents: |
+          shifu_demo_aio_darwin_amd64.tar
+          shifu_demo_aio_darwin_arm64.tar
+        targetFolder: '/home/ubuntu/demo-files'
+        readyTimeout: '20000'
+        failOnEmptySource: true
+
+    - task: SSH@0
+      inputs:
+        sshEndpoint: 'shifurun-ssh'
+        runOptions: 'inline'
+        inline: 'sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content'
+        readyTimeout: '20000'
+
 - stage: go_test_and_kind_e2e_test
   jobs:
   - job: go_build_and_test
@@ -645,139 +780,3 @@ stages:
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-opcua:$(release_tag) --push
         displayName: build edgehub/mockdevice-opcua
-
-- stage: docker_build_shifu_demo_push
-  # condition: and(succeeded(), variables['build.retainedByRelease'])
-  jobs:
-  - job: docker_push_shifu_demo
-    steps:
-    - task: DockerInstaller@0
-      displayName: Docker Installer
-      inputs:
-        dockerVersion: 20.10.9
-        releaseType: stable
-
-    - script: |
-        set -e
-        bash test/scripts/deviceshifu-demo-aio.sh build_demo amd64
-        bash test/scripts/deviceshifu-demo-aio.sh build_demo arm64
-        ls -al
-      displayName: 'Run the build script'
-    - script: |
-        set -e
-        mkdir testdir && tar -xvf shifu_demo_aio_linux_amd64.tar -C testdir && cd testdir
-        chmod +x scripts/deviceshifu-demo-aio.sh && sudo ./scripts/deviceshifu-demo-aio.sh run_demo
-      displayName: 'test run_demo'
-    - script: |
-        set -e
-        sudo kubectl run nginx --image=nginx:1.21 -n deviceshifu
-        sudo kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
-        sudo kubectl wait --for=condition=Available deploy/deviceshifu-agv-deployment -n deviceshifu --timeout=150s
-        sudo kubectl wait --for=condition=Available deploy/agv -n devices --timeout=150s
-        sudo kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-        sudo kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
-      displayName: 'test run_demo result'
-    - task: CopyFilesOverSSH@0
-      condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
-      inputs:
-        sshEndpoint: 'shifurun-ssh'
-        contents: |
-          shifu_demo_aio_linux_amd64.tar
-          shifu_demo_aio_linux_arm64.tar
-        targetFolder: '/home/ubuntu/demo-files'
-        readyTimeout: '20000'
-        failOnEmptySource: true
-
-    - task: SSH@0
-      condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
-      inputs:
-        sshEndpoint: 'shifurun-ssh'
-        runOptions: 'inline'
-        inline: 'sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content'
-        readyTimeout: '20000'
-
-  - job: docker_push_shifu_demo_mac
-    pool: 
-      vmImage: 'macOS-12'
-    steps:
-    - script: |
-        brew --version
-        brew update
-        brew --version
-        dockerInstallationScriptName='docker.rb'
-        dockerInstallationScriptUrl="https://raw.githubusercontent.com/Homebrew/homebrew-cask/fe866ec0765de141599745f03e215452db7f511b/Casks/$dockerInstallationScriptName"
-        # dockerInstallationScriptUrl="https://raw.githubusercontent.com/Homebrew/homebrew-cask/master/Casks/$dockerInstallationScriptName"
-        curl -L  $dockerInstallationScriptUrl > $dockerInstallationScriptName && brew install --cask $dockerInstallationScriptName
-        echo 'Installing Docker Desktop for Mac ...'
-        start=$SECONDS
-        sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --install-privileged-components
-        open -a /Applications/Docker.app --args --unattended --accept-license
-        end=$SECONDS
-        duration=$(( end - start ))
-        echo "Docker Desktop for Mac has been installed in $duration seconds"
-        echo 'Starting Docker service ...'
-        start=$SECONDS
-        retries=0
-        maxRetries=100
-        sudo bash -c `
-        set -x
-        command -v docker || echo 'test docker command 1: not found'
-        i=0
-        while ! /Applications/Docker.app/Contents/Resources/bin/docker system info &>/dev/null; do
-        (( i++ == 0 )) && printf %s '-- Waiting for Docker to finish starting up...' || printf '.'
-        command -v docker || echo 'test docker command loop: not found'
-        sleep 5
-        if [ $i -gt 180 ];then sudo /Applications/Docker.app/Contents/MacOS/com.docker.diagnose check;uname -a;system_profiler SPHardwareDataType;echo "::error::-- Wait docker start $i s too long, exit"; exit 1; fi
-        done
-        echo "::notice::-- Docker is ready.Wait time is $i s"
-        uname -a || true
-        system_profiler SPHardwareDataType || true
-        `
-        end=$SECONDS
-        duration=$(( end - start ))
-        echo "Docker service has started after $duration seconds"
-        docker --version
-        docker-compose --version
-      displayName: Install and start Docker
-    - checkout: self
-      submodules: true
-
-    - script: |
-        set -e
-        git submodule update --remote
-        bash test/scripts/deviceshifu-demo-aio_build.sh build_demo amd64
-        bash test/scripts/deviceshifu-demo-aio_build.sh build_demo arm64
-        ls -al
-      displayName: 'Run the build script'
-    - script: |
-        set -e
-        mkdir testdir && tar -xvf shifu_demo_aio_darwin_amd64.tar -C testdir && cd testdir
-        chmod +x scripts/deviceshifu-demo-aio.sh && sudo ./scripts/deviceshifu-demo-aio.sh run_demo
-      displayName: 'test run_demo'
-    - script: |
-        set -e
-        sudo kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
-        sudo kubectl wait --for=condition=Available deploy/deviceshifu-agv-deployment -n deviceshifu --timeout=150s
-        sudo kubectl wait --for=condition=Available deploy/agv -n devices --timeout=150s
-        sudo kubectl run nginx --image=nginx:1.21 -n deviceshifu
-        sudo kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-        sudo kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
-      displayName: 'test run_demo result'
-      
-    - task: CopyFilesOverSSH@0
-      inputs:
-        sshEndpoint: 'shifurun-ssh'
-        contents: |
-          shifu_demo_aio_darwin_amd64.tar
-          shifu_demo_aio_darwin_arm64.tar
-        targetFolder: '/home/ubuntu/demo-files'
-        readyTimeout: '20000'
-        failOnEmptySource: true
-
-    - task: SSH@0
-      inputs:
-        sshEndpoint: 'shifurun-ssh'
-        runOptions: 'inline'
-        inline: 'sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content'
-        readyTimeout: '20000'
-          
