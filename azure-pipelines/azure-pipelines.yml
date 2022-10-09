@@ -697,7 +697,8 @@ stages:
         readyTimeout: '20000'
 
   - job: docker_push_shifu_demo_mac
-    pool: 'macOS-12'
+    pool: 
+      vmImage: 'macOS-12'
     steps:
     - script: |
         brew --version
