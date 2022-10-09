@@ -647,7 +647,7 @@ stages:
         displayName: build edgehub/mockdevice-opcua
 
 - stage: docker_build_shifu_demo_push
-  condition: and(succeeded(), variables['build.retainedByRelease'])
+  # condition: and(succeeded(), variables['build.retainedByRelease'])
   jobs:
   - job: docker_push_shifu_demo
     steps:
@@ -764,7 +764,6 @@ stages:
       displayName: 'test run_demo result'
       
     - task: CopyFilesOverSSH@0
-      condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
       inputs:
         sshEndpoint: 'shifurun-ssh'
         contents: |
@@ -775,7 +774,6 @@ stages:
         failOnEmptySource: true
 
     - task: SSH@0
-      condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
       inputs:
         sshEndpoint: 'shifurun-ssh'
         runOptions: 'inline'

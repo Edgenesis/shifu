@@ -3,11 +3,11 @@
 set -e
 
 if [ $# -eq 0 ]; then
-    echo "No arguments provided, use 'build_demo' or 'run_demo'"
+    echo "No arguments provided, use 'run_demo', 'build_demo' or 'delete_demo'"
     exit 1
 fi
 
-SHIFU_IMG_VERSION=v0.2.1
+SHIFU_IMG_VERSION=nightly
 BUILD_DIR=build_dir
 IMG_DIR=images
 RUN_DIR=run_dir
@@ -180,8 +180,8 @@ elif [[ $1 = "run_demo" ]]; then
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"after kind load Util images\"}" > /dev/null 2>&1 || true
 
-    kubectl apply -f $RUN_DIR/$SHIFU_DIR/shifu_install.yml
-    kubectl apply -f $RUN_DIR/$SHIFU_DIR/demo_device/edgedevice-agv
+    ${BIN_DIR}/ kubectl apply -f $RUN_DIR/$SHIFU_DIR/shifu_install.yml
+    ${BIN_DIR}/kubectl apply -f $RUN_DIR/$SHIFU_DIR/demo_device/edgedevice-agv
 
     curl -X POST https://telemetry.shifu.run/demo-stat/ \
         -H 'Content-Type: application/json' \
