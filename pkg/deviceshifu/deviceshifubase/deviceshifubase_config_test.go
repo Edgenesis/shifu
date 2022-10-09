@@ -9,7 +9,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/edgenesis/shifu/pkg/deviceshifu/ut"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -242,7 +242,7 @@ func mockHttpServer(t *testing.T) *httptest.Server {
 				Namespace: "test_namespace",
 			},
 			Status: v1alpha1.EdgeDeviceStatus{
-				EdgeDevicePhase: (*v1alpha1.EdgeDevicePhase)(ut.StrPointer("Success")),
+				EdgeDevicePhase: (*v1alpha1.EdgeDevicePhase)(unitest.StrPointer("Success")),
 			},
 		},
 	}

@@ -12,7 +12,7 @@ import (
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/ut"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
@@ -218,10 +218,7 @@ func Test_commandHandleHTTPFunc(t *testing.T) {
 	defer hs.Close()
 	addr := strings.Split(hs.URL, "//")[1]
 
-	hc, err := mockRestClient(addr, "")
-	if err != nil {
-		t.Errorf("create handler client error: %s", err.Error())
-	}
+	hc := mockRestClient(addr, "")
 	mockHandlerHTTP := &DeviceCommandHandlerHTTP{
 		client: hc,
 		HandlerMetaData: &HandlerMetaData{
@@ -235,10 +232,7 @@ func Test_commandHandleHTTPFunc(t *testing.T) {
 
 	ds := mockDeviceServer(mockHandlerHTTP, t)
 	defer ds.Close()
-	dc, err := mockRestClient(ds.URL, "testing")
-	if err != nil {
-		t.Errorf("create device client error: %s", err.Error())
-	}
+	dc := mockRestClient(ds.URL, "testing")
 
 	// start device client testing
 	r := dc.Get().Param("timeout", "1").Do(context.TODO())
@@ -266,10 +260,7 @@ func Test_commandHandleFuncHTTPCommandLine(t *testing.T) {
 	defer hs.Close()
 	addr := strings.Split(hs.URL, "//")[1]
 
-	hc, err := mockRestClient(addr, "")
-	if err != nil {
-		t.Errorf("create handler client error: %s", err.Error())
-	}
+	hc := mockRestClient(addr, "")
 	mockHandlerHTTPCli := &DeviceCommandHandlerHTTPCommandline{
 		client: hc,
 		CommandlineHandlerMetadata: &CommandlineHandlerMetadata{
@@ -283,10 +274,7 @@ func Test_commandHandleFuncHTTPCommandLine(t *testing.T) {
 
 	ds := mockDeviceServer(mockHandlerHTTPCli, t)
 	defer ds.Close()
-	dc, err := mockRestClient(ds.URL, "testing")
-	if err != nil {
-		t.Errorf("create device client error: %s", err.Error())
-	}
+	dc := mockRestClient(ds.URL, "testing")
 
 	// start device client testing
 	r := dc.Post().Param("timeout", "1").Param("stub_toleration", "1").Do(context.TODO())
@@ -300,19 +288,23 @@ func Test_commandHandleFuncHTTPCommandLine(t *testing.T) {
 
 }
 
-func mockRestClient(url string, path string) (*rest.RESTClient, error) {
-	return rest.RESTClientFor(
+func mockRestClient(host string, path string) *rest.RESTClient {
+	c, err := rest.RESTClientFor(
 		&rest.Config{
-			Host:    url,
+			Host:    host,
 			APIPath: path,
 			ContentConfig: rest.ContentConfig{
 				GroupVersion:         &v1.SchemeGroupVersion,
 				NegotiatedSerializer: scheme.Codecs.WithoutConversion(),
 			},
-			Username: "user",
-			Password: "pass",
 		},
 	)
+	if err != nil {
+		klog.Errorf("mock client for host %s, apipath: %s failed,", host, path)
+		return nil
+	}
+
+	return c
 }
 
 type MockCommandHandler interface {
@@ -384,31 +376,31 @@ func Test_collectHTTPTelemtries(t *testing.T) {
 				},
 				Spec: v1alpha1.EdgeDeviceSpec{
 					Address:  &addr,
-					Protocol: (*v1alpha1.Protocol)(ut.StrPointer(string(v1alpha1.ProtocolHTTP))),
+					Protocol: (*v1alpha1.Protocol)(unitest.StrPointer(string(v1alpha1.ProtocolHTTP))),
 				},
 			},
 			DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
 				Telemetries: &deviceshifubase.DeviceShifuTelemetries{
 					DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
-						DeviceShifuTelemetryTimeoutInMilliseconds:    ut.Int64Pointer(10),
-						DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(true),
-						DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer("test_endpoint-1"),
+						DeviceShifuTelemetryTimeoutInMilliseconds:    unitest.Int64Pointer(10),
+						DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
+						DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer("test_endpoint-1"),
 					},
 					DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
 						"device_healthy": {
 							DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
-								DeviceInstructionName: ut.StrPointer("telemetry_health"),
+								DeviceInstructionName: unitest.StrPointer("telemetry_health"),
 								PushSettings: &deviceshifubase.DeviceShifuTelemetryPushSettings{
-									DeviceShifuTelemetryPushToServer:      ut.BoolPointer(false),
-									DeviceShifuTelemetryCollectionService: ut.StrPointer("test_endpoint-1"),
+									DeviceShifuTelemetryPushToServer:      unitest.BoolPointer(false),
+									DeviceShifuTelemetryCollectionService: unitest.StrPointer("test_endpoint-1"),
 								},
-								InitialDelayMs: ut.IntPointer(1),
+								InitialDelayMs: unitest.IntPointer(1),
 							},
 						},
 					},
 				},
 			},
-			RestClient: mockRestClientFor(addr, "{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
+			RestClient: mockRestClient(addr, ""),
 		},
 	}
 
@@ -435,15 +427,4 @@ func mockTelemetryServer(t *testing.T) *httptest.Server {
 
 	}))
 	return server
-}
-
-func mockRestClientFor(host string, resp string, t *testing.T) *rest.RESTClient {
-	c, _ := rest.RESTClientFor(&rest.Config{
-		Host: host,
-		ContentConfig: rest.ContentConfig{
-			GroupVersion:         &v1.SchemeGroupVersion,
-			NegotiatedSerializer: scheme.Codecs.WithoutConversion(),
-		},
-	})
-	return c
 }

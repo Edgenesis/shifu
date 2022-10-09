@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/edgenesis/shifu/pkg/deviceshifu/ut"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/apps/v1"
@@ -74,8 +74,8 @@ func Test_getTelemetryCollectionServiceMap(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(false),
-							DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer(""),
+							DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(false),
+							DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer(""),
 						},
 					},
 				},
@@ -89,8 +89,8 @@ func Test_getTelemetryCollectionServiceMap(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer(""),
+							DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer(""),
 						},
 					},
 				},
@@ -110,8 +110,8 @@ func Test_getTelemetryCollectionServiceMap(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer("test_endpoint-1"),
+							DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer("test_endpoint-1"),
 						},
 					},
 				},
@@ -132,15 +132,15 @@ func Test_getTelemetryCollectionServiceMap(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer("test_endpoint-1"),
+							DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer("test_endpoint-1"),
 						},
 						DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
 							"device_healthy": {
 								DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
 									PushSettings: &DeviceShifuTelemetryPushSettings{
-										DeviceShifuTelemetryPushToServer:      ut.BoolPointer(true),
-										DeviceShifuTelemetryCollectionService: ut.StrPointer(""),
+										DeviceShifuTelemetryPushToServer:      unitest.BoolPointer(true),
+										DeviceShifuTelemetryCollectionService: unitest.StrPointer(""),
 									},
 								},
 							},
@@ -164,8 +164,8 @@ func Test_getTelemetryCollectionServiceMap(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer("test_endpoint-1"),
+							DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer("test_endpoint-1"),
 						},
 						DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
 							"device_healthy": {
@@ -191,15 +191,15 @@ func Test_getTelemetryCollectionServiceMap(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer("test_endpoint-1"),
+							DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer("test_endpoint-1"),
 						},
 						DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
 							"device_healthy": {
 								DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
 									PushSettings: &DeviceShifuTelemetryPushSettings{
-										DeviceShifuTelemetryPushToServer:      ut.BoolPointer(true),
-										DeviceShifuTelemetryCollectionService: ut.StrPointer("test-healthy-endpoint"),
+										DeviceShifuTelemetryPushToServer:      unitest.BoolPointer(true),
+										DeviceShifuTelemetryCollectionService: unitest.StrPointer("test-healthy-endpoint"),
 									},
 								},
 							},
@@ -223,15 +223,15 @@ func Test_getTelemetryCollectionServiceMap(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer("test_endpoint-1"),
+							DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer("test_endpoint-1"),
 						},
 						DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
 							"device_healthy": {
 								DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
 									PushSettings: &DeviceShifuTelemetryPushSettings{
-										DeviceShifuTelemetryPushToServer:      ut.BoolPointer(true),
-										DeviceShifuTelemetryCollectionService: ut.StrPointer("test_endpoint-1"),
+										DeviceShifuTelemetryPushToServer:      unitest.BoolPointer(true),
+										DeviceShifuTelemetryCollectionService: unitest.StrPointer("test_endpoint-1"),
 									},
 								},
 							},
@@ -255,15 +255,15 @@ func Test_getTelemetryCollectionServiceMap(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:      ut.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService: ut.StrPointer("test_endpoint-1"),
+							DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer("test_endpoint-1"),
 						},
 						DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
 							"device_healthy": {
 								DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
 									PushSettings: &DeviceShifuTelemetryPushSettings{
-										DeviceShifuTelemetryPushToServer:      ut.BoolPointer(false),
-										DeviceShifuTelemetryCollectionService: ut.StrPointer("test_endpoint-1"),
+										DeviceShifuTelemetryPushToServer:      unitest.BoolPointer(false),
+										DeviceShifuTelemetryCollectionService: unitest.StrPointer("test_endpoint-1"),
 									},
 								},
 							},
