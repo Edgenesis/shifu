@@ -43,7 +43,7 @@
 
 #### 1. Easy to deploy
 
-***Shifu*** can be always be summoned(deployed) by one single line of command.
+***Shifu*** can always be summoned(deployed) by one single line of command.
 
 #### 2. Plug'n'Play
 
