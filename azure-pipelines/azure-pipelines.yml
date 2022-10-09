@@ -58,7 +58,7 @@ stages:
     - script: |
         set -e
         mkdir testdir && tar -xvf shifu_demo_aio_linux_amd64.tar -C testdir && cd testdir
-        chmod +x scripts/deviceshifu-demo-aio.sh && sudo ./scripts/deviceshifu-demo-aio.sh run_demo
+        chmod +x scripts/deviceshifu-demo-aio.sh && sudo ./test/scripts/deviceshifu-demo-aio.sh run_demo
       displayName: 'test run_demo'
     - script: |
         set -e
@@ -137,8 +137,8 @@ stages:
     - script: |
         set -e
         git submodule update --remote
-        bash test/scripts/deviceshifu-demo-aio_build.sh build_demo amd64
-        bash test/scripts/deviceshifu-demo-aio_build.sh build_demo arm64
+        bash ./test/scripts/deviceshifu-demo-aio_build.sh build_demo amd64
+        bash ./test/scripts/deviceshifu-demo-aio_build.sh build_demo arm64
         ls -al
       displayName: 'Run the build script'
     - script: |
