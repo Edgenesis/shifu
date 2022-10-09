@@ -18,13 +18,13 @@
 
 </div>
 
-***Shifu*** is a [Kubernetes](https://kubernetes.io) native framework designed to abstract out the complexity of interacting with IoT devices. ***Shifu*** aims to achieve TRUE plug-and-play IoT device virtualization, management, control, and automation.
+***Shifu*** is a native framework to help IoT developers interact with physical devices. ***Shifu*** virtualizes the management and monitoring of devices, giving them the ability to run automatically. It solves the troubles of protocol and driver integration and enables devices to be plug-and-play.
 
 ## Why ***Shifu***
 
-***Shifu*** makes it extremely simple to manage and control your IoT devices via ***deviceShifu***, a digital twin for your device. When you connect to an IoT device, ***Shifu*** will recognize it and start a ***deviceShifu*** of the device as a [Kubernetes Pod](https://kubernetes.io/docs/concepts/workloads/pods/).
-
-***deviceShifu*** provides you with a high-level abstraction to interact with your device. By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything it is designed for, and much more! For example, you can have your device actively push its telemetry to any endpoint of your choice.
+- ***Shifu*** is a Kubernetes native framework that achieves aerospace-grade stability (up to 99.9999%).
+- Device protocols and drivers are compiled as configuration files, which are efficient and reusable.
+- Modular deployment of devices, developers can simply load them on demand.
 
 ## Start ***Shifu***
 
