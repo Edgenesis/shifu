@@ -58,7 +58,7 @@ stages:
     - script: |
         set -e
         mkdir testdir && tar -xvf shifu_demo_aio_linux_amd64.tar -C testdir && cd testdir
-        chmod +x scripts/deviceshifu-demo-aio.sh && sudo ./test/scripts/deviceshifu-demo-aio.sh run_demo
+        chmod +x test/scripts/deviceshifu-demo-aio.sh && sudo ./test/scripts/deviceshifu-demo-aio.sh run_demo
       displayName: 'test run_demo'
     - script: |
         set -e
