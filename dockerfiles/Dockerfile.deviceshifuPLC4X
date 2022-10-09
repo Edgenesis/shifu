@@ -19,7 +19,6 @@ RUN mkdir -p /output/lib
 RUN cp $(whereis liblz4.so.1 | awk '{ print $2 }') /output/lib
 RUN cp $(whereis liblzma.so.5 | awk '{ print $2 }') /output/lib
 RUN cp $(whereis libzstd.so.1 | awk '{ print $2 }') /output/lib
-RUN cp $(whereis libdbus-1.so.3 | awk '{ print $2 }') /output/lib
 RUN cp $(whereis libpcap.so.0.8 | awk '{ print $2 }') /output/lib
 RUN cp $(whereis libsystemd.so.0 | awk '{ print $2 }') /output/lib
 RUN cp $(whereis libgcrypt.so.20 | awk '{ print $2 }') /output/lib
@@ -36,6 +35,5 @@ WORKDIR /
 COPY --from=builder /output/deviceshifu deviceshifu
 COPY --from=builder /output/lib /lib
 
-# Command to run the executable
 USER 65532:65532
 ENTRYPOINT ["/deviceshifu"]
