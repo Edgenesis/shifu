@@ -184,7 +184,7 @@ ENV GOPRIVATE=github.com/Edgenesis
 COPY go.mod go.mod
 COPY go.sum go.sum
 COPY pkg/k8s pkg/k8s
-# TODO: Cnahge cmdmqtt to cmdxxx
+# TODO: Change cmdmqtt to cmdxxx
 COPY cmd/deviceshifu/cmdmqtt cmd/deviceshifu/cmdmqtt
 COPY pkg/deviceshifu pkg/deviceshifu
 
