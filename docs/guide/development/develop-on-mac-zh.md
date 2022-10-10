@@ -39,7 +39,7 @@ git clone https://github.com/Edgenesis/shifu.git
 
 [下载](https://code.visualstudio.com/download) dmg 并安装。
 
-按章完成后，使用 "File --> Open Folder" 来打开 ***Shifu*** 目录:
+安装完成后，使用 "File --> Open Folder" 来打开 ***Shifu*** 目录:
 
 ![Open folder](img/develop-vscode-1.png)
 

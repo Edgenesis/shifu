@@ -142,7 +142,7 @@ func (ds *DeviceShifu) Stop() error {
 To actually run the `deviceshifuxxx` program, you need to have a `main.go`. Create a new folder named `cmdxxx` directory under `cmd/deviceshifu` 
 and create a `main.go` under the directory.
 
-Take `MQTTT` as an example, the content of the main can be look like:
+Take `MQTT` as an example, the content of the main can be look like:
 ```go
 func main() {
 	deviceName := os.Getenv("EDGEDEVICE_NAME")
