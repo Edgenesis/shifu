@@ -683,7 +683,7 @@ stages:
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-opcua:$(release_tag) --push
         displayName: build edgehub/mockdevice-opcua
-      
+
 - stage: docker_build_shifu_demo_push
   condition: and(succeeded(), variables['build.retainedByRelease'])
   jobs:
