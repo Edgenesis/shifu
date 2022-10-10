@@ -10,6 +10,7 @@ import (
 // ParseHTTPGetParams Parse Params from HTTP get request
 // for example example.com?a=1&b=2
 // reply map[string]string{a:1,b:2},nil
+// for url.Query() cannot parse symbol like % + and etc
 func ParseHTTPGetParams(urlStr string) (map[string]string, error) {
 	var paramStr string
 	klog.Infof("url: ", urlStr)

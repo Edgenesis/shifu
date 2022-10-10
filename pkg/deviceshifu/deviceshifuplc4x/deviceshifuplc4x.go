@@ -97,6 +97,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		timeout := time.Duration(*ds.base.DeviceShifuConfig.Instructions.InstructionSettings.DefaultTimeoutSeconds)
+
 		params, err := utils.ParseHTTPGetParams(r.URL.String())
 		if err != nil {
 			klog.Errorf("Error when parse request url, error: %v", err)
@@ -120,7 +122,7 @@ func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 		var resultData model.PlcWriteRequestResult
 		select {
 		case resultData = <-plc4xRequest.Execute():
-		case <-time.After(time.Second):
+		case <-time.After(time.Second * timeout):
 			klog.Errorf("Timeout when send request to device")
 			http.Error(w, "Timeout when send request to device", http.StatusInternalServerError)
 			return
@@ -137,6 +139,7 @@ func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		klog.Infof("Url: %v", r.RequestURI)
+		timeout := time.Duration(*ds.base.DeviceShifuConfig.Instructions.InstructionSettings.DefaultTimeoutSeconds)
 
 		params, err := utils.ParseHTTPGetParams(r.RequestURI)
 		if err != nil {
@@ -163,7 +166,7 @@ func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 		var resultData model.PlcReadRequestResult
 		select {
 		case resultData = <-plc4xRequest.Execute():
-		case <-time.After(time.Second):
+		case <-time.After(time.Second * timeout):
 			klog.Errorf("Timeout when send request to device")
 			http.Error(w, "Timeout when send request to device", http.StatusInternalServerError)
 			return
@@ -197,11 +200,13 @@ func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 }
 
 func (ds *DeviceShifu) collectPLC4XTelemetry() (bool, error) {
+	timeout := time.Duration(*ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds)
+
 	conn := (*ds.conn).GetConnection()
 	pingResult := conn.Ping()
 
 	select {
-	case <-time.After(time.Second):
+	case <-time.After(timeout * time.Millisecond):
 		return false, fmt.Errorf("timeout ping to device")
 	case result := <-pingResult:
 		if err := result.GetErr(); err != nil {
