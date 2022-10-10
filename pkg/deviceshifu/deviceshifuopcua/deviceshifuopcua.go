@@ -29,10 +29,9 @@ type HandlerMetaData struct {
 	properties     *OPCUAInstructionProperty
 }
 
-// Str and default value
+// DeviceConfigmapCertificatePath default cert path
 const (
 	DeviceConfigmapCertificatePath string = "/etc/edgedevice/certificate"
-	EdgedeviceStatusFail           bool   = false
 )
 
 // New This function creates a new Device Shifu based on the configuration
