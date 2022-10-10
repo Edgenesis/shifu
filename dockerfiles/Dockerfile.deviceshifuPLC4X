@@ -1,6 +1,6 @@
 # Build the manager binary
 FROM --platform=$BUILDPLATFORM crazymax/goxx:1.19.0 as builder
-
+# Image Register: https://github.com/crazy-max/goxx
 WORKDIR /shifu
 
 ENV GO111MODULE=on
