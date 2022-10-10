@@ -115,7 +115,9 @@ mux.HandleFunc("/"+MqttDataEndpoint, handler.commandHandleFunc())
 ```
 
 
-`DeviceShifu` can also collect device telemetries specified. `DeviceShifuBase` will take a function:
+`DeviceShifu` can also collect device telemetries specified. If you don't know what telemetry is, please take a look at this doc before proceed: https://github.com/Edgenesis/shifu/blob/main/docs/design/deviceshifu/telemetry.md
+
+`DeviceShifuBase` will take a function:
 ```go
 // collectTelemetry struct of collectTelemetry
 type collectTelemetry func() (bool, error)
