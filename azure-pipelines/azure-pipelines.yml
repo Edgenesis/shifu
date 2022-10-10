@@ -435,6 +435,7 @@ stages:
           dockerVersion: 20.10.9
           releaseType: stable
       - script: |
+          docker buildx create --use
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuPLC4X \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
