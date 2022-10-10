@@ -1,0 +1,40 @@
+# Build the manager binary
+FROM --platform=$BUILDPLATFORM golang:1.19.1 as builder
+
+WORKDIR /shifu
+
+ENV GO111MODULE=on
+
+COPY go.mod go.mod
+COPY go.sum go.sum
+COPY pkg/k8s pkg/k8s
+COPY cmd/deviceshifu/cmdplc4x cmd/deviceshifu/cmdplc4x
+COPY pkg/deviceshifu pkg/deviceshifu
+
+RUN apt-get update
+RUN apt-get install libpcap-dev -y
+
+RUN go mod download
+RUN mkdir -p /output/lib
+RUN cp $(whereis liblz4.so.1 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis liblzma.so.5 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libzstd.so.1 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libdbus-1.so.3 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libpcap.so.0.8 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libsystemd.so.0 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libgcrypt.so.20 | awk '{ print $2 }') /output/lib
+RUN cp $(whereis libgpg-error.so.0 | awk '{ print $2 }') /output/lib
+
+# Build the Go app
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN CGO_ENABLED=1 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -v -o /output/deviceshifu  cmd/deviceshifu/cmdplc4x/main.go
+
+FROM gcr.io/distroless/base
+WORKDIR /
+COPY --from=builder /output/deviceshifu deviceshifu
+COPY --from=builder /output/lib /lib
+
+USER 65532:65532
+ENTRYPOINT ["/deviceshifu"]
