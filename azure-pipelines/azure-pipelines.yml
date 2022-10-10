@@ -538,8 +538,8 @@ stages:
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuPLC4X \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-plc4x:$(release_tag) --push
-        displayName: build deviceshifu-http-opcua
-        
+        displayName: build deviceshifu-http-plc4x
+
   - job: docker_push_shifu_controller
     steps: 
       - task: Docker@2
