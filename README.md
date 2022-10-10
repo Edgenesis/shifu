@@ -18,11 +18,11 @@
 
 </div>
 
-***Shifu*** is a Kubernetes Native framework to help IoT developers interact with physical devices. ***Shifu*** virtualizes the management and monitoring of devices, giving them the ability to run automatically. It solves the troubles of protocol and driver integration and enables devices to be plug-and-play.
+***Shifu*** is a cloud native framework to help IoT developers interact with physical devices. ***Shifu*** virtualizes the management and monitoring of devices, giving them the ability to run automatically. It solves the troubles of protocol and driver integration and enables devices to be plug-and-play.
 
 ## Why ***Shifu***
 
-- ***Shifu*** is a Kubernetes native framework that achieves aerospace level stability (up to 99.9999%).
+- ***Shifu*** is a cloud native framework that achieves aerospace level stability (up to 99.9999%).
 - Device protocols and drivers are compiled from configuration files, which are efficient and reusable.
 - Modular deployment of devices, developers can simply load them on demand.
 
