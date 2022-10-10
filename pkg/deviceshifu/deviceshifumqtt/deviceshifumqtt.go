@@ -22,8 +22,6 @@ type DeviceShifu struct {
 // HandlerMetaData MetaData for EdgeDevice Setting
 type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
-	// instruction    string
-	// properties     *DeviceShifuInstruction
 }
 
 // Str and default value
