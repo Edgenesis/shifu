@@ -435,6 +435,7 @@ stages:
           dockerVersion: 20.10.9
           releaseType: stable
       - script: |
+          docker buildx create --use
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuPLC4X \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
@@ -534,7 +535,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          docker buildx build --platform=linux/amd64,linux/arm64 \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuPLC4X \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-plc4x:$(release_tag) --push
