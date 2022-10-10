@@ -45,6 +45,24 @@ type OPCUASetting struct {
 	ConnectionTimeoutInMilliseconds *int64  `json:"ConnectionTimeoutInMilliseconds,omitempty"`
 }
 
+type PLC4XSetting struct {
+	Protocol *Plc4xProtocol `json:"protocol,omitempty"`
+}
+
+type Plc4xProtocol string
+
+const (
+	Plc4xProtocolS7          Plc4xProtocol = "s7"
+	Plc4xProtocolADS         Plc4xProtocol = "ads"
+	Plc4xProtocolBACnet      Plc4xProtocol = "bacnet"
+	Plc4xProtocolCBus        Plc4xProtocol = "cbus"
+	Plc4xProtocolEip         Plc4xProtocol = "eip"
+	Plc4xProtocolKnx         Plc4xProtocol = "knx"
+	Plc4xProtocolModbusAscii Plc4xProtocol = "modbus-ascii"
+	Plc4xProtocolModbusRTU   Plc4xProtocol = "modbus-rtu"
+	Plc4xProtocolModbusTcp   Plc4xProtocol = "modbus-tcp"
+)
+
 // SocketSetting defines Socket specific settings when connecting to an EdgeDevice
 type SocketSetting struct {
 	// +kubebuilder:default="utf-8"
@@ -59,6 +77,7 @@ type ProtocolSettings struct {
 	MQTTSetting   *MQTTSetting   `json:"MQTTSetting,omitempty"`
 	OPCUASetting  *OPCUASetting  `json:"OPCUASetting,omitempty"`
 	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
+	PLC4XSetting  *PLC4XSetting  `json:"PLC4XSetting,omitempty"`
 }
 
 // EdgeDeviceSpec defines the desired state of EdgeDevice
@@ -111,6 +130,7 @@ const (
 	ProtocolMQTT            Protocol = "MQTT"
 	ProtocolOPCUA           Protocol = "OPCUA"
 	ProtocolSocket          Protocol = "Socket"
+	ProtocolPLC4X           Protocol = "PLC4X"
 	ProtocolUSB             Protocol = "USB"
 )
 
