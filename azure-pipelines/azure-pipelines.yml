@@ -436,7 +436,7 @@ stages:
           releaseType: stable
       - script: |
           docker buildx create --use
-          docker buildx build --platform=linux/arm64\
+          docker buildx build --platform=linux/arm64 \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuPLC4X \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/deviceshifu-http-plc4x:$(tag) --load
