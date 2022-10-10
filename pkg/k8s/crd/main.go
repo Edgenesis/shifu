@@ -65,7 +65,7 @@ func main() {
 			"Enabling this will ensure there is only one active controller manager.")
 	flag.BoolVar(&enableUserMetrics, "enable-user-metrics", false, "Collect user metrics")
 	flag.StringVar(&sourceStr, "source", utils.DEFAULT_SOURCE, "Collect default source")
-	flag.IntVar(&utils.TelemetryIntervalInSecond, "telemetry-interval", 60, "Telemetry Interval")
+	flag.IntVar(&utils.TelemetryIntervalInSecond, "user-metrics-interval", 60, "User Metrics Collection Interval")
 	opts := zap.Options{
 		Development: true,
 	}

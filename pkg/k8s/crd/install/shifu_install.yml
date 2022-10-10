@@ -438,7 +438,7 @@ spec:
         - --metrics-bind-address=127.0.0.1:8080
         - --leader-elect
         - --enable-user-metrics
-        - --telemetry-interval=60
+        - --user-metrics-interval=60
         - --source=default
         command:
         - /manager
