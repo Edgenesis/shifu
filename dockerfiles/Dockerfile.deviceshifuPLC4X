@@ -11,7 +11,6 @@ COPY pkg/k8s pkg/k8s
 COPY cmd/deviceshifu/cmdplc4x cmd/deviceshifu/cmdplc4x
 COPY pkg/deviceshifu pkg/deviceshifu
 
-# RUN goxx-apt-get update 
 RUN goxx-apt-get install -y libpcap-dev
 
 RUN go mod download
