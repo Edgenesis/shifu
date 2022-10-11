@@ -1,4 +1,4 @@
-# DeviceShifu Developing Guide
+# DeviceShifu Development Guide
 
 ## Introduction
 `DeviceShifu` is the digital twin of physical device. It receives HTTP requests and support various protocols to communicate with devices such as MQTT and OPCUA. 
