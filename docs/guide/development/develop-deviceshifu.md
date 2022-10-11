@@ -82,7 +82,7 @@ type DeviceShifu struct {
 	base *deviceshifubase.DeviceShifuBase
 }
 ```
-You can also add specific protocol structs, take `OPCUA` as example:
+You can also add protocol specific structs, take `OPCUA` as example:
 ```go
 // DeviceShifu implemented from deviceshifuBase and OPC UA Setting and client
 type DeviceShifu struct {
@@ -91,9 +91,9 @@ type DeviceShifu struct {
 	opcuaClient       *opcua.Client
 }
 ```
-Create an instance of the struct:
+Write a method to create an instance of the struct:
 ```go
-// This function creates a new Device Shifu based on the configuration
+// New This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error)
 ```
 `deviceShifuMetadata` is used to create `DeviceShifuBase`. 
@@ -115,14 +115,14 @@ mux.HandleFunc("/"+MqttDataEndpoint, handler.commandHandleFunc())
 ```
 
 
-`DeviceShifu` can also collect specific device telemetries. If you don't know what telemetry is, please check this doc before you proceed: https://github.com/Edgenesis/shifu/blob/main/docs/design/deviceshifu/telemetry.md
+`DeviceShifu` can also collect device specific telemetry. If you don't know what telemetry is, please check this doc before you proceed: https://github.com/Edgenesis/shifu/blob/main/docs/design/deviceshifu/telemetry.md
 
 `DeviceShifuBase` will take a function:
 ```go
 // collectTelemetry struct of collectTelemetry
 type collectTelemetry func() (bool, error)
 ```
-and use it periodically to collect telemetry data from device. You can define how you want the telemetries to be collected. 
+and use it periodically to collect telemetry data from device. You can define how you want the telemetry data to be collected. 
 You can reference `MQTT`'s [telemetry collection](https://github.com/Edgenesis/shifu/blob/main/pkg/deviceshifu/deviceshifumqtt/deviceshifumqtt.go#L206) as example.
 
 After you finished the handler and telemetry logic, use `DeviceShifuBase` to start/stop your program by implementing the `Start` and `Stop` function like (also take `MQTT` as example):
