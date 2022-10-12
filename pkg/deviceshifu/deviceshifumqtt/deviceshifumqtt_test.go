@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -64,7 +64,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
 	}
 
-	resp, err := utils.RetryAndGetHTTP("http://localhost:8080/health", 3)
+	resp, err := unitest.RetryAndGetHTTP("http://localhost:8080/health", 3)
 	if err != nil {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
