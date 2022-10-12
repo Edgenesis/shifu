@@ -157,14 +157,8 @@ func TestCollectSocketTelemetry(t *testing.T) {
 	if err != nil {
 		t.Errorf("Cannot Listen at port 3000")
 	}
-	defer listener.Close()
 
-	go func() {
-		_, err = listener.Accept()
-		if err != nil {
-			t.Errorf("Cannot Get Conn from listener")
-		}
-	}()
+	go listener.Accept()
 
 	// testcase pass
 	ok, err := ds.collectSocketTelemetry()
