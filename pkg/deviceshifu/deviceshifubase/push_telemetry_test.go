@@ -1,9 +1,11 @@
 package deviceshifubase
 
 import (
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -303,4 +305,11 @@ func TestCopyHeader(t *testing.T) {
 	if !reflect.DeepEqual(dst, src) {
 		t.Errorf("Not match")
 	}
+}
+
+func TestPushToHTTPTelemetryCollectionService(t *testing.T) {
+	resp := &http.Response{
+		Body: io.NopCloser(strings.NewReader("Hello,World")),
+	}
+	PushToHTTPTelemetryCollectionService(v1alpha1.ProtocolHTTP, resp, "localhost")
 }
