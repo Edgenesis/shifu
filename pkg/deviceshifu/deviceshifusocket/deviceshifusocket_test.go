@@ -1,7 +1,12 @@
 package deviceshifusocket
 
 import (
+	"context"
+	"encoding/json"
 	"io"
+	"log"
+	"net"
+	"net/http/httptest"
 	"os"
 	"reflect"
 	"testing"
@@ -10,7 +15,10 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
+	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"k8s.io/klog/v2"
 )
 
@@ -125,4 +133,175 @@ func TestEncodeMessage(t *testing.T) {
 	if output2 != output {
 		t.Errorf("not match with current output, output: %v", output)
 	}
+}
+
+func TestCollectSocketTelemetry(t *testing.T) {
+	socketProtocol := v1alpha1.ProtocolSocket
+	httpProtocol := v1alpha1.ProtocolHTTP
+	address := "localhost:3000"
+	emptyAddress := ""
+	db := &deviceshifubase.DeviceShifuBase{
+		Name: "Unit Test",
+		EdgeDevice: &v1alpha1.EdgeDevice{
+			Spec: v1alpha1.EdgeDeviceSpec{
+				Protocol: &socketProtocol,
+				Address:  &address,
+			},
+		},
+	}
+	ds := &DeviceShifu{
+		base: db,
+	}
+
+	listener, err := net.Listen("tcp", "localhost:3000")
+	if err != nil {
+		t.Errorf("Cannot Listen at port 3000")
+	}
+	defer listener.Close()
+
+	go func() {
+		_, err = listener.Accept()
+		if err != nil {
+			t.Errorf("Cannot Get Conn from listener")
+		}
+	}()
+
+	// testcase pass
+	ok, err := ds.collectSocketTelemetry()
+	if err != nil {
+		t.Errorf("Error when collectSocketTelemetry")
+	}
+	if !ok {
+		t.Errorf("Fail to conn to mock server")
+	}
+
+	// testcase Address is nil
+	ds.base.EdgeDevice.Spec.Address = nil
+	ok, err = ds.collectSocketTelemetry()
+	if err == nil || ok {
+		t.Errorf("Error this case2 should return err but passed")
+	}
+	ds.base.EdgeDevice.Spec.Address = &address
+
+	// testcase Protocol is not Socket
+	ds.base.EdgeDevice.Spec.Protocol = &httpProtocol
+	ok, err = ds.collectSocketTelemetry()
+	if ok {
+		t.Errorf("Error this case3 should return false but passed")
+	}
+	ds.base.EdgeDevice.Spec.Protocol = &socketProtocol
+
+	// testcase Wrong ip
+	ds.base.EdgeDevice.Spec.Address = &emptyAddress
+	ok, err = ds.collectSocketTelemetry()
+	if err == nil || ok {
+		t.Errorf("Error this case4 should return err but passed")
+	}
+
+	// testcase Protocol is nil
+	ds.base.EdgeDevice.Spec.Protocol = nil
+	ok, err = ds.collectSocketTelemetry()
+	if !ok {
+		t.Errorf("Error this case5 should pass")
+	}
+}
+
+func TestDeviceCommandHandlerSocket(t *testing.T) {
+	hexEncoding := v1alpha1.HEX
+	bufferLength := 10
+	readBuffer := make([]byte, bufferLength)
+	ds := &DeviceShifu{}
+	server, client := net.Pipe()
+	_ = ds
+	go func() {
+		for {
+			_, err := server.Read(readBuffer)
+			if err != nil {
+				t.Error("Error when Read from pipe")
+			}
+			_, err = server.Write(readBuffer)
+			if err != nil {
+				t.Error("Error when Write to pipe")
+			}
+		}
+	}()
+	metadata := &HandlerMetaData{
+		connection: &client,
+		edgeDeviceSpec: v1alpha1.EdgeDeviceSpec{
+			ProtocolSettings: &v1alpha1.ProtocolSettings{
+				SocketSetting: &v1alpha1.SocketSetting{
+					Encoding:     &hexEncoding,
+					BufferLength: &bufferLength,
+				},
+			},
+		},
+	}
+
+	requestBody := &RequestBody{
+		Command: "1234567890",
+		Timeout: 1,
+	}
+	failRequestBody := &RequestBody{
+		Command: "a",
+		Timeout: 1,
+	}
+	body, err := json.Marshal(requestBody)
+	if err != nil {
+		t.Errorf("Error when marshal request body to []byte, error: %v", err)
+	}
+	failBody, err := json.Marshal(failRequestBody)
+	if err != nil {
+		t.Errorf("Error when marshal failRequestBody to []byte, error: %v", err)
+	}
+
+	hs := httptest.NewServer(deviceCommandHandlerSocket(metadata))
+	defer hs.Close()
+
+	dc := mockRestClient(hs.URL, "testing")
+	log.Println(dc.APIVersion())
+
+	// testcase without Set Header Content-Type
+	rs := dc.Post().Do(context.TODO())
+	if rs.Error() == nil {
+		t.Errorf("case should return Error but passed")
+	}
+
+	req := dc.Post().SetHeader("Content-Type", "application/json")
+
+	// testcase requestBody is empty
+	rs = req.Do(context.TODO())
+	if rs.Error() == nil {
+		t.Errorf("case should return Error but passed")
+	}
+
+	// testcase requestBody is not hex
+	rs = req.Body(failBody).Do(context.TODO())
+	if rs.Error() == nil {
+		t.Errorf("case should return Error but passed")
+	}
+
+	// testcase pass
+	rs = req.Body(body).Do(context.TODO())
+	if rs.Error() != nil {
+		t.Errorf("case should passed but return error: %v", rs.Error())
+	}
+}
+
+func mockRestClient(host string, path string) *rest.RESTClient {
+	c, err := rest.RESTClientFor(
+		&rest.Config{
+			Host:    host,
+			APIPath: path,
+			ContentConfig: rest.ContentConfig{
+				GroupVersion:         &v1.SchemeGroupVersion,
+				NegotiatedSerializer: scheme.Codecs.WithoutConversion(),
+			},
+		},
+	)
+	if err != nil {
+		klog.Errorf("mock client for host %s, apipath: %s failed,", host, path)
+		return nil
+	}
+
+	return c
 }
