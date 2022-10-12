@@ -34,7 +34,7 @@ spec:
   template:
     spec:
       containers:
-      image: quay.io/brancz/kube-rbac-proxy:v0.12.0
+      image: bitnami/kube-rbac-proxy:0.13.1
       name: kube-rbac-proxy
       - args:
         - --user-metrics-interval=60 ## Edit this line
@@ -56,7 +56,7 @@ spec:
   template:
     spec:
       containers:
-      image: quay.io/brancz/kube-rbac-proxy:v0.12.0
+      image: bitnami/kube-rbac-proxy:0.13.1
       name: kube-rbac-proxy
       - args:
         - --enable-user-metrics ## delete on demand

@@ -85,7 +85,7 @@ download-demo-files:
 	docker pull edgehub/mockdevice-thermometer:${IMAGE_VERSION}
 	docker pull edgehub/deviceshifu-http-http:${IMAGE_VERSION}
 	docker pull edgehub/shifu-controller:${IMAGE_VERSION}
-	docker pull quay.io/brancz/kube-rbac-proxy:v0.12.0
+	docker pull bitnami/kube-rbac-proxy:0.13.1
 	docker pull nginx:1.21
 
 docker-push-image-deviceshifu:
@@ -107,7 +107,7 @@ clean-images:
 tag:
 	go run tools/tag.go ${PROJECT_ROOT} ${IMAGE_VERSION} $(VERSION)
 	cd pkg/k8s/crd/ && (make generate-controller-yaml IMG=edgehub/shifu-controller:$(VERSION) generate-install-yaml)
-	sed -i -e "s/${IMAGE_VERSION}/${VERSION}/s" ./test/scripts/deviceshifu-demo-aio.sh
+	sed -i -e "s/${IMAGE_VERSION}/${VERSION}/g" ./test/scripts/deviceshifu-demo-aio.sh
 	echo $(VERSION) > version.txt
 
 ## Location to install dependencies to
