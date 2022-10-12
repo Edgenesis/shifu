@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strings"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
@@ -116,25 +115,6 @@ type DeviceCommandHandlerMQTT struct {
 	HandlerMetaData *HandlerMetaData
 }
 
-func createURIFromRequest(address string, handlerInstruction string, r *http.Request) string {
-
-	queryStr := "?"
-
-	for queryName, queryValues := range r.URL.Query() {
-		for _, queryValue := range queryValues {
-			queryStr += queryName + "=" + queryValue + "&"
-		}
-	}
-
-	queryStr = strings.TrimSuffix(queryStr, "&")
-
-	if queryStr == "?" {
-		return "http://" + address + "/" + handlerInstruction
-	}
-
-	return "http://" + address + "/" + handlerInstruction + queryStr
-}
-
 func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// handlerEdgeDeviceSpec := handler.HandlerMetaData.edgeDeviceSpec
@@ -161,41 +141,6 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 		}
 
 	}
-}
-
-// this function gathers the instruction name and its arguments from user input via HTTP and create the direct call command
-// "flags_no_parameter" is a special key where it contains all flags
-// e.g.:
-// if we have localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2
-// and our driverExecution is "/usr/local/bin/python /usr/src/driver/python-car-driver.py"
-// then we will get this command string:
-// /usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency
-// which is exactly what we need to run if we are operating directly on the device
-func createHTTPCommandlineRequestString(r *http.Request, driverExecution string, instruction string) string {
-	values := r.URL.Query()
-	requestStr := ""
-	flagsStr := ""
-	for parameterName, parameterValues := range values {
-		if parameterName == "flags_no_parameter" {
-			if len(parameterValues) == 1 {
-				flagsStr = " " + strings.Replace(parameterValues[0], ",", " ", -1)
-			} else {
-				for _, parameterValue := range parameterValues {
-					flagsStr += " " + parameterValue
-				}
-			}
-		} else {
-			if len(parameterValues) < 1 {
-				continue
-			}
-
-			requestStr += " " + parameterName + "="
-			for _, parameterValue := range parameterValues {
-				requestStr += parameterValue
-			}
-		}
-	}
-	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
 // TODO: update configs
