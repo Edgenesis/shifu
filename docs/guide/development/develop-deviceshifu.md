@@ -56,7 +56,7 @@ The struct should be perfectly aligned with the setting schema you added in CRD.
 
 
 ### DeviceShifu
-`DeviceShifu` is the digital twin running as a pod in the k8s cluster. Basically it transfers HTTP requests to whatever underlying protocol needs.
+`DeviceShifu` is the digital twin running as a pod in the k8s cluster. Basically it converts HTTP requests to whatever underlying protocol needs.
 
 #### deviceshifuxxx
 You need to create a new `deviceshifuxxx` directory under `pkg/deviceshifu`. This directory normally contains 2 main files, a `deviceshifuxxx.go` and a `deviceshifuxxxconfig.go`
