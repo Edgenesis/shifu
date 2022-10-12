@@ -1,7 +1,9 @@
 package deviceshifubase
 
 import (
+	"net/http"
 	"net/http/httptest"
+	"reflect"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -289,4 +291,16 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 		})
 	}
 
+}
+
+func TestCopyHeader(t *testing.T) {
+	src := http.Header{
+		"Test": {"aa", "bb", "cc"},
+	}
+	dst := http.Header{}
+	CopyHeader(dst, src)
+
+	if !reflect.DeepEqual(dst, src) {
+		t.Errorf("Not match")
+	}
 }
