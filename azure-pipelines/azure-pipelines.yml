@@ -686,7 +686,7 @@ stages:
         displayName: build edgehub/mockdevice-opcua
 
 - stage: docker_build_shifu_demo_push
-  condition: and(succeeded(), variables['build.retainedByRelease'])
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
   jobs:
   - job: docker_push_shifu_demo
     steps:
