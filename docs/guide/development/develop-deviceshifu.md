@@ -45,7 +45,7 @@ type ProtocolSettings struct {
 ```
 First you need to add `MQTTSetting` to `ProtocolSettings`. Then you need to add the newly written settings in `CRD` as a struct:
 ```go
-// MQTTSetting defines specific MQTT settings when connecting to an EdgeDevice
+// MQTTSetting defines MQTT specific settings when connecting to an EdgeDevice
 type MQTTSetting struct {
 	MQTTTopic         *string `json:"MQTTTopic,omitempty"`
 	MQTTServerAddress *string `json:"MQTTServerAddress,omitempty"`
