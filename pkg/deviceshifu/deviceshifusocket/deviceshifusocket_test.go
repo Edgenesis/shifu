@@ -158,8 +158,9 @@ func TestCollectSocketTelemetry(t *testing.T) {
 		t.Errorf("Cannot Listen at port 3000")
 	}
 
-	go listener.Accept()
-
+	go func() {
+		_, _ = listener.Accept()
+	}()
 	// testcase pass
 	ok, err := ds.collectSocketTelemetry()
 	if err != nil {
@@ -179,7 +180,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 
 	// testcase Protocol is not Socket
 	ds.base.EdgeDevice.Spec.Protocol = &httpProtocol
-	ok, err = ds.collectSocketTelemetry()
+	ok, _ = ds.collectSocketTelemetry()
 	if ok {
 		t.Errorf("Error this case3 should return false but passed")
 	}
@@ -194,7 +195,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 
 	// testcase Protocol is nil
 	ds.base.EdgeDevice.Spec.Protocol = nil
-	ok, err = ds.collectSocketTelemetry()
+	ok, _ = ds.collectSocketTelemetry()
 	if !ok {
 		t.Errorf("Error this case5 should pass")
 	}
