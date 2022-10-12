@@ -24,7 +24,7 @@
 
 - ***Shifu*** is a cloud native framework that achieves aerospace level stability (up to 99.9999%).
 - Device protocols and drivers are compiled from configuration files, which are efficient and reusable.
-- Modular deployment of devices, developers can simply load them on demand.
+- Modularized deployment of devices, developers can simply load them on demand.
 
 ## Start ***Shifu***
 
