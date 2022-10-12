@@ -3,6 +3,7 @@ package deviceshifubase
 import (
 	"context"
 	"errors"
+	"k8s.io/klog/v2"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
@@ -12,15 +13,15 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog/v2"
 	"knative.dev/pkg/configmap"
 )
 
 // DeviceShifuConfig data under Configmap, Settings of deviceShifu
 type DeviceShifuConfig struct {
-	DriverProperties DeviceShifuDriverProperties
-	Instructions     DeviceShifuInstructions
-	Telemetries      *DeviceShifuTelemetries
+	DriverProperties         DeviceShifuDriverProperties
+	Instructions             DeviceShifuInstructions
+	Telemetries              *DeviceShifuTelemetries
+	CustomInstructionsPython map[string]string `yaml:"customInstructionsPython"`
 }
 
 // DeviceShifuDriverProperties properties of deviceshifuDriver
@@ -110,7 +111,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if driverProperties, ok := cfg[ConfigmapDriverPropertiesStr]; ok {
 		err := yaml.Unmarshal([]byte(driverProperties), &dsc.DriverProperties)
 		if err != nil {
-			klog.Fatalf("parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
+			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
 			return nil, err
 		}
 	}
@@ -119,7 +120,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if instructions, ok := cfg[ConfigmapInstructionsStr]; ok {
 		err := yaml.Unmarshal([]byte(instructions), &dsc.Instructions)
 		if err != nil {
-			klog.Fatalf("parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
+			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
 			return nil, err
 		}
 	}
@@ -131,6 +132,15 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 			return nil, err
 		}
 	}
+
+	if customInstructionsPython, ok := cfg[ConfigmapCustomizedInstructionsStr]; ok {
+		err = yaml.Unmarshal([]byte(customInstructionsPython), &dsc.CustomInstructionsPython)
+		if err != nil {
+			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapCustomizedInstructionsStr, err)
+			return nil, err
+		}
+	}
+
 	return dsc, nil
 }
 

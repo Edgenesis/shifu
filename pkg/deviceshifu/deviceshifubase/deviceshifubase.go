@@ -4,13 +4,13 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"k8s.io/klog/v2"
 	"net/http"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
 )
 
 // DeviceShifuBase deviceshifu Basic Info
@@ -44,6 +44,7 @@ const (
 	ConfigmapDriverPropertiesStr                    = "driverProperties"
 	ConfigmapInstructionsStr                        = "instructions"
 	ConfigmapTelemetriesStr                         = "telemetries"
+	ConfigmapCustomizedInstructionsStr              = "customInstructionsPython"
 	EdgedeviceResourceStr                           = "edgedevices"
 	TelemetryCollectionServiceResourceStr           = "telemetryservices"
 	DeviceTelemetryTimeoutInMS               int64  = 3000
@@ -65,11 +66,14 @@ const (
 	DeviceDefaultCMDStubHealth               string = "stub_health"
 	PowerShellStubTimeoutStr                 string = "cmdTimeout"
 	PowerShellStubTimeoutTolerationStr       string = "stub_toleration"
+	PythonHandlersModuleName                        = "customized_handlers"
+	PythonScriptDir                                 = "pythoncustomizedhandlers"
 )
 
 var (
 	// TelemetryCollectionServiceMap Telemetry Collection Service Map
 	TelemetryCollectionServiceMap map[string]string
+	CustomInstructionsPython      map[string]string
 )
 
 // New new deviceshifu base
@@ -90,6 +94,10 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 	mux := http.NewServeMux()
 	edgeDevice := &v1alpha1.EdgeDevice{}
 	client := &rest.RESTClient{}
+
+	CustomInstructionsPython = deviceShifuConfig.CustomInstructionsPython
+	klog.Infof("configured custom instruction: %v\n", deviceShifuConfig.CustomInstructionsPython)
+	klog.Infof("read custom instruction: %v\n", CustomInstructionsPython)
 
 	if deviceShifuMetadata.KubeConfigPath != DeviceKubeconfigDoNotLoadStr {
 		edgeDeviceConfig := &EdgeDeviceConfig{
