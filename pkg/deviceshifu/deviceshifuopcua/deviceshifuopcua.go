@@ -4,6 +4,8 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"k8s.io/klog/v2"
 	"net/http"
 	"path"
 	"time"
@@ -12,7 +14,6 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
-	"k8s.io/klog/v2"
 )
 
 // DeviceShifu implemented from deviceshifuBase and OPC UA Setting and client
@@ -171,6 +172,8 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 		defer cancel()
 
 		resp, err := handler.client.ReadWithContext(ctx, req)
+		handlerInstruction := handler.HandlerMetaData.instruction
+
 		if err != nil {
 			http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
 			klog.Errorf("Read failed: %s", err)
@@ -188,7 +191,16 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 		w.WriteHeader(http.StatusOK)
 		// TODO: Should handle different type of return values and return JSON/other data
 		// types instead of plain text
-		fmt.Fprintf(w, "%v", resp.Results[0].Value.Value())
+		rawRespBody := resp.Results[0].Value.Value()
+		rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
+		respString := rawRespBodyString
+		_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+		klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+		if shouldUsePythonCustomProcessing {
+			klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+			respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
+		}
+		fmt.Fprintf(w, "%v", respString)
 	}
 }
 

@@ -20,6 +20,7 @@ func CopyHeader(dst, src http.Header) {
 	}
 }
 
+// TODO need to return and handle Error
 // PushToHTTPTelemetryCollectionService push telemetry data to Collection Service
 func PushToHTTPTelemetryCollectionService(telemetryServiceProtocol v1alpha1.Protocol,
 	message *http.Response, telemetryCollectionService string) {

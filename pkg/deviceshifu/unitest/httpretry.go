@@ -1,4 +1,4 @@
-package utils
+package unitest
 
 import (
 	"net/http"
@@ -6,6 +6,10 @@ import (
 
 	"k8s.io/klog/v2"
 )
+
+// SO FAR ONLY FOR UNIT TESTING USAGE
+// DO NOT USE IN NONE UNIT TESTING CODE
+// if there are common use case, let's move it to an much common package or even another code repo
 
 // RetryAndGetHTTP Send Http Get pre Second success or untill retries is reached
 func RetryAndGetHTTP(url string, retries int) (*http.Response, error) {
