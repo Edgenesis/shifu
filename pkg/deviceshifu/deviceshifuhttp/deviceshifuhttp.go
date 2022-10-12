@@ -238,7 +238,10 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
 				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
 			}
-			io.WriteString(w, respBodyString)
+			_, writeErr := io.WriteString(w, respBodyString)
+			if writeErr != nil {
+				klog.Errorf("Failed to write response %v", respBodyString)
+			}
 			return
 		}
 
@@ -393,7 +396,10 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 				klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
 				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
 			}
-			io.WriteString(w, respBodyString)
+			_, writeErr := io.WriteString(w, respBodyString)
+			if writeErr != nil {
+				klog.Errorf("Failed to write response %v", respBodyString)
+			}
 			return
 		}
 
