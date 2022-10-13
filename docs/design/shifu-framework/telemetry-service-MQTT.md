@@ -1,8 +1,8 @@
 # Telemetry Service MQTT Endpoint Design
 
 ## Introduction
-Telemetry Service is a standalone service that takes telemetry data collected by `deviceShifu` and push it to designated endpoints for future process.
-This doc aims to provide a design on how to send telemetry to MQTT endpoints.
+Telemetry Service is a standalone service that takes telemetry data collected by `deviceShifu` and fan-out it to designated endpoints for future process.
+This doc aims to provide a design on how to fan-out telemetry to MQTT endpoints.
 
 ## Design-Goal
 Let telemetry service support pushing telemetries to MQTT endpoints.
@@ -14,7 +14,7 @@ Let telemetry service support pushing telemetries to MQTT endpoints.
 ## Design Details
 
 Telemetry will be served as an HTTP server. DeviceShifu will push the telemetries collected from physical devices to telemetry service,
-and telemetry service would then push the telemetries to the endpoints specified by user.
+and telemetry service would then fan-out the telemetries to the endpoints specified by user.
 
 Request Struct:
 ```go
@@ -25,7 +25,7 @@ type TelemetryRequest struct {
 }
 ```
 
-Everytime telemetry service receives a new request, it will fetch out endpoint settings and send the raw data to the corresponding endpoint.
+For every push telemetry event, the telemetry service will fan-out raw-data to the user-config MQTT endpoint
 
 ```mermaid
 graph LR;
@@ -38,12 +38,20 @@ TelemtryService would have 2 methods, one extract rawData and endpoint settings,
 
 ```go
 func HandleTelemtryRequest(request *TelemetryRequest) err {
-	// extract rawdata and endpoint settings
 	...
-	pushToMQTTEndPoint(rawData, &mqttSettings)
+	rawData, mqttSeting, err := parseTelemetryRequest()
+	if err != nil {
+		return err
+	}
+	sendToMQTTEndPoint(rawData, &mqttSettings)
+	...
 }
 
-func pushToMQTTEndPoint(rawData byte[], mqttSettings *v1alpha1.MQTTSetting) err {
-	// push rawData to mqtt broker
+func parseTelemetryRequest(request *TelemetryRequest) ([]byte, *v1alpha1.MQTTSetting, err) {
+	// Parse telemetry request
+}
+
+func sendToMQTTEndPoint(rawData []byte, mqttSettings *v1alpha1.MQTTSetting) err {
+	// Fan-out rawData to mqtt broker
 }
 ```
