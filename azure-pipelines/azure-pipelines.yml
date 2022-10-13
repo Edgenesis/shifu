@@ -443,7 +443,7 @@ stages:
         displayName: build edgehub/deviceshifu-http-plc4x
 
 - stage: docker_build_muiltiarch_and_push
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not(contains(variables['Build.SourceBranchName'],"rc")))
   variables:
   - name: release_tag
     ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
