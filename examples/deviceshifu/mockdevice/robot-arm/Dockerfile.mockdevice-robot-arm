@@ -3,7 +3,6 @@ FROM --platform=$BUILDPLATFORM golang:1.19 as builder
 
 WORKDIR /shifu
 
-ENV GOPROXY=https://goproxy.cn,direct
 ENV GO111MODULE=on
 ENV GOPRIVATE=github.com/Edgenesis
 
@@ -24,7 +23,7 @@ RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a \
     -o /output/mockdevice-robot-arm \
     /shifu/deviceshifu/pkg/mockdevice/mockdevice-robot-arm/mockdevice-robot-arm.go
 
-FROM edgehub/distroless-static:nonroot
+FROM gcr.io/distroless/static-debian11
 WORKDIR /
 COPY --from=builder /output/mockdevice-robot-arm mockdevice-robot-arm
 
