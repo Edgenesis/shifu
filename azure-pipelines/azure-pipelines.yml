@@ -443,7 +443,7 @@ stages:
         displayName: build edgehub/deviceshifu-http-plc4x
 
 - stage: docker_build_muiltiarch_and_push
-  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
   variables:
   - name: release_tag
     ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
@@ -686,7 +686,7 @@ stages:
         displayName: build edgehub/mockdevice-opcua
 
 - stage: docker_build_shifu_demo_push
-  condition: and(succeeded(), variables['build.retainedByRelease'])
+  condition: and(succeeded(), startsWith(variables['Build.SourceBranch'], 'refs/tags/'), not(contains(variables['Build.SourceBranchName'],"rc")))
   jobs:
   - job: docker_push_shifu_demo
     steps:
