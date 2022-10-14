@@ -195,26 +195,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 			expected:  false,
 			expErrStr: "Device testDevice does not have an address",
 		}, {
-			Name: "case3 connection Type is not tcp",
-			deviceShifu: &DeviceShifu{
-				base: &deviceshifubase.DeviceShifuBase{
-					Name: "testDevice",
-					EdgeDevice: &v1alpha1.EdgeDevice{
-						Spec: v1alpha1.EdgeDeviceSpec{
-							Protocol: &socketProtocol,
-							ProtocolSettings: &v1alpha1.ProtocolSettings{
-								SocketSetting: &v1alpha1.SocketSetting{
-									NetworkType: unitest.StrPointer("udp"),
-								},
-							},
-						},
-					},
-				},
-			},
-			expected:  false,
-			expErrStr: "",
-		}, {
-			Name: "case4 Protocol is not Socket",
+			Name: "case3 Protocol is not Socket",
 			deviceShifu: &DeviceShifu{
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "testDevice",
@@ -229,7 +210,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 			expected:  false,
 			expErrStr: "",
 		}, {
-			Name: "case5 wrong ip address",
+			Name: "case4 wrong ip address",
 			deviceShifu: &DeviceShifu{
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "testDevice",
@@ -244,7 +225,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 			expected:  false,
 			expErrStr: "dial tcp: missing address",
 		}, {
-			Name: "case6 empty protocol",
+			Name: "case5 empty protocol",
 			deviceShifu: &DeviceShifu{
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "testDevice",
