@@ -43,6 +43,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		case v1alpha1.ProtocolSocket:
 			connectionType := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
 			if connectionType == nil || *connectionType != "tcp" {
+				// todo need to validate in crd ( kubebuilder )
 				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
 			}
 
