@@ -214,7 +214,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 			expected:  false,
 			expErrStr: "",
 		}, {
-			Name: "case3 Protocol is not Socket",
+			Name: "case4 Protocol is not Socket",
 			deviceShifu: &DeviceShifu{
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "testDevice",
@@ -229,7 +229,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 			expected:  false,
 			expErrStr: "",
 		}, {
-			Name: "case4 wrong ip address",
+			Name: "case5 wrong ip address",
 			deviceShifu: &DeviceShifu{
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "testDevice",
@@ -244,7 +244,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 			expected:  false,
 			expErrStr: "dial tcp: missing address",
 		}, {
-			Name: "case5 empty protocol",
+			Name: "case6 empty protocol",
 			deviceShifu: &DeviceShifu{
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "testDevice",
