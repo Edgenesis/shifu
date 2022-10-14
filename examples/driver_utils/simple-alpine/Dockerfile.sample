@@ -2,7 +2,6 @@ FROM golang:1.19 as builder
 
 WORKDIR /
 
-ENV GOPROXY=https://goproxy.cn,direct
 ENV GO111MODULE=on
 ENV GOPRIVATE=github.com/Edgenesis
 
