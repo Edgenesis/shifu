@@ -195,6 +195,25 @@ func TestCollectSocketTelemetry(t *testing.T) {
 			expected:  false,
 			expErrStr: "Device testDevice does not have an address",
 		}, {
+			Name: "case3 connection Type is not tcp",
+			deviceShifu: &DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "testDevice",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Protocol: &socketProtocol,
+							ProtocolSettings: &v1alpha1.ProtocolSettings{
+								SocketSetting: &v1alpha1.SocketSetting{
+									NetworkType: unitest.StrPointer("udp"),
+								},
+							},
+						},
+					},
+				},
+			},
+			expected:  false,
+			expErrStr: "",
+		}, {
 			Name: "case3 Protocol is not Socket",
 			deviceShifu: &DeviceShifu{
 				base: &deviceshifubase.DeviceShifuBase{
@@ -292,10 +311,12 @@ func TestDeviceCommandHandlerSocket(t *testing.T) {
 		Command: "1234567890",
 		Timeout: 1,
 	}
+
 	failRequestBody := &RequestBody{
-		Command: "a",
+		Command: "a", // The length of `hex` must be a multiple of two
 		Timeout: 1,
 	}
+
 	body, err := json.Marshal(requestBody)
 	if err != nil {
 		t.Errorf("Error when marshal request body to []byte, error: %v", err)
