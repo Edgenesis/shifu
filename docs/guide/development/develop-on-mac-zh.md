@@ -57,11 +57,11 @@ git clone https://github.com/Edgenesis/shifu.git
 
 运行 英特尔(amd64) 的 Mac:
 ```
-https://go.dev/dl/go1.17.10.darwin-amd64.pkg
+https://go.dev/dl/go1.19.2.darwin-amd64.pkg
 ```
 运行 M1(arm64) 的 Mac:
 ```
-https://go.dev/dl/go1.17.10.darwin-arm64.pkg
+https://go.dev/dl/go1.19.2.darwin-arm64.pkg
 ```
 
 ### 1.6 安装 `kind`
