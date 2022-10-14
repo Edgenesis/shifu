@@ -5,11 +5,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-	"k8s.io/klog/v2"
 	"net"
 	"net/http"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"k8s.io/klog/v2"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -40,7 +41,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolSocket:
-			// Open the connection:
 			connectionType := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
 			if connectionType == nil || *connectionType != "tcp" {
 				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
@@ -64,10 +64,11 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 		}
 	}
-	deviceshifubase.BindDefaultHandler(mux)
 
 	ds := &DeviceShifu{base: base, socketConnection: &socketConnection}
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
+	deviceshifubase.BindDefaultHandler(mux)
+
 	return ds, nil
 }
 

@@ -4,8 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log"
 	"net"
+	"net/http"
 	"net/http/httptest"
 	"os"
 	"reflect"
@@ -17,6 +17,7 @@ import (
 	"github.com/stretchr/testify/assert"
 
 	v1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
@@ -29,6 +30,16 @@ func TestMain(m *testing.M) {
 		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
 		os.Exit(-1)
 	}
+
+	listener, err := net.Listen("tcp", UnitTestAddress)
+	if err != nil {
+		klog.Fatalf("Cannot Listen at %v", UnitTestAddress)
+	}
+
+	go func() {
+		_, _ = listener.Accept()
+	}()
+	defer listener.Close()
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
@@ -38,10 +49,16 @@ func TestMain(m *testing.M) {
 
 func TestStart(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		Name:           "TestStart",
+		Name:           "test_name",
+		Namespace:      "test_namespace",
 		ConfigFilePath: "etc/edgedevice/config",
-		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
+		KubeConfigPath: MockConfigFile,
 	}
+
+	server := mockHttpServer(t)
+	writeMockConfigFile(t, server.URL)
+
+	defer server.Close()
 
 	mockds, err := New(deviceShifuMetadata)
 	if err != nil {
@@ -137,20 +154,10 @@ func TestEncodeMessage(t *testing.T) {
 }
 
 func TestCollectSocketTelemetry(t *testing.T) {
-
 	socketProtocol := v1alpha1.ProtocolSocket
 	httpProtocol := v1alpha1.ProtocolHTTP
-	address := "localhost:44243"
+	address := UnitTestAddress
 	emptyAddress := ""
-
-	listener, err := net.Listen("tcp", "localhost:44243")
-	if err != nil {
-		t.Errorf("Cannot Listen at port 44243")
-	}
-
-	go func() {
-		_, _ = listener.Accept()
-	}()
 
 	testCases := []struct {
 		Name        string
@@ -203,20 +210,20 @@ func TestCollectSocketTelemetry(t *testing.T) {
 			expected:  false,
 			expErrStr: "",
 		}, {
-			Name: "case4 wront ip address",
+			Name: "case4 wrong ip address",
 			deviceShifu: &DeviceShifu{
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "testDevice",
 					EdgeDevice: &v1alpha1.EdgeDevice{
 						Spec: v1alpha1.EdgeDeviceSpec{
-							Protocol: &httpProtocol,
+							Protocol: &socketProtocol,
 							Address:  &emptyAddress,
 						},
 					},
 				},
 			},
 			expected:  false,
-			expErrStr: "",
+			expErrStr: "dial tcp: missing address",
 		}, {
 			Name: "case5 empty protocol",
 			deviceShifu: &DeviceShifu{
@@ -236,13 +243,15 @@ func TestCollectSocketTelemetry(t *testing.T) {
 
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
-			result, err := c.deviceShifu.collectSocketTelemetry()
-			assert.Equal(t, c.expected, result)
-			log.Println(err)
-			if len(c.expErrStr) == 0 {
-				assert.Nil(t, err)
-			} else {
-				assert.Equal(t, err.Error(), c.expErrStr)
+			ok, err := c.deviceShifu.collectSocketTelemetry()
+
+			assert.Equal(t, c.expected, ok)
+			if err != nil {
+				if len(c.expErrStr) == 0 {
+					assert.Nil(t, err.Error())
+				} else {
+					assert.Equal(t, err.Error(), c.expErrStr)
+				}
 			}
 		})
 	}
@@ -300,32 +309,43 @@ func TestDeviceCommandHandlerSocket(t *testing.T) {
 	defer hs.Close()
 
 	dc := mockRestClient(hs.URL, "testing")
-	log.Println(dc.APIVersion())
 
-	// testcase without Set Header Content-Type
-	rs := dc.Post().Do(context.TODO())
-	if rs.Error() == nil {
-		t.Errorf("case should return Error but passed")
+	testCases := []struct {
+		name         string
+		request      *rest.Request
+		responseBody string
+		expErrStr    string
+	}{
+		{
+			name:      "case1 not set header 'content-Type'",
+			request:   dc.Post(),
+			expErrStr: "the server rejected our request for an unknown reason",
+		},
+		{
+			name:      "case2 request Body is empty",
+			request:   dc.Post().SetHeader("Content-Type", "application/json"),
+			expErrStr: "the server rejected our request for an unknown reason",
+		}, {
+			name:      "case3 requestBody Encode is error",
+			request:   dc.Post().SetHeader("Content-Type", "application/json").Body(failBody),
+			expErrStr: "the server rejected our request for an unknown reason",
+		}, {
+			name:      "case pass",
+			request:   dc.Post().SetHeader("Content-Type", "application/json").Body(body),
+			expErrStr: "",
+		},
 	}
 
-	req := dc.Post().SetHeader("Content-Type", "application/json")
+	for _, c := range testCases {
+		t.Run(c.name, func(t *testing.T) {
+			err := c.request.Do(context.TODO()).Error()
 
-	// testcase requestBody is empty
-	rs = req.Do(context.TODO())
-	if rs.Error() == nil {
-		t.Errorf("case should return Error but passed")
-	}
-
-	// testcase requestBody is not hex
-	rs = req.Body(failBody).Do(context.TODO())
-	if rs.Error() == nil {
-		t.Errorf("case should return Error but passed")
-	}
-
-	// testcase pass
-	rs = req.Body(body).Do(context.TODO())
-	if rs.Error() != nil {
-		t.Errorf("case should passed but return error: %v", rs.Error())
+			if len(c.expErrStr) == 0 {
+				assert.Nil(t, err)
+			} else {
+				assert.Equal(t, err.Error(), c.expErrStr)
+			}
+		})
 	}
 }
 
@@ -346,4 +366,42 @@ func mockRestClient(host string, path string) *rest.RESTClient {
 	}
 
 	return c
+}
+
+func mockHttpServer(t *testing.T) *httptest.Server {
+	socketProtocol := v1alpha1.ProtocolSocket
+	mockrs := v1alpha1.EdgeDevice{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test_name",
+			Namespace: "test_namespace",
+		},
+		Spec: v1alpha1.EdgeDeviceSpec{
+			Protocol: &socketProtocol,
+			Address:  unitest.StrPointer(UnitTestAddress),
+			ProtocolSettings: &v1alpha1.ProtocolSettings{
+				SocketSetting: &v1alpha1.SocketSetting{
+					NetworkType: unitest.StrPointer("tcp"),
+				},
+			},
+		},
+	}
+
+	dsByte, _ := json.Marshal(mockrs)
+
+	// Implements the http.Handler interface to be passed to httptest.NewServer
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch path {
+		case "/apis/shifu.edgenesis.io/v1alpha1/namespaces/test_namespace/edgedevices/test_name":
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			_, err := w.Write(dsByte)
+			if err != nil {
+				t.Errorf("failed to write response")
+			}
+		default:
+			t.Errorf("Not expected to request: %s", r.URL.Path)
+		}
+	}))
+	return server
 }
