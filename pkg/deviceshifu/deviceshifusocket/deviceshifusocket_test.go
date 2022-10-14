@@ -14,6 +14,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/stretchr/testify/assert"
 
 	v1 "k8s.io/api/apps/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -136,68 +137,114 @@ func TestEncodeMessage(t *testing.T) {
 }
 
 func TestCollectSocketTelemetry(t *testing.T) {
+
 	socketProtocol := v1alpha1.ProtocolSocket
 	httpProtocol := v1alpha1.ProtocolHTTP
-	address := "localhost:3000"
+	address := "localhost:44243"
 	emptyAddress := ""
-	db := &deviceshifubase.DeviceShifuBase{
-		Name: "Unit Test",
-		EdgeDevice: &v1alpha1.EdgeDevice{
-			Spec: v1alpha1.EdgeDeviceSpec{
-				Protocol: &socketProtocol,
-				Address:  &address,
-			},
-		},
-	}
-	ds := &DeviceShifu{
-		base: db,
-	}
 
-	listener, err := net.Listen("tcp", "localhost:3000")
+	listener, err := net.Listen("tcp", "localhost:44243")
 	if err != nil {
-		t.Errorf("Cannot Listen at port 3000")
+		t.Errorf("Cannot Listen at port 44243")
 	}
 
 	go func() {
 		_, _ = listener.Accept()
 	}()
-	// testcase pass
-	ok, err := ds.collectSocketTelemetry()
-	if err != nil {
-		t.Errorf("Error when collectSocketTelemetry")
-	}
-	if !ok {
-		t.Errorf("Fail to conn to mock server")
+
+	testCases := []struct {
+		Name        string
+		deviceShifu *DeviceShifu
+		expected    bool
+		expErrStr   string
+	}{
+		{
+			Name: "case1 pass",
+			deviceShifu: &DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "testDevice",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Protocol: &socketProtocol,
+							Address:  &address,
+						},
+					},
+				},
+			},
+			expected:  true,
+			expErrStr: "",
+		}, {
+			Name: "case2 address is nil",
+			deviceShifu: &DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "testDevice",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Protocol: &socketProtocol,
+						},
+					},
+				},
+			},
+			expected:  false,
+			expErrStr: "Device testDevice does not have an address",
+		}, {
+			Name: "case3 Protocol is not Socket",
+			deviceShifu: &DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "testDevice",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Protocol: &httpProtocol,
+							Address:  &address,
+						},
+					},
+				},
+			},
+			expected:  false,
+			expErrStr: "",
+		}, {
+			Name: "case4 wront ip address",
+			deviceShifu: &DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "testDevice",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Protocol: &httpProtocol,
+							Address:  &emptyAddress,
+						},
+					},
+				},
+			},
+			expected:  false,
+			expErrStr: "",
+		}, {
+			Name: "case5 empty protocol",
+			deviceShifu: &DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "testDevice",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address: &address,
+						},
+					},
+				},
+			},
+			expected:  true,
+			expErrStr: "",
+		},
 	}
 
-	// testcase Address is nil
-	ds.base.EdgeDevice.Spec.Address = nil
-	ok, err = ds.collectSocketTelemetry()
-	if err == nil || ok {
-		t.Errorf("Error this case2 should return err but passed")
-	}
-	ds.base.EdgeDevice.Spec.Address = &address
-
-	// testcase Protocol is not Socket
-	ds.base.EdgeDevice.Spec.Protocol = &httpProtocol
-	ok, _ = ds.collectSocketTelemetry()
-	if ok {
-		t.Errorf("Error this case3 should return false but passed")
-	}
-	ds.base.EdgeDevice.Spec.Protocol = &socketProtocol
-
-	// testcase Wrong ip
-	ds.base.EdgeDevice.Spec.Address = &emptyAddress
-	ok, err = ds.collectSocketTelemetry()
-	if err == nil || ok {
-		t.Errorf("Error this case4 should return err but passed")
-	}
-
-	// testcase Protocol is nil
-	ds.base.EdgeDevice.Spec.Protocol = nil
-	ok, _ = ds.collectSocketTelemetry()
-	if !ok {
-		t.Errorf("Error this case5 should pass")
+	for _, c := range testCases {
+		t.Run(c.Name, func(t *testing.T) {
+			result, err := c.deviceShifu.collectSocketTelemetry()
+			assert.Equal(t, c.expected, result)
+			log.Println(err)
+			if len(c.expErrStr) == 0 {
+				assert.Nil(t, err)
+			} else {
+				assert.Equal(t, err.Error(), c.expErrStr)
+			}
+		})
 	}
 }
 
