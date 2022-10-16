@@ -2,16 +2,11 @@ data:
   driverProperties: |
     driverSku: Edgenesis Mock Device
     driverImage: edgenesis/mockdevice:v0.0.1
-    driverExecution: python mock_driver.py
   instructions: |
+    instructionSettings:
+      defaultTimeoutSeconds: 1
     instructions:
-      set_reading:
-        argumentPropertyList:
-        - valueType: "Int32"
-          readWrite: "W"
-          defaultValue: null
-      start:
-      stop:
+      cmd:
   telemetries: |
     telemetrySettings:
       telemetryUpdateIntervalInMilliseconds: 1000
