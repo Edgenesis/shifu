@@ -5,13 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"io"
-	"k8s.io/klog/v2"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"k8s.io/klog/v2"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -459,8 +460,8 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				if resp != nil {
 					if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 						telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
-						if exist && telemetryCollectionService != "" {
-							deviceshifubase.PushToHTTPTelemetryCollectionService(protocol, resp, telemetryCollectionService)
+						if exist && *telemetryCollectionService.Address != "" {
+							deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, resp)
 						}
 
 						telemetryCollectionResult = true
