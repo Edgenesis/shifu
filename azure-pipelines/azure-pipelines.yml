@@ -688,7 +688,7 @@ stages:
         displayName: build edgehub/mockdevice-opcua
 
 - stage: docker_build_shifu_demo_push
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not(contains(variables['Build.SourceBranchName'],'rc')))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.SourceBranch'],'refs/tags'), not(contains(variables['Build.SourceBranchName'],'rc')))
   jobs:
   - job: docker_push_shifu_demo
     steps:
@@ -697,7 +697,6 @@ stages:
       inputs:
         dockerVersion: 20.10.9
         releaseType: stable
-
     - script: |
         set -e
         bash test/scripts/deviceshifu-demo-aio.sh build_demo amd64
@@ -719,7 +718,7 @@ stages:
         sudo kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
       displayName: 'test run_demo result'
     - task: CopyFilesOverSSH@0
-      condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+      condition: succeeded()
       inputs:
         sshEndpoint: 'shifurun-ssh'
         contents: |
@@ -728,9 +727,8 @@ stages:
         targetFolder: '/home/ubuntu/demo-files'
         readyTimeout: '20000'
         failOnEmptySource: true
-
     - task: SSH@0
-      condition: and(succeeded(), eq(variables['build.sourceBranch'], 'refs/heads/main'))
+      condition: succeeded()
       inputs:
         sshEndpoint: 'shifurun-ssh'
         runOptions: 'inline'
@@ -780,12 +778,8 @@ stages:
         docker --version
         docker-compose --version
       displayName: Install and start Docker
-    - checkout: self
-      submodules: true
-
     - script: |
         set -e
-        git submodule update --remote
         bash ./test/scripts/deviceshifu-demo-aio.sh build_demo amd64
         bash ./test/scripts/deviceshifu-demo-aio.sh build_demo arm64
         ls -al
@@ -804,8 +798,8 @@ stages:
         sudo kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
         sudo kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
       displayName: 'test run_demo result'
-      
     - task: CopyFilesOverSSH@0
+      condition: succeeded()
       inputs:
         sshEndpoint: 'shifurun-ssh'
         contents: |
@@ -814,8 +808,8 @@ stages:
         targetFolder: '/home/ubuntu/demo-files'
         readyTimeout: '20000'
         failOnEmptySource: true
-
     - task: SSH@0
+      condition: succeeded()
       inputs:
         sshEndpoint: 'shifurun-ssh'
         runOptions: 'inline'
