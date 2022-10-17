@@ -5,22 +5,15 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/config"
 	"k8s.io/klog"
 )
 
 const DefaultServerPort = ":8080"
-
-var (
-	mqttMessageStr              string
-	mqttMessageReceiveTimestamp time.Time
-)
 
 func New() {
 	mux := http.NewServeMux()
@@ -37,7 +30,12 @@ func Start(stop <-chan struct{}, mux *http.ServeMux) {
 		Handler: mux,
 	}
 
-	go server.ListenAndServe()
+	go func() {
+		err := server.ListenAndServe()
+		if err != nil {
+			klog.Fatalf("Error when server running, error: %v", err)
+		}
+	}()
 	klog.Infof("Listening at %#v", addr)
 	<-stop
 	server.Close()
@@ -89,16 +87,9 @@ func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
-	rawMqttMessageStr := string(msg.Payload())
 	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
 	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
-	if shouldUsePythonCustomProcessing {
-		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
-		mqttMessageStr = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
-	} else {
-		mqttMessageStr = rawMqttMessageStr
-	}
-	mqttMessageReceiveTimestamp = time.Now()
+
 	klog.Infof("MESSAGE_STR updated")
 }
 

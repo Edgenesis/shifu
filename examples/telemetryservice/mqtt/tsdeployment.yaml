@@ -1,0 +1,20 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetryservicemqtt
+  namespace: shifuts
+spec:
+  selector:
+    matchLabels:
+      app: telemetryservicemqtt
+  template:
+    metadata:
+      labels:
+        app: telemetryservicemqtt
+    spec:
+      containers:
+      - name: telemetryservicemqtt
+        image: test:v0.1.0
+        resources:
+        ports:
+        - containerPort: 8080

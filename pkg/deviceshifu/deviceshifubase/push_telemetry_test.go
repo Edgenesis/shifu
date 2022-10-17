@@ -336,7 +336,9 @@ func TestPushToHTTPTelemetryCollectionService(t *testing.T) {
 	resp := &http.Response{
 		Body: io.NopCloser(strings.NewReader("Hello,World")),
 	}
-	pushToHTTPTelemetryCollectionService(v1alpha1.ProtocolHTTP, resp, "localhost")
+
+	err := pushToHTTPTelemetryCollectionService(v1alpha1.ProtocolHTTP, resp, "localhost")
+	assert.NotNil(t, err)
 }
 
 func TestPushToMQTTTelemetryCollectionService(t *testing.T) {
