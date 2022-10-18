@@ -459,7 +459,7 @@ stages:
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.telemetryserviceMQTT \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/telemetryServiceMQTT:$(tag) --load
+          -t edgehub/telemetryservicemqtt:$(tag) --load
         displayName: build edgehub/dtelemetryServiceMQTT
       - script: |
           docker buildx build --platform=linux/amd64 \
