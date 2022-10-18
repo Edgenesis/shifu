@@ -210,7 +210,7 @@ func TestNew(t *testing.T) {
 			func() {},
 		},
 		{
-			"case 4 KubeConfigPath NULL",
+			"case 4 KubeConfigPath is NULL",
 			&DeviceShifuMetaData{
 				Name: "test",
 				ConfigFilePath: "etc/edgedevice/config",
@@ -224,6 +224,40 @@ func TestNew(t *testing.T) {
 				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
 			},
 		},
+		{
+			"case 5 KubeConfigPath not NULL",
+			&DeviceShifuMetaData{
+				Name: "test",
+				ConfigFilePath: "etc/edgedevice/config",
+				Namespace:"test_namespace",
+			},
+			"open /var/run/secrets/kubernetes.io/serviceaccount/token: The system cannot find the path specified.",
+			func() {
+				os.Setenv("", "localhost")
+				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
+				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
+			},
+		},
+		{
+			"case 6 KubeConfigPath not NULL AND NewDeviceShifuConfig",
+			&DeviceShifuMetaData{
+				Name: "test",
+				ConfigFilePath: "etc/edgedevice/config",
+				Namespace:"test_namespace",
+				KubeConfigPath: "etc/edgedevice/config",
+			},
+			"error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: The handle is invalid.",
+			func() {
+				err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
+				if err != nil {
+					return
+				}
+				os.Setenv("", "localhost")
+				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
+				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
+			},
+		},
+		//TODO: TestNew KubeConfigPath mock k8s API
 	}
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {

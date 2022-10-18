@@ -38,6 +38,41 @@ func TestMain(m *testing.M) {
 	}
 }
 
+func TestNewMQTT(t *testing.T) {
+	testCases := []struct {
+		Name      string
+		metaData  *deviceshifubase.DeviceShifuMetaData
+		expErrStr string
+		fn 		  func()
+	}{
+		{
+			"case 1 deviceshifubase.New err",
+			&deviceshifubase.DeviceShifuMetaData{
+				Name: "test",
+				ConfigFilePath: "etc/edgedevice/config",
+				Namespace:"default",
+			},
+			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
+			func() {
+			},
+		},
+		//TODO : TestNew KubeConfigPath mock k8s API
+	}
+	for _, c := range testCases {
+		t.Run(c.Name, func(t *testing.T) {
+			c.fn()
+			deviceShifu, err := New(c.metaData)
+			if len(c.expErrStr) > 0 {
+				assert.Equal(t, c.expErrStr, err.Error())
+				assert.Nil(t, deviceShifu)
+			} else {
+				assert.Equal(t, c.expErrStr,"")
+				assert.NotNil(t, deviceShifu)
+			}
+		})
+	}
+}
+
 func TestStart(t *testing.T) {
 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
 		Name:           "TestStart",
@@ -160,7 +195,7 @@ func TestCollectMQTTTelemetry(t *testing.T)  {
 					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
 						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
 							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
-								DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(time.Now().Sub(mqttMessageReceiveTimestamp).Milliseconds() + (int64(1))),
+								DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(time.Since(mqttMessageReceiveTimestamp).Milliseconds() + (int64(1))),
 							},
 						},
 					},
@@ -240,12 +275,10 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	assert.Equal(t,"the server rejected our request for an unknown reason",r.Error().Error())
 
 	// test Cannot Encode message to json
-	/*mqttMessageStr = "[{test:1,{{]"
+	mqttMessageStr = *unitest.ToPointer("{{sdf]")
 	mqttMessageReceiveTimestamp = time.Now()
 	r = dc.Get().Do(context.TODO())
-	assert.Nil(t, r.Error())*/
-
-
+	assert.Nil(t, r.Error())
 }
 
 func mockRestClient(host string, path string) *rest.RESTClient {
