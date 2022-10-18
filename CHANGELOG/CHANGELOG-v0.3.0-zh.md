@@ -12,6 +12,9 @@
 * <BugFix> 修复 PLC4x 的 pipeline by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/300
 * 修复用户指标间隔以及文档 by @BtXin in https://github.com/Edgenesis/shifu/pull/301
 * <bugfix> 修复 PLC4x 的 dockerfile by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/305
+* <bugfix> 修复 PLC4x 的 pipeline by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/313
+* <bugfix> 修复 PLC4x 的 pipeline by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/314
+* 修复 pipeline by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/318
 
 ## 改进
 
@@ -20,6 +23,7 @@
 * 在 deviceShifu HTTP 中加入单元测试 by @kris21he in https://github.com/Edgenesis/shifu/pull/291
 * 将 quay.io/brancz/kube-rbac-proxy 镜像替换为 bitnami/kube-rbac-proxy by @tomqin93 in https://github.com/Edgenesis/shifu/pull/309
 * <enhance> 删除没用的代码以及加入一些单元测试 by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/307
+* 更新 Shifu 版本 v0.3.0-rc3 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/316
 
 ## 文档
 
