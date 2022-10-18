@@ -40,7 +40,6 @@ type TelemetryServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Type            *string            `json:"type,omitempty"`
 	Protocol        *Protocol          `json:"protocol,omitempty"`
 	Address         *string            `json:"address,omitempty"`
 	ServiceSettings *ServiceSettings   `json:"serviceSettings,omitempty"`
