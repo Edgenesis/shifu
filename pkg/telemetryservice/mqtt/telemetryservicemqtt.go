@@ -7,23 +7,20 @@ import (
 	"net/http"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"k8s.io/klog"
 )
 
 const DefaultServerPort = ":8080"
 
-func New() {
+func New(stop <-chan struct{}) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handler)
-	stop := make(chan struct{}, 1)
-	Start(stop, mux)
+	Start(stop, mux, DefaultServerPort)
 }
 
-func Start(stop <-chan struct{}, mux *http.ServeMux) {
-	addr := DefaultServerPort
-
+func Start(stop <-chan struct{}, mux *http.ServeMux, addr string) error {
+	var errChan = make(chan error, 1)
 	server := http.Server{
 		Addr:    addr,
 		Handler: mux,
@@ -32,12 +29,18 @@ func Start(stop <-chan struct{}, mux *http.ServeMux) {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			klog.Fatalf("Error when server running, error: %v", err)
+			klog.Errorf("Error when server running, error: %v", err)
+			errChan <- err
 		}
 	}()
+
 	klog.Infof("Listening at %#v", addr)
-	<-stop
-	server.Close()
+	select {
+	case err := <-errChan:
+		return err
+	case <-stop:
+		return server.Close()
+	}
 }
 
 func handler(w http.ResponseWriter, r *http.Request) {
@@ -92,10 +95,6 @@ func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
 }
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
-	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
-	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
-
 	klog.Infof("MESSAGE_STR updated")
 }
 

@@ -303,7 +303,6 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
 			result, err := getTelemetryCollectionServiceMap(c.inputDevice)
-			// assert. Equal(t, c.expectedMap, result)
 			ok := assert.ObjectsAreEqual(c.expectedMap, result)
 			log.Printf("%#v\n%#v\n%#v", c.Name, c.expectedMap, result)
 			assert.Equal(t, true, ok)
