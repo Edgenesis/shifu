@@ -35,7 +35,7 @@ KIND_IMG="kindest/node:v1.25.2"
 KIND_VERSION="v0.16.0"
 
 UTIL_IMG_LIST=(
-    'bitnami/kube-rbac-proxy:0.13.1'
+    'quay.io/brancz/kube-rbac-proxy:v0.13.1'
     $KIND_IMG
     'nginx:1.21'
     'eclipse-mosquitto:2.0.14'
