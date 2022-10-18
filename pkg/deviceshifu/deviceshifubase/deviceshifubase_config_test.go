@@ -242,7 +242,7 @@ func mockHttpServer(t *testing.T) *httptest.Server {
 				Namespace: "test_namespace",
 			},
 			Status: v1alpha1.EdgeDeviceStatus{
-				EdgeDevicePhase: (*v1alpha1.EdgeDevicePhase)(unitest.StrPointer("Success")),
+				EdgeDevicePhase: (*v1alpha1.EdgeDevicePhase)(unitest.ToPointer("Success")),
 			},
 		},
 	}
