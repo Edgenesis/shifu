@@ -8,8 +8,8 @@ ENV GO111MODULE=on
 COPY go.mod go.mod
 COPY go.sum go.sum
 COPY pkg/k8s pkg/k8s
-COPY cmd/telemetryservice/mqtt cmd/telemetryservice/mqtt
-COPY pkg pkg
+COPY cmd/telemetryservice cmd/telemetryservice
+COPY pkg/telemetryservice pkg/telemetryservice
 
 RUN go mod download
 
@@ -17,7 +17,7 @@ RUN go mod download
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/telemetryservice cmd/telemetryservice/mqtt/main.go
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/telemetryservice cmd/telemetryservice/main.go
 
 FROM gcr.io/distroless/static-debian11
 WORKDIR /
