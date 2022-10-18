@@ -12,7 +12,7 @@ FROM gcr.io/distroless/static-debian11
 WORKDIR /
 COPY --from=builder /output/mockclient mockclient
 
-ENV MQTT_SERVER_ADDRESS=localhost:17774
+ENV TARGET_MQTT_SERVER_ADDRESS=localhost:1883
 ENV TARGET_SERVER_ADDRESS=localhost:17772
 
 # Command to run the executable

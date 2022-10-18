@@ -1,87 +1,80 @@
 package main
 
 import (
-	"net"
+	"fmt"
 	"net/http"
 	"os"
-	"time"
 
-	proto "github.com/huin/mqtt"
-	"github.com/jeffallen/mqtt"
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"k8s.io/klog"
 )
 
 var (
 	serverAddress = os.Getenv("MQTT_SERVER_ADDRESS")
-	clientAddress = os.Getenv("MQTT_CLIENT_ADDRESS")
+	clientAddress = os.Getenv("HTTP_SRVER_ADDRESS")
+	tmpMessage    string
 )
 
-type myClient struct {
-	*mqtt.ClientConn
-}
-
 func main() {
-	stop := make(chan struct{}, 1)
-	status := make(chan struct{}, 1)
-	go StartMQTTServer(stop, status)
-	<-status
-	client := NewClient()
+	client, err := connectToMQTT(serverAddress)
+	if err != nil {
+		klog.Errorf("Error when connect to mqtt server")
+	}
+	subTopic(client)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", client.GetLatestData)
+
+	mux.HandleFunc("/", GetLatestData)
 
 	klog.Infof("Client listening at %v", clientAddress)
-	err := http.ListenAndServe(clientAddress, mux)
+	err = http.ListenAndServe(clientAddress, mux)
 	if err != nil {
 		klog.Errorf("Error when server running, errors: %v", err)
 	}
-	stop <- struct{}{}
 }
 
-func (client myClient) GetLatestData(w http.ResponseWriter, r *http.Request) {
-	select {
-	case pubData := <-client.Incoming:
-		pubData.Payload.WritePayload(w)
-	case <-time.After(time.Second * 5):
-		http.Error(w, "no data", http.StatusInternalServerError)
+func GetLatestData(w http.ResponseWriter, r *http.Request) {
+	if tmpMessage == "" {
+		http.Error(w, "empty", http.StatusInternalServerError)
+		return
 	}
+	fmt.Fprintf(w, "%s", string(tmpMessage))
 }
 
-func NewClient() *myClient {
-	conn, err := net.Dial("tcp", serverAddress)
-	if err != nil {
-		klog.Fatalf("Enable to connect to MQTT Server, error %v", err)
+func subTopic(client *mqtt.Client) {
+	token := (*client).Subscribe("/test", 1, nil)
+	token.Wait()
+	if token.Error() != nil {
+		klog.Fatalf("Error when sub to topic,error: %v", token.Error().Error())
 	}
-
-	client := mqtt.NewClientConn(conn)
-	err = client.Connect("username", "password")
-	if err != nil {
-		klog.Fatalf("error when create client, error: %v", err)
-	}
-
-	tq := []proto.TopicQos{
-		{
-			Topic: "/test",
-			Qos:   proto.QosAtLeastOnce,
-		},
-	}
-	client.Subscribe(tq)
-	return &myClient{client}
+	klog.Infof("Subscribed to topic: /test")
 }
 
-func StartMQTTServer(stop <-chan struct{}, status chan struct{}) {
-	lis, err := net.Listen("tcp", serverAddress)
-	if err != nil {
-		klog.Fatalf("Error when Listen ad %v, error: %v", serverAddress, err)
-	}
-	klog.Infof("mockDevice listen at %v", serverAddress)
-	svr := mqtt.NewServer(lis)
-	svr.Start()
+var messageSubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
+	klog.Infof("%v", string(msg.Payload()))
+	tmpMessage = string(msg.Payload())
+}
 
-	status <- struct{}{}
-	select {
-	case <-svr.Done:
-	case <-stop:
+func connectToMQTT(address string) (*mqtt.Client, error) {
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker(fmt.Sprintf("tcp://%s", address))
+	opts.SetClientID("shifu")
+	opts.SetDefaultPublishHandler(messageSubHandler)
+	opts.OnConnect = connectHandler
+	opts.OnConnectionLost = connectLostHandler
+	client := mqtt.NewClient(opts)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		klog.Errorf("Error when connect to server error: %v", token.Error())
+		return nil, token.Error()
 	}
-	lis.Close()
+
+	return &client, nil
+}
+
+var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
+	klog.Infof("Connected")
+}
+
+var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
+	klog.Infof("Connect lost: %v", err)
 }

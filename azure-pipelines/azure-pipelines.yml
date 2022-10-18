@@ -469,15 +469,15 @@ stages:
         displayName: build mockClient
       - script: |
           docker buildx build -f --platform=linux/amd64 \
-          examples/telemetryservice/mockserver/Dockerfile.mockserver -t \
+          -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockserver/Dockerfile.mockserver \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          edgehub/mockserver:$(tag) . --load
+          -t edgehub/mockserver:$(tag) --load
         displayName: build mockServer
       - script: |
           set -e
-          docker run -itd edgehub/telemetryservicemqtt:$(tag) -P
-          docker run -itd edgehub/mockserver:$(tag) -P
-          docker run -it edgehub/mockclient:$(tag)
+          docker run -itd --network host edgehub/telemetryservicemqtt:nightly
+          docker run -itd --network host  edgehub/mockserver:nightly
+          docker run -it --network host edgehub/mockclient:nightly
         displayName: test
 
 - stage: docker_build_muiltiarch_and_push

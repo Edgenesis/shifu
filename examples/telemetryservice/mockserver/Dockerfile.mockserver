@@ -14,10 +14,9 @@ FROM gcr.io/distroless/static-debian11
 WORKDIR /
 COPY --from=builder /output/mockserver mockserver
 
-ENV MQTT_SERVER_ADDRESS=:17774
-ENV MQTT_CLIENT_ADDRESS=:17773
+ENV MQTT_SERVER_ADDRESS=localhost:1883  
+ENV HTTP_SRVER_ADDRESS=:17773
 
-EXPOSE 17774
 EXPOSE 17773
 
 # Command to run the executable
