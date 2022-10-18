@@ -376,25 +376,25 @@ func TestCollectHTTPTelemtries(t *testing.T) {
 				},
 				Spec: v1alpha1.EdgeDeviceSpec{
 					Address:  &addr,
-					Protocol: (*v1alpha1.Protocol)(unitest.Pointer(string(v1alpha1.ProtocolHTTP))),
+					Protocol: (*v1alpha1.Protocol)(unitest.ToPointer(string(v1alpha1.ProtocolHTTP))),
 				},
 			},
 			DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
 				Telemetries: &deviceshifubase.DeviceShifuTelemetries{
 					DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
-						DeviceShifuTelemetryTimeoutInMilliseconds:    unitest.Pointer(int64(10)),
-						DeviceShifuTelemetryDefaultPushToServer:      unitest.Pointer(true),
-						DeviceShifuTelemetryDefaultCollectionService: unitest.Pointer("test_endpoint-1"),
+						DeviceShifuTelemetryTimeoutInMilliseconds:    unitest.ToPointer(int64(10)),
+						DeviceShifuTelemetryDefaultPushToServer:      unitest.ToPointer(true),
+						DeviceShifuTelemetryDefaultCollectionService: unitest.ToPointer("test_endpoint-1"),
 					},
 					DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
 						"device_healthy": {
 							DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
-								DeviceInstructionName: unitest.Pointer("telemetry_health"),
+								DeviceInstructionName: unitest.ToPointer("telemetry_health"),
 								PushSettings: &deviceshifubase.DeviceShifuTelemetryPushSettings{
-									DeviceShifuTelemetryPushToServer:      unitest.Pointer(false),
-									DeviceShifuTelemetryCollectionService: unitest.Pointer("test_endpoint-1"),
+									DeviceShifuTelemetryPushToServer:      unitest.ToPointer(false),
+									DeviceShifuTelemetryCollectionService: unitest.ToPointer("test_endpoint-1"),
 								},
-								InitialDelayMs: unitest.Pointer(1),
+								InitialDelayMs: unitest.ToPointer(1),
 							},
 						},
 					},
