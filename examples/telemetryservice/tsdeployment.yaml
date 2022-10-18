@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: telemetryservicemqtt
-        image: edgehub/telemetryServiceMQTT:nightly
+        image: edgehub/telemetryservicemqtt:nightly
         resources:
         ports:
         - containerPort: 8080
