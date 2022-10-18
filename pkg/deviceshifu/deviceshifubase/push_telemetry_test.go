@@ -225,8 +225,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 			},
 			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
-					Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
-					Address:  unitest.ToPointer("http://192.168.15.48:12345/test-healthy-endpoint"),
+					Address: unitest.ToPointer("http://192.168.15.48:12345/test-healthy-endpoint"),
 				},
 			}),
 			"",
@@ -262,8 +261,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 			},
 			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
-					Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
-					Address:  unitest.ToPointer("http://192.168.15.48:12345/test_endpoint-1"),
+					Address: unitest.ToPointer("http://192.168.15.48:12345/test_endpoint-1"),
 				},
 			}),
 			"",
@@ -307,8 +305,8 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 			result, err := getTelemetryCollectionServiceMap(c.inputDevice)
 			// assert. Equal(t, c.expectedMap, result)
 			ok := assert.ObjectsAreEqual(c.expectedMap, result)
-			log.Printf("?*---%#v\n%#v\n%#v--*?", c.Name, c.expectedMap, result)
-			assert.Equal(t, ok, true)
+			log.Printf("%#v\n%#v\n%#v", c.Name, c.expectedMap, result)
+			assert.Equal(t, true, ok)
 			if len(c.expErrStr) == 0 {
 				assert.Nil(t, err)
 			} else {
