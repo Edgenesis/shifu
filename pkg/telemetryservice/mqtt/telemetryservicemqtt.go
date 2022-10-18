@@ -16,7 +16,10 @@ const DefaultServerPort = ":8080"
 func New(stop <-chan struct{}) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handler)
-	Start(stop, mux, DefaultServerPort)
+	err := Start(stop, mux, DefaultServerPort)
+	if err != nil {
+		klog.Fatalf("Error when telemetryService Running, error: %v", err)
+	}
 }
 
 func Start(stop <-chan struct{}, mux *http.ServeMux, addr string) error {
