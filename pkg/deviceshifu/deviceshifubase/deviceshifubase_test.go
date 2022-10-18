@@ -180,17 +180,17 @@ func TestStartTelemetryCollection(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	os.Setenv("KUBERNETES_SERVICE_HOST", "localhost")
-	os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
 	testCases := []struct {
 		Name      string
 		metaData  *DeviceShifuMetaData
 		expErrStr string
+		fn 		  func()
 	}{
 		{
 			"case 1 have empty name can not new device base",
 			&DeviceShifuMetaData{},
 			"DeviceShifu's name can't be empty",
+			func() {},
 		},
 		{
 			"case 2 have empty configpath meta new device base",
@@ -198,17 +198,43 @@ func TestNew(t *testing.T) {
 				Name: "test",
 			},
 			"Error parsing ConfigMap at /etc/edgedevice/config",
+			func() {},
+		},
+		{
+			"case 3 have empty KubeConfigPath meta new device base",
+			&DeviceShifuMetaData{
+				Name: "test",
+				ConfigFilePath: "etc/edgedevice/config",
+			},
+			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
+			func() {},
+		},
+		{
+			"case 4 KubeConfigPath NULL",
+			&DeviceShifuMetaData{
+				Name: "test",
+				ConfigFilePath: "etc/edgedevice/config",
+				KubeConfigPath: "NULL",
+				Namespace:"default",
+			},
+			"",
+			func() {
+				os.Setenv("", "localhost")
+				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
+				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
+			},
 		},
 	}
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
+			c.fn()
 			base, mux, err := New(c.metaData)
 			if len(c.expErrStr) > 0 {
 				assert.Equal(t, c.expErrStr, err.Error())
 				assert.Nil(t, base)
 				assert.Nil(t, mux)
 			} else {
-				assert.Equal(t, c.expErrStr, err.Error())
+				assert.Equal(t, c.expErrStr,"")
 				assert.NotNil(t, base)
 				assert.NotNil(t, mux)
 			}
