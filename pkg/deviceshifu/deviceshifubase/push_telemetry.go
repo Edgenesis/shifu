@@ -10,9 +10,13 @@ import (
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	config "github.com/edgenesis/shifu/pkg/telemetryservice/config"
 	"k8s.io/klog/v2"
 )
+
+type TelemetryRequest struct {
+	RawData     []byte                `json:"rawData,omitempty"`
+	MQTTSetting *v1alpha1.MQTTSetting `json:"mqttSetting,omitempty"`
+}
 
 func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {
 	var err error
@@ -66,7 +70,7 @@ func pushToMQTTTelemetryCollectionService(message *http.Response, settings *v1al
 		klog.Errorf("Error when Read Info From RequestBody, error: %v", err)
 		return err
 	}
-	request := config.TelemetryRequest{
+	request := TelemetryRequest{
 		RawData:     rawData,
 		MQTTSetting: settings.ServiceSettings.MQTTSetting,
 	}

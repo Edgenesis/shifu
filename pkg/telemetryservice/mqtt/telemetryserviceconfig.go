@@ -1,4 +1,4 @@
-package config
+package mqtt
 
 import "github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 

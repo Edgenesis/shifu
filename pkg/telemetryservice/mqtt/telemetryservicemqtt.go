@@ -9,7 +9,6 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"github.com/edgenesis/shifu/pkg/telemetryservice/config"
 	"k8s.io/klog"
 )
 
@@ -49,7 +48,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	telemetryRequest := &config.TelemetryRequest{}
+	telemetryRequest := &TelemetryRequest{}
 
 	err = json.Unmarshal(body, telemetryRequest)
 	if err != nil || telemetryRequest.MQTTSetting == nil {
@@ -57,6 +56,8 @@ func handler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, fmt.Sprintf("%v", err), http.StatusBadRequest)
 		return
 	}
+
+	klog.Infof("Info: pub Info %v To %v", string(telemetryRequest.RawData), *telemetryRequest.MQTTSetting.MQTTServerAddress)
 
 	client, err := connectToMQTT(telemetryRequest.MQTTSetting)
 	if err != nil {
@@ -66,7 +67,12 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer (*client).Disconnect(0)
 
-	(*client).Publish(*telemetryRequest.MQTTSetting.MQTTTopic, 1, false, telemetryRequest.RawData)
+	token := (*client).Publish(*telemetryRequest.MQTTSetting.MQTTTopic, 1, false, telemetryRequest.RawData)
+	if token.Error() != nil {
+		klog.Errorf("Error when publish Data to MqttServer, error: %#v", err.Error())
+		return
+	}
+	klog.Infof("Info: Success To publish a message %v to %v", string(telemetryRequest.RawData), telemetryRequest.MQTTSetting.MQTTServerAddress)
 }
 
 func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
