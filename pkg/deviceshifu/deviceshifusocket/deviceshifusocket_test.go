@@ -379,10 +379,10 @@ func mockHttpServer(t *testing.T) *httptest.Server {
 		},
 		Spec: v1alpha1.EdgeDeviceSpec{
 			Protocol: &socketProtocol,
-			Address:  unitest.StrPointer(UnitTestAddress),
+			Address:  unitest.ToPointer(UnitTestAddress),
 			ProtocolSettings: &v1alpha1.ProtocolSettings{
 				SocketSetting: &v1alpha1.SocketSetting{
-					NetworkType: unitest.StrPointer("tcp"),
+					NetworkType: unitest.ToPointer("tcp"),
 				},
 			},
 		},
