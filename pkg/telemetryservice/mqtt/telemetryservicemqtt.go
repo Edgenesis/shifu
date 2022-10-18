@@ -18,7 +18,7 @@ func New(stop <-chan struct{}) {
 	mux.HandleFunc("/", handler)
 	err := Start(stop, mux, DefaultServerPort)
 	if err != nil {
-		klog.Fatalf("Error when telemetryService Running, error: %v", err)
+		klog.Errorf("Error when telemetryService Running, error: %v", err)
 	}
 }
 
