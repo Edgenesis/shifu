@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: telemetryservicemqtt
-  namespace: shifuts
+  namespace: shifu-service
 spec:
   selector:
     matchLabels:
@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: telemetryservicemqtt
-        image: test:v0.1.0
+        image: edgehub/telemetryServiceMQTT:nightly
         resources:
         ports:
         - containerPort: 8080

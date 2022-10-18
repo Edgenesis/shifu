@@ -45,6 +45,11 @@ buildx-push-image-deviceshifu: \
 	buildx-push-image-deviceshifu-http-socket \
 	buildx-push-image-deviceshifu-http-opcua
 
+buildx-push-image-telemetryServiceMQTT:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryserviceMQTT \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/telemetryServiceMQTT:${IMAGE_VERSION} --push
+
 buildx-build-image-deviceshifu-http-http:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuHTTP \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
@@ -66,7 +71,7 @@ buildx-build-image-deviceshifu-http-opcua:
 		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --load
 
 buildx-build-image-deviceshifu-http-plc4x:
-	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X\
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --load
 
@@ -76,6 +81,11 @@ buildx-build-image-deviceshifu: \
 	buildx-build-image-deviceshifu-http-socket \
 	buildx-build-image-deviceshifu-http-opcua \
 	buildx-build-image-deviceshifu-http-plc4x 
+
+buildx-build-image-telemetryServiceMQTT:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryserviceMQTT \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/telemetryServiceMQTT:${IMAGE_VERSION} --load
 
 .PHONY: download-demo-files
 download-demo-files:
