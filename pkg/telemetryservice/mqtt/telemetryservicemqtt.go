@@ -5,18 +5,19 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"os"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"k8s.io/klog"
 )
 
-const DefaultServerPort = ":8080"
+var serverListenPort = os.Getenv("SERVER_LISTEN_PORT")
 
 func New(stop <-chan struct{}) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", handler)
-	err := Start(stop, mux, DefaultServerPort)
+	err := Start(stop, mux, serverListenPort)
 	if err != nil {
 		klog.Errorf("Error when telemetryService Running, error: %v", err)
 	}

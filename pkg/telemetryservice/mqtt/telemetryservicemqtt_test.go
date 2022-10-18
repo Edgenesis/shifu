@@ -123,7 +123,7 @@ func mockMQTTServer(stop <-chan struct{}) {
 	if err != nil {
 		klog.Fatalf("Error when Listen ad %v, error: %v", unitTestServerAddress, err)
 	}
-	klog.Infof("mockDevice listen at %v", mockMQTTServerAddress)
+	klog.Infof("mockDevice listen at %v", unitTestServerAddress)
 	svr := mqtt.NewServer(lis)
 	svr.Start()
 

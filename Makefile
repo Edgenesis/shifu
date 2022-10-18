@@ -85,7 +85,7 @@ buildx-build-image-deviceshifu: \
 buildx-build-image-telemetryServiceMQTT:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryserviceMQTT \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
-		-t edgehub/telemetryServiceMQTT:${IMAGE_VERSION} --load
+		-t edgehub/telemetryservicemqtt:${IMAGE_VERSION} --load
 
 .PHONY: download-demo-files
 download-demo-files:

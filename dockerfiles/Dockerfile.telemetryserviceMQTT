@@ -24,6 +24,8 @@ FROM gcr.io/distroless/static-debian11
 WORKDIR /
 COPY --from=builder /output/telemetryservice  telemetryservice 
 
+ENV SERVER_LISTEN_PORT=:17772
+
 # Command to run the executable
 USER 65532:65532
 ENTRYPOINT ["/telemetryservice"]
