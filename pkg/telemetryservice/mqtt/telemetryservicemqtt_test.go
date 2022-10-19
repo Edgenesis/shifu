@@ -188,7 +188,6 @@ func TestHandler(t *testing.T) {
 			assert.Equal(t, c.expectErr, err.Error())
 		}
 	}
-	t.Error()
 }
 
 func mockRestClient(url string, t *testing.T) *rest.RESTClient {
