@@ -56,6 +56,7 @@ func TestStart(t *testing.T) {
 			stopChan: make(chan struct{}, 1),
 		}, {
 			name:     "case2 without mux",
+			addr:     unitTestServerAddress,
 			stopChan: make(chan struct{}, 1),
 		},
 	}
