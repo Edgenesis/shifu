@@ -4,7 +4,7 @@ default='empty'
 
 for i in {1..5} 
 do
-    docker run -it --network host edgehub/mockclient:nightly
+    docker run -i --network host edgehub/mockclient:nightly
 
     output=$(docker exec -it nginx curl localhost:17773/data)
     echo $output

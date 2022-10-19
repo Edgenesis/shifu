@@ -6,6 +6,7 @@ import (
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"sync"
 	"testing"
 	"time"
@@ -28,6 +29,7 @@ const (
 func TestMain(m *testing.M) {
 	stop := make(chan struct{}, 1)
 	wg := sync.WaitGroup{}
+	os.Setenv("SERVER_LISTEN_PORT", ":18926")
 	wg.Add(1)
 	go func() {
 		mockMQTTServer(stop)
@@ -36,6 +38,7 @@ func TestMain(m *testing.M) {
 	m.Run()
 
 	stop <- struct{}{}
+	os.Unsetenv("SERVER_LISTEN_PORT")
 	wg.Wait()
 }
 

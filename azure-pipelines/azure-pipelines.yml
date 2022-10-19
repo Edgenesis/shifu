@@ -724,6 +724,24 @@ stages:
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockdevice-opcua:$(release_tag) --push
         displayName: build edgehub/mockdevice-opcua
+  
+  - job: docker_push_mockdevice_plc
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuMQTT \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
+          -t edgehub/telemetryservicemqtt:$(release_tag) --push
+        displayName: build edgehub/mockdevice-plc
 
 - stage: docker_build_shifu_demo_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.SourceBranch'],'refs/tags'), not(contains(variables['Build.SourceBranchName'],'rc')))
