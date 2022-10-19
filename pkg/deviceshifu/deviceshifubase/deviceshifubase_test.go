@@ -205,7 +205,7 @@ func TestNew(t *testing.T) {
 		{
 			"case 3 have empty KubeConfigPath meta new device base",
 			&DeviceShifuMetaData{
-				Name: "test",
+				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
 			},
 			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
@@ -214,10 +214,10 @@ func TestNew(t *testing.T) {
 		{
 			"case 4 KubeConfigPath is NULL",
 			&DeviceShifuMetaData{
-				Name: "test",
+				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
 				KubeConfigPath: "NULL",
-				Namespace:"default",
+				Namespace:      "default",
 			},
 			"",
 			func() {
@@ -225,39 +225,6 @@ func TestNew(t *testing.T) {
 				if err != nil {
 					return
 				}
-				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
-				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
-			},
-		},
-		{
-			"case 5 KubeConfigPath not NULL",
-			&DeviceShifuMetaData{
-				Name: "test",
-				ConfigFilePath: "etc/edgedevice/config",
-				Namespace:"test_namespace",
-			},
-			"open /var/run/secrets/kubernetes.io/serviceaccount/token: The system cannot find the path specified.",
-			func() {
-				os.Setenv("", "localhost")
-				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
-				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
-			},
-		},
-		{
-			"case 6 KubeConfigPath not NULL AND NewDeviceShifuConfig",
-			&DeviceShifuMetaData{
-				Name: "test",
-				ConfigFilePath: "etc/edgedevice/config",
-				Namespace:"test_namespace",
-				KubeConfigPath: "etc/edgedevice/config",
-			},
-			"error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: The handle is invalid.",
-			func() {
-				err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
-				if err != nil {
-					return
-				}
-				os.Setenv("", "localhost")
 				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
 				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
 			},
