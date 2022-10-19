@@ -241,7 +241,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
 						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
 							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
-								DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(time.Since(mqttMessageReceiveTimestamp).Milliseconds() + 1),
+								DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(time.Now().UnixMilli()),
 							},
 						},
 					},
@@ -284,11 +284,12 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 					},
 				},
 			},
-			false,
+			true,
 			nil,
 		},
 	}
 
+	mqttMessageReceiveTimestamp = time.Now()
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
 			got, err := c.inputDevice.collectMQTTTelemetry()
