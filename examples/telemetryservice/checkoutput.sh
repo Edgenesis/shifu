@@ -8,7 +8,8 @@ do
 
     output=$(docker exec -it nginx curl localhost:17773/data)
     echo $output
-    if [ $output != $default ];then
+    if [[ $output -ne $default ]]
+    then
         exit 0
     fi
 done
