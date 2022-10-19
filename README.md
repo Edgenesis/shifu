@@ -30,7 +30,7 @@
 
 ### Installation
 
-***Shifu*** provides `shifu_install.yml`. If you have started a Kubernetes cluster, use the command `kubectl aply` to install ***Shifu*** in your cluster:
+***Shifu*** provides `shifu_install.yml`. If you have started a Kubernetes cluster, use the command `kubectl apply` to install ***Shifu*** in your cluster:
 
 ```sh
 cd shifu
