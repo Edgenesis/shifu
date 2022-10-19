@@ -97,122 +97,6 @@ func TestDeviceHealthHandler(t *testing.T) {
 	}
 }
 
-func TestCollectMQTTTelemetry(t *testing.T) {
-	testCases := []struct {
-		Name        string
-		inputDevice *DeviceShifu
-		expErrStr   bool
-		err         error
-	}{
-		{
-			"case 1 Protocol is nil",
-			&DeviceShifu{
-				base: &deviceshifubase.DeviceShifuBase{
-					Name: "test",
-					EdgeDevice: &v1alpha1.EdgeDevice{
-						Spec: v1alpha1.EdgeDeviceSpec{
-							Address: unitest.ToPointer("localhost"),
-						},
-					},
-				},
-			},
-			false,
-			nil,
-		},
-		{
-			"case 2 Address is nil",
-			&DeviceShifu{
-				base: &deviceshifubase.DeviceShifuBase{
-					Name: "test",
-					EdgeDevice: &v1alpha1.EdgeDevice{
-						Spec: v1alpha1.EdgeDeviceSpec{
-							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
-						},
-					},
-					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
-						Telemetries: &deviceshifubase.DeviceShifuTelemetries{},
-					},
-					//RestClient: nil,
-				},
-			},
-			false,
-			errors.New("Device test does not have an address"),
-		},
-		{
-			"case 3 DeviceShifuTelemetry Update",
-			&DeviceShifu{
-				base: &deviceshifubase.DeviceShifuBase{
-					Name: "test",
-					EdgeDevice: &v1alpha1.EdgeDevice{
-						ObjectMeta: metav1.ObjectMeta{
-							Namespace: "test_namespace",
-						},
-						Spec: v1alpha1.EdgeDeviceSpec{
-							Address:  unitest.ToPointer("localhost"),
-							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
-						},
-					},
-					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
-						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
-							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
-								DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(time.Since(mqttMessageReceiveTimestamp).Milliseconds() + 1),
-							},
-						},
-					},
-					//RestClient: nil,
-				},
-			},
-			true,
-			nil,
-		},
-		{
-			"case 4 Protocol is http",
-			&DeviceShifu{
-				base: &deviceshifubase.DeviceShifuBase{
-					Name: "test",
-					EdgeDevice: &v1alpha1.EdgeDevice{
-						Spec: v1alpha1.EdgeDeviceSpec{
-							Address:  unitest.ToPointer("localhost"),
-							Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
-						},
-					},
-				},
-			},
-			false,
-			nil,
-		},
-		{
-			"case 5 interval is nil",
-			&DeviceShifu{
-				base: &deviceshifubase.DeviceShifuBase{
-					Name: "test",
-					EdgeDevice: &v1alpha1.EdgeDevice{
-						Spec: v1alpha1.EdgeDeviceSpec{
-							Address:  unitest.ToPointer("localhost"),
-							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
-						},
-					},
-					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
-						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
-							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{},
-						},
-					},
-				},
-			},
-			false,
-			nil,
-		},
-	}
-
-	for _, c := range testCases {
-		t.Run(c.Name, func(t *testing.T) {
-			got, err := c.inputDevice.collectMQTTTelemetry()
-			assert.Equal(t, c.expErrStr, got, c.Name)
-			assert.Equalf(t, c.err, err, "error:%s", c.err)
-		})
-	}
-}
-
 func TestCommandHandleMQTTFunc(t *testing.T) {
 	hs := mockHandlerServer(t)
 	defer hs.Close()
@@ -298,4 +182,123 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 
 	}))
 	return server
+}
+
+func TestCollectMQTTTelemetry(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		inputDevice *DeviceShifu
+		expected    bool
+		err         error
+	}{
+		{
+			"case 1 Protocol is nil",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address: unitest.ToPointer("localhost"),
+						},
+					},
+				},
+			},
+			false,
+			nil,
+		},
+		{
+			"case 2 Address is nil",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
+						},
+					},
+					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
+						Telemetries: &deviceshifubase.DeviceShifuTelemetries{},
+					},
+				},
+			},
+			false,
+			errors.New("Device test does not have an address"),
+		},
+		{
+			"case 3 DeviceShifuTelemetry Update",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						ObjectMeta: metav1.ObjectMeta{
+							Namespace: "test_namespace",
+						},
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address:  unitest.ToPointer("localhost"),
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
+						},
+					},
+					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
+						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
+							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
+								DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(time.Since(mqttMessageReceiveTimestamp).Milliseconds() + 1),
+							},
+						},
+					},
+				},
+			},
+			true,
+			nil,
+		},
+		{
+			"case 4 Protocol is http",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address:  unitest.ToPointer("localhost"),
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
+						},
+					},
+				},
+			},
+			false,
+			nil,
+		},
+		{
+			"case 5 interval is nil",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address:  unitest.ToPointer("localhost"),
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
+						},
+					},
+					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
+						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
+							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{},
+						},
+					},
+				},
+			},
+			false,
+			nil,
+		},
+	}
+
+	for _, c := range testCases {
+		t.Run(c.Name, func(t *testing.T) {
+			got, err := c.inputDevice.collectMQTTTelemetry()
+			if got {
+				assert.Equal(t, c.expected, got)
+				assert.Nil(t, err)
+			} else {
+				assert.Equal(t, c.expected, got)
+				assert.Equal(t, c.err, err)
+			}
+		})
+	}
 }
