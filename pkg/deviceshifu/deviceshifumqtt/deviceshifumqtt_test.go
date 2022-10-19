@@ -89,12 +89,12 @@ func TestDeviceHealthHandler(t *testing.T) {
 	}
 }
 
-func TestCollectMQTTTelemetry(t *testing.T)  {
+func TestCollectMQTTTelemetry(t *testing.T) {
 	testCases := []struct {
 		Name        string
 		inputDevice *DeviceShifu
-		expErrStr   bool
-		err 		error
+		expected    bool
+		err         error
 	}{
 		{
 			"case 1 Protocol is nil",
@@ -103,9 +103,8 @@ func TestCollectMQTTTelemetry(t *testing.T)  {
 					Name: "test",
 					EdgeDevice: &v1alpha1.EdgeDevice{
 						Spec: v1alpha1.EdgeDeviceSpec{
-							Address:  unitest.ToPointer("localhost"),
+							Address: unitest.ToPointer("localhost"),
 						},
-
 					},
 				},
 			},
@@ -119,14 +118,12 @@ func TestCollectMQTTTelemetry(t *testing.T)  {
 					Name: "test",
 					EdgeDevice: &v1alpha1.EdgeDevice{
 						Spec: v1alpha1.EdgeDeviceSpec{
-							Protocol:unitest.ToPointer(v1alpha1.ProtocolMQTT),
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
 						},
 					},
 					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
-						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
-						},
+						Telemetries: &deviceshifubase.DeviceShifuTelemetries{},
 					},
-					//RestClient: nil,
 				},
 			},
 			false,
@@ -145,7 +142,6 @@ func TestCollectMQTTTelemetry(t *testing.T)  {
 							Address:  unitest.ToPointer("localhost"),
 							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
 						},
-
 					},
 					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
 						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
@@ -154,7 +150,6 @@ func TestCollectMQTTTelemetry(t *testing.T)  {
 							},
 						},
 					},
-					//RestClient: nil,
 				},
 			},
 			true,
@@ -189,8 +184,7 @@ func TestCollectMQTTTelemetry(t *testing.T)  {
 					},
 					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
 						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
-							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
-							},
+							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{},
 						},
 					},
 				},
@@ -202,9 +196,14 @@ func TestCollectMQTTTelemetry(t *testing.T)  {
 
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
-			got,err :=c.inputDevice.collectMQTTTelemetry()
-			assert.Equal(t, c.expErrStr,got,c.Name)
-			assert.Equalf(t, c.err,err,"error:%s",c.err)
+			got, err := c.inputDevice.collectMQTTTelemetry()
+			if got {
+				assert.Equal(t, c.expected, got)
+				assert.Nil(t, err)
+			} else {
+				assert.Equal(t, c.expected, got)
+				assert.Equal(t, c.err, err)
+			}
 		})
 	}
 }
