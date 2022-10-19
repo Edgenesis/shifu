@@ -1,11 +1,15 @@
 #!bin/bash
 
-default='{"mqtt_message":"","mqtt_receive_timestamp":"0001-01-01 00:00:00 +0000 UTC"}'
+default='empty'
 
 for i in {1..5} 
 do
-    kubectl run client --image=edgehub/mockclient:$(tag)
+    docker run -it --network host edgehub/mockclient:nightly
 
-    kubectl 
+    output=$(docker exec -it nginx curl localhost:17773/data)
+    echo $output
+    if [ $output != $default ];then
+        exit 0
+    fi
 done
 exit 1

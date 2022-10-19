@@ -444,7 +444,7 @@ stages:
           -t edgehub/deviceshifu-http-plc4x:$(tag) --load
         displayName: build edgehub/deviceshifu-http-plc4x
 
-  - job: kind_e2e_test_telemetryservice
+  - job: docker_e2e_test_telemetryservice
     steps:
       - script: |
           tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
@@ -475,10 +475,12 @@ stages:
         displayName: build mockServer
       - script: |
           set -e
+          docker run -itd --network host --name  mosquitto eclipse-mosquitto:2.0.14
           docker run -itd --network host edgehub/telemetryservicemqtt:nightly
-          docker run -itd --network host  edgehub/mockserver:nightly
-          docker run -it --network host edgehub/mockclient:nightly
-        displayName: test
+          docker run -itd --network host --name mockserver edgehub/mockserver:nightly
+          docker run -itd --network host --name nginx nginx:1.21
+          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/checkoutput.sh
+        displayName: run docker images and compare output
 
 - stage: docker_build_muiltiarch_and_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))

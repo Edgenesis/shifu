@@ -85,7 +85,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", *settings.MQTTServerAddress))
-	opts.SetClientID("shifu")
+	opts.SetClientID("shifu-service")
 	opts.SetDefaultPublishHandler(messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler

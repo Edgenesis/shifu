@@ -58,7 +58,7 @@ var messageSubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 func connectToMQTT(address string) (*mqtt.Client, error) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", address))
-	opts.SetClientID("shifu")
+	opts.SetClientID("mockServer")
 	opts.SetDefaultPublishHandler(messageSubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
