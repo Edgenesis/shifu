@@ -457,10 +457,10 @@ stages:
       - script: |
           docker buildx create --use
           docker buildx build --platform=linux/amd64 \
-          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.telemetryserviceMQTT \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.telemetryservice \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/telemetryservicemqtt:$(tag) --load
-        displayName: build edgehub/dtelemetryServiceMQTT
+          -t edgehub/telemetryservice:$(tag) --load
+        displayName: build edgehub/dtelemetryService
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockclient/Dockerfile.mockclient \
@@ -475,8 +475,8 @@ stages:
         displayName: build mockServer
       - script: |
           set -e
-          docker run -itd --network host --name  mosquitto eclipse-mosquitto:2.0.14
-          docker run -itd --network host edgehub/telemetryservicemqtt:nightly
+          docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.14
+          docker run -itd --network host edgehub/telemetryservice:nightly
           docker run -itd --network host --name mockserver edgehub/mockserver:nightly
           docker run -itd --network host --name nginx nginx:1.21
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/checkoutput.sh
@@ -738,10 +738,10 @@ stages:
         displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuMQTT \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifu \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/telemetryservicemqtt:$(release_tag) --push
-        displayName: build edgehub/mockdevice-plc
+          -t edgehub/telemetryservice:$(release_tag) --push
+        displayName: build edgehub/telemetryservice
 
 - stage: docker_build_shifu_demo_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.SourceBranch'],'refs/tags'), not(contains(variables['Build.SourceBranchName'],'rc')))

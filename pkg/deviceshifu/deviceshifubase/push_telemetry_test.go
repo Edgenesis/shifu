@@ -3,7 +3,6 @@ package deviceshifubase
 import (
 	"bytes"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
@@ -17,6 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/klog/v2"
 
 	utiltesting "k8s.io/client-go/util/testing"
 )
@@ -304,7 +304,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			result, err := getTelemetryCollectionServiceMap(c.inputDevice)
 			ok := assert.ObjectsAreEqual(c.expectedMap, result)
-			log.Printf("%#v\n%#v\n%#v", c.Name, c.expectedMap, result)
+			klog.Infof("%#v\n%#v\n%#v", c.Name, c.expectedMap, result)
 			assert.Equal(t, true, ok)
 			if len(c.expErrStr) == 0 {
 				assert.Nil(t, err)
@@ -375,20 +375,6 @@ func TestPushToMQTTTelemetryCollectionService(t *testing.T) {
 				Address: unitest.ToPointer(address),
 			},
 			expectedErr: "",
-		}, {
-			name: "case1 pass",
-			message: &http.Response{
-				Body: io.NopCloser(bytes.NewBufferString("TestBody")),
-			},
-			settings: &v1alpha1.TelemetryServiceSpec{
-				ServiceSettings: &v1alpha1.ServiceSettings{
-					MQTTSetting: &v1alpha1.MQTTSetting{
-						MQTTTopic: unitest.ToPointer("/test/topic"),
-					},
-				},
-				Address: unitest.ToPointer(address),
-			},
-			expectedErr: "",
 		},
 	}
 	for _, c := range testCases {
@@ -409,7 +395,7 @@ func mockMQTTTelemetryServiceServer(t *testing.T) *httptest.Server {
 	return httptest.NewServer(handler)
 }
 
-func TestPushTElemetryCollectionService(t *testing.T) {
+func TestPushTelemetryCollectionService(t *testing.T) {
 	server := mockMQTTTelemetryServiceServer(t)
 	defer server.Close()
 	address := server.URL
@@ -439,6 +425,21 @@ func TestPushTElemetryCollectionService(t *testing.T) {
 				},
 				Address:  unitest.ToPointer(address),
 				Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
+			},
+			message: &http.Response{
+				Body: io.NopCloser(bytes.NewBufferString("test")),
+			},
+			expectedErr: "",
+		}, {
+			name: "case3 OtherProtocol",
+			spec: &v1alpha1.TelemetryServiceSpec{
+				ServiceSettings: &v1alpha1.ServiceSettings{
+					MQTTSetting: &v1alpha1.MQTTSetting{
+						MQTTTopic: unitest.ToPointer("/test/topic"),
+					},
+				},
+				Address:  unitest.ToPointer(address),
+				Protocol: unitest.ToPointer(v1alpha1.ProtocolPLC4X),
 			},
 			message: &http.Response{
 				Body: io.NopCloser(bytes.NewBufferString("test")),

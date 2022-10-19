@@ -77,7 +77,7 @@ func pushToMQTTTelemetryCollectionService(message *http.Response, settings *v1al
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
-		klog.Errorf("Error when marshal request to []bute, error: %v", err)
+		klog.Errorf("Error when marshal request to []byte, error: %v", err)
 		return err
 	}
 

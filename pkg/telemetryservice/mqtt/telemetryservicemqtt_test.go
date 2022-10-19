@@ -23,7 +23,6 @@ import (
 
 const (
 	unitTestServerAddress = "localhost:18927"
-	mockMQTTServerAddress = "localhost:18928"
 )
 
 func TestMain(m *testing.M) {
@@ -88,7 +87,7 @@ func TestConnectToMQTT(t *testing.T) {
 			expectedErr: "no servers defined to connect to",
 		},
 		{
-			name: "case1 pass",
+			name: "case2 pass",
 			setting: &v1alpha1.MQTTSetting{
 				MQTTTopic:         unitest.ToPointer("/default/topic"),
 				MQTTServerAddress: unitest.ToPointer("localhost" + unitTestServerAddress),
@@ -174,11 +173,11 @@ func TestHandler(t *testing.T) {
 			req:       client.Post(),
 			expectErr: "the server rejected our request for an unknown reason",
 		}, {
-			name:      "case2",
+			name:      "case2 correct request body but not connect to server",
 			req:       client.Post().Body(requestBody1),
-			expectErr: "the server rejected our request for an unknown reason",
+			expectErr: "",
 		}, {
-			name:      "case3",
+			name:      "case3 wrong request body with wrong address",
 			req:       client.Post().Body(requestBody2),
 			expectErr: "an error on the server (\"no servers defined to connect to\") has prevented the request from succeeding",
 		},
@@ -189,6 +188,7 @@ func TestHandler(t *testing.T) {
 			assert.Equal(t, c.expectErr, err.Error())
 		}
 	}
+	t.Error()
 }
 
 func mockRestClient(url string, t *testing.T) *rest.RESTClient {
