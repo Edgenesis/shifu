@@ -43,7 +43,7 @@ func TestNewMQTT(t *testing.T) {
 		Name      string
 		metaData  *deviceshifubase.DeviceShifuMetaData
 		expErrStr string
-		fn 		  func()
+		initEnv   func()
 	}{
 		{
 			"case 1 deviceshifubase.New err",
@@ -60,7 +60,7 @@ func TestNewMQTT(t *testing.T) {
 	}
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
-			c.fn()
+			c.initEnv()
 			deviceShifu, err := New(c.metaData)
 			if len(c.expErrStr) > 0 {
 				assert.Equal(t, c.expErrStr, err.Error())
