@@ -5,49 +5,13 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"k8s.io/klog"
 )
 
-var serverListenPort = os.Getenv("SERVER_LISTEN_PORT")
-
-func New(stop <-chan struct{}) {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", handler)
-	err := Start(stop, mux, serverListenPort)
-	if err != nil {
-		klog.Errorf("Error when telemetryService Running, error: %v", err)
-	}
-}
-
-func Start(stop <-chan struct{}, mux *http.ServeMux, addr string) error {
-	var errChan = make(chan error, 1)
-	server := http.Server{
-		Addr:    addr,
-		Handler: mux,
-	}
-
-	go func() {
-		err := server.ListenAndServe()
-		if err != nil {
-			klog.Errorf("Error when server running, error: %v", err)
-			errChan <- err
-		}
-	}()
-
-	klog.Infof("Listening at %#v", addr)
-	select {
-	case err := <-errChan:
-		return err
-	case <-stop:
-		return server.Close()
-	}
-}
-
-func handler(w http.ResponseWriter, r *http.Request) {
+func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
 		klog.Errorf("Error when Read Data From Body, error: %v", err)

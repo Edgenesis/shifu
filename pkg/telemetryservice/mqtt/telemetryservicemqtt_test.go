@@ -41,35 +41,6 @@ func TestMain(m *testing.M) {
 	wg.Wait()
 }
 
-func TestStart(t *testing.T) {
-	testCases := []struct {
-		name     string
-		mux      *http.ServeMux
-		stopChan chan struct{}
-		addr     string
-	}{
-		{
-			name:     "case1 pass",
-			mux:      http.NewServeMux(),
-			addr:     unitTestServerAddress,
-			stopChan: make(chan struct{}, 1),
-		}, {
-			name:     "case2 without mux",
-			addr:     unitTestServerAddress,
-			stopChan: make(chan struct{}, 1),
-		},
-	}
-
-	for _, c := range testCases {
-		go func() {
-			time.Sleep(time.Microsecond * 100)
-			c.stopChan <- struct{}{}
-		}()
-		err := Start(c.stopChan, c.mux, c.addr)
-		assert.Nil(t, err)
-	}
-}
-
 func TestConnectToMQTT(t *testing.T) {
 	testCases := []struct {
 		name        string
@@ -206,15 +177,6 @@ func mockRestClient(url string, t *testing.T) *rest.RESTClient {
 
 func mockUnitTestServer(t *testing.T) *httptest.Server {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", handler)
+	mux.HandleFunc("/", BindMQTTServicehandler)
 	return httptest.NewServer(mux)
-}
-
-func TestNew(t *testing.T) {
-	stop := make(chan struct{}, 1)
-	go func() {
-		time.After(time.Millisecond * 100)
-		stop <- struct{}{}
-	}()
-	New(stop)
 }
