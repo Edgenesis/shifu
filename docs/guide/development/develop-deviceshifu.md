@@ -1,19 +1,21 @@
 # DeviceShifu Development Guide
 
 ## Introduction
+
 `DeviceShifu` is the digital twin of physical device. It receives HTTP requests and support various protocols to communicate with devices such as MQTT and OPCUA. 
 A new type of `DeviceShifu` is assigned to each protocol. Check [DeviceShifu](https://github.com/Edgenesis/shifu/tree/main/pkg/deviceshifu) directory to see the protocols we already support.
-
 
 ## Components
 
 In order to create a new type of `deviceShifu_xxx` (xxx stands for the protocol name you wish to support) , you need to create or modify the following components:
 
 ### CRD
+
 `CRD` stands for `Customized Resource Definition`, we created a new `CRD` called `edgeDevice` to serve as the definition of the mapping of the physical device.
 To create a new type of `deviceShifu_xxx`, you may need to change the files under directory `pkg/k8s/crd/`
 
 Specific settings may be required for some protocols, like `MQTT`：
+
 ```yaml
   MQTTSetting:
     description: MQTTSetting defines MQTT specific settings when connecting
@@ -27,151 +29,172 @@ Specific settings may be required for some protocols, like `MQTT`：
         type: string
     type: object
 ```
+
 In order to allow your `deviceShifu_xxx` to receive these specific settings,
 you need to add the setting schema to `shifu_install.yml`, `config_crd.yaml` and `config_default.yaml` files in `properties` under `PortocolSettings`
 
-
 ### API
+
 We put the `CRD` API definitions in Golang under API directory. For all the settings you added in `CRD`, 
 you need to put it in `pkg/k8s/api/v1apha1/edgedevice_types.go`. Also take `MQTT` as example:
 
 ```go
 // ProtocolSettings defines protocol settings when connecting to an EdgeDevice
 type ProtocolSettings struct {
-+	MQTTSetting   *MQTTSetting   `json:"MQTTSetting,omitempty"`
-	OPCUASetting  *OPCUASetting  `json:"OPCUASetting,omitempty"`
-	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
++   MQTTSetting   *MQTTSetting   `json:"MQTTSetting,omitempty"`
+    OPCUASetting  *OPCUASetting  `json:"OPCUASetting,omitempty"`
+    SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
 }
 ```
+
 First you need to add `MQTTSetting` to `ProtocolSettings`. Then you need to add the newly written settings in `CRD` as a struct:
+
 ```go
 // MQTTSetting defines MQTT specific settings when connecting to an EdgeDevice
 type MQTTSetting struct {
-	MQTTTopic         *string `json:"MQTTTopic,omitempty"`
-	MQTTServerAddress *string `json:"MQTTServerAddress,omitempty"`
-	MQTTServerSecret  *string `json:"MQTTServerSecret,omitempty"`
+    MQTTTopic         *string `json:"MQTTTopic,omitempty"`
+    MQTTServerAddress *string `json:"MQTTServerAddress,omitempty"`
+    MQTTServerSecret  *string `json:"MQTTServerSecret,omitempty"`
 }
 ```
+
 The struct should be perfectly aligned with the setting schema you added in CRD.
 
-
 ### DeviceShifu
+
 `DeviceShifu` is the digital twin running as a pod in the k8s cluster. Basically it converts HTTP requests to whatever underlying protocol needs.
 
 #### deviceshifuxxx
+
 You need to create a new `deviceshifuxxx` directory under `pkg/deviceshifu`. This directory normally contains 2 main files, a `deviceshifuxxx.go` and a `deviceshifuxxxconfig.go`
 `deviceshifuxxx.go` mainly contains actual logic of the program, and `deviceshifuconfig.go` mainly contains the configuration underlying protocol needs. Take `MQTT` as example:
 
 [deviceshifumqttconfig.go](https://github.com/Edgenesis/shifu/blob/main/pkg/deviceshifu/deviceshifumqtt/deviceshifumqttconfig.go)
+
 ```go
 package deviceshifumqtt
 
 // ReturnBody Body of mqtt's reply
 type ReturnBody struct {
-	MQTTMessage   string `json:"mqtt_message"`
-	MQTTTimestamp string `json:"mqtt_receive_timestamp"`
+    MQTTMessage   string `json:"mqtt_message"`
+    MQTTTimestamp string `json:"mqtt_receive_timestamp"`
 }
 ```
 
 For `deviceshifuxxx.go`, you can follow the following pattern:
 Create a struct named `DeviceShifu`, and take `*deviceshifubase.DeviceShifuBase` as its field. Implement `DeviceShifu` interface in `deviceshifubase.go`. `DeviceShifuBase` contains skeleton code for creating and starting a `DeviceShifu`.
-Take `MQTT` for example: 
+Take `MQTT` for example:
+
 ```go
 // DeviceShifu implemented from deviceshifuBase
 type DeviceShifu struct {
-	base *deviceshifubase.DeviceShifuBase
+    base *deviceshifubase.DeviceShifuBase
 }
 ```
+
 You can also add protocol specific structs, take `OPCUA` as example:
+
 ```go
 // DeviceShifu implemented from deviceshifuBase and OPC UA Setting and client
 type DeviceShifu struct {
-	base              *deviceshifubase.DeviceShifuBase
-	opcuaInstructions *OPCUAInstructions
-	opcuaClient       *opcua.Client
+    base              *deviceshifubase.DeviceShifuBase
+    opcuaInstructions *OPCUAInstructions
+    opcuaClient       *opcua.Client
 }
 ```
+
 Write a method to create an instance of the struct:
+
 ```go
 // New This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error)
 ```
+
 `deviceShifuMetadata` is used to create `DeviceShifuBase`. 
 
-Inside the function, you can call 
+Inside the function, you can call
+
 ```go
 base, mux, err := deviceshifubase.New(deviceShifuMetadata)
 if err != nil {
-	return nil, err
+    return nil, err
 }
 ```
+
 which returns an initialized `DeviceShifuBase` and a server mux. The key part for your `deviceshifuxxx` to work is to register the proper handler to take care of all the incoming http request.
 For the handler function, you can take `MQTT`'s [handler function](https://github.com/Edgenesis/shifu/blob/main/pkg/deviceshifu/deviceshifumqtt/deviceshifumqtt.go#L140) as example.
 
 To register the handler you can:
+
 ```go
 handler := DeviceCommandHandlerMQTT{HandlerMetaData}
 mux.HandleFunc("/"+MqttDataEndpoint, handler.commandHandleFunc())
 ```
 
-
 `DeviceShifu` can also collect device specific telemetry. If you don't know what telemetry is, please check this doc before you proceed: https://github.com/Edgenesis/shifu/blob/main/docs/design/deviceshifu/telemetry.md
 
 `DeviceShifuBase` will take a function:
+
 ```go
 // collectTelemetry struct of collectTelemetry
 type collectTelemetry func() (bool, error)
 ```
+
 and use it periodically to collect telemetry data from device. You can define how you want the telemetry data to be collected. 
 You can reference `MQTT`'s [telemetry collection](https://github.com/Edgenesis/shifu/blob/main/pkg/deviceshifu/deviceshifumqtt/deviceshifumqtt.go#L206) as example.
 
 After you finished the handler and telemetry logic, use `DeviceShifuBase` to start/stop your program by implementing the `Start` and `Stop` function like (also take `MQTT` as example):
+
 ``` go
 // Start start Mqtt Telemetry
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
-	return ds.base.Start(stopCh, ds.collectMQTTTelemetry)
+    return ds.base.Start(stopCh, ds.collectMQTTTelemetry)
 }
 
 // Stop Http Server
 func (ds *DeviceShifu) Stop() error {
-	return ds.base.Stop()
+    return ds.base.Stop()
 }
 ```
 
-#### main 
+#### main
+
 In order to run the `deviceshifuxxx` program, you need a `main.go`. Create a new folder named `cmdxxx` directory under `cmd/deviceshifu` 
 and create a `main.go` under the directory.
 
 Take `MQTT` as an example, the content of the main can be:
+
 ```go
 func main() {
-	deviceName := os.Getenv("EDGEDEVICE_NAME")
-	namespace := os.Getenv("EDGEDEVICE_NAMESPACE")
+    deviceName := os.Getenv("EDGEDEVICE_NAME")
+    namespace := os.Getenv("EDGEDEVICE_NAMESPACE")
 
-	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
-		Name:           deviceName,
-		ConfigFilePath: deviceshifubase.DeviceConfigmapFolderPath,
-		KubeConfigPath: deviceshifubase.KubernetesConfigDefault,
-		Namespace:      namespace,
-	}
+    deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
+        Name:           deviceName,
+        ConfigFilePath: deviceshifubase.DeviceConfigmapFolderPath,
+        KubeConfigPath: deviceshifubase.KubernetesConfigDefault,
+        Namespace:      namespace,
+    }
     // TODO: Change deviceshifumqtt to the deviceshifuxxx you just created
-	ds, err := deviceshifumqtt.New(deviceShifuMetadata)
-	if err != nil {
-		panic(err.Error())
-	}
+    ds, err := deviceshifumqtt.New(deviceShifuMetadata)
+    if err != nil {
+        panic(err.Error())
+    }
 
-	if err := ds.Start(wait.NeverStop); err != nil {
-		panic(err.Error())
-	}
+    if err := ds.Start(wait.NeverStop); err != nil {
+        panic(err.Error())
+    }
 
-	select {}
+    select {}
 }
 ```
+
 #### Dockerfile and makefile
 
 To run go program in k8s, you need to package it into a docker image. 
 To do that, you need to create a file named `Dockerfile.deviceshifuXXX` under `dockerfiles` directory.
 The dockerfile, take `MQTT` as example, can be:
+
 ```dockerfile
 # Build the manager binary
 FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder
@@ -211,36 +234,41 @@ You can utilize `Makefile` to push and build docker images. To make use of `Make
 Take `MQTT` as example here.
 
 Build image:
+
 ```makefile
 buildx-build-image-deviceshifu-http-mqtt:
-	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuMQTT \
-	 	--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
-		-t edgehub/deviceshifu-http-mqtt:${IMAGE_VERSION} --load
+    docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuMQTT \
+        --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+        -t edgehub/deviceshifu-http-mqtt:${IMAGE_VERSION} --load
 ```
+
 Push image:
+
 ```makefile
 buildx-push-image-deviceshifu-http-mqtt:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuMQTT \
-		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
-		-t edgehub/deviceshifu-http-mqtt:${IMAGE_VERSION} --push
+    docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuMQTT \
+        --build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+        -t edgehub/deviceshifu-http-mqtt:${IMAGE_VERSION} --push
 ```
 
 Build and push all `deviceshifu` types:
+
 ```makefile
 buildx-build-image-deviceshifu: \
-	buildx-build-image-deviceshifu-http-http \
-+	buildx-build-image-deviceshifu-http-mqtt \
-	buildx-build-image-deviceshifu-http-socket \
-	buildx-build-image-deviceshifu-http-opcua
-	
+    buildx-build-image-deviceshifu-http-http \
++   buildx-build-image-deviceshifu-http-mqtt \
+    buildx-build-image-deviceshifu-http-socket \
+    buildx-build-image-deviceshifu-http-opcua
+
 buildx-push-image-deviceshifu: \
-	buildx-push-image-deviceshifu-http-http \
-+	buildx-push-image-deviceshifu-http-mqtt \
-	buildx-push-image-deviceshifu-http-socket \
-	buildx-push-image-deviceshifu-http-opcua
+    buildx-push-image-deviceshifu-http-http \
++   buildx-push-image-deviceshifu-http-mqtt \
+    buildx-push-image-deviceshifu-http-socket \
+    buildx-push-image-deviceshifu-http-opcua
 ```
 
 #### Test
+
 For the newly created `deviceshifuxxx` type, we recommend you to run unit test on it before deploying it to k8s or creating PR to merge it.
 You can check [deviceshifumqtt_test.go](https://github.com/Edgenesis/shifu/blob/main/pkg/deviceshifu/deviceshifumqtt/deviceshifumqtt_test.go)
 and [deviceshifumqttconfig_test.go](https://github.com/Edgenesis/shifu/blob/main/pkg/deviceshifu/deviceshifumqtt/deviceshifumqttconfig_test.go).
@@ -249,4 +277,5 @@ We also run e2e tests on our pipelines. You can try to create a mockdevice and a
 For mockdevice you can check `pkg/deviceshifu/mockdevice` and for how to write e2e tests please reference to our [pipeline](https://github.com/Edgenesis/shifu/blob/main/azure-pipelines/azure-pipelines.yml#L369-L422).
 
 ## Miscellaneous
+
 If you are interested in more detailed guides on how to develop a `deviceshifu`, you can reference to the commit [65e124d9](https://github.com/Edgenesis/shifu/commit/65e124d9823afeca9640a7514c893224f67508a0) on how we created `deviceshifuplc4x`, a deviceshifu that utilizes plc4x library.
