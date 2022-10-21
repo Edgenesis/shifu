@@ -1,8 +1,10 @@
 package main
 
-import "github.com/edgenesis/shifu/pkg/telemetryservice/mqtt"
+import (
+	"github.com/edgenesis/shifu/pkg/telemetryservice"
+)
 
 func main() {
 	stop := make(chan struct{})
-	mqtt.New(stop)
+	telemetryservice.New(stop)
 }
