@@ -50,12 +50,12 @@ func TestInstructionHandler(t *testing.T) {
 			}
 			defer resp.Body.Close()
 			assert.Nil(t, err)
-			body, err := io.ReadAll(resp.Body)
+			body, _ := io.ReadAll(resp.Body)
 			if c.name == mocks[len(mocks)-1].name {
 				assert.Contains(t, c.expResult, string(body))
 				return
 			}
-			assert.ElementsMatch(t, c.expResult, regexp.MustCompile("[a-z]{4}").FindAllString(string(body), 3))
+			assert.ElementsMatch(t, c.expResult, regexp.MustCompile(`[a-z]{4}`).FindAllString(string(body), 3))
 
 		})
 	}
