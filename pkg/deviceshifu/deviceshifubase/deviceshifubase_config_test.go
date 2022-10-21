@@ -147,8 +147,7 @@ func Test_getRestConfig(t *testing.T) {
 		{
 			"case 2 use kubepath get config failure",
 			"kubepath",
-			//"stat kubepath: no such file or directory",
-			"CreateFile kubepath: The system cannot find the file specified.",
+			"stat kubepath: no such file or directory",
 		},
 	}
 
