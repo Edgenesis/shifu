@@ -7,9 +7,11 @@ import (
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
 
 	"gopkg.in/yaml.v3"
+	clientcmdapi "k8s.io/client-go/tools/clientcmd/api"
 )
 
 // Str and default value
@@ -17,6 +19,8 @@ const (
 	MockDeviceCmStr              = "configmap_snippet.yaml"
 	MockDeviceWritFilePermission = 0644
 	MockDeviceConfigPath         = "etc"
+	MockConfigFile               = "mockconfig"
+	UnitTestAddress              = "localhost:23266"
 )
 
 var MockDeviceConfigFolder = path.Join("etc", "edgedevice", "config")
@@ -31,30 +35,16 @@ type ConfigMapData struct {
 
 func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
-		InstructionValueTypeInt32       = "Int32"
-		InstructionReadWriteW           = "W"
-		TelemetryMs1000Int64      int64 = 1000
+		TelemetryMs1000Int64 int64 = 1000
 	)
 
 	var DriverProperties = deviceshifubase.DeviceShifuDriverProperties{
-		DriverSku:       "Edgenesis Mock Device",
-		DriverImage:     "edgenesis/mockdevice:v0.0.1",
-		DriverExecution: "python mock_driver.py",
+		DriverSku:   "Edgenesis Mock Device",
+		DriverImage: "edgenesis/mockdevice:v0.0.1",
 	}
 
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
-		"set_reading": {
-			DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
-				{
-					ValueType:    InstructionValueTypeInt32,
-					ReadWrite:    InstructionReadWriteW,
-					DefaultValue: nil,
-				},
-			},
-			DeviceShifuProtocolProperties: nil,
-		},
-		"start": nil,
-		"stop":  nil,
+		"cmd": nil,
 	}
 
 	var mockDeviceTelemetries = &deviceshifubase.DeviceShifuTelemetries{
@@ -117,4 +107,25 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 		}
 	}
 	return nil
+}
+
+func writeMockConfigFile(t *testing.T, serverURL string) {
+	fakeConfig := clientcmdapi.NewConfig()
+	fakeConfig.APIVersion = "v1"
+	fakeConfig.CurrentContext = "alpha"
+
+	fakeConfig.Clusters["alpha"] = &clientcmdapi.Cluster{
+		Server:                serverURL,
+		InsecureSkipTLSVerify: true,
+	}
+
+	fakeConfig.Contexts["alpha"] = &clientcmdapi.Context{
+		Cluster: "alpha",
+	}
+
+	err := clientcmd.WriteToFile(*fakeConfig, MockConfigFile)
+	if err != nil {
+		t.Errorf("write mock file failed")
+	}
+
 }

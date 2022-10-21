@@ -1,10 +1,10 @@
 - [***Shifu*** high-level design](#shifu-high-level-design)
   - [Design principles](#design-principles)
     - [Human centric](#human-centric)
-      - [1. Easy to deploy](#1-easy-to-deploy)
-      - [2. Plug'n'Play](#2-plugnplay)
-      - [3. Zero maintenance](#3-zero-maintenance)
-      - [4. Easy to use SDKs](#4-easy-to-use-sdks)
+      - [Easy to deploy](#easy-to-deploy)
+      - [Plug'n'Play](#plugnplay)
+      - [Easy to extend](#easy-to-extend)
+      - [Zero maintenance](#zero-maintenance)
   - [Design goals and non-goals](#design-goals-and-non-goals)
     - [Design goals](#design-goals)
       - [Simple](#simple)
@@ -39,23 +39,23 @@
 
 ### Human centric
 
-***Shifu***'s foremost job is to make developers and operators happy. Thus, all ***Shifu***'s designs are human centric. Thus, there are a few design requirements to achieve the human centric goal:
+Shifu's foremost job is to make developers and operators happy. Thus, all Shifu's designs are human centric. Thus, there are a few design requirements to achieve the human centric goal:
 
-#### 1. Easy to deploy
+#### Easy to deploy
 
-***Shifu*** can be always be summoned(deployed) by one single line of command.
+Shifu can always be deployed by one single line of command.
 
-#### 2. Plug'n'Play
+#### Plug'n'Play
 
-***Shifu*** should be able to recognize and start providing basic functionalities to the newly added IoT device automagically. Once the developer finishes implementing ***Shifu***'s interface, all designed features of the device should be immediately available. The developer can further implement ***Shifu***'s interface to create customized features and open up endless possibilities.
+Shifu should be able to recognize and start providing basic functionalities to the newly added IoT device automagically. Once the developer finishes filling out Shifu's template, all designed features of the device should be immediately available. 
 
-#### 3. Zero maintenance
+#### Easy to extend
 
-***Shifu*** aims to achieve zero maintenance. After all, ***Shifu*** should be able to take care of himself and make operators' lives easier!
+The developer can further implement Shifu's interface/SDKs to create customized features and open up endless possibilities.
 
-#### 4. Easy to use SDKs
+#### Zero maintenance
 
-***Shifu*** will always provide developers with super easy to use SDKs, simple because *Shifu* wants to make developers happy!
+Shifu aims to achieve zero maintenance by adopting cutting edge cloud native best practices. After all, Shifu should be able to take care of himself and make operators' lives easier!
 
 ## Design goals and non-goals
 

@@ -56,11 +56,11 @@ Depending on your Mac's CPU architecture, you can download one of the following 
 
 For Intel(amd64) Macs:
 ```
-https://go.dev/dl/go1.17.10.darwin-amd64.pkg
+https://go.dev/dl/go1.19.2.darwin-amd64.pkg
 ```
 For M1(arm64) Macs:
 ```
-https://go.dev/dl/go1.17.10.darwin-arm64.pkg
+https://go.dev/dl/go1.19.2.darwin-arm64.pkg
 ```
 
 ### 1.6 Install `kind`

@@ -56,15 +56,15 @@ git clone https://github.com/Edgenesis/shifu.git
 ### 1.6 安装 `Go`
 从 [Go](https://go.dev/doc/install) 官网, 利用下面的命令下载并安装:
 ```bash
-$ wget https://go.dev/dl/go1.17.10.linux-amd64.tar.gz
-$ rm -rf /usr/local/go && tar -C /usr/local -xzf go1.17.10.linux-amd64.tar.gz
+$ wget https://go.dev/dl/go1.19.2.linux-amd64.tar.gz
+$ rm -rf /usr/local/go && tar -C /usr/local -xzf go1.19.2.linux-amd64.tar.gz
 $ echo "export PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile
 ```
 
 ### 1.7 安装 `kind`
 从 [kind](https://kind.sigs.k8s.io/docs/user/quick-start/) 官网, 用以下命令安装:
 ```sh
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.12.0/kind-linux-amd64 \
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.16.0/kind-linux-amd64 \
 && chmod +x ./kind \
 && mv ./kind /usr/local/bin/kind
 ```

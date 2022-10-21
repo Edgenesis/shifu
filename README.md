@@ -22,7 +22,7 @@
 
 ## Why ***Shifu***
 
-***Shifu*** makes it extremely simple to manage and control your IoT devices via ***deviceShifu***, a digital twin for your device. When you connect an IoT device, ***Shifu*** will recognize it and start a ***deviceShifu*** of the device as a [Kubernetes Pod](https://kubernetes.io/docs/concepts/workloads/pods/).
+***Shifu*** makes it extremely simple to manage and control your IoT devices via ***deviceShifu***, a digital twin for your device. When you connect to an IoT device, ***Shifu*** will recognize it and start a ***deviceShifu*** of the device as a [Kubernetes Pod](https://kubernetes.io/docs/concepts/workloads/pods/).
 
 ***deviceShifu*** provides you with a high-level abstraction to interact with your device. By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything it is designed for, and much more! For example, you can have your device actively push its telemetry to any endpoint of your choice.
 
@@ -30,7 +30,7 @@
 
 ### Installation
 
-***Shifu*** provides `shifu_install.yml`. If you have started a Kubernetes cluster, use the command `kubectl aply` to install ***Shifu*** in your cluster:
+***Shifu*** provides `shifu_install.yml`. If you have started a Kubernetes cluster, use the command `kubectl apply` to install ***Shifu*** in your cluster:
 
 ```sh
 cd shifu
@@ -48,29 +48,6 @@ See documentation on <https://shifu.run/docs/>.
 ## Look into ***Shifu***
 
 Check the Markdown files in [`docs/`](./docs/) to learn about the [design](./docs/design/) and [development guides](./docs/guide/) of ***Shifu***.
-
-# ***Shifu***'s Milestone
-
-- features supported
-    - **Telemetry collection**: ***Shifu*** supports the collection of telemetry from devices on a regular basis. What telemetry to collect, how to collect, how frequently to collect are all customizable in one single configuration file.
-    - **Integration with Kubernetes with CRD**: ***Shifu*** allows any type or form of configuration for your devices.
-- features not yet supported
-    - Automatic ***deviceShifu*** creation
-    - [Declarative API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
-    - [Advanced ***shifuController***](docs/design/design-shifuController.md)
-    - [***shifud***](docs/design/design-shifud.md)
-    - ***deviceShifu*** grouping
-    - Abstraction
-    - Simulation
-
-| By | Protocols | Features |
-| --- | --- | --- |
-| Q1 2022 | HTTP <br> command line driver | telemetry <br> command proxy <br> CRD integration |
-| Q2 2022 | MQTT <br> TCP Socket <br> RTSP <br> Siemens S7 <br> OPC UA | state machine |
-| Q3 2022 | ONVIF | ***Shifu Cloud*** |
-| Q4 2022 | gRPC | abstraction <br> [***shifuController***](docs/design/design-shifuController.md) <br> [***shifud***](docs/design/design-shifud.md) <br> simulation |
-
-If you want more features and protocols supported, please [open an issue](https://github.com/Edgenesis/shifu/issues)!
 
 # ***Shifu***'s vision
 
@@ -91,10 +68,7 @@ Welcome to [open an issue](https://github.com/Edgenesis/shifu/issues/new) or [cr
 ## Contact Us
 
 - Email
-    - info@edgenesis.com
-- WeChat
-    - Donoteattoomuchla 
-    - if7369
+  - info@edgenesis.com
 
 ## Stargazers over time
 

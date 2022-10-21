@@ -3,6 +3,7 @@ package deviceshifubase
 import (
 	"context"
 	"errors"
+	"k8s.io/klog/v2"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
@@ -12,15 +13,15 @@ import (
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
-	"k8s.io/klog/v2"
 	"knative.dev/pkg/configmap"
 )
 
 // DeviceShifuConfig data under Configmap, Settings of deviceShifu
 type DeviceShifuConfig struct {
-	DriverProperties DeviceShifuDriverProperties
-	Instructions     DeviceShifuInstructions
-	Telemetries      *DeviceShifuTelemetries
+	DriverProperties         DeviceShifuDriverProperties
+	Instructions             DeviceShifuInstructions
+	Telemetries              *DeviceShifuTelemetries
+	CustomInstructionsPython map[string]string `yaml:"customInstructionsPython"`
 }
 
 // DeviceShifuDriverProperties properties of deviceshifuDriver
@@ -110,7 +111,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if driverProperties, ok := cfg[ConfigmapDriverPropertiesStr]; ok {
 		err := yaml.Unmarshal([]byte(driverProperties), &dsc.DriverProperties)
 		if err != nil {
-			klog.Fatalf("parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
+			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
 			return nil, err
 		}
 	}
@@ -119,7 +120,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if instructions, ok := cfg[ConfigmapInstructionsStr]; ok {
 		err := yaml.Unmarshal([]byte(instructions), &dsc.Instructions)
 		if err != nil {
-			klog.Fatalf("parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
+			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
 			return nil, err
 		}
 	}
@@ -131,31 +132,31 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 			return nil, err
 		}
 	}
+
+	if customInstructionsPython, ok := cfg[ConfigmapCustomizedInstructionsStr]; ok {
+		err = yaml.Unmarshal([]byte(customInstructionsPython), &dsc.CustomInstructionsPython)
+		if err != nil {
+			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapCustomizedInstructionsStr, err)
+			return nil, err
+		}
+	}
+
 	return dsc, nil
 }
 
 // NewEdgeDevice new edgeDevice
 func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *rest.RESTClient, error) {
-	var config *rest.Config
-	var err error
-
-	if edgeDeviceConfig.KubeconfigPath != "" {
-		config, err = clientcmd.BuildConfigFromFlags("", edgeDeviceConfig.KubeconfigPath)
-	} else {
-		config, err = rest.InClusterConfig()
-	}
-
+	config, err := getRestConfig(edgeDeviceConfig.KubeconfigPath)
 	if err != nil {
-		klog.Fatalf("Error parsing incluster/kubeconfig, error: %v", err.Error())
+		klog.Errorf("Error parsing incluster/kubeconfig, error: %v", err.Error())
 		return nil, nil, err
 	}
 
-	client, err := NewEdgeDeviceRestClient(config)
+	client, err := newEdgeDeviceRestClient(config)
 	if err != nil {
-		klog.Fatalf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
+		klog.Errorf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
 		return nil, nil, err
 	}
-
 	ed := &v1alpha1.EdgeDevice{}
 	err = client.Get().
 		Namespace(edgeDeviceConfig.NameSpace).
@@ -164,14 +165,22 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 		Do(context.TODO()).
 		Into(ed)
 	if err != nil {
-		klog.Fatalf("Error GET EdgeDevice resource, error: %v", err.Error())
+		klog.Errorf("Error GET EdgeDevice resource, error: %v", err.Error())
 		return nil, nil, err
 	}
 	return ed, client, nil
 }
 
-// NewEdgeDeviceRestClient new edgeDevice rest Client
-func NewEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
+func getRestConfig(kubeConfigPath string) (*rest.Config, error) {
+	if kubeConfigPath != "" {
+		return clientcmd.BuildConfigFromFlags("", kubeConfigPath)
+	} else {
+		return rest.InClusterConfig()
+	}
+}
+
+// newEdgeDeviceRestClient new edgeDevice rest Client
+func newEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	err := v1alpha1.AddToScheme(scheme.Scheme)
 	if err != nil {
 		klog.Errorf("cannot add to scheme, error: %v", err)

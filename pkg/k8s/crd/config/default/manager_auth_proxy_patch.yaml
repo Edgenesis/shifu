@@ -10,7 +10,7 @@ spec:
     spec:
       containers:
       - name: kube-rbac-proxy
-        image: quay.io/brancz/kube-rbac-proxy:v0.12.0
+        image: quay.io/brancz/kube-rbac-proxy:v0.13.1
         args:
         - "--secure-listen-address=0.0.0.0:8443"
         - "--upstream=http://127.0.0.1:8080/"
@@ -25,5 +25,5 @@ spec:
         - "--metrics-bind-address=127.0.0.1:8080"
         - "--leader-elect"
         - "--enable-user-metrics"
-        - "--telemetry-interval=60"
+        - "--user-metrics-interval=60"
         - "--source=default"

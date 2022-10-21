@@ -3,15 +3,14 @@ package deviceshifumqtt
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"k8s.io/klog/v2"
 	"net/http"
-	"strings"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"k8s.io/klog/v2"
-
-	mqtt "github.com/eclipse/paho.mqtt.golang"
 )
 
 // DeviceShifu implemented from deviceshifuBase
@@ -22,8 +21,6 @@ type DeviceShifu struct {
 // HandlerMetaData MetaData for EdgeDevice Setting
 type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
-	// instruction    string
-	// properties     *DeviceShifuInstruction
 }
 
 // Str and default value
@@ -92,7 +89,15 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
-	mqttMessageStr = string(msg.Payload())
+	rawMqttMessageStr := string(msg.Payload())
+	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
+	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
+	if shouldUsePythonCustomProcessing {
+		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
+		mqttMessageStr = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+	} else {
+		mqttMessageStr = rawMqttMessageStr
+	}
 	mqttMessageReceiveTimestamp = time.Now()
 	klog.Infof("MESSAGE_STR updated")
 }
@@ -116,25 +121,6 @@ func sub(client mqtt.Client, topic string) {
 type DeviceCommandHandlerMQTT struct {
 	// client                         *rest.RESTClient
 	HandlerMetaData *HandlerMetaData
-}
-
-func createURIFromRequest(address string, handlerInstruction string, r *http.Request) string {
-
-	queryStr := "?"
-
-	for queryName, queryValues := range r.URL.Query() {
-		for _, queryValue := range queryValues {
-			queryStr += queryName + "=" + queryValue + "&"
-		}
-	}
-
-	queryStr = strings.TrimSuffix(queryStr, "&")
-
-	if queryStr == "?" {
-		return "http://" + address + "/" + handlerInstruction
-	}
-
-	return "http://" + address + "/" + handlerInstruction + queryStr
 }
 
 func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
@@ -163,41 +149,6 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 		}
 
 	}
-}
-
-// this function gathers the instruction name and its arguments from user input via HTTP and create the direct call command
-// "flags_no_parameter" is a special key where it contains all flags
-// e.g.:
-// if we have localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2
-// and our driverExecution is "/usr/local/bin/python /usr/src/driver/python-car-driver.py"
-// then we will get this command string:
-// /usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency
-// which is exactly what we need to run if we are operating directly on the device
-func createHTTPCommandlineRequestString(r *http.Request, driverExecution string, instruction string) string {
-	values := r.URL.Query()
-	requestStr := ""
-	flagsStr := ""
-	for parameterName, parameterValues := range values {
-		if parameterName == "flags_no_parameter" {
-			if len(parameterValues) == 1 {
-				flagsStr = " " + strings.Replace(parameterValues[0], ",", " ", -1)
-			} else {
-				for _, parameterValue := range parameterValues {
-					flagsStr += " " + parameterValue
-				}
-			}
-		} else {
-			if len(parameterValues) < 1 {
-				continue
-			}
-
-			requestStr += " " + parameterName + "="
-			for _, parameterValue := range parameterValues {
-				requestStr += parameterValue
-			}
-		}
-	}
-	return driverExecution + " --" + instruction + requestStr + flagsStr
 }
 
 // TODO: update configs

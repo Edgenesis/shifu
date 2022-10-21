@@ -5,7 +5,9 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"io"
+	"k8s.io/klog/v2"
 	"net/http"
 	"strconv"
 	"strings"
@@ -15,7 +17,6 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
 )
 
 // DeviceShifuHTTP deviceshifu for HTTP
@@ -211,11 +212,11 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-				klog.Errorf("HTTP POST error" + httpErr.Error())
+				klog.Errorf("HTTP error" + httpErr.Error())
 				return
 			}
 		default:
-			http.Error(w, httpErr.Error(), http.StatusBadRequest)
+			http.Error(w, "not supported yet", http.StatusBadRequest)
 			klog.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
@@ -223,9 +224,23 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		if resp != nil {
 			deviceshifubase.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
-			_, err := io.Copy(w, resp.Body)
-			if err != nil {
-				klog.Errorf("error when copy requestBody from responseBody, err: %v", err)
+
+			respBody, readErr := io.ReadAll(resp.Body)
+			if readErr != nil {
+				klog.Errorf("error when read requestBody from responseBody, err: %v", readErr)
+			}
+
+			rawRespBodyString := string(respBody)
+			_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+			respBodyString := rawRespBodyString
+			klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+			if shouldUsePythonCustomProcessing {
+				klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
+			}
+			_, writeErr := io.WriteString(w, respBodyString)
+			if writeErr != nil {
+				klog.Errorf("Failed to write response %v", respBodyString)
 			}
 			return
 		}
@@ -360,16 +375,30 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		resp, httpErr = handlerHTTPClient.Do(req)
 		if httpErr != nil {
 			http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-			klog.Errorf("HTTP POST error, %v", httpErr.Error())
+			klog.Errorf("HTTP error, %v", httpErr.Error())
 			return
 		}
 
 		if resp != nil {
 			deviceshifubase.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
-			_, err := io.Copy(w, resp.Body)
-			if err != nil {
-				klog.Errorf("cannot copy requestBody from requestBody, error: %v", err)
+
+			respBody, readErr := io.ReadAll(resp.Body)
+			if readErr != nil {
+				klog.Errorf("error when read requestBody from responseBody, err: %v", readErr)
+			}
+
+			rawRespBodyString := string(respBody)
+			_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+			respBodyString := rawRespBodyString
+			klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+			if shouldUsePythonCustomProcessing {
+				klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
+			}
+			_, writeErr := io.WriteString(w, respBodyString)
+			if writeErr != nil {
+				klog.Errorf("Failed to write response %v", respBodyString)
 			}
 			return
 		}

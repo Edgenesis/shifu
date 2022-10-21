@@ -33,6 +33,11 @@ buildx-push-image-deviceshifu-http-opcua:
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --push
 
+buildx-push-image-deviceshifu-http-plc4x:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --push
+
 .PHONY: buildx-push-image-deviceshifu
 buildx-push-image-deviceshifu: \
 	buildx-push-image-deviceshifu-http-http \
@@ -60,11 +65,17 @@ buildx-build-image-deviceshifu-http-opcua:
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --load
 
+buildx-build-image-deviceshifu-http-plc4x:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X\
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --load
+
 buildx-build-image-deviceshifu: \
 	buildx-build-image-deviceshifu-http-http \
 	buildx-build-image-deviceshifu-http-mqtt \
 	buildx-build-image-deviceshifu-http-socket \
-	buildx-build-image-deviceshifu-http-opcua
+	buildx-build-image-deviceshifu-http-opcua \
+	buildx-build-image-deviceshifu-http-plc4x 
 
 .PHONY: download-demo-files
 download-demo-files:
@@ -74,7 +85,7 @@ download-demo-files:
 	docker pull edgehub/mockdevice-thermometer:${IMAGE_VERSION}
 	docker pull edgehub/deviceshifu-http-http:${IMAGE_VERSION}
 	docker pull edgehub/shifu-controller:${IMAGE_VERSION}
-	docker pull quay.io/brancz/kube-rbac-proxy:v0.12.0
+	docker pull quay.io/brancz/kube-rbac-proxy:v0.13.1
 	docker pull nginx:1.21
 
 docker-push-image-deviceshifu:
@@ -96,6 +107,7 @@ clean-images:
 tag:
 	go run tools/tag.go ${PROJECT_ROOT} ${IMAGE_VERSION} $(VERSION)
 	cd pkg/k8s/crd/ && (make generate-controller-yaml IMG=edgehub/shifu-controller:$(VERSION) generate-install-yaml)
+	sed -i -e "s/${IMAGE_VERSION}/${VERSION}/g" ./test/scripts/deviceshifu-demo-aio.sh
 	echo $(VERSION) > version.txt
 
 ## Location to install dependencies to

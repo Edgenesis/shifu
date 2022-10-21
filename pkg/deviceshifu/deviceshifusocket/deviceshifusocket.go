@@ -9,9 +9,11 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"k8s.io/klog/v2"
+
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"k8s.io/klog/v2"
 )
 
 // DeviceShifu deviceshifu and socketConnection for Socket
@@ -39,9 +41,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolSocket:
-			// Open the connection:
 			connectionType := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
 			if connectionType == nil || *connectionType != "tcp" {
+				// todo need to validate in crd ( kubebuilder )
 				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
 			}
 
@@ -63,10 +65,11 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 		}
 	}
-	deviceshifubase.BindDefaultHandler(mux)
 
 	ds := &DeviceShifu{base: base, socketConnection: &socketConnection}
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
+	deviceshifubase.BindDefaultHandler(mux)
+
 	return ds, nil
 }
 
@@ -128,6 +131,13 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 			klog.Errorf("Error when encode message with Encoding, Encoding %v, error: %v", *settings.Encoding, err)
 			http.Error(w, "Failed to encode message with Encoding,  Encoding "+string(*settings.Encoding)+", error: "+err.Error(), http.StatusBadRequest)
 			return
+		}
+		handlerInstruction := HandlerMetaData.instruction
+		_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+		klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+		if shouldUsePythonCustomProcessing {
+			klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+			outputMessage = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, outputMessage, deviceshifubase.PythonScriptDir)
 		}
 
 		returnMessage := ReturnBody{

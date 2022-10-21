@@ -1,19 +1,28 @@
 package deviceshifumqtt
 
 import (
-	"io"
+	"context"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"net/http"
+	"net/http/httptest"
+
+	"errors"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/stretchr/testify/assert"
+	"io"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
-	"reflect"
-	"sort"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-
+	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+
+	v1 "k8s.io/api/apps/v1"
 )
 
 func TestMain(m *testing.M) {
@@ -68,7 +77,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
 	}
 
-	resp, err := utils.RetryAndGetHTTP("http://localhost:8080/health", 3)
+	resp, err := unitest.RetryAndGetHTTP("http://localhost:8080/health", 3)
 	if err != nil {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
@@ -88,63 +97,209 @@ func TestDeviceHealthHandler(t *testing.T) {
 	}
 }
 
-func TestCreateHTTPCommandlineRequestString(t *testing.T) {
-	req, err := http.NewRequest("GET", "http://localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
-	klog.Infof("%v", req.URL.Query())
-	createdRequestString := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "start")
-	if err != nil {
-		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+func TestCommandHandleMQTTFunc(t *testing.T) {
+	hs := mockHandlerServer(t)
+	defer hs.Close()
+	addr := strings.Split(hs.URL, "//")[1]
+	mockHandlerHTTP := &DeviceCommandHandlerMQTT{
+		HandlerMetaData: &HandlerMetaData{
+			edgeDeviceSpec: v1alpha1.EdgeDeviceSpec{
+				Address: &addr,
+			},
+		},
 	}
 
-	createdRequestArguments := strings.Fields(createdRequestString)
+	ds := mockDeviceServer(mockHandlerHTTP, t)
+	defer ds.Close()
+	dc := mockRestClient(ds.URL, "testing")
 
-	expectedRequestString := "/usr/local/bin/python /usr/src/driver/python-car-driver.py --start time=10:00:00 target=machine2 -a -c --no-dependency"
-	expectedRequestArguments := strings.Fields(expectedRequestString)
+	// test post method
+	r := dc.Post().Do(context.TODO())
+	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
-	sort.Strings(createdRequestArguments)
-	sort.Strings(expectedRequestArguments)
-
-	if !reflect.DeepEqual(createdRequestArguments, expectedRequestArguments) {
-		t.Errorf("created request: '%v' does not match the expected req: '%v'", createdRequestString, expectedRequestString)
-	}
+	// test Cannot Encode message to json
+	mqttMessageStr = ""
+	mqttMessageReceiveTimestamp = time.Now()
+	r = dc.Get().Do(context.TODO())
+	assert.Nil(t, r.Error())
 }
 
-func TestCreatehttpURIString(t *testing.T) {
-	expectedURIString := "http://localhost:8081/start?time=10:00:00&target=machine1&target=machine2"
-	req, err := http.NewRequest("POST", expectedURIString, nil)
+func mockRestClient(host string, path string) *rest.RESTClient {
+	c, err := rest.RESTClientFor(
+		&rest.Config{
+			Host:    host,
+			APIPath: path,
+			ContentConfig: rest.ContentConfig{
+				GroupVersion:         &v1.SchemeGroupVersion,
+				NegotiatedSerializer: scheme.Codecs.WithoutConversion(),
+			},
+		},
+	)
 	if err != nil {
-		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+		klog.Errorf("mock client for host %s, apipath: %s failed,", host, path)
+		return nil
 	}
 
-	klog.Infof("%v", req.URL.Query())
-	createdURIString := createURIFromRequest("localhost:8081", "start", req)
-
-	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
-	createdQueries := strings.Split(strings.Split(createdURIString, "?")[1], "&")
-	expectedURIStringWithoutQueries := strings.Split(expectedURIString, "?")[0]
-	expectedQueries := strings.Split(strings.Split(expectedURIString, "?")[1], "&")
-
-	sort.Strings(createdQueries)
-	sort.Strings(expectedQueries)
-	if createdURIStringWithoutQueries != expectedURIStringWithoutQueries || !reflect.DeepEqual(createdQueries, expectedQueries) {
-		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdURIString, expectedURIString)
-	}
+	return c
 }
 
-func TestCreatehttpURIStringNoQuery(t *testing.T) {
-	expectedURIString := "http://localhost:8081/start"
-	req, err := http.NewRequest("POST", expectedURIString, nil)
-	if err != nil {
-		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
+type MockCommandHandler interface {
+	commandHandleFunc() http.HandlerFunc
+}
+
+func mockDeviceServer(h MockCommandHandler, t *testing.T) *httptest.Server {
+	// catch device http request and response properly with specific paths
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch path {
+		case "/testing/apps/v1":
+			klog.Info("ds get testing call, calling the handler server")
+			assert.Equal(t, "/testing/apps/v1", path)
+			f := h.commandHandleFunc()
+			f.ServeHTTP(w, r)
+		default:
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			klog.Info("ds default request, path:", path)
+		}
+	}))
+	return server
+}
+
+func mockHandlerServer(t *testing.T) *httptest.Server {
+	// catch handler http request and response properly with specific paths
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch path {
+		case "/test_instruction":
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			klog.Info("handler get the instruction and executed.")
+		default:
+			w.WriteHeader(http.StatusOK)
+			klog.Info("hs get default request, path:", path)
+		}
+
+	}))
+	return server
+}
+
+func TestCollectMQTTTelemetry(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		inputDevice *DeviceShifu
+		expected    bool
+		err         error
+	}{
+		{
+			"case 1 Protocol is nil",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address: unitest.ToPointer("localhost"),
+						},
+					},
+				},
+			},
+			false,
+			nil,
+		},
+		{
+			"case 2 Address is nil",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
+						},
+					},
+					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
+						Telemetries: &deviceshifubase.DeviceShifuTelemetries{},
+					},
+				},
+			},
+			false,
+			errors.New("Device test does not have an address"),
+		},
+		{
+			"case 3 DeviceShifuTelemetry Update",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						ObjectMeta: metav1.ObjectMeta{
+							Namespace: "test_namespace",
+						},
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address:  unitest.ToPointer("localhost"),
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
+						},
+					},
+					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
+						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
+							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
+								DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(time.Now().UnixMilli()),
+							},
+						},
+					},
+				},
+			},
+			true,
+			nil,
+		},
+		{
+			"case 4 Protocol is http",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address:  unitest.ToPointer("localhost"),
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
+						},
+					},
+				},
+			},
+			false,
+			nil,
+		},
+		{
+			"case 5 interval is nil",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address:  unitest.ToPointer("localhost"),
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
+						},
+					},
+					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
+						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
+							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{},
+						},
+					},
+				},
+			},
+			true,
+			nil,
+		},
 	}
 
-	klog.Infof("%v", req.URL.Query())
-	createdURIString := createURIFromRequest("localhost:8081", "start", req)
-
-	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
-	expectedURIStringWithoutQueries := strings.Split(expectedURIString, "?")[0]
-
-	if createdURIStringWithoutQueries != expectedURIStringWithoutQueries {
-		t.Errorf("createdQuery '%v' is different from the expectedQuery '%v'", createdURIString, expectedURIString)
+	mqttMessageReceiveTimestamp = time.Now()
+	for _, c := range testCases {
+		t.Run(c.Name, func(t *testing.T) {
+			got, err := c.inputDevice.collectMQTTTelemetry()
+			if got {
+				assert.Equal(t, c.expected, got)
+				assert.Nil(t, err)
+			} else {
+				assert.Equal(t, c.expected, got)
+				assert.Equal(t, c.err, err)
+			}
+		})
 	}
 }

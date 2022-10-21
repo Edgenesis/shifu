@@ -49,29 +49,6 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 
 查看 [`docs/`](./docs/) 下的 Markdown文件 来了解 ***Shifu*** 的 [设计细节](./docs/design/) 和 [开发指南](./docs/guide/)。
 
-## ***Shifu*** 里程碑
-
-- 已支持功能
-    - **Telemetry 收集**：***Shifu*** 可以定期收集设备的监测数据。监测数据的种类、收集的方式以及收集的频率都可以由用户在配置文件中自由设置。
-    - **和 Kubernetes 通过 CRD 整合**：***Shifu*** 可以支持对任何设备进行任何形式的配置。
-- 尚未支持功能
-    - 自动生成 ***deviceShifu***
-    - [声明式 API](https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/custom-resources/#declarative-apis)
-    - [高级 ***shifuController***](docs/design/design-shifuController-zh.md)
-    - [***shifud***](docs/design/design-shifud-zh.md)
-    - 设备分组
-    - 多层封装
-    - 仿真
-
-| 时间 | 协议 | 功能 |
-| --- | --- | --- |
-| Q1 2022 | HTTP <br> 命令行驱动 | 监测 <br> 命令代理 <br> CRD 整合 |
-| Q2 2022 | MQTT <br> TCP Socket <br> RTSP <br> Siemens S7 <br> OPC UA | 状态机 |
-| Q3 2022 | ONVIF | ***Shifu Cloud*** |
-| Q4 2022 | gRPC | ***Shifu*** 抽象 <br> [***shifuController***](docs/design/design-shifuController-zh.md) <br> [***shifud***](docs/design/design-shifud-zh.md) <br> 仿真 |
-
-如果您想要 ***Shifu*** 添加更多的功能和支持更多的协议，请 [新建 Issue](https://github.com/Edgenesis/shifu/issues)！
-
 ## ***Shifu*** 愿景
 
 ### 让开发者和运维人员再次开心
@@ -91,10 +68,10 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 ### 联系我们
 
 - 电子邮件
-    - info@edgenesis.com 
+  - info@edgenesis.com
 - 微信
-    - Donoteattoomuchla 
-    - if7369
+  - Donoteattoomuchla
+  - if7369
 
 ## GitHub Star 数量
 
