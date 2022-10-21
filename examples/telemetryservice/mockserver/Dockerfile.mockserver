@@ -22,5 +22,4 @@ EXPOSE 17773
 # Command to run the executable
 USER 65532:65532
 
-
 ENTRYPOINT ["/mockserver"]
