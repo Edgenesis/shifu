@@ -205,7 +205,7 @@ func TestNew(t *testing.T) {
 		{
 			"case 3 have empty KubeConfigPath meta new device base",
 			&DeviceShifuMetaData{
-				Name: "test",
+				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
 			},
 			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
@@ -214,10 +214,10 @@ func TestNew(t *testing.T) {
 		{
 			"case 4 KubeConfigPath is NULL",
 			&DeviceShifuMetaData{
-				Name: "test",
+				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
 				KubeConfigPath: "NULL",
-				Namespace:"default",
+				Namespace:      "default",
 			},
 			"",
 			func() {
