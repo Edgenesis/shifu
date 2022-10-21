@@ -2,7 +2,9 @@ package deviceshifubase
 
 import (
 	"errors"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"os"
+	"reflect"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -104,7 +106,7 @@ func TestValidateTelemetryConfig(t *testing.T) {
 
 }
 
-func TestStartTelemetryCollection(t *testing.T) {
+func TestTelemetryCollection(t *testing.T) {
 	mockds := &DeviceShifuBase{
 		Name: "test",
 		EdgeDevice: &v1alpha1.EdgeDevice{
@@ -205,7 +207,7 @@ func TestNew(t *testing.T) {
 		{
 			"case 3 have empty KubeConfigPath meta new device base",
 			&DeviceShifuMetaData{
-				Name: "test",
+				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
 			},
 			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
@@ -214,10 +216,10 @@ func TestNew(t *testing.T) {
 		{
 			"case 4 KubeConfigPath is NULL",
 			&DeviceShifuMetaData{
-				Name: "test",
+				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
 				KubeConfigPath: "NULL",
-				Namespace:"default",
+				Namespace:      "default",
 			},
 			"",
 			func() {
@@ -232,9 +234,9 @@ func TestNew(t *testing.T) {
 		{
 			"case 5 KubeConfigPath not NULL",
 			&DeviceShifuMetaData{
-				Name: "test",
+				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
-				Namespace:"test_namespace",
+				Namespace:      "test_namespace",
 			},
 			"open /var/run/secrets/kubernetes.io/serviceaccount/token: The system cannot find the path specified.",
 			func() {
@@ -246,9 +248,9 @@ func TestNew(t *testing.T) {
 		{
 			"case 6 KubeConfigPath not NULL AND NewDeviceShifuConfig",
 			&DeviceShifuMetaData{
-				Name: "test",
+				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
-				Namespace:"test_namespace",
+				Namespace:      "test_namespace",
 				KubeConfigPath: "etc/edgedevice/config",
 			},
 			"error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: The handle is invalid.",
@@ -281,4 +283,110 @@ func TestNew(t *testing.T) {
 		})
 	}
 
+}
+
+func TestStart(t *testing.T) {
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		Name:           "TestStart",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: DeviceKubeconfigDoNotLoadStr,
+		Namespace:      "TestStartNamespace",
+	}
+
+	base, _, err := New(deviceShifuMetadata)
+	if err != nil {
+		t.Errorf("Failed creating new deviceshifu")
+	}
+
+	if err := base.Start(wait.NeverStop, func() (bool, error) {
+		return true, nil
+	}); err != nil {
+		t.Errorf("DeviceShifuHTTP.Start failed due to: %v", err.Error())
+	}
+
+	if err := base.Stop(); err != nil {
+		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
+	}
+}
+
+func TestStartTelemetryCollection(t *testing.T) {
+	deviceShifuMetadata := &DeviceShifuMetaData{
+		Name:           "TestStart",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: DeviceKubeconfigDoNotLoadStr,
+		Namespace:      "TestStartNamespace",
+	}
+	mock, _, err := New(deviceShifuMetadata)
+	if err != nil {
+		t.Errorf("Failed creating new deviceshifu")
+	}
+
+	testCases := []struct {
+		Name             string
+		inputDevice      *DeviceShifuBase
+		collectTelemetry func() (bool, error)
+		SetMock          func()
+		expErrStr        string
+	}{
+		{
+			"case 1 fn true with getTelemetryCollectionServiceMap error ",
+			mock,
+			func() (bool, error) {
+				return true, nil
+			},
+			func() {
+				mock.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryDefaultCollectionService = unitest.ToPointer("")
+			},
+			"error generating TelemetryCollectionServiceMap, error: you need to configure defaultTelemetryCollectionService if setting defaultPushToServer to true",
+		},
+		{
+			"case 2 fn true nil Namespace",
+			mock,
+			func() (bool, error) {
+				return true, nil
+			},
+			func() {
+			},
+			"invalid memory address or nil pointer dereference",
+		},
+		//TODO : wait update StartTelemetryCollection exit for
+
+		//{
+		//	"case 3 fn true DeviceShifuTelemetrySettings nil",
+		//	mock,
+		//	func() (bool, error) {
+		//		return true, nil
+		//	},
+		//	func() {
+		//		mock.EdgeDevice.Namespace = "test_namespace"
+		//		mock.EdgeDevice.Spec.Protocol = unitest.ToPointer(v1alpha1.ProtocolMQTT)
+		//		mock.RestClient = mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/endpoint1\",\"type\": \"HTTP\"}}", t)
+		//		mock.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries["device_healthy"] =
+		//			&DeviceShifuTelemetry{DeviceShifuTelemetryProperties{
+		//				PushSettings: &DeviceShifuTelemetryPushSettings{
+		//					DeviceShifuTelemetryPushToServer:      unitest.ToPointer(true),
+		//					DeviceShifuTelemetryCollectionService: unitest.ToPointer("test_endpoint-1"),
+		//				},
+		//			}}
+		//	},
+		//	"invalid memory address or nil pointer dereference",
+		//},
+	}
+
+	for _, c := range testCases {
+		t.Run(c.Name, func(t *testing.T) {
+			defer func() {
+				if err := recover(); err != nil {
+					assert.Equal(t, c.expErrStr, reflect.ValueOf(err).String())
+				} //内置函数，可以捕捉到函数异常
+			}()
+			c.SetMock()
+			err := c.inputDevice.StartTelemetryCollection(c.collectTelemetry)
+			if len(c.expErrStr) > 0 {
+				assert.Equal(t, c.expErrStr, err.Error())
+			} else {
+				assert.Nil(t, err)
+			}
+		})
+	}
 }
