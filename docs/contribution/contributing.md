@@ -16,5 +16,5 @@ Secondly, ALL contributions, including but not limited to bug reports/fixes, doc
 
 Below is a list of contributing guides.
 
-- [develop driver](../guide/development/develop-driver.md)
 - [develop deviceShifu](../guide/development/develop-deviceshifu.md)
+  
