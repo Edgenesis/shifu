@@ -1,5 +1,8 @@
 package main
 
+/*
+mockHTTPClient, using this file will send a message to telemetryService
+*/
 import (
 	"bytes"
 	"encoding/json"

@@ -92,7 +92,7 @@ func pushToMQTTTelemetryCollectionService(message *http.Response, settings *v1al
 		klog.Errorf("Error when send request to Server, error: %v", err)
 		return err
 	}
-
+	klog.Infof("Success to Send message to %v,message: %v", string(rawData))
 	err = resp.Body.Close()
 	if err != nil {
 		klog.Errorf("Error when Close response Body, error: %v", err)

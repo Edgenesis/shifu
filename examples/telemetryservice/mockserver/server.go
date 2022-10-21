@@ -1,5 +1,10 @@
 package main
 
+/*
+mockHTTPServer and MQTT Client
+mock MQTT Client to connect to mosquitto and save latestData in memory
+mock HTTP Server is to get latestData and return it in response Body
+*/
 import (
 	"fmt"
 	"net/http"

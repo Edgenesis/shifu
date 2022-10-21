@@ -58,7 +58,7 @@ func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
 		klog.Errorf("Error when connect to server error: %v", token.Error())
 		return nil, token.Error()
 	}
-
+	klog.Infof("Connect to %v success!", settings.MQTTServerAddress)
 	return &client, nil
 }
 
