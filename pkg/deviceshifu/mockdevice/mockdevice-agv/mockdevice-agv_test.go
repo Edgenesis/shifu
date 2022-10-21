@@ -44,7 +44,7 @@ func TestInstructionHandler(t *testing.T) {
 			defer resp.Body.Close()
 			assert.Nil(t, err)
 
-			body, err := io.ReadAll(resp.Body)
+			body, _ := io.ReadAll(resp.Body)
 			assert.NotNil(t, body)
 		})
 	}
