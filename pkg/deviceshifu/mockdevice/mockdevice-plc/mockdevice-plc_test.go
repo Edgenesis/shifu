@@ -76,7 +76,7 @@ func TestInstructionHandler(t *testing.T) {
 			defer resp.Body.Close()
 			assert.Nil(t, err)
 
-			body, err := io.ReadAll(resp.Body)
+			body, _ := io.ReadAll(resp.Body)
 
 			if c.name == "case 5 get_status" {
 				assert.Contains(t, []string{"Running", "Idle", "Busy", "Error"}, string(body))
