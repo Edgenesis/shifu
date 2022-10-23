@@ -1,12 +1,13 @@
 package deviceshifuopcua
 
 import (
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/stretchr/testify/assert"
 	"io"
 	"os"
 	"testing"
-
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -110,5 +111,102 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 	if err := mockds.Stop(); err != nil {
 		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
+	}
+}
+
+// TODO : new
+func TestCollectOPCUATelemetry(t *testing.T) {
+	testCases := []struct {
+		Name        string
+		inputDevice *DeviceShifu
+		expected    bool
+		expErrStr   string
+	}{
+		{
+			"case 1 Protocol is nil",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address: unitest.ToPointer("localhost"),
+						},
+					},
+				},
+			},
+			true,
+			"",
+		},
+		{
+			"case 2 Address is nil",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolOPCUA),
+						},
+					},
+					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
+						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
+							DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
+								"": &deviceshifubase.DeviceShifuTelemetry{},
+							},
+						},
+					},
+				},
+			},
+			false,
+			"Device test does not have an address",
+		},
+		{
+			"case 3 DeviceInstructionName is nil",
+			&DeviceShifu{
+				base: &deviceshifubase.DeviceShifuBase{
+					Name: "test",
+					EdgeDevice: &v1alpha1.EdgeDevice{
+						Spec: v1alpha1.EdgeDeviceSpec{
+							Address:  unitest.ToPointer("localhost"),
+							Protocol: unitest.ToPointer(v1alpha1.ProtocolOPCUA),
+						},
+					},
+					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
+						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
+							DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
+								"test_DeviceShifuTelemetries": {
+									deviceshifubase.DeviceShifuTelemetryProperties{
+										DeviceInstructionName: unitest.ToPointer(""),
+									},
+								},
+							},
+						},
+					},
+				},
+				opcuaInstructions: &OPCUAInstructions{
+					map[string]*OPCUAInstruction{
+						"test_Instructions": {
+							&OPCUAInstructionProperty{
+								"OPCUANodeID",
+							},
+						},
+					},
+				},
+			},
+			false,
+			"Instruction  not found in list of deviceshifu instructions",
+		},
+		//TODO : new opcuaClient
+	}
+
+	for _, c := range testCases {
+		t.Run(c.Name, func(t *testing.T) {
+			got, err := c.inputDevice.collectOPCUATelemetry()
+			assert.Equal(t, c.expected, got)
+			if got {
+				assert.Nil(t, err)
+			} else {
+				assert.Equal(t, c.expErrStr, err.Error())
+			}
+		})
 	}
 }
