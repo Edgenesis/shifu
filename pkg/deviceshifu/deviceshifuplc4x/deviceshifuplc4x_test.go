@@ -1,12 +1,16 @@
 package deviceshifuplc4x
 
 import (
+	plc4go "github.com/apache/plc4x/plc4go/pkg/api"
+	"github.com/apache/plc4x/plc4go/pkg/api/drivers"
+	"github.com/apache/plc4x/plc4go/pkg/api/transports"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
+	"github.com/stretchr/testify/assert"
+	"gopkg.in/yaml.v3"
 	"os"
 	"path"
 	"testing"
-
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"gopkg.in/yaml.v3"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -96,4 +100,54 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 		}
 	}
 	return nil
+}
+
+func TestCollectPLC4XTelemetry(t *testing.T) {
+	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
+		Name:           "TestCollectPLC4XTelemetry",
+		ConfigFilePath: "etc/edgedevice/config",
+		KubeConfigPath: deviceshifubase.DeviceKubeconfigDoNotLoadStr,
+	}
+
+	mockds, err := New(deviceShifuMetadata)
+	if err != nil {
+		t.Errorf("Failed creating new deviceshifu")
+	}
+	mockds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds = unitest.ToPointer(int64(1))
+
+	// Create a new instance of the PlcDriverManager
+	driverManager := plc4go.NewPlcDriverManager()
+
+	transports.RegisterTcpTransport(driverManager)
+
+	drivers.RegisterModbusTcpDriver(driverManager)
+	connectionRequestChanel := driverManager.GetConnection("modbus-tcp://192.168.23.30?unit-identifier=1")
+	connectionResult := <-connectionRequestChanel
+	mockds.conn = &connectionResult
+
+	testCases := []struct {
+		Name        string
+		inputDevice *DeviceShifu
+		expected    bool
+		expErrStr   string
+	}{
+		{
+			"case 1 Error sending the request",
+			mockds,
+			false,
+			"Error sending the request: error sending request: error writing to transport. No writer available",
+		},
+	}
+
+	for _, c := range testCases {
+		t.Run(c.Name, func(t *testing.T) {
+			got, err := c.inputDevice.collectPLC4XTelemetry()
+			assert.Equal(t, c.expected, got)
+			if got {
+				assert.Nil(t, err)
+			} else {
+				assert.Equal(t, c.expErrStr, err.Error())
+			}
+		})
+	}
 }
