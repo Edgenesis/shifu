@@ -114,7 +114,6 @@ func TestDeviceHealthHandler(t *testing.T) {
 	}
 }
 
-// TODO : new
 func TestCollectOPCUATelemetry(t *testing.T) {
 	testCases := []struct {
 		Name        string
