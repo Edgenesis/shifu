@@ -182,8 +182,6 @@ func TestTelemetryCollection(t *testing.T) {
 }
 
 func TestNew(t *testing.T) {
-	os.Setenv("KUBERNETES_SERVICE_HOST", "localhost")
-	os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
 	testCases := []struct {
 		Name      string
 		metaData  *DeviceShifuMetaData
@@ -211,7 +209,8 @@ func TestNew(t *testing.T) {
 				ConfigFilePath: "etc/edgedevice/config",
 			},
 			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
-			func() {},
+			func() {
+			},
 		},
 		{
 			"case 4 KubeConfigPath is NULL",
@@ -223,12 +222,7 @@ func TestNew(t *testing.T) {
 			},
 			"",
 			func() {
-				err := os.Setenv("", "localhost")
-				if err != nil {
-					return
-				}
-				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
-				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
+				initEnv()
 			},
 		},
 		{
@@ -240,9 +234,7 @@ func TestNew(t *testing.T) {
 			},
 			"open /var/run/secrets/kubernetes.io/serviceaccount/token: The system cannot find the path specified.",
 			func() {
-				os.Setenv("", "localhost")
-				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
-				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
+				initEnv()
 			},
 		},
 		{
@@ -259,17 +251,13 @@ func TestNew(t *testing.T) {
 				if err != nil {
 					return
 				}
-				os.Setenv("", "localhost")
-				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
-				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
+				initEnv()
 			},
 		},
 	}
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
 			c.initEnv()
-			defer os.Unsetenv("KUBERNETES_SERVICE_HOST")
-			defer os.Unsetenv("KUBERNETES_SERVICE_PORT")
 			base, mux, err := New(c.metaData)
 			if len(c.expErrStr) > 0 {
 				assert.Equal(t, c.expErrStr, err.Error())
@@ -279,10 +267,22 @@ func TestNew(t *testing.T) {
 				assert.NotNil(t, base)
 				assert.NotNil(t, mux)
 			}
-
+			unSetEnv()
 		})
 	}
 
+}
+
+func initEnv() {
+	os.Setenv("", "localhost")
+	os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
+	os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
+}
+
+func unSetEnv() {
+	os.Unsetenv("")
+	os.Unsetenv("KUBERNETES_SERVICE_PORT")
+	os.Unsetenv("KUBERNETES_SERVICE_HOST")
 }
 
 func TestStart(t *testing.T) {
@@ -347,7 +347,7 @@ func TestStartTelemetryCollection(t *testing.T) {
 			},
 			func() {
 			},
-			"invalid memory address or nil pointer dereference",
+			"error generating TelemetryCollectionServiceMap, error: you need to configure defaultTelemetryCollectionService if setting defaultPushToServer to true",
 		},
 		//TODO : wait update StartTelemetryCollection exit for
 
@@ -387,6 +387,7 @@ func TestStartTelemetryCollection(t *testing.T) {
 			} else {
 				assert.Nil(t, err)
 			}
+			unSetEnv()
 		})
 	}
 }

@@ -2,6 +2,7 @@ package deviceshifubase
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -73,8 +74,11 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]string, e
 			Into(&telemetryService); err != nil {
 			klog.Errorf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, err)
 		}
-
-		defaultTelemetryServiceAddress = *telemetryService.Spec.Address
+		if telemetryService.Spec.Address != nil {
+			defaultTelemetryServiceAddress = *telemetryService.Spec.Address
+		} else {
+			klog.Errorf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, errors.New("Address is nil"))
+		}
 		serviceAddressCache[defaultTelemetryCollectionService] = defaultTelemetryServiceAddress
 	}
 
