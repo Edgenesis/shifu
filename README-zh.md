@@ -47,7 +47,7 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 
 ## 深入理解 ***Shifu***
 
-查看 [`docs/`](./docs/) 下的 Markdown文件 来了解 ***Shifu*** 的 [设计细节](./docs/design/) 和 [开发指南](./docs/guide/)。
+查看 [`docs/`](./docs/) 下的 Markdown文件 来了解 ***Shifu*** 的 [设计细节](./docs/design/) 和 [开发指南](./docs/development/)。
 
 ## ***Shifu*** 愿景
 
