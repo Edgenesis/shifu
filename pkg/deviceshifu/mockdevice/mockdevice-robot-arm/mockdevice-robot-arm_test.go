@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"regexp"
+	"strings"
 	"testing"
 	"time"
 )
@@ -25,13 +25,13 @@ func TestInstructionHandler(t *testing.T) {
 		expResult  interface{}
 	}{
 		{
-			"case 1 prot 12345 get_coordinate",
+			"case 1 port 12345 get_coordinate",
 			"http://localhost:12345/get_coordinate",
 			200,
-			[]string{"xpos", "ypos", "zpos"},
+			true,
 		},
 		{
-			"case 2 prot 12345 get_status",
+			"case 2 port 12345 get_status",
 			"http://localhost:12345/get_status",
 			200,
 			[]string{"Running", "Idle", "Busy", "Error"},
@@ -40,14 +40,11 @@ func TestInstructionHandler(t *testing.T) {
 
 	go mockdevice.StartMockDevice(availableFuncs, instructionHandler)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Microsecond)
 
 	for _, c := range mocks {
 		t.Run(c.name, func(t *testing.T) {
 			resp, err := http.Get(c.url)
-			if err != nil {
-				t.Fatalf("HTTP GET returns an error %v", err.Error())
-			}
 			defer resp.Body.Close()
 			assert.Nil(t, err)
 			body, _ := io.ReadAll(resp.Body)
@@ -55,9 +52,19 @@ func TestInstructionHandler(t *testing.T) {
 				assert.Contains(t, c.expResult, string(body))
 				return
 			}
-			assert.ElementsMatch(t, c.expResult, regexp.MustCompile(`[a-z]{4}`).FindAllString(string(body), 3))
-
+			assert.Equal(t, c.expResult, check([]string{"xpos", "ypos", "zpos"}, string(body)))
 		})
 	}
 
+}
+
+func check(expResult interface{}, Result string) bool {
+	res := true
+	for _, v := range expResult.([]string) {
+		if !strings.Contains(Result, v) {
+			res = false
+			break
+		}
+	}
+	return res
 }
