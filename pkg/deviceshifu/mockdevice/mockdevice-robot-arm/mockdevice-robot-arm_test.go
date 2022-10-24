@@ -45,8 +45,8 @@ func TestInstructionHandler(t *testing.T) {
 	for _, c := range mocks {
 		t.Run(c.name, func(t *testing.T) {
 			resp, err := http.Get(c.url)
-			defer resp.Body.Close()
 			assert.Nil(t, err)
+			defer resp.Body.Close()
 			body, _ := io.ReadAll(resp.Body)
 			if c.name == mocks[len(mocks)-1].name {
 				assert.Contains(t, c.expResult, string(body))
