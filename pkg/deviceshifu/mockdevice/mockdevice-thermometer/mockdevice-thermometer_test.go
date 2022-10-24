@@ -4,10 +4,10 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
 	"github.com/stretchr/testify/assert"
 	"io"
-	"k8s.io/klog/v2"
 	"net/http"
 	"os"
-	"regexp"
+	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -26,13 +26,13 @@ func TestInstructionHandler(t *testing.T) {
 		expResult  interface{}
 	}{
 		{
-			"case 1 prot 12345 read_value",
+			"case 1 port 12345 read_value",
 			"http://localhost:12345/read_value",
 			200,
-			"",
+			true,
 		},
 		{
-			"case 2 prot 12345 get_status",
+			"case 2 port 12345 get_status",
 			"http://localhost:12345/get_status",
 			200,
 			[]string{"Running", "Idle", "Busy", "Error"},
@@ -41,25 +41,29 @@ func TestInstructionHandler(t *testing.T) {
 
 	go mockdevice.StartMockDevice(availableFuncs, instructionHandler)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Microsecond)
 
 	for _, c := range mocks {
 		t.Run(c.name, func(t *testing.T) {
 			resp, err := http.Get(c.url)
-			if err != nil {
-				t.Fatalf("HTTP GET returns an error %v", err.Error())
-			}
-			defer resp.Body.Close()
 			assert.Nil(t, err)
+			defer resp.Body.Close()
 			body, _ := io.ReadAll(resp.Body)
 
-			if c.name == mocks[len(mocks)-1].name {
+			switch {
+			case strings.Contains(c.url, "/read_value"):
+				assert.Equal(t, c.expResult, check(string(body)))
+			case strings.Contains(c.url, "/get_status"):
 				assert.Contains(t, c.expResult, string(body))
-				return
-			}
-			if !regexp.MustCompile(`\\d`).Match(body) {
-				klog.Error("read_value Body error")
 			}
 		})
 	}
+}
+
+func check(Result string) bool {
+	res := true
+	if _, err := strconv.Atoi(Result); err != nil {
+		res = false
+	}
+	return res
 }
