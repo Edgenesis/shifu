@@ -14,7 +14,7 @@ require (
 require (
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.22.1
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
 	k8s.io/klog/v2 v2.80.1
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
