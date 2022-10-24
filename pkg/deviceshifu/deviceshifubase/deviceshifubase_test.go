@@ -5,6 +5,7 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"os"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -237,7 +238,7 @@ func TestNew(t *testing.T) {
 			},
 		},
 		{
-			"case 6 KubeConfigPath not NULL AND NewDeviceShifuConfig",
+			"case 6  not NULL AND NewDeviceShifuConfig",
 			&DeviceShifuMetaData{
 				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
@@ -259,7 +260,7 @@ func TestNew(t *testing.T) {
 			c.initEnv()
 			base, mux, err := New(c.metaData)
 			if len(c.expErrStr) > 0 {
-				assert.Equal(t, c.expErrStr, err.Error())
+				assert.Equal(t, true, strings.Contains(c.expErrStr, err.Error()))
 				assert.Nil(t, base)
 				assert.Nil(t, mux)
 			} else {
