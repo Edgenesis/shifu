@@ -6,6 +6,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strings"
 	"testing"
 	"time"
 )
@@ -27,7 +28,7 @@ func TestInstructionHandler(t *testing.T) {
 		name       string
 		url        string
 		StatusCode int
-		expResult  string
+		expResult  interface{}
 	}{
 		{
 			"case 1 getcontent rootaddress nil",
@@ -57,32 +58,27 @@ func TestInstructionHandler(t *testing.T) {
 			"case 5 get_status",
 			"http://localhost:12345/get_status",
 			200,
-			"",
+			[]string{"Running", "Idle", "Busy", "Error"},
 		},
 	}
 
 	go mockdevice.StartMockDevice(availableFuncs, instructionHandler)
 
-	time.Sleep(1 * time.Second)
+	time.Sleep(100 * time.Microsecond)
 
 	for _, c := range mocks {
 		t.Run(c.name, func(t *testing.T) {
 			resp, err := http.Get(c.url)
-			if err != nil {
-				t.Fatalf("HTTP returns an error %v", err.Error())
-			}
-			assert.Equal(t, c.StatusCode, resp.StatusCode)
-
-			defer resp.Body.Close()
 			assert.Nil(t, err)
-
+			defer resp.Body.Close()
 			body, _ := io.ReadAll(resp.Body)
 
-			if c.name == "case 5 get_status" {
-				assert.Contains(t, []string{"Running", "Idle", "Busy", "Error"}, string(body))
-				return
+			switch {
+			case strings.Contains(c.url, "/getcontent"):
+				assert.Equal(t, c.expResult, string(body))
+			case strings.Contains(c.url, "/get_status"):
+				assert.Contains(t, c.expResult, string(body))
 			}
-			assert.Equal(t, c.expResult, string(body))
 
 		})
 	}
