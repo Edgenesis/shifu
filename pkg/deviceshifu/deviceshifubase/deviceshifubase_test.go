@@ -231,7 +231,7 @@ func TestNew(t *testing.T) {
 				ConfigFilePath: "etc/edgedevice/config",
 				Namespace:      "test_namespace",
 			},
-			"open /var/run/secrets/kubernetes.io/serviceaccount/token: The system cannot find the path specified.",
+			"open /var/run/secrets/kubernetes.io/serviceaccount/token: The system cannot find the path specified. | open /var/run/secrets/kubernetes.io/serviceaccount/token: no such file or directory",
 			func() {
 				initEnv()
 			},
@@ -244,7 +244,7 @@ func TestNew(t *testing.T) {
 				Namespace:      "test_namespace",
 				KubeConfigPath: "etc/edgedevice/config",
 			},
-			"error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: The handle is invalid.",
+			"error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: The handle is invalid. | error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: is a directory",
 			func() {
 				err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 				if err != nil {
