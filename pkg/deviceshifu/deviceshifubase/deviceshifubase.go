@@ -235,7 +235,7 @@ func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {
 }
 
 // StartTelemetryCollection Start TelemetryCollection
-func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
+func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry, stopCh <-chan struct{}) error {
 	klog.Infof("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
 	telemetryUpdateIntervalInMilliseconds := DeviceDefaultTelemetryUpdateIntervalInMS
@@ -262,12 +262,16 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	}
 
 	for {
-		err := ds.telemetryCollection(fn)
-		if err != nil {
-			klog.Errorf("error when telemetry collection, error: %v", err)
-			return err
+		select {
+		case <-stopCh:
+			break
+		case <-time.Tick(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond):
+			err := ds.telemetryCollection(fn)
+			if err != nil {
+				klog.Errorf("error when telemetry collection, error: %v", err)
+				return err
+			}
 		}
-		time.Sleep(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond)
 	}
 }
 
@@ -287,7 +291,7 @@ func (ds *DeviceShifuBase) Start(stopCh <-chan struct{}, fn collectTelemetry) er
 		}
 	}()
 	go func() {
-		err := ds.StartTelemetryCollection(fn)
+		err := ds.StartTelemetryCollection(fn, stopCh)
 		if err != nil {
 			klog.Errorf("error during Telemetry is running, error: %v", err)
 		}

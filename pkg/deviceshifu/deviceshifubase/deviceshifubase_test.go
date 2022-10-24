@@ -349,44 +349,46 @@ func TestStartTelemetryCollection(t *testing.T) {
 			},
 			"error generating TelemetryCollectionServiceMap, error: you need to configure defaultTelemetryCollectionService if setting defaultPushToServer to true",
 		},
-		//TODO : wait update StartTelemetryCollection exit for
-
-		//{
-		//	"case 3 fn true DeviceShifuTelemetrySettings nil",
-		//	mock,
-		//	func() (bool, error) {
-		//		return true, nil
-		//	},
-		//	func() {
-		//		mock.EdgeDevice.Namespace = "test_namespace"
-		//		mock.EdgeDevice.Spec.Protocol = unitest.ToPointer(v1alpha1.ProtocolMQTT)
-		//		mock.RestClient = mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/endpoint1\",\"type\": \"HTTP\"}}", t)
-		//		mock.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries["device_healthy"] =
-		//			&DeviceShifuTelemetry{DeviceShifuTelemetryProperties{
-		//				PushSettings: &DeviceShifuTelemetryPushSettings{
-		//					DeviceShifuTelemetryPushToServer:      unitest.ToPointer(true),
-		//					DeviceShifuTelemetryCollectionService: unitest.ToPointer("test_endpoint-1"),
-		//				},
-		//			}}
-		//	},
-		//	"invalid memory address or nil pointer dereference",
-		//},
+		{
+			"case 3 fn true DeviceShifuTelemetrySettings nil",
+			mock,
+			func() (bool, error) {
+				return true, nil
+			},
+			func() {
+				mock.EdgeDevice.Namespace = "test_namespace"
+				mock.EdgeDevice.Spec.Protocol = unitest.ToPointer(v1alpha1.ProtocolMQTT)
+				mock.RestClient = mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/endpoint1\",\"type\": \"HTTP\"}}", t)
+				mock.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries["device_healthy"] =
+					&DeviceShifuTelemetry{DeviceShifuTelemetryProperties{
+						PushSettings: &DeviceShifuTelemetryPushSettings{
+							DeviceShifuTelemetryPushToServer:      unitest.ToPointer(true),
+							DeviceShifuTelemetryCollectionService: unitest.ToPointer("test_endpoint-1"),
+						},
+					}}
+			},
+			"invalid memory address or nil pointer dereference",
+		},
 	}
 
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
+			stopCh := make(chan struct{})
 			defer func() {
 				if err := recover(); err != nil {
 					assert.Equal(t, c.expErrStr, reflect.ValueOf(err).String())
 				} //内置函数，可以捕捉到函数异常
 			}()
 			c.SetMock()
-			err := c.inputDevice.StartTelemetryCollection(c.collectTelemetry)
-			if len(c.expErrStr) > 0 {
-				assert.Equal(t, c.expErrStr, err.Error())
-			} else {
-				assert.Nil(t, err)
-			}
+			go func() {
+				err := c.inputDevice.StartTelemetryCollection(c.collectTelemetry, stopCh)
+				if len(c.expErrStr) > 0 {
+					assert.Equal(t, c.expErrStr, err.Error())
+				} else {
+					assert.Nil(t, err)
+				}
+			}()
+			close(stopCh)
 			unSetEnv()
 		})
 	}
