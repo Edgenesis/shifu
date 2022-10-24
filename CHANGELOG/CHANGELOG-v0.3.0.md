@@ -12,6 +12,9 @@
 * <BugFix>Fix PLC4x pipeline  by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/300
 * Fix usermetrics interval doc by @BtXin in https://github.com/Edgenesis/shifu/pull/301
 * <bugfix>fix dockerfile of plc4x by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/305
+* <bugfix>fix push pipeline and add plc4x deviceshifu into aio.sh by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/313
+* <bugfix>fix pipeline condition and add deviceshifu plc4x to aio by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/314
+* fix pipeline condition by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/318
 
 ## Enhancement
 
@@ -20,6 +23,7 @@
 * Add unit test in deviceshifuhttp by @kris21he in https://github.com/Edgenesis/shifu/pull/291
 * update quay.io/brancz/kube-rbac-proxy to bitnami/kube-rbac-proxy by @tomqin93 in https://github.com/Edgenesis/shifu/pull/309
 * <enhance> Clear unused func and add a little UT by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/307
+* bump up version to Shifu v0.3.0-rc3 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/316
 
 ## Docs
 

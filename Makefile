@@ -85,7 +85,7 @@ download-demo-files:
 	docker pull edgehub/mockdevice-thermometer:${IMAGE_VERSION}
 	docker pull edgehub/deviceshifu-http-http:${IMAGE_VERSION}
 	docker pull edgehub/shifu-controller:${IMAGE_VERSION}
-	docker pull bitnami/kube-rbac-proxy:0.13.1
+	docker pull quay.io/brancz/kube-rbac-proxy:v0.13.1
 	docker pull nginx:1.21
 
 docker-push-image-deviceshifu:

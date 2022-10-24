@@ -47,9 +47,9 @@ func TestValidateTelemetryConfig(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:          unitest.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService:     unitest.StrPointer("test_endpoint-1"),
-							DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.Int64Pointer(-1),
+							DeviceShifuTelemetryDefaultPushToServer:          unitest.ToPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService:     unitest.ToPointer("test_endpoint-1"),
+							DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(int64(-1)),
 						},
 					},
 				},
@@ -63,9 +63,9 @@ func TestValidateTelemetryConfig(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:        unitest.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService:   unitest.StrPointer("test_endpoint-1"),
-							DeviceShifuTelemetryInitialDelayInMilliseconds: unitest.Int64Pointer(-1),
+							DeviceShifuTelemetryDefaultPushToServer:        unitest.ToPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService:   unitest.ToPointer("test_endpoint-1"),
+							DeviceShifuTelemetryInitialDelayInMilliseconds: unitest.ToPointer(int64(-1)),
 						},
 					},
 				},
@@ -79,9 +79,9 @@ func TestValidateTelemetryConfig(t *testing.T) {
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-							DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
-							DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer("test_endpoint-1"),
-							DeviceShifuTelemetryTimeoutInMilliseconds:    unitest.Int64Pointer(-1),
+							DeviceShifuTelemetryDefaultPushToServer:      unitest.ToPointer(true),
+							DeviceShifuTelemetryDefaultCollectionService: unitest.ToPointer("test_endpoint-1"),
+							DeviceShifuTelemetryTimeoutInMilliseconds:    unitest.ToPointer(int64(-1)),
 						},
 					},
 				},
@@ -115,17 +115,17 @@ func TestStartTelemetryCollection(t *testing.T) {
 		DeviceShifuConfig: &DeviceShifuConfig{
 			Telemetries: &DeviceShifuTelemetries{
 				DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
-					DeviceShifuTelemetryDefaultPushToServer:      unitest.BoolPointer(true),
-					DeviceShifuTelemetryDefaultCollectionService: unitest.StrPointer("test_endpoint-1"),
+					DeviceShifuTelemetryDefaultPushToServer:      unitest.ToPointer(true),
+					DeviceShifuTelemetryDefaultCollectionService: unitest.ToPointer("test_endpoint-1"),
 				},
 				DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
 					"device_healthy": {
 						DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
 							PushSettings: &DeviceShifuTelemetryPushSettings{
-								DeviceShifuTelemetryPushToServer:      unitest.BoolPointer(false),
-								DeviceShifuTelemetryCollectionService: unitest.StrPointer("test_endpoint-1"),
+								DeviceShifuTelemetryPushToServer:      unitest.ToPointer(false),
+								DeviceShifuTelemetryCollectionService: unitest.ToPointer("test_endpoint-1"),
 							},
-							InitialDelayMs: unitest.IntPointer(1),
+							InitialDelayMs: unitest.ToPointer(1),
 						},
 					},
 				},
@@ -186,11 +186,13 @@ func TestNew(t *testing.T) {
 		Name      string
 		metaData  *DeviceShifuMetaData
 		expErrStr string
+		initEnv   func()
 	}{
 		{
 			"case 1 have empty name can not new device base",
 			&DeviceShifuMetaData{},
 			"DeviceShifu's name can't be empty",
+			func() {},
 		},
 		{
 			"case 2 have empty configpath meta new device base",
@@ -198,17 +200,47 @@ func TestNew(t *testing.T) {
 				Name: "test",
 			},
 			"Error parsing ConfigMap at /etc/edgedevice/config",
+			func() {},
+		},
+		{
+			"case 3 have empty KubeConfigPath meta new device base",
+			&DeviceShifuMetaData{
+				Name:           "test",
+				ConfigFilePath: "etc/edgedevice/config",
+			},
+			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
+			func() {},
+		},
+		{
+			"case 4 KubeConfigPath is NULL",
+			&DeviceShifuMetaData{
+				Name:           "test",
+				ConfigFilePath: "etc/edgedevice/config",
+				KubeConfigPath: "NULL",
+				Namespace:      "default",
+			},
+			"",
+			func() {
+				err := os.Setenv("", "localhost")
+				if err != nil {
+					return
+				}
+				os.Setenv("KUBERNETES_SERVICE_PORT", "1080")
+				os.Setenv("KUBERNETES_SERVICE_HOST", "127.0.0.1")
+			},
 		},
 	}
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
+			c.initEnv()
+			defer os.Unsetenv("KUBERNETES_SERVICE_HOST")
+			defer os.Unsetenv("KUBERNETES_SERVICE_PORT")
 			base, mux, err := New(c.metaData)
 			if len(c.expErrStr) > 0 {
 				assert.Equal(t, c.expErrStr, err.Error())
 				assert.Nil(t, base)
 				assert.Nil(t, mux)
 			} else {
-				assert.Equal(t, c.expErrStr, err.Error())
 				assert.NotNil(t, base)
 				assert.NotNil(t, mux)
 			}

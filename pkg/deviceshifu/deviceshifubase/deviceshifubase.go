@@ -109,7 +109,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 
 		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
-			klog.Fatalf("Error retrieving EdgeDevice")
+			klog.Errorf("Error retrieving EdgeDevice")
 			return nil, nil, err
 		}
 	}
