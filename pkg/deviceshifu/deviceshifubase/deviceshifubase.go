@@ -265,7 +265,7 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry, stopCh 
 		select {
 		case <-stopCh:
 			break
-		case <-time.Tick(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond):
+		case <-time.NewTicker(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond).C:
 			err := ds.telemetryCollection(fn)
 			if err != nil {
 				klog.Errorf("error when telemetry collection, error: %v", err)
