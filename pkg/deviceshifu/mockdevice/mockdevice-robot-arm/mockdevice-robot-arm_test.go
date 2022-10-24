@@ -48,11 +48,14 @@ func TestInstructionHandler(t *testing.T) {
 			assert.Nil(t, err)
 			defer resp.Body.Close()
 			body, _ := io.ReadAll(resp.Body)
-			if c.name == mocks[len(mocks)-1].name {
+
+			switch {
+			case strings.Contains(c.url, "/get_coordinate"):
+				assert.Equal(t, c.expResult, check([]string{"xpos", "ypos", "zpos"}, string(body)))
+			case strings.Contains(c.url, "/get_status"):
 				assert.Contains(t, c.expResult, string(body))
-				return
 			}
-			assert.Equal(t, c.expResult, check([]string{"xpos", "ypos", "zpos"}, string(body)))
+
 		})
 	}
 
