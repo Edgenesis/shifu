@@ -443,7 +443,7 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 			message: &http.Response{
 				Body: io.NopCloser(bytes.NewBufferString("test")),
 			},
-			expectedErr: "",
+			expectedErr: "unsupported protocol",
 		},
 	}
 
