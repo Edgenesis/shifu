@@ -45,7 +45,7 @@ buildx-push-image-deviceshifu: \
 	buildx-push-image-deviceshifu-http-socket \
 	buildx-push-image-deviceshifu-http-opcua
 
-buildx-push-image-telemetryService:
+buildx-push-image-telemetry-service:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/telemetryService:${IMAGE_VERSION} --push
