@@ -4,3 +4,4 @@
 
 *.out
 mockconfig
+setup-envtest

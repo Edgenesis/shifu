@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"k8s.io/klog/v2"
 )
@@ -25,19 +26,10 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 		err = pushToHTTPTelemetryCollectionService(*tss.Protocol, message, *tss.Address)
 	case v1alpha1.ProtocolMQTT:
 		err = pushToMQTTTelemetryCollectionService(message, tss)
+	default:
+		return fmt.Errorf("unsupported protocol")
 	}
-
 	return err
-}
-
-// CopyHeader HTTP header type:
-// type Header map[string][]string
-func CopyHeader(dst, src http.Header) {
-	for header, headerValueList := range src {
-		for _, value := range headerValueList {
-			dst.Add(header, value)
-		}
-	}
 }
 
 // PushToHTTPTelemetryCollectionService push telemetry data to Collection Service
@@ -52,7 +44,7 @@ func pushToHTTPTelemetryCollectionService(telemetryServiceProtocol v1alpha1.Prot
 	}
 
 	klog.Infof("pushing %v to %v", message.Body, telemetryCollectionService)
-	CopyHeader(req.Header, req.Header)
+	utils.CopyHeader(req.Header, req.Header)
 	_, err = http.DefaultClient.Do(req)
 	if err != nil {
 		klog.Errorf("HTTP POST error for telemetry service %v, error: %v", telemetryCollectionService, err.Error())
@@ -92,7 +84,7 @@ func pushToMQTTTelemetryCollectionService(message *http.Response, settings *v1al
 		klog.Errorf("Error when send request to Server, error: %v", err)
 		return err
 	}
-	klog.Infof("Success to Send message to %v,message: %v", string(rawData))
+	klog.Infof("successfully sent message %v to telemetry service address %v", string(rawData), *settings.Address)
 	err = resp.Body.Close()
 	if err != nil {
 		klog.Errorf("Error when Close response Body, error: %v", err)

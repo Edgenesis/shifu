@@ -460,7 +460,7 @@ stages:
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.telemetryservice \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/telemetryservice:$(tag) --load
-        displayName: build edgehub/dtelemetryService
+        displayName: build edgehub/telemetryService
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockclient/Dockerfile.mockclient \
@@ -476,10 +476,10 @@ stages:
       - script: |
           set -e
           docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.14
-          docker run -itd --network host edgehub/telemetryservice:nightly
-          docker run -itd --network host --name mockserver edgehub/mockserver:nightly
+          docker run -itd --network host -e SERVER_LISTEN_PORT=:17772 edgehub/telemetryservice:$(tag)
+          docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
           docker run -itd --network host --name nginx nginx:1.21
-          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/checkoutput.sh
+          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/checkoutput.sh $(tag)
         displayName: run docker images and compare output
 
 - stage: docker_build_muiltiarch_and_push
@@ -738,10 +738,10 @@ stages:
         displayName: configure multi-arch and buildx
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifu \
+          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.telemetryservice \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/telemetryservice:$(release_tag) --push
-        displayName: build edgehub/telemetryservice
+        displayName: push edgehub/telemetryservice
 
 - stage: docker_build_shifu_demo_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.SourceBranch'],'refs/tags'), not(contains(variables['Build.SourceBranchName'],'rc')))

@@ -10,13 +10,13 @@ import (
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/apps/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
 
 	utiltesting "k8s.io/client-go/util/testing"
 )
@@ -304,7 +304,6 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			result, err := getTelemetryCollectionServiceMap(c.inputDevice)
 			ok := assert.ObjectsAreEqual(c.expectedMap, result)
-			klog.Infof("%#v\n%#v\n%#v", c.Name, c.expectedMap, result)
 			assert.Equal(t, true, ok)
 			if len(c.expErrStr) == 0 {
 				assert.Nil(t, err)
@@ -321,7 +320,7 @@ func TestCopyHeader(t *testing.T) {
 		"Test": {"aa", "bb", "cc"},
 	}
 	dst := http.Header{}
-	CopyHeader(dst, src)
+	utils.CopyHeader(dst, src)
 
 	if !reflect.DeepEqual(dst, src) {
 		t.Errorf("Not match")

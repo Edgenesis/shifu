@@ -12,6 +12,7 @@ require (
 )
 
 require (
+	github.com/jeffallen/mqtt v0.0.0-20180518073322-5387cfa89df0
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.22.1
 	github.com/stretchr/testify v1.8.0
@@ -23,8 +24,8 @@ require (
 )
 
 require (
+	github.com/huin/gobinarytest v0.0.0-20170803182140-bc6c19e91749 // indirect
 	github.com/huin/mqtt v0.0.0-20220729180547-9e81042af5f7 // indirect
-	github.com/jeffallen/mqtt v0.0.0-20180518073322-5387cfa89df0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 )
 

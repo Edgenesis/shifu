@@ -209,7 +209,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
-			deviceshifubase.CopyHeader(req.Header, r.Header)
+			utils.CopyHeader(req.Header, r.Header)
 			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
@@ -223,7 +223,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		}
 
 		if resp != nil {
-			deviceshifubase.CopyHeader(w.Header(), resp.Header)
+			utils.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 
 			respBody, readErr := io.ReadAll(resp.Body)
@@ -381,7 +381,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		}
 
 		if resp != nil {
-			deviceshifubase.CopyHeader(w.Header(), resp.Header)
+			utils.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 
 			respBody, readErr := io.ReadAll(resp.Body)

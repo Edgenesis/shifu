@@ -46,7 +46,7 @@ buildx-push-image-deviceshifu: \
 	buildx-push-image-deviceshifu-http-opcua
 
 buildx-push-image-telemetryService:
-	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice \
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/telemetryService:${IMAGE_VERSION} --push
 
@@ -82,7 +82,7 @@ buildx-build-image-deviceshifu: \
 	buildx-build-image-deviceshifu-http-opcua \
 	buildx-build-image-deviceshifu-http-plc4x 
 
-buildx-build-image-telemetryService:
+buildx-build-image-telemetry-service:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice\
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/telemetryservice:${IMAGE_VERSION} --load

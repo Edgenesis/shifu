@@ -40,7 +40,7 @@ func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 
 	token := (*client).Publish(*telemetryRequest.MQTTSetting.MQTTTopic, 1, false, telemetryRequest.RawData)
 	if token.Error() != nil {
-		klog.Errorf("Error when publish Data to MqttServer, error: %#v", err.Error())
+		klog.Errorf("Error when publish Data to MQTTServer, error: %#v", err.Error())
 		return
 	}
 	klog.Infof("Info: Success To publish a message %v to %v", string(telemetryRequest.RawData), telemetryRequest.MQTTSetting.MQTTServerAddress)
