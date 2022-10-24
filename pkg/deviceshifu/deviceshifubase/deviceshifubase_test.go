@@ -209,8 +209,7 @@ func TestNew(t *testing.T) {
 				ConfigFilePath: "etc/edgedevice/config",
 			},
 			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
-			func() {
-			},
+			func() {},
 		},
 		{
 			"case 4 KubeConfigPath is NULL",
