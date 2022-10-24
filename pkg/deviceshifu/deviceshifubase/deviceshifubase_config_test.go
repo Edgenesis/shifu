@@ -7,6 +7,7 @@ import (
 	"os"
 	"path"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -147,7 +148,7 @@ func Test_getRestConfig(t *testing.T) {
 		{
 			"case 2 use kubepath get config failure",
 			"kubepath",
-			"CreateFile kubepath: The system cannot find the file specified.",
+			"CreateFile kubepath: The system cannot find the file specified.| stat kubepath: no such file or directory",
 		},
 	}
 
@@ -155,7 +156,7 @@ func Test_getRestConfig(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			config, err := getRestConfig(c.path)
 			if len(c.expErrStr) > 0 {
-				assert.Equal(t, c.expErrStr, err.Error())
+				assert.Equal(t, true, strings.Contains(c.expErrStr, err.Error()))
 				assert.Nil(t, config)
 			} else {
 				assert.Nil(t, err)
