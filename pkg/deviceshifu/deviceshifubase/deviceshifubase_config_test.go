@@ -137,17 +137,17 @@ func Test_getRestConfig(t *testing.T) {
 	testCases := []struct {
 		Name      string
 		path      string
-		expErrStr string
+		expErrStr []string
 	}{
 		{
 			"case 1 have empty kubepath get config failure",
 			"",
-			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
+			[]string{"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined"},
 		},
 		{
 			"case 2 use kubepath get config failure",
 			"kubepath",
-			"stat kubepath: no such file or directory",
+			[]string{"stat kubepath: no such file or directory", "CreateFile kubepath: The system cannot find the file specified."},
 		},
 	}
 
@@ -155,7 +155,7 @@ func Test_getRestConfig(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			config, err := getRestConfig(c.path)
 			if len(c.expErrStr) > 0 {
-				assert.Equal(t, c.expErrStr, err.Error())
+				assert.Contains(t, c.expErrStr, err.Error())
 				assert.Nil(t, config)
 			} else {
 				assert.Nil(t, err)
