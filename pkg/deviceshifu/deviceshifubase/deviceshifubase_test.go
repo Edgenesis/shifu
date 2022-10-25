@@ -356,6 +356,7 @@ func TestStartTelemetryCollection(t *testing.T) {
 			func() {
 				mock.EdgeDevice.Namespace = "test_namespace"
 				mock.EdgeDevice.Spec.Protocol = unitest.ToPointer(v1alpha1.ProtocolMQTT)
+				mock.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings.DeviceShifuTelemetryDefaultCollectionService = unitest.ToPointer("test_endpoint-1")
 				mock.RestClient = mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/endpoint1\",\"type\": \"HTTP\"}}", t)
 				mock.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries["device_healthy"] =
 					&DeviceShifuTelemetry{DeviceShifuTelemetryProperties{
@@ -374,7 +375,7 @@ func TestStartTelemetryCollection(t *testing.T) {
 			stopCh := make(chan struct{}, 1)
 			c.SetMock()
 			go func() {
-				time.Sleep(time.Microsecond * 100)
+				time.Sleep(time.Microsecond * 10)
 				stopCh <- struct{}{}
 			}()
 			err := c.inputDevice.StartTelemetryCollection(c.collectTelemetry, stopCh)
