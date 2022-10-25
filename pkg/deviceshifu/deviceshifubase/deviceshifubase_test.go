@@ -2,15 +2,15 @@ package deviceshifubase
 
 import (
 	"errors"
-	"k8s.io/apimachinery/pkg/util/wait"
-	"os"
-	"testing"
-
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
+	"os"
+	"testing"
+	"time"
 )
 
 func TestMain(m *testing.M) {
@@ -365,23 +365,24 @@ func TestStartTelemetryCollection(t *testing.T) {
 						},
 					}}
 			},
-			"invalid memory address or nil pointer dereference",
+			"",
 		},
 	}
 
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
-			stopCh := make(chan struct{})
+			stopCh := make(chan struct{}, 1)
 			c.SetMock()
 			go func() {
-				err := c.inputDevice.StartTelemetryCollection(c.collectTelemetry, stopCh)
-				if len(c.expErrStr) > 0 {
-					assert.Equal(t, c.expErrStr, err.Error())
-				} else {
-					assert.Nil(t, err)
-				}
+				time.Sleep(time.Microsecond * 100)
+				stopCh <- struct{}{}
 			}()
-			close(stopCh)
+			err := c.inputDevice.StartTelemetryCollection(c.collectTelemetry, stopCh)
+			if len(c.expErrStr) > 0 {
+				assert.Equal(t, c.expErrStr, err.Error())
+			} else {
+				assert.Nil(t, err)
+			}
 			unSetEnv()
 		})
 	}

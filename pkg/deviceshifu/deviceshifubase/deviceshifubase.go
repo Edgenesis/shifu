@@ -260,11 +260,10 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry, stopCh 
 			DeviceShifuTelemetrySettings.
 			DeviceShifuTelemetryUpdateIntervalInMilliseconds
 	}
-
 	for {
 		select {
 		case <-stopCh:
-			break
+			return nil
 		case <-time.NewTicker(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond).C:
 			err := ds.telemetryCollection(fn)
 			if err != nil {
