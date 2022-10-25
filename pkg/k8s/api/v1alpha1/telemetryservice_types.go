@@ -31,8 +31,9 @@ type HTTPSetting struct {
 
 // ServiceSettings defines service settings on telemetry
 type ServiceSettings struct {
-	HTTPSetting *HTTPSetting `json:"HTTPSetting,omitempty"`
-	MQTTSetting *MQTTSetting `json:"MQTTSetting,omitempty"`
+	HTTPSetting *HTTPSetting          `json:"HTTPSetting,omitempty"`
+	MQTTSetting *MQTTSetting          `json:"MQTTSetting,omitempty"`
+	SQLSetting  *SQLConnectionSetting `json:"SQLSetting,omitempty"`
 }
 
 // TelemetryServiceSpec defines the desired state of TelemetryService
@@ -40,10 +41,24 @@ type TelemetryServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Protocol        *Protocol          `json:"protocol,omitempty"`
+	Type            *Type              `json:"type,omitempty"`
 	Address         *string            `json:"address,omitempty"`
 	ServiceSettings *ServiceSettings   `json:"serviceSettings,omitempty"`
 	CustomMetadata  *map[string]string `json:"customMetadata,omitempty"`
+}
+
+type Type string
+
+const (
+	TypeHTTP Type = "HTTP"
+	TypeMQTT Type = "MQTT"
+	TypeSQL  Type = "SQL"
+)
+
+type TelemetryRequest struct {
+	RawData              []byte                `json:"rawData,omitempty"`
+	MQTTSetting          *MQTTSetting          `json:"mqttSetting,omitempty"`
+	SQLConnectionSetting *SQLConnectionSetting `json:"sqlConnectionSetting.omitempty"`
 }
 
 // TelemetryServiceStatus defines the observed state of TelemetryService
@@ -77,3 +92,19 @@ type TelemetryServiceList struct {
 func init() {
 	SchemeBuilder.Register(&TelemetryService{}, &TelemetryServiceList{})
 }
+
+type SQLConnectionSetting struct {
+	// +kubebuilder:validation:Required
+	ServerAddress *string `json:"serverAddress,omitempty"`
+	UserName      *string `json:"username,omitempty"`
+	Secret        *string `json:"secret,omitempty"`
+	DBName        *string `json:"dbName,omitempty"`
+	DBTable       *string `json:"dbTable,omitempty"`
+	DBType        *DBType `json:"dbtype,omitempty"`
+}
+
+type DBType string
+
+const (
+	DBTypeTDEngine DBType = "TDEngine"
+)

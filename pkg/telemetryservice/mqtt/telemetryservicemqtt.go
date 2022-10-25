@@ -19,7 +19,7 @@ func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	telemetryRequest := &TelemetryRequest{}
+	telemetryRequest := &v1alpha1.TelemetryRequest{}
 
 	err = json.Unmarshal(body, telemetryRequest)
 	if err != nil || telemetryRequest.MQTTSetting == nil {

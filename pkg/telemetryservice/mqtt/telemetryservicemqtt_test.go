@@ -114,14 +114,14 @@ func TestHandler(t *testing.T) {
 	mockServer := mockUnitTestServer(t)
 	client := mockRestClient(mockServer.URL, t)
 
-	req1 := TelemetryRequest{
+	req1 := v1alpha1.TelemetryRequest{
 		RawData: []byte("test"),
 		MQTTSetting: &v1alpha1.MQTTSetting{
 			MQTTTopic:         unitest.ToPointer("/test"),
 			MQTTServerAddress: unitest.ToPointer(unitTestServerAddress),
 		},
 	}
-	req2 := TelemetryRequest{
+	req2 := v1alpha1.TelemetryRequest{
 		RawData: []byte("test"),
 		MQTTSetting: &v1alpha1.MQTTSetting{
 			MQTTTopic:         unitest.ToPointer("/test"),

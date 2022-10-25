@@ -14,27 +14,25 @@ import (
 	"k8s.io/klog/v2"
 )
 
-type TelemetryRequest struct {
-	RawData     []byte                `json:"rawData,omitempty"`
-	MQTTSetting *v1alpha1.MQTTSetting `json:"mqttSetting,omitempty"`
-}
-
 func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {
-	var err error
-	switch *tss.Protocol {
-	case v1alpha1.ProtocolHTTP:
-		err = pushToHTTPTelemetryCollectionService(*tss.Protocol, message, *tss.Address)
-	case v1alpha1.ProtocolMQTT:
-		err = pushToMQTTTelemetryCollectionService(message, tss)
+	request := &v1alpha1.TelemetryRequest{}
+	switch *tss.Type {
+	case v1alpha1.TypeHTTP:
+		err := pushToHTTPTelemetryCollectionService(message, *tss.Address)
+		return err
+	case v1alpha1.TypeMQTT:
+		request.MQTTSetting = tss.ServiceSettings.MQTTSetting
+	case v1alpha1.TypeSQL:
+		request.SQLConnectionSetting = tss.ServiceSettings.SQLSetting
 	default:
 		return fmt.Errorf("unsupported protocol")
 	}
+	err := pushToShifuTelemetryCollectionService(message, *request, *tss.Address)
 	return err
 }
 
 // PushToHTTPTelemetryCollectionService push telemetry data to Collection Service
-func pushToHTTPTelemetryCollectionService(telemetryServiceProtocol v1alpha1.Protocol,
-	message *http.Response, telemetryCollectionService string) error {
+func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryCollectionService string) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(DeviceTelemetryTimeoutInMS)*time.Millisecond)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, telemetryCollectionService, message.Body)
@@ -53,7 +51,7 @@ func pushToHTTPTelemetryCollectionService(telemetryServiceProtocol v1alpha1.Prot
 	return nil
 }
 
-func pushToMQTTTelemetryCollectionService(message *http.Response, settings *v1alpha1.TelemetryServiceSpec) error {
+func pushToShifuTelemetryCollectionService(message *http.Response, request v1alpha1.TelemetryRequest, targetServerAddress string) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(DeviceTelemetryTimeoutInMS)*time.Millisecond)
 	defer cancel()
 
@@ -62,10 +60,6 @@ func pushToMQTTTelemetryCollectionService(message *http.Response, settings *v1al
 		klog.Errorf("Error when Read Info From RequestBody, error: %v", err)
 		return err
 	}
-	request := TelemetryRequest{
-		RawData:     rawData,
-		MQTTSetting: settings.ServiceSettings.MQTTSetting,
-	}
 
 	requestBody, err := json.Marshal(request)
 	if err != nil {
@@ -73,7 +67,7 @@ func pushToMQTTTelemetryCollectionService(message *http.Response, settings *v1al
 		return err
 	}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, *settings.Address, bytes.NewBuffer(requestBody))
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, targetServerAddress, bytes.NewBuffer(requestBody))
 	if err != nil {
 		klog.Errorf("Error when build request with requestBody, error: %v", err)
 		return err
@@ -84,7 +78,7 @@ func pushToMQTTTelemetryCollectionService(message *http.Response, settings *v1al
 		klog.Errorf("Error when send request to Server, error: %v", err)
 		return err
 	}
-	klog.Infof("successfully sent message %v to telemetry service address %v", string(rawData), *settings.Address)
+	klog.Infof("successfully sent message %v to telemetry service address %v", string(rawData), targetServerAddress)
 	err = resp.Body.Close()
 	if err != nil {
 		klog.Errorf("Error when Close response Body, error: %v", err)
@@ -100,10 +94,10 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 	defaultPushToServer := false
 	defaultTelemetryCollectionService := ""
 	defaultTelemetryServiceAddress := ""
-	defaultTelemetryProtocol := v1alpha1.ProtocolHTTP
+	defaultTelemetryType := v1alpha1.TypeHTTP
 	defaultTelemetryServiceSpec := &v1alpha1.TelemetryServiceSpec{
-		Protocol: &defaultTelemetryProtocol,
-		Address:  &defaultTelemetryServiceAddress,
+		Type:    &defaultTelemetryType,
+		Address: &defaultTelemetryServiceAddress,
 	}
 	telemetries := ds.DeviceShifuConfig.Telemetries
 	if telemetries.DeviceShifuTelemetrySettings == nil {

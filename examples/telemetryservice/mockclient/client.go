@@ -8,12 +8,9 @@ import (
 	"encoding/json"
 	"net/http"
 	"os"
-)
 
-type TelemetryRequest struct {
-	RawData     []byte       `json:"rawData,omitempty"`
-	MQTTSetting *MQTTSetting `json:"mqttSetting,omitempty"`
-}
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+)
 
 type MQTTSetting struct {
 	MQTTTopic         *string `json:"MQTTTopic,omitempty"`
@@ -32,9 +29,9 @@ func main() {
 
 func sendRequest(targetServer string, mqttServerAddress string) error {
 	defaultTopic := "/test"
-	req := &TelemetryRequest{
+	req := &v1alpha1.TelemetryRequest{
 		RawData: []byte("testData"),
-		MQTTSetting: &MQTTSetting{
+		MQTTSetting: &v1alpha1.MQTTSetting{
 			MQTTTopic:         &defaultTopic,
 			MQTTServerAddress: &mqttServerAddress,
 		},
@@ -45,6 +42,6 @@ func sendRequest(targetServer string, mqttServerAddress string) error {
 		return err
 	}
 
-	_, err = http.DefaultClient.Post(targetServer, "application/json", bytes.NewBuffer(requestBody))
+	_, err = http.DefaultClient.Post(targetServer+"/mqtt", "application/json", bytes.NewBuffer(requestBody))
 	return err
 }
