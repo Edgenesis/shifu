@@ -9,16 +9,7 @@ import (
 	"strings"
 )
 
-func AddDeviceShifu(ds string) {
-	fmt.Println(ds)
-
-	shifuRootDir := os.Getenv("SHIFU_ROOT_DIR")
-	if shifuRootDir == "" {
-		errStr := "Please set SHIFU_ROOT_DIR environment to Shifu source code root directory." +
-			"For example: export SHIFU_ROOT_DIR=~/go/src/github.com/edgenesis/shifu/"
-		fmt.Println(errStr)
-	}
-
+func addCmdDeviceShifu(ds, shifuRootDir string) {
 	CmdDeviceshifuDir := filepath.Join(shifuRootDir, "cmd", "deviceshifu")
 	CmdDeviceshifuTemplate := filepath.Join(CmdDeviceshifuDir, "cmdtemplate", "main.go")
 	templateByteSlice, err := os.ReadFile(CmdDeviceshifuTemplate)
@@ -41,4 +32,15 @@ func AddDeviceShifu(ds string) {
 	if err != nil {
 		panic(err)
 	}
+}
+
+func addDeviceShifu(ds string) {
+	shifuRootDir := os.Getenv("SHIFU_ROOT_DIR")
+	if shifuRootDir == "" {
+		errStr := "Please set SHIFU_ROOT_DIR environment to Shifu source code root directory." +
+			"For example: export SHIFU_ROOT_DIR=~/go/src/github.com/edgenesis/shifu/"
+		fmt.Println(errStr)
+	}
+
+	addCmdDeviceShifu(ds, shifuRootDir)
 }

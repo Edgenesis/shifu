@@ -18,7 +18,7 @@ var deviceShifuCmd = &cobra.Command{
 	Use:   "deviceshifu",
 	Short: "Add a new deviceShifu",
 	Run: func(cmd *cobra.Command, args []string) {
-		AddDeviceShifu(ds)
+		addDeviceShifu(ds)
 	},
 }
 
