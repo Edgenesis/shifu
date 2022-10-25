@@ -167,6 +167,9 @@ spec:
                 additionalProperties:
                   type: string
                 type: object
+              protocol:
+                description: Protocol specifies the EdgeDevice's communication protocol.
+                type: string
               serviceSettings:
                 description: ServiceSettings defines service settings on telemetry
                 properties:
@@ -179,9 +182,18 @@ spec:
                       username:
                         type: string
                     type: object
+                  MQTTSetting:
+                    description: MQTTSetting defines MQTT specific settings when connecting
+                      to an EdgeDevice
+                    properties:
+                      MQTTServerAddress:
+                        type: string
+                      MQTTServerSecret:
+                        type: string
+                      MQTTTopic:
+                        type: string
+                    type: object
                 type: object
-              type:
-                type: string
             type: object
           status:
             description: TelemetryServiceStatus defines the observed state of TelemetryService

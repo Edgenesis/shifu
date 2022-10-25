@@ -1,0 +1,29 @@
+# Build the manager binary
+FROM --platform=$BUILDPLATFORM golang:1.19 as builder
+
+WORKDIR /shifu
+
+ENV GO111MODULE=on
+
+COPY go.mod go.mod
+COPY go.sum go.sum
+COPY pkg/k8s pkg/k8s
+COPY cmd/telemetryservice cmd/telemetryservice
+COPY pkg/telemetryservice pkg/telemetryservice
+COPY pkg/deviceshifu/unitest pkg/deviceshifu/unitest 
+
+RUN go mod download -x
+
+# Build the Go app
+ARG TARGETOS
+ARG TARGETARCH
+
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/telemetryservice cmd/telemetryservice/main.go
+
+FROM gcr.io/distroless/static-debian11
+WORKDIR /
+COPY --from=builder /output/telemetryservice  telemetryservice 
+
+# Command to run the executable
+USER 65532:65532
+ENTRYPOINT ["/telemetryservice"]

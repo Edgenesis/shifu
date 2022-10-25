@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: telemetryservice
+  namespace: shifu-service
+spec:
+  selector:
+    matchLabels:
+      app: telemetryservice
+  template:
+    metadata:
+      labels:
+        app: telemetryservice
+    spec:
+      containers:
+      - name: telemetryservice
+        image: edgehub/telemetryservice:nightly
+        ports:
+        - containerPort: 8080
