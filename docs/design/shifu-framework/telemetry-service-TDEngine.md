@@ -41,8 +41,10 @@ type SQLConnectionSetting struct {
 	DBSecret        *string `json:"db_secret,omitempty"`
 	DBName          *string `json:"db_name,omitempty"`
 	DBTable         *string `json:"db_table,omitempty"`
-	DBType          *string `json:"db_type,omitempty"`
+	DBType          *DBType `json:"db_type,omitempty"`
 }
+
+type DBType string
 
 type TelemetryRequest struct {
 	RawData              []byte                `json:"rawData,omitempty"`
