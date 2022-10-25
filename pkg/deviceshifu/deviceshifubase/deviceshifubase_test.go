@@ -6,7 +6,6 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
 	"os"
 	"testing"
@@ -295,16 +294,17 @@ func TestStart(t *testing.T) {
 	if err != nil {
 		t.Errorf("Failed creating new deviceshifu")
 	}
-
-	if err := base.Start(wait.NeverStop, func() (bool, error) {
+	stopCh := make(chan struct{}, 1)
+	if err := base.Start(stopCh, func() (bool, error) {
 		return true, nil
 	}); err != nil {
 		t.Errorf("DeviceShifuHTTP.Start failed due to: %v", err.Error())
 	}
-
+	stopCh <- struct{}{}
 	if err := base.Stop(); err != nil {
 		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
 	}
+
 }
 
 func TestStartTelemetryCollection(t *testing.T) {

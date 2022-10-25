@@ -263,6 +263,7 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry, stopCh 
 	for {
 		select {
 		case <-stopCh:
+			klog.Infof("TelemetryCollection stopped")
 			return nil
 		case <-time.NewTicker(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond).C:
 			err := ds.telemetryCollection(fn)
