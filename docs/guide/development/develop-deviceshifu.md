@@ -1,18 +1,38 @@
 # DeviceShifu Development Guide
 
+## Prerequisite
+
+If you haven't done so, please take a look at the following documents first:
+
+1. [contribution guide](../../contribution/contributing.md)
+2. [deviceshifu design](../../design/design-deviceShifu.md)
+
 ## Introduction
 
-`DeviceShifu` is the digital twin of physical device. It receives HTTP requests and support various protocols to communicate with devices such as MQTT and OPCUA. 
-A new type of `DeviceShifu` is assigned to each protocol. Check [DeviceShifu](https://github.com/Edgenesis/shifu/tree/main/pkg/deviceshifu) directory to see the protocols we already support.
+`DeviceShifu` is the digital twin of physical device. It receives HTTP requests and support various protocols to communicate with devices such as MQTT and OPCUA.
+A new type of `DeviceShifu` is assigned to each protocol.
+Check [DeviceShifu](https://github.com/Edgenesis/shifu/tree/main/pkg/deviceshifu) directory to see the protocols we already support.
+
+## Overview
+
+Below is the high-level of how to build a `DeviceShifu` called `deviceshifuxxx`:
+
+1. [Create a main file](#create-a-main-file)
+2. bbb
+3. ccc
+
+### Create a main file
+
+Create a `main.go` file in `cmd/deviceshifu/cmdxxx`. You can refer to [cmdopcua/main.go](../../../cmd/deviceshifu/cmdopcua/main.go) or [cmdhttp/main.go](../../../cmd/deviceshifu/cmdhttp/main.go) as an example.
 
 ## Components
 
-In order to create a new type of `deviceShifu_xxx` (xxx stands for the protocol name you wish to support) , you need to create or modify the following components:
+In order to create a new type of `deviceShifuXXX` (xxx stands for the protocol name you wish to support), you need to create or modify the following components:
 
 ### CRD
 
 `CRD` stands for `Customized Resource Definition`, we created a new `CRD` called `edgeDevice` to serve as the definition of the mapping of the physical device.
-To create a new type of `deviceShifu_xxx`, you may need to change the files under directory `pkg/k8s/crd/`
+To create a new type of `deviceShifuXXX`, you may need to change the files under directory `pkg/k8s/crd/`
 
 Specific settings may be required for some protocols, like `MQTT`：
 
@@ -30,7 +50,7 @@ Specific settings may be required for some protocols, like `MQTT`：
     type: object
 ```
 
-In order to allow your `deviceShifu_xxx` to receive these specific settings,
+In order to allow your `deviceShifuXXX` to receive these specific settings,
 you need to add the setting schema to `shifu_install.yml`, `config_crd.yaml` and `config_default.yaml` files in `properties` under `PortocolSettings`
 
 ### API

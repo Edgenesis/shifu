@@ -4,7 +4,7 @@ import (
 	"os"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifusocket"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifuxxx"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/klog/v2"
@@ -21,7 +21,7 @@ func main() {
 		Namespace:      namespace,
 	}
 
-	ds, err := deviceshifusocket.New(deviceShifuMetadata)
+	ds, err := deviceshifuxxx.New(deviceShifuMetadata)
 	if err != nil {
 		panic(err.Error())
 	}
