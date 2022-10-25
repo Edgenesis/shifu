@@ -73,7 +73,7 @@ const (
 
 var (
 	// TelemetryCollectionServiceMap Telemetry Collection Service Map
-	TelemetryCollectionServiceMap map[string]string
+	TelemetryCollectionServiceMap map[string]v1alpha1.TelemetryServiceSpec
 	CustomInstructionsPython      map[string]string
 )
 

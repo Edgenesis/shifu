@@ -32,6 +32,7 @@ type HTTPSetting struct {
 // ServiceSettings defines service settings on telemetry
 type ServiceSettings struct {
 	HTTPSetting *HTTPSetting `json:"HTTPSetting,omitempty"`
+	MQTTSetting *MQTTSetting `json:"MQTTSetting,omitempty"`
 }
 
 // TelemetryServiceSpec defines the desired state of TelemetryService
@@ -39,7 +40,7 @@ type TelemetryServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Type            *string            `json:"type,omitempty"`
+	Protocol        *Protocol          `json:"protocol,omitempty"`
 	Address         *string            `json:"address,omitempty"`
 	ServiceSettings *ServiceSettings   `json:"serviceSettings,omitempty"`
 	CustomMetadata  *map[string]string `json:"customMetadata,omitempty"`

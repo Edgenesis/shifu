@@ -47,7 +47,7 @@ See documentation on <https://shifu.run/docs/>.
 
 ## Look into ***Shifu***
 
-Check the Markdown files in [`docs/`](./docs/) to learn about the [design](./docs/design/) and [development guides](./docs/guide/) of ***Shifu***.
+Check the Markdown files in [`docs/`](./docs/) to learn about the [design](./docs/design/) and [development guides](./docs/development/) of ***Shifu***.
 
 # ***Shifu***'s vision
 
