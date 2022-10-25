@@ -15,7 +15,7 @@ In order to add `TDEngine` as a endpoint, we need to add connection related sett
 
 ```ymal
 SQLConnectionSetting:
-    description: MQTTSetting defines MQTT specific settings when connecting to an EdgeDevice
+    description: SQLConnectionSetting defines SQL specific settings when connecting to SQL endpoint
     properties:
         DBServerAddress:
         type: string
@@ -26,6 +26,8 @@ SQLConnectionSetting:
         DBName:
         type: string
         DBTable:
+        type: string
+        DBType:
         type: string
     type: object
 ```
@@ -39,6 +41,7 @@ type SQLConnectionSetting struct {
 	DBSecret        *string `json:"db_secret,omitempty"`
 	DBName          *string `json:"db_name,omitempty"`
 	DBTable         *string `json:"db_table,omitempty"`
+	DBType          *string `json:"db_type,omitempty"`
 }
 
 type TelemetryRequest struct {
