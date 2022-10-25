@@ -46,7 +46,7 @@ stages:
     steps:
       - task: GoTool@0
         inputs:
-          version: '1.19.1'
+          version: '1.19.2'
       - task: Go@0
         displayName: "go get"
         inputs:
@@ -116,7 +116,7 @@ stages:
     steps:
       - task: GoTool@0
         inputs:
-          version: '1.19.1'
+          version: '1.19.2'
       - task: Go@0
         displayName: "go get"
         inputs:
