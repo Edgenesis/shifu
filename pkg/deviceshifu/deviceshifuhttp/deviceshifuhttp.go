@@ -5,13 +5,14 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"io"
-	"k8s.io/klog/v2"
 	"net/http"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"k8s.io/klog/v2"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -208,7 +209,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
-			deviceshifubase.CopyHeader(req.Header, r.Header)
+			utils.CopyHeader(req.Header, r.Header)
 			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
@@ -222,7 +223,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		}
 
 		if resp != nil {
-			deviceshifubase.CopyHeader(w.Header(), resp.Header)
+			utils.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 
 			respBody, readErr := io.ReadAll(resp.Body)
@@ -380,7 +381,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		}
 
 		if resp != nil {
-			deviceshifubase.CopyHeader(w.Header(), resp.Header)
+			utils.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 
 			respBody, readErr := io.ReadAll(resp.Body)
@@ -459,8 +460,11 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				if resp != nil {
 					if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 						telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
-						if exist && telemetryCollectionService != "" {
-							deviceshifubase.PushToHTTPTelemetryCollectionService(protocol, resp, telemetryCollectionService)
+						if exist && *telemetryCollectionService.Address != "" {
+							err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, resp)
+							if err != nil {
+								return false, err
+							}
 						}
 
 						telemetryCollectionResult = true

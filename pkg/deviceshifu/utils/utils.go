@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"net/http"
 	"strings"
 
 	"k8s.io/klog/v2"
@@ -38,4 +39,14 @@ func ParseHTTPGetParams(urlStr string) (map[string]string, error) {
 	}
 
 	return result, nil
+}
+
+// CopyHeader HTTP header type:
+// type Header map[string][]string
+func CopyHeader(dst, src http.Header) {
+	for header, headerValueList := range src {
+		for _, value := range headerValueList {
+			dst.Add(header, value)
+		}
+	}
 }

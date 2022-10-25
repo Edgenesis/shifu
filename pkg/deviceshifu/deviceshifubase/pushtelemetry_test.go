@@ -1,6 +1,7 @@
 package deviceshifubase
 
 import (
+	"bytes"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -9,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	v1 "k8s.io/api/apps/v1"
@@ -55,11 +57,10 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 	// case 7 has default with true and valid endpoint, has telemetry with valid push setting
 	// case 8 has default with true and valid endpoint, has telemetry with same endpoint
 	// case 9 has default with true and valid endpoint, has telemetry with push false setting
-
 	testCases := []struct {
 		Name        string
 		inputDevice *DeviceShifuBase
-		expectedMap map[string]string
+		expectedMap map[string]v1alpha1.TelemetryServiceSpec
 		expErrStr   string
 	}{
 		{
@@ -69,7 +70,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 					Telemetries: &DeviceShifuTelemetries{},
 				},
 			},
-			map[string]string{},
+			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
 			"",
 		},
 		{
@@ -84,7 +85,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 					},
 				},
 			},
-			map[string]string{},
+			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
 			"",
 		},
 		{
@@ -121,7 +122,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/endpoint1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]string{},
+			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
 			"",
 		},
 		{
@@ -153,7 +154,12 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]string{"device_healthy": "http://192.168.15.48:12345/test_endpoint-1"},
+			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
+				"device_healthy": {
+					Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
+					Address:  unitest.ToPointer(""),
+				},
+			}),
 			"",
 		},
 		{
@@ -180,7 +186,12 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]string{"device_healthy": "http://192.168.15.48:12345/test_endpoint-1"},
+			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
+				"device_healthy": {
+					Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
+					Address:  unitest.ToPointer(""),
+				},
+			}),
 			"",
 		},
 		{
@@ -212,7 +223,11 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test-healthy-endpoint\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]string{"device_healthy": "http://192.168.15.48:12345/test-healthy-endpoint"},
+			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
+				"device_healthy": {
+					Address: unitest.ToPointer("http://192.168.15.48:12345/test-healthy-endpoint"),
+				},
+			}),
 			"",
 		},
 		{
@@ -244,7 +259,11 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]string{"device_healthy": "http://192.168.15.48:12345/test_endpoint-1"},
+			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
+				"device_healthy": {
+					Address: unitest.ToPointer("http://192.168.15.48:12345/test_endpoint-1"),
+				},
+			}),
 			"",
 		},
 		{
@@ -276,7 +295,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]string{},
+			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
 			"",
 		},
 	}
@@ -284,7 +303,8 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
 			result, err := getTelemetryCollectionServiceMap(c.inputDevice)
-			assert.Equal(t, c.expectedMap, result)
+			ok := assert.ObjectsAreEqual(c.expectedMap, result)
+			assert.Equal(t, true, ok)
 			if len(c.expErrStr) == 0 {
 				assert.Nil(t, err)
 			} else {
@@ -300,7 +320,7 @@ func TestCopyHeader(t *testing.T) {
 		"Test": {"aa", "bb", "cc"},
 	}
 	dst := http.Header{}
-	CopyHeader(dst, src)
+	utils.CopyHeader(dst, src)
 
 	if !reflect.DeepEqual(dst, src) {
 		t.Errorf("Not match")
@@ -311,5 +331,126 @@ func TestPushToHTTPTelemetryCollectionService(t *testing.T) {
 	resp := &http.Response{
 		Body: io.NopCloser(strings.NewReader("Hello,World")),
 	}
-	PushToHTTPTelemetryCollectionService(v1alpha1.ProtocolHTTP, resp, "localhost")
+
+	err := pushToHTTPTelemetryCollectionService(v1alpha1.ProtocolHTTP, resp, "localhost")
+	assert.NotNil(t, err)
+}
+
+func TestPushToMQTTTelemetryCollectionService(t *testing.T) {
+	server := mockMQTTTelemetryServiceServer(t)
+	defer server.Close()
+	address := server.URL
+	testCases := []struct {
+		name        string
+		message     *http.Response
+		settings    *v1alpha1.TelemetryServiceSpec
+		expectedErr string
+	}{
+		{
+			name: "case1 Error address",
+			message: &http.Response{
+				Body: io.NopCloser(bytes.NewBufferString("TestBody")),
+			},
+			settings: &v1alpha1.TelemetryServiceSpec{
+				ServiceSettings: &v1alpha1.ServiceSettings{
+					MQTTSetting: &v1alpha1.MQTTSetting{
+						MQTTTopic: unitest.ToPointer("/test/topic"),
+					},
+				},
+				Address: unitest.ToPointer("test"),
+			},
+			expectedErr: "Post \"test\": unsupported protocol scheme \"\"",
+		}, {
+			name: "case2 pass",
+			message: &http.Response{
+				Body: io.NopCloser(bytes.NewBufferString("TestBody")),
+			},
+			settings: &v1alpha1.TelemetryServiceSpec{
+				ServiceSettings: &v1alpha1.ServiceSettings{
+					MQTTSetting: &v1alpha1.MQTTSetting{
+						MQTTTopic: unitest.ToPointer("/test/topic"),
+					},
+				},
+				Address: unitest.ToPointer(address),
+			},
+			expectedErr: "",
+		},
+	}
+	for _, c := range testCases {
+		err := pushToMQTTTelemetryCollectionService(c.message, c.settings)
+		if err != nil {
+			assert.Equal(t, err.Error(), c.expectedErr)
+		} else {
+			assert.Equal(t, c.expectedErr, "")
+		}
+	}
+}
+
+func mockMQTTTelemetryServiceServer(t *testing.T) *httptest.Server {
+	handler := http.NewServeMux()
+	handler.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+	})
+	return httptest.NewServer(handler)
+}
+
+func TestPushTelemetryCollectionService(t *testing.T) {
+	server := mockMQTTTelemetryServiceServer(t)
+	defer server.Close()
+	address := server.URL
+
+	testCases := []struct {
+		name        string
+		spec        *v1alpha1.TelemetryServiceSpec
+		message     *http.Response
+		expectedErr string
+	}{
+		{
+			name: "case1 http",
+			spec: &v1alpha1.TelemetryServiceSpec{
+				Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
+				Address:  unitest.ToPointer(address),
+			},
+			message: &http.Response{
+				Body: io.NopCloser(bytes.NewBufferString("test")),
+			},
+		}, {
+			name: "case2 MQTT",
+			spec: &v1alpha1.TelemetryServiceSpec{
+				ServiceSettings: &v1alpha1.ServiceSettings{
+					MQTTSetting: &v1alpha1.MQTTSetting{
+						MQTTTopic: unitest.ToPointer("/test/topic"),
+					},
+				},
+				Address:  unitest.ToPointer(address),
+				Protocol: unitest.ToPointer(v1alpha1.ProtocolMQTT),
+			},
+			message: &http.Response{
+				Body: io.NopCloser(bytes.NewBufferString("test")),
+			},
+			expectedErr: "",
+		}, {
+			name: "case3 OtherProtocol",
+			spec: &v1alpha1.TelemetryServiceSpec{
+				ServiceSettings: &v1alpha1.ServiceSettings{
+					MQTTSetting: &v1alpha1.MQTTSetting{
+						MQTTTopic: unitest.ToPointer("/test/topic"),
+					},
+				},
+				Address:  unitest.ToPointer(address),
+				Protocol: unitest.ToPointer(v1alpha1.ProtocolPLC4X),
+			},
+			message: &http.Response{
+				Body: io.NopCloser(bytes.NewBufferString("test")),
+			},
+			expectedErr: "unsupported protocol",
+		},
+	}
+
+	for _, c := range testCases {
+		err := PushTelemetryCollectionService(c.spec, c.message)
+		if err != nil {
+			assert.Equal(t, err.Error(), c.expectedErr)
+		}
+	}
 }
