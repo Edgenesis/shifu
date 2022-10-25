@@ -58,7 +58,7 @@ const (
 type TelemetryRequest struct {
 	RawData              []byte                `json:"rawData,omitempty"`
 	MQTTSetting          *MQTTSetting          `json:"mqttSetting,omitempty"`
-	SQLConnectionSetting *SQLConnectionSetting `json:"sqlConnectionSetting.omitempty"`
+	SQLConnectionSetting *SQLConnectionSetting `json:"sqlConnectionSetting,omitempty"`
 }
 
 // TelemetryServiceStatus defines the observed state of TelemetryService

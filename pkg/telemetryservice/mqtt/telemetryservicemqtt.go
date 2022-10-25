@@ -1,49 +1,28 @@
 package mqtt
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"net/http"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"k8s.io/klog"
 )
 
-func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		klog.Errorf("Error when Read Data From Body, error: %v", err)
-		http.Error(w, err.Error(), http.StatusBadRequest)
-		return
-	}
-
-	telemetryRequest := &v1alpha1.TelemetryRequest{}
-
-	err = json.Unmarshal(body, telemetryRequest)
-	if err != nil || telemetryRequest.MQTTSetting == nil {
-		klog.Errorf("Error when unmarshal body to telemetryBody")
-		http.Error(w, fmt.Sprintf("%v", err), http.StatusBadRequest)
-		return
-	}
-
-	klog.Infof("Info: pub Info %v To %v", string(telemetryRequest.RawData), *telemetryRequest.MQTTSetting.MQTTServerAddress)
-
-	client, err := connectToMQTT(telemetryRequest.MQTTSetting)
+func BindMQTTServicehandler(request v1alpha1.TelemetryRequest) error {
+	client, err := connectToMQTT(request.MQTTSetting)
 	if err != nil {
 		klog.Errorf("Error to connect to mqtt server, error: %#v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
+		return err
 	}
 	defer (*client).Disconnect(0)
 
-	token := (*client).Publish(*telemetryRequest.MQTTSetting.MQTTTopic, 1, false, telemetryRequest.RawData)
+	token := (*client).Publish(*request.MQTTSetting.MQTTTopic, 1, false, request.RawData)
 	if token.Error() != nil {
 		klog.Errorf("Error when publish Data to MQTTServer, error: %#v", err.Error())
-		return
+		return err
 	}
-	klog.Infof("Info: Success To publish a message %v to %v", string(telemetryRequest.RawData), telemetryRequest.MQTTSetting.MQTTServerAddress)
+	klog.Infof("Info: Success To publish a message %v to %v", string(request.RawData), request.MQTTSetting.MQTTServerAddress)
+	return nil
 }
 
 func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {

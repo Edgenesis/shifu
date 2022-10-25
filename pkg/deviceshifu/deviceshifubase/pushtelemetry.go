@@ -16,18 +16,20 @@ import (
 
 func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {
 	request := &v1alpha1.TelemetryRequest{}
-	switch *tss.Type {
-	case v1alpha1.TypeHTTP:
+	if tss.ServiceSettings.HTTPSetting != nil {
 		err := pushToHTTPTelemetryCollectionService(message, *tss.Address)
 		return err
-	case v1alpha1.TypeMQTT:
-		request.MQTTSetting = tss.ServiceSettings.MQTTSetting
-	case v1alpha1.TypeSQL:
-		request.SQLConnectionSetting = tss.ServiceSettings.SQLSetting
-	default:
-		return fmt.Errorf("unsupported protocol")
 	}
-	err := pushToShifuTelemetryCollectionService(message, *request, *tss.Address)
+
+	if tss.ServiceSettings.MQTTSetting != nil {
+		request.MQTTSetting = tss.ServiceSettings.MQTTSetting
+	}
+
+	if tss.ServiceSettings.SQLSetting != nil {
+		request.SQLConnectionSetting = tss.ServiceSettings.SQLSetting
+	}
+
+	err := pushToShifuTelemetryCollectionService(message, request, *tss.Address)
 	return err
 }
 
@@ -51,7 +53,7 @@ func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryColle
 	return nil
 }
 
-func pushToShifuTelemetryCollectionService(message *http.Response, request v1alpha1.TelemetryRequest, targetServerAddress string) error {
+func pushToShifuTelemetryCollectionService(message *http.Response, request *v1alpha1.TelemetryRequest, targetServerAddress string) error {
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(DeviceTelemetryTimeoutInMS)*time.Millisecond)
 	defer cancel()
 
@@ -61,11 +63,13 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request v1alp
 		return err
 	}
 
+	request.RawData = rawData
 	requestBody, err := json.Marshal(request)
 	if err != nil {
 		klog.Errorf("Error when marshal request to []byte, error: %v", err)
 		return err
 	}
+	klog.Infof("requestBody is %s", string(requestBody))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, targetServerAddress, bytes.NewBuffer(requestBody))
 	if err != nil {
