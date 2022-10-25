@@ -4,8 +4,6 @@ import (
 	"errors"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"os"
-	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -186,13 +184,13 @@ func TestNew(t *testing.T) {
 	testCases := []struct {
 		Name      string
 		metaData  *DeviceShifuMetaData
-		expErrStr string
+		expErrStr []string
 		initEnv   func()
 	}{
 		{
 			"case 1 have empty name can not new device base",
 			&DeviceShifuMetaData{},
-			"DeviceShifu's name can't be empty",
+			[]string{"DeviceShifu's name can't be empty"},
 			func() {},
 		},
 		{
@@ -200,7 +198,7 @@ func TestNew(t *testing.T) {
 			&DeviceShifuMetaData{
 				Name: "test",
 			},
-			"Error parsing ConfigMap at /etc/edgedevice/config",
+			[]string{"Error parsing ConfigMap at /etc/edgedevice/config"},
 			func() {},
 		},
 		{
@@ -209,7 +207,7 @@ func TestNew(t *testing.T) {
 				Name:           "test",
 				ConfigFilePath: "etc/edgedevice/config",
 			},
-			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
+			[]string{"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined"},
 			func() {},
 		},
 		{
@@ -220,7 +218,7 @@ func TestNew(t *testing.T) {
 				KubeConfigPath: "NULL",
 				Namespace:      "default",
 			},
-			"",
+			[]string{},
 			func() {
 				initEnv()
 			},
@@ -232,7 +230,7 @@ func TestNew(t *testing.T) {
 				ConfigFilePath: "etc/edgedevice/config",
 				Namespace:      "test_namespace",
 			},
-			"open /var/run/secrets/kubernetes.io/serviceaccount/token: The system cannot find the path specified. | open /var/run/secrets/kubernetes.io/serviceaccount/token: no such file or directory",
+			[]string{"open /var/run/secrets/kubernetes.io/serviceaccount/token: The system cannot find the path specified.", "open /var/run/secrets/kubernetes.io/serviceaccount/token: no such file or directory"},
 			func() {
 				initEnv()
 			},
@@ -245,7 +243,7 @@ func TestNew(t *testing.T) {
 				Namespace:      "test_namespace",
 				KubeConfigPath: "etc/edgedevice/config",
 			},
-			"error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: The handle is invalid. | error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: is a directory",
+			[]string{"error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: The handle is invalid.", "dgedevice/config\": read etc/edgedevice/config: is a directory"},
 			func() {
 				err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 				if err != nil {
@@ -260,7 +258,7 @@ func TestNew(t *testing.T) {
 			c.initEnv()
 			base, mux, err := New(c.metaData)
 			if len(c.expErrStr) > 0 {
-				assert.Equal(t, true, strings.Contains(c.expErrStr, err.Error()))
+				assert.Contains(t, c.expErrStr, err.Error())
 				assert.Nil(t, base)
 				assert.Nil(t, mux)
 			} else {
@@ -374,11 +372,6 @@ func TestStartTelemetryCollection(t *testing.T) {
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
 			stopCh := make(chan struct{})
-			defer func() {
-				if err := recover(); err != nil {
-					assert.Equal(t, c.expErrStr, reflect.ValueOf(err).String())
-				} //内置函数，可以捕捉到函数异常
-			}()
 			c.SetMock()
 			go func() {
 				err := c.inputDevice.StartTelemetryCollection(c.collectTelemetry, stopCh)

@@ -7,7 +7,6 @@ import (
 	"os"
 	"path"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -138,17 +137,17 @@ func Test_getRestConfig(t *testing.T) {
 	testCases := []struct {
 		Name      string
 		path      string
-		expErrStr string
+		expErrStr []string
 	}{
 		{
 			"case 1 have empty kubepath get config failure",
 			"",
-			"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined",
+			[]string{"unable to load in-cluster configuration, KUBERNETES_SERVICE_HOST and KUBERNETES_SERVICE_PORT must be defined"},
 		},
 		{
 			"case 2 use kubepath get config failure",
 			"kubepath",
-			"CreateFile kubepath: The system cannot find the file specified.| stat kubepath: no such file or directory",
+			[]string{"CreateFile kubepath: The system cannot find the file specified.", "stat kubepath: no such file or directory"},
 		},
 	}
 
@@ -156,7 +155,7 @@ func Test_getRestConfig(t *testing.T) {
 		t.Run(c.Name, func(t *testing.T) {
 			config, err := getRestConfig(c.path)
 			if len(c.expErrStr) > 0 {
-				assert.Equal(t, true, strings.Contains(c.expErrStr, err.Error()))
+				assert.Contains(t, c.expErrStr, err.Error())
 				assert.Nil(t, config)
 			} else {
 				assert.Nil(t, err)
