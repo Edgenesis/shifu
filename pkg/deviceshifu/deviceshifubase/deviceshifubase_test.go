@@ -243,7 +243,7 @@ func TestNew(t *testing.T) {
 				Namespace:      "test_namespace",
 				KubeConfigPath: "etc/edgedevice/config",
 			},
-			[]string{"error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: The handle is invalid.", "dgedevice/config\": read etc/edgedevice/config: is a directory"},
+			[]string{"error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: The handle is invalid.", "error loading config file \"etc/edgedevice/config\": read etc/edgedevice/config: is a directory"},
 			func() {
 				err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 				if err != nil {
