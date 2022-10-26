@@ -161,8 +161,6 @@ spec:
           spec:
             description: TelemetryServiceSpec defines the desired state of TelemetryService
             properties:
-              address:
-                type: string
               customMetadata:
                 additionalProperties:
                   type: string
@@ -206,7 +204,7 @@ spec:
                         type: string
                     type: object
                 type: object
-              type:
+              telemetrySeriveEndpoint:
                 type: string
             type: object
           status:

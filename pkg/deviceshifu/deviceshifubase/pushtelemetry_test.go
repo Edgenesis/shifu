@@ -120,7 +120,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 						},
 					},
 				},
-				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/endpoint1\",\"type\": \"HTTP\"}}", t),
+				RestClient: mockRestClientFor("{\"spec\": {\"telemetrySeriveEndpoint\": \"http://192.168.15.48:12345/endpoint1\",\"type\": \"HTTP\"}}", t),
 			},
 			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
 			"",
@@ -152,12 +152,11 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 						},
 					},
 				},
-				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
+				RestClient: mockRestClientFor("{\"spec\": {\"telemetrySeriveEndpoint\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
 			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
-					Type:    unitest.ToPointer(v1alpha1.TypeHTTP),
-					Address: unitest.ToPointer(""),
+					TelemetrySeriveEndpoint: unitest.ToPointer(""),
 				},
 			}),
 			"",
@@ -184,12 +183,11 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 						},
 					},
 				},
-				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
+				RestClient: mockRestClientFor("{\"spec\": {\"telemetrySeriveEndpoint\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
 			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
-					Type:    unitest.ToPointer(v1alpha1.TypeHTTP),
-					Address: unitest.ToPointer(""),
+					TelemetrySeriveEndpoint: unitest.ToPointer(""),
 				},
 			}),
 			"",
@@ -221,12 +219,11 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 						},
 					},
 				},
-				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test-healthy-endpoint\",\"type\": \"HTTP\"}}", t),
+				RestClient: mockRestClientFor("{\"spec\": {\"telemetrySeriveEndpoint\": \"http://192.168.15.48:12345/test-healthy-endpoint\",\"type\": \"HTTP\"}}", t),
 			},
 			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
-					Type:    unitest.ToPointer(v1alpha1.TypeHTTP),
-					Address: unitest.ToPointer("http://192.168.15.48:12345/test-healthy-endpoint"),
+					TelemetrySeriveEndpoint: unitest.ToPointer("http://192.168.15.48:12345/test-healthy-endpoint"),
 				},
 			}),
 			"",
@@ -258,12 +255,11 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 						},
 					},
 				},
-				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
+				RestClient: mockRestClientFor("{\"spec\": {\"telemetrySeriveEndpoint\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
 			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
-					Type:    unitest.ToPointer(v1alpha1.TypeHTTP),
-					Address: unitest.ToPointer("http://192.168.15.48:12345/test_endpoint-1"),
+					TelemetrySeriveEndpoint: unitest.ToPointer("http://192.168.15.48:12345/test_endpoint-1"),
 				},
 			}),
 			"",
@@ -295,7 +291,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 						},
 					},
 				},
-				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
+				RestClient: mockRestClientFor("{\"spec\": {\"telemetrySeriveEndpoint\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
 			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
 			"",
@@ -376,7 +372,7 @@ func TestPushToShifuTelemetryCollectionService(t *testing.T) {
 		},
 	}
 	for _, c := range testCases {
-		err := pushToShifuTelemetryCollectionService(c.message, *c.request, c.address)
+		err := pushToShifuTelemetryCollectionService(c.message, c.request, c.address)
 		if err != nil {
 			assert.Equal(t, err.Error(), c.expectedErr)
 		} else {
@@ -405,10 +401,21 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 		expectedErr string
 	}{
 		{
+			name: "case0 empty Settings",
+			spec: &v1alpha1.TelemetryServiceSpec{
+				TelemetrySeriveEndpoint: unitest.ToPointer(address),
+			},
+			message: &http.Response{
+				Body: io.NopCloser(bytes.NewBufferString("test")),
+			},
+			expectedErr: "empty telemetryServiceSpec",
+		}, {
 			name: "case1 http",
 			spec: &v1alpha1.TelemetryServiceSpec{
-				Type:    unitest.ToPointer(v1alpha1.TypeHTTP),
-				Address: unitest.ToPointer(address),
+				TelemetrySeriveEndpoint: unitest.ToPointer(address),
+				ServiceSettings: &v1alpha1.ServiceSettings{
+					HTTPSetting: &v1alpha1.HTTPSetting{},
+				},
 			},
 			message: &http.Response{
 				Body: io.NopCloser(bytes.NewBufferString("test")),
@@ -421,8 +428,7 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 						MQTTTopic: unitest.ToPointer("/test/topic"),
 					},
 				},
-				Address: unitest.ToPointer(address),
-				Type:    unitest.ToPointer(v1alpha1.TypeMQTT),
+				TelemetrySeriveEndpoint: unitest.ToPointer(address),
 			},
 			message: &http.Response{
 				Body: io.NopCloser(bytes.NewBufferString("test")),
@@ -434,8 +440,7 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 				ServiceSettings: &v1alpha1.ServiceSettings{
 					SQLSetting: &v1alpha1.SQLConnectionSetting{},
 				},
-				Address: unitest.ToPointer(address),
-				Type:    unitest.ToPointer(v1alpha1.TypeSQL),
+				TelemetrySeriveEndpoint: unitest.ToPointer(address),
 			},
 			message: &http.Response{
 				Body: io.NopCloser(bytes.NewBufferString("test")),
@@ -449,8 +454,7 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 						MQTTTopic: unitest.ToPointer("/test/topic"),
 					},
 				},
-				Address: unitest.ToPointer(address),
-				Type:    unitest.ToPointer(v1alpha1.Type("")),
+				TelemetrySeriveEndpoint: unitest.ToPointer(address),
 			},
 			message: &http.Response{
 				Body: io.NopCloser(bytes.NewBufferString("test")),

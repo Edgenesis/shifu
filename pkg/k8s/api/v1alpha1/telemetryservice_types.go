@@ -41,19 +41,12 @@ type TelemetryServiceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
 	// Important: Run "make" to regenerate code after modifying this file
 
-	Type            *Type              `json:"type,omitempty"`
-	Address         *string            `json:"address,omitempty"`
-	ServiceSettings *ServiceSettings   `json:"serviceSettings,omitempty"`
-	CustomMetadata  *map[string]string `json:"customMetadata,omitempty"`
+	TelemetrySeriveEndpoint *string            `json:"telemetrySeriveEndpoint,omitempty"`
+	ServiceSettings         *ServiceSettings   `json:"serviceSettings,omitempty"`
+	CustomMetadata          *map[string]string `json:"customMetadata,omitempty"`
 }
 
 type Type string
-
-const (
-	TypeHTTP Type = "HTTP"
-	TypeMQTT Type = "MQTT"
-	TypeSQL  Type = "SQL"
-)
 
 type TelemetryRequest struct {
 	RawData              []byte                `json:"rawData,omitempty"`

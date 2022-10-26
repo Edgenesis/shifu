@@ -16,8 +16,13 @@ import (
 
 func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {
 	request := &v1alpha1.TelemetryRequest{}
+
+	if tss.ServiceSettings == nil {
+		return fmt.Errorf("empty telemetryServiceSpec")
+	}
+
 	if tss.ServiceSettings.HTTPSetting != nil {
-		err := pushToHTTPTelemetryCollectionService(message, *tss.Address)
+		err := pushToHTTPTelemetryCollectionService(message, *tss.TelemetrySeriveEndpoint)
 		return err
 	}
 
@@ -29,7 +34,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 		request.SQLConnectionSetting = tss.ServiceSettings.SQLSetting
 	}
 
-	err := pushToShifuTelemetryCollectionService(message, request, *tss.Address)
+	err := pushToShifuTelemetryCollectionService(message, request, *tss.TelemetrySeriveEndpoint)
 	return err
 }
 
@@ -98,10 +103,8 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 	defaultPushToServer := false
 	defaultTelemetryCollectionService := ""
 	defaultTelemetryServiceAddress := ""
-	defaultTelemetryType := v1alpha1.TypeHTTP
 	defaultTelemetryServiceSpec := &v1alpha1.TelemetryServiceSpec{
-		Type:    &defaultTelemetryType,
-		Address: &defaultTelemetryServiceAddress,
+		TelemetrySeriveEndpoint: &defaultTelemetryServiceAddress,
 	}
 	telemetries := ds.DeviceShifuConfig.Telemetries
 	if telemetries.DeviceShifuTelemetrySettings == nil {
