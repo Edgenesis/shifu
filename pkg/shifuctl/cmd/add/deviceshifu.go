@@ -2,6 +2,7 @@ package add
 
 import (
 	"fmt"
+	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
@@ -9,26 +10,74 @@ import (
 	"strings"
 )
 
-func addCmdDeviceShifu(ds, shifuRootDir string) {
-	CmdDeviceshifuDir := filepath.Join(shifuRootDir, "cmd", "deviceshifu")
-	CmdDeviceshifuTemplate := filepath.Join(CmdDeviceshifuDir, "cmdtemplate", "main.go")
-	templateByteSlice, err := os.ReadFile(CmdDeviceshifuTemplate)
+const (
+	DEVICESHIFU_TEMPLATE = "deviceshifutemplate"
+)
+
+// addcmd creates the new deviceShifu cmd source file from cmd/deviceshifu/cmdtemplate
+func addCmd(ds, shifuRootDir string) {
+	cmdDeviceShifuDir := filepath.Join(shifuRootDir, "cmd", "deviceshifu")
+	cmdDeviceShifuTemplate := filepath.Join(cmdDeviceShifuDir, "cmdtemplate", "main.go")
+	templateByteSlice, err := os.ReadFile(cmdDeviceShifuTemplate)
 	if err != nil {
 		panic(err)
 	}
 
 	templateStr := string(templateByteSlice)
-	templateStr = strings.ReplaceAll(templateStr, "deviceshifutemplate", ds)
+	templateStr = strings.ReplaceAll(templateStr, DEVICESHIFU_TEMPLATE, ds)
 	templateByteSlice = []byte(templateStr)
 
-	CmdDeviceshifuGeneratedDir := filepath.Join(CmdDeviceshifuDir, ds)
-	_, err = exec.Command("mkdir", CmdDeviceshifuGeneratedDir).Output()
+	cmdDeviceShifuGeneratedDir := filepath.Join(cmdDeviceShifuDir, ds)
+	_, err = exec.Command("mkdir", cmdDeviceShifuGeneratedDir).Output()
 	if err != nil {
 		panic(err)
 	}
 
-	CmdDeviceshifuGeneratedSource := filepath.Join(CmdDeviceshifuGeneratedDir, "main.go")
-	err = ioutil.WriteFile(CmdDeviceshifuGeneratedSource, templateByteSlice, 0644)
+	cmdDeviceShifuGeneratedSource := filepath.Join(cmdDeviceShifuGeneratedDir, "main.go")
+	err = ioutil.WriteFile(cmdDeviceShifuGeneratedSource, templateByteSlice, 0644)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func addPkg(ds, shifuRootDir string) {
+	pkgDeviceShifuDir := filepath.Join(shifuRootDir, "pkg", "deviceshifu")
+	pkgDeviceShifuTemplateDir := filepath.Join(pkgDeviceShifuDir, DEVICESHIFU_TEMPLATE)
+	pkgDeviceShifuGeneratedDir := filepath.Join(pkgDeviceShifuDir, ds)
+	_, err := exec.Command("mkdir", pkgDeviceShifuGeneratedDir).Output()
+	if err != nil {
+		panic(err)
+	}
+
+	err = filepath.Walk(pkgDeviceShifuTemplateDir, func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			return nil
+		}
+
+		templateByteSlice, err := os.ReadFile(path)
+		if err != nil {
+			return err
+		}
+
+		templateStr := string(templateByteSlice)
+		templateStr = strings.ReplaceAll(templateStr, DEVICESHIFU_TEMPLATE, ds)
+		templateByteSlice = []byte(templateStr)
+
+		inputFileName := info.Name()
+		outputFileName := strings.ReplaceAll(inputFileName, DEVICESHIFU_TEMPLATE, ds)
+		outputFilePath := filepath.Join(pkgDeviceShifuGeneratedDir, outputFileName)
+
+		err = ioutil.WriteFile(outputFilePath, templateByteSlice, 0644)
+		if err != nil {
+			return err
+		}
+
+		return nil
+	})
 	if err != nil {
 		panic(err)
 	}
@@ -42,5 +91,6 @@ func addDeviceShifu(ds string) {
 		fmt.Println(errStr)
 	}
 
-	addCmdDeviceShifu(ds, shifuRootDir)
+	addCmd(ds, shifuRootDir)
+	addPkg(ds, shifuRootDir)
 }
