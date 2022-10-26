@@ -4,7 +4,7 @@ go 1.19
 
 require (
 	github.com/apache/plc4x/plc4go v0.0.0-20220929155823-14e7d8450c87
-	github.com/eclipse/paho.mqtt.golang v1.4.1
+	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/gopcua/opcua v0.3.7
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.25.3
