@@ -1,9 +1,9 @@
 package main
 
 import (
-  "github.com/edgenesis/shifu/pkg/shifuctl/cmd"
+	"github.com/edgenesis/shifu/pkg/shifuctl/cmd"
 )
 
 func main() {
-  cmd.Execute()
+	cmd.Execute()
 }
