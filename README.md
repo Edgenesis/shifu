@@ -18,46 +18,49 @@
 
 </div>
 
-***Shifu*** is a [Kubernetes](https://kubernetes.io) native framework designed to abstract out the complexity of interacting with IoT devices. ***Shifu*** aims to achieve TRUE plug-and-play IoT device virtualization, management, control, and automation.
+***Shifu*** is the next-generation open source IoT development framework, making developing an IoT app as simple as developing a Web app. The high extensibility of ***Shifu*** allows it to integrate almost all devices and protocols. Once integrating a device, ***Shifu*** generates a digital twin of the device as a microservice in the system and opens up device data and capabilities in the form of APIs. In this way, traditional IoT application development is reduced to simple web development, which greatly improves the efficiency, quality and reusability of IoT application development.
 
-## Why ***Shifu***
+|Features<div style="width: 100pt">|  |
+|---|---|
+|💻 Ultra-fast|From thermohydrometers using standard protocols to complex machinery using proprietary drivers, Shifu is capable of integrating all kinds of heterogeneous devices.|
+|▶️ Modularized|All devices and Apps integrated into Shifu are packaged as modules that can be loaded on demand.|
+|👨‍💻 Efficient|Once a device is integrated, Shifu automatically abstracts its capabilities into APIs, completely decoupling your App from the hardware, making IoT App development simple and efficient.|
+|🚀 Stable|Shifu is running in multiple production scenarios with 99.9999% stability, relieving you from the operational mess.|
+|🛡️ Safe |Designed by ex-UN cloud native security team. Shifu can easily enforce data encryption, network security and much more.|
+|🌐 Global Community|Benefiting from its Kubernetes' native architecture, Shifu can seamless integrate with the powerful cloud native software eco-system that allows developers around the world to help you with your problems.|
 
-***Shifu*** makes it extremely simple to manage and control your IoT devices via ***deviceShifu***, a digital twin for your device. When you connect to an IoT device, ***Shifu*** will recognize it and start a ***deviceShifu*** of the device as a [Kubernetes Pod](https://kubernetes.io/docs/concepts/workloads/pods/).
+## Guide
 
-***deviceShifu*** provides you with a high-level abstraction to interact with your device. By implementing the interface of the ***deviceShifu***, your IoT device can achieve everything it is designed for, and much more! For example, you can have your device actively push its telemetry to any endpoint of your choice.
+### Install
 
-## Start ***Shifu***
-
-### Installation
-
-***Shifu*** provides `shifu_install.yml`. If you have started a Kubernetes cluster, use the command `kubectl apply` to install ***Shifu*** in your cluster:
+If you have started a Kubernetes cluster, use the command `kubectl apply` to install ***Shifu*** in your cluster:
 
 ```sh
 cd shifu
 kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 ```
 
-### Demo
+### Try it out
 
-If you are not familiar with Kubernetes, we provide [***Shifu*** Demo](https://shifu.run/disclaimer), which will intuitively show how ***Shifu*** creates and manages digital twins of any physical device in the real world.
+We present you [***Shifu*** Demo](https://shifu.run/disclaimer). 
+
+The Demo will show you how ***Shifu*** creates and manages digital twins of any physical devices.
 
 ### Documentation
 
-See documentation on <https://shifu.run/docs/>.
+For more information please visit our [documentation](https://shifu.run/docs/).
 
-## Look into ***Shifu***
+## Design principle
 
-Check the Markdown files in [`docs/`](./docs/) to learn about the [design](./docs/design/) and [development guides](./docs/development/) of ***Shifu***.
-
-# ***Shifu***'s vision
-
-## Make developers and operators happy again
-
-Developers and operators should focus entirely on using their creativity to make huge impacts, rather than fixing infrastructure and reinventing the wheel on a daily basis. As a developer and an operator, ***Shifu*** knows your pain!!! ***Shifu*** wants to take out all the underlying mess, and make us developers and operators happy again!
-
-## Software-Defined World
-
-If every IoT device has a ***deviceShifu*** with it, we can leverage software to manage our surroundings, and make the whole world software defined. In a software-defined world, everything is intelligent, and the world around you will automatically change itself to serve your needs -- after all, all the technology we built is designed to serve human beings.
+Our job is to make developers and operators happy. Which is why all our designs are developer-oriented:
+#### 📡Easy to deploy
+Shifu can always be deployed with a single command.
+#### 🤖Plug'n'Play
+Shifu should automatically recognize and provide basic functionalities to a supported IoT device. Once the developer completes Shifu's template, all features of the device should be immediately available.
+#### 🪄Easy to extend
+Developer can further implement Shifu's interface/SDKs to create custom features and unleash endless possibilities.
+#### 🔧Zero maintenance
+Shifu aims to achieve zero maintenance by adopting cutting-edge cloud native best practices. After all, Shifu should take care of himself and make operators' lives easier!
 
 # Community 
 
