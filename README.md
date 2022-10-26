@@ -18,7 +18,7 @@
 
 </div>
 
-***Shifu*** is the next-generation open source IoT development framework, making developing an IoT app as simple as developing a Web app. The high extensibility of ***Shifu*** allows it to integrate almost all devices and protocols. Once integrating a device, ***Shifu*** generates a digital twin of the device as a microservice in the system and opens up device data and capabilities in the form of APIs. In this way, traditional IoT application development is reduced to simple web development, which greatly improves the efficiency, quality and reusability of IoT application development.
+***Shifu*** is the next-generation open source IoT development framework, makes developing an IoT app as simple as developing a Web app. The high extensibility of ***Shifu*** allows it to integrate almost all devices and protocols. Once a device is integrated, ***Shifu*** generates a digital twin of the device as a microservice in the system and opens up device data and capabilities in the form of APIs. In this way, traditional IoT application development is reduced to simple web development, which greatly improves the efficiency, quality and reusability of IoT application development.
 
 |Features<div style="width: 100pt">|  |
 |---|---|
@@ -54,9 +54,9 @@ For more information please visit our [documentation](https://shifu.run/docs/).
 
 Our job is to make developers and operators happy. Which is why all our designs are developer-oriented:
 #### 📡Easy to deploy
-Shifu can always be deployed with a single command.
+Shifu can be deployed with a single command.
 #### 🤖Plug'n'Play
-Shifu should automatically recognize and provide basic functionalities to a supported IoT device. Once the developer completes Shifu's template, all features of the device should be immediately available.
+Shifu will automatically recognize and provide basic functionalities to a supported IoT device. Once the developer completes Shifu's template, all features of the device should be immediately available.
 #### 🪄Easy to extend
 Developer can further implement Shifu's interface/SDKs to create custom features and unleash endless possibilities.
 #### 🔧Zero maintenance
