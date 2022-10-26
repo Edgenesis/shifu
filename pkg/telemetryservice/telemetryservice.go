@@ -68,10 +68,18 @@ func matchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if telemetryRequest.MQTTSetting != nil {
-		mqtt.BindMQTTServicehandler(telemetryRequest)
+		err := mqtt.BindMQTTServicehandler(telemetryRequest)
+		if err != nil {
+			klog.Errorf("Handler MQTT Servuce handler, error: %v", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
 	}
 
 	if telemetryRequest.SQLConnectionSetting != nil {
-		sql.BindSQLServiceHandler(telemetryRequest)
+		err := sql.BindSQLServiceHandler(telemetryRequest)
+		if err != nil {
+			klog.Errorf("Handler SQL Servuce handler, error: %v", err)
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
 	}
 }
