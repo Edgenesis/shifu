@@ -1,17 +1,18 @@
 package add
 
 import (
-	"fmt"
 	"io/fs"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+
+	"github.com/edgenesis/shifu/pkg/shifuctl/cmd/utils"
 )
 
 const (
-	DEVICESHIFU_TEMPLATE = "deviceshifutemplate"
+	DeviceShifuTemplate = "deviceshifutemplate"
 )
 
 // addcmd creates the new deviceShifu cmd source file from cmd/deviceshifu/cmdtemplate
@@ -24,7 +25,7 @@ func addCmd(ds, shifuRootDir string) {
 	}
 
 	templateStr := string(templateByteSlice)
-	templateStr = strings.ReplaceAll(templateStr, DEVICESHIFU_TEMPLATE, ds)
+	templateStr = strings.ReplaceAll(templateStr, DeviceShifuTemplate, ds)
 	templateByteSlice = []byte(templateStr)
 
 	cmdDeviceShifuGeneratedDir := filepath.Join(cmdDeviceShifuDir, ds)
@@ -42,7 +43,7 @@ func addCmd(ds, shifuRootDir string) {
 
 func addPkg(ds, shifuRootDir string) {
 	pkgDeviceShifuDir := filepath.Join(shifuRootDir, "pkg", "deviceshifu")
-	pkgDeviceShifuTemplateDir := filepath.Join(pkgDeviceShifuDir, DEVICESHIFU_TEMPLATE)
+	pkgDeviceShifuTemplateDir := filepath.Join(pkgDeviceShifuDir, DeviceShifuTemplate)
 	pkgDeviceShifuGeneratedDir := filepath.Join(pkgDeviceShifuDir, ds)
 	_, err := exec.Command("mkdir", pkgDeviceShifuGeneratedDir).Output()
 	if err != nil {
@@ -64,11 +65,11 @@ func addPkg(ds, shifuRootDir string) {
 		}
 
 		templateStr := string(templateByteSlice)
-		templateStr = strings.ReplaceAll(templateStr, DEVICESHIFU_TEMPLATE, ds)
+		templateStr = strings.ReplaceAll(templateStr, DeviceShifuTemplate, ds)
 		templateByteSlice = []byte(templateStr)
 
 		inputFileName := info.Name()
-		outputFileName := strings.ReplaceAll(inputFileName, DEVICESHIFU_TEMPLATE, ds)
+		outputFileName := strings.ReplaceAll(inputFileName, DeviceShifuTemplate, ds)
 		outputFilePath := filepath.Join(pkgDeviceShifuGeneratedDir, outputFileName)
 
 		err = ioutil.WriteFile(outputFilePath, templateByteSlice, 0644)
@@ -84,11 +85,9 @@ func addPkg(ds, shifuRootDir string) {
 }
 
 func addDeviceShifu(ds string) {
-	shifuRootDir := os.Getenv("SHIFU_ROOT_DIR")
-	if shifuRootDir == "" {
-		errStr := "Please set SHIFU_ROOT_DIR environment to Shifu source code root directory." +
-			"For example: export SHIFU_ROOT_DIR=~/go/src/github.com/edgenesis/shifu/"
-		fmt.Println(errStr)
+	shifuRootDir, err := utils.GetShifuRootDir()
+	if err != nil {
+		panic(err)
 	}
 
 	addCmd(ds, shifuRootDir)
