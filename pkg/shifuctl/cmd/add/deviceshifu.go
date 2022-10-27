@@ -2,7 +2,6 @@ package add
 
 import (
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -35,7 +34,7 @@ func addCmd(ds, shifuRootDir string) {
 	}
 
 	cmdDeviceShifuGeneratedSource := filepath.Join(cmdDeviceShifuGeneratedDir, "main.go")
-	err = ioutil.WriteFile(cmdDeviceShifuGeneratedSource, templateByteSlice, 0644)
+	err = os.WriteFile(cmdDeviceShifuGeneratedSource, templateByteSlice, 0644)
 	if err != nil {
 		panic(err)
 	}
@@ -72,7 +71,7 @@ func addPkg(ds, shifuRootDir string) {
 		outputFileName := strings.ReplaceAll(inputFileName, DeviceShifuTemplate, ds)
 		outputFilePath := filepath.Join(pkgDeviceShifuGeneratedDir, outputFileName)
 
-		err = ioutil.WriteFile(outputFilePath, templateByteSlice, 0644)
+		err = os.WriteFile(outputFilePath, templateByteSlice, 0644)
 		if err != nil {
 			return err
 		}

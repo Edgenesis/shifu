@@ -27,5 +27,7 @@ func init() {
 
 	deviceShifuCmd.PersistentFlags().StringVarP(&ds, "name", "n", "", "The name of deviceShifu you want to add. For example: shifuctl add deviceshifu --name deviceshifumqtt")
 
-	deviceShifuCmd.MarkPersistentFlagRequired("name")
+	if err := deviceShifuCmd.MarkPersistentFlagRequired("name"); err != nil {
+		panic(err)
+	}
 }
