@@ -18,12 +18,12 @@
 
 </div>
 
-***Shifu*** is the next-generation open source IoT development framework, makes developing an IoT app as simple as developing a Web app. The high extensibility of ***Shifu*** allows it to integrate almost all devices and protocols. Once a device is integrated, ***Shifu*** generates a digital twin of the device as a microservice in the system and opens up device data and capabilities in the form of APIs. In this way, traditional IoT application development is simplified to simple web development, which greatly improves the efficiency, quality and reusability of IoT application development.
+***Shifu*** is the next-generation open source IoT development framework, makes developing an IoT app as simple as developing a Web app. The high extensibility of ***Shifu*** allows it to integrate almost all devices and protocols. Once a device is integrated, ***Shifu*** generates a digital twin of the device as a microservice in the system and opens up device data and capabilities in the form of APIs. In this way, traditional IoT application development is simplified to web development, which greatly improves the efficiency, quality and reusability of IoT application development.
 
 |Features<div style="width: 100pt">|  |
 |---|---|
-|💻 Blazing-fast|From thermohydrometers using standard protocols to complex machinery using proprietary drivers, Shifu is capable of integrating all kinds of heterogeneous devices.|
-|▶️ Modularized|All devices and Apps integrated into Shifu are packaged as modules that can be loaded on demand.|
+|⚡ Blazing-fast|From thermohydrometers using standard protocols to complex machinery using proprietary drivers, Shifu is capable of integrating all kinds of heterogeneous devices.|
+|🧩 Modularized|All devices and Apps integrated into Shifu are packaged as modules that can be loaded on demand.|
 |👨‍💻 Efficient|Once a device is integrated, Shifu automatically abstracts its capabilities into APIs, completely decoupling your App from the hardware, making IoT App development simple and efficient.|
 |🚀 Stable|Shifu is running in multiple production scenarios with 99.9999% stability, relieving you from the operational mess.|
 |🛡️ Safe |Designed by ex-UN cloud native security team. Shifu can easily enforce data encryption, network security and much more.|
