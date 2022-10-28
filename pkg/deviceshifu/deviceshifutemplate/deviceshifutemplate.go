@@ -15,10 +15,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 // Start starts the telemetry service
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
-	return ds.base.Start(stopCh, nil)
+	return nil
 }
 
 // Stop stops the http server
 func (ds *DeviceShifu) Stop() error {
-	return ds.base.Stop()
+	return nil
 }
