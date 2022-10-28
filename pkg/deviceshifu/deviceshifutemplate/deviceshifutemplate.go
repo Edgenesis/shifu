@@ -6,7 +6,7 @@ import (
 )
 
 type DeviceShifu struct {
-	base *deviceshifubase.DeviceShifuBase
+	//base *deviceshifubase.DeviceShifuBase
 }
 
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
