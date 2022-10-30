@@ -18,46 +18,49 @@
 
 </div>
 
-***Shifu*** 是一个 [Kubernetes](https://kubernetes.io/zh-cn/) 原生的IoT设备虚拟化框架。***Shifu*** 希望帮助IoT应用开发者以即插即用的方式实现IoT设备的虚拟化、监视、管控和自动化。
+***Shifu***是下一代开源的产业物联网开发框架，让开发工业场景就像开发Web应用一样简单。***Shifu***的高度可扩展性使其能够访问几乎所有的设备和协议。一旦集成了一个设备，***Shifu***就会以微服务的形式在系统中生成一个设备的数字孪生，并以API的形式开放设备数据和功能。这样一来，传统的物联网应用开发就被简化为简单的Web开发，从而大大提高了物联网应用开发的效率、质量和复用性。
 
-## 为什么用 ***Shifu***
 
-***Shifu*** 通过数字孪生技术，让管理和控制IoT设备变得极其简单。当您连接设备的时候，***Shifu*** 会识别并以一个 [Kubernetes Pod](https://kubernetes.io/zh-cn/docs/concepts/workloads/pods/) 的方式启动一个该设备的数字孪生 ***deviceShifu***。
+|特点<div style="width: 80pt">|  |
+|---|---|
+|⚡极速|大到使用私有驱动的工程机械，小到使用公有协议的温湿度计，Shifu的超高兼容性能让你轻松应对各种异构设备。|
+|🧩模块化|所有接入Shifu的设备及应用都会被封装成一个个拼图式模块，根据场景内的设备不同, 按需加载即可。|
+|👨‍💻高效|接入设备后，Shifu会自动把设备的能力抽象成API，让你的应用和硬件设备彻底解耦，让低效的物联网应用开发变得像面向对象编程一样高效。|
+|🚀稳定|Shifu已通过在航天场景验证，提供99.9999%的可靠性, 让你远离宕机烦恼。|
+|🛡️安全|联合国前云原生安全团队操刀，无论是数据加密还是网络安全，Shifu均可无缝集成。|
+|🌐全球化|得益于Kubernetes原生架构, Shifu可以无缝接入强大的云原生软件生态，让全球的开发者帮你解决后顾之忧。|
 
-***deviceShifu*** 提供给用户了高层的交互抽象：开发者通过接入 ***deviceShifu*** 的接口，不仅可以实现IoT设备的所有设计功能，还可以实现原本设备所不具备的功能！例如：让设备主动将数据发送到某个地址或服务。
 
-## 开始使用 ***Shifu***
+## 使用
 
 ### 安装
 
-***Shifu*** 提供了`shifu_install.yml`文件。在已有Kubernetes集群的情况下，使用`kubectl apply`命令即可安装至集群：
+在已有Kubernetes集群的情况下，使用`kubectl apply`命令即可将***Shifu***安装至集群：
 
 ```sh
 cd shifu
 kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 ```
 
-### 演示
+### 试玩
 
-如果您不熟悉Kubernetes，我们准备了 [***Shifu*** Demo](https://shifu.run/zh-Hans/disclaimer/)。您可以直观的体验 ***Shifu*** 如何通过数字孪生来连接和管理实体设备。
+我们为您准备了 [***Shifu*** Demo](https://shifu.run/zh-Hans/disclaimer/)。
 
-### 使用文档
+您可以下载Demo体验 ***Shifu*** 如何通过数字孪生来连接和管理实体设备。
 
-请在 <https://shifu.run/zh-Hans/docs/> 查看 ***Shifu*** 的使用文档。
+### 深入了解
 
-## 深入理解 ***Shifu***
+了解更多内容请查看我们的[文档](https://shifu.run/zh-Hans/docs/)。
 
-查看 [`docs/`](./docs/) 下的 Markdown文件 来了解 ***Shifu*** 的 [设计细节](./docs/design/) 和 [开发指南](./docs/development/)。
-
-## ***Shifu*** 愿景
-
-### 让开发者和运维人员再次开心
-
-开发者和维护人员应100%聚焦在发明创造上，而不是修补基础设施以及重复造轮子。身为开发者和运维人员本身，***Shifu*** 的作者们深刻理解您的痛点！所以我们发自内心地想帮您解决掉底层的问题，让开发者和运维人员再次开心！
-
-### 软件定义世界
-
-如果每一个IoT设备都有一个 ***deviceShifu***，我们就可以借助软件来管理我们周围的世界。在一个软件定义的世界 (Software Define World) 中，所有东西都是智能的。您周围的一切会自动改变，进而更好地服务您；因为归根到底，科技以人为本。
+## 设计理念
+#### 📡 易于部署
+Shifu必须只用一个命令即可完成部署。
+#### 🤖即插即用
+Shifu必须自动识别并为一个新的物联网设备提供基本功能。一旦开发者完成了Shifu的模板，设备的所有功能就应该立即可用。
+#### 🪄易于扩展
+开发者可以进一步实现Shifu的接口/SDK，以创建自定义功能，释放出无限的可能性。
+#### 🔧零维护
+Shifu的目标是通过采用前沿的云原生最佳实践来实现零维护。毕竟，Shifu需要先照顾好自己，才能让物联网开发人员的工作更轻松!
 
 ## 社区
 
@@ -68,10 +71,10 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 ### 联系我们
 
 - 电子邮件
-  - info@edgenesis.com
+    - info@edgenesis.com 
 - 微信
-  - Donoteattoomuchla
-  - if7369
+    - Donoteattoomuchla 
+    - if7369
 
 ## GitHub Star 数量
 
