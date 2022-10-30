@@ -6,7 +6,7 @@ COPY examples/telemetryservice/mockserver/server.go /mockserver/server.go
 COPY go.mod go.mod
 COPY go.sum go.sum
 
-RUN go mod downlaod -x
+RUN go mod download -x
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a \
     -o /output/mockserver \
