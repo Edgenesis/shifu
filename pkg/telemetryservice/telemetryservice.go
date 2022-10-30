@@ -1,6 +1,7 @@
 package telemetryservice
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -72,14 +73,16 @@ func matchHandler(w http.ResponseWriter, r *http.Request) {
 		if err != nil {
 			klog.Errorf("Handler MQTT Servuce handler, error: %v", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 	}
 
 	if telemetryRequest.SQLConnectionSetting != nil {
-		err := sql.BindSQLServiceHandler(telemetryRequest)
+		err := sql.BindSQLServiceHandler(context.TODO(), telemetryRequest)
 		if err != nil {
 			klog.Errorf("Handler SQL Servuce handler, error: %v", err)
 			http.Error(w, err.Error(), http.StatusBadRequest)
+			return
 		}
 	}
 }

@@ -12,36 +12,57 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 )
 
-type MQTTSetting struct {
-	MQTTTopic         *string `json:"MQTTTopic,omitempty"`
-	MQTTServerAddress *string `json:"MQTTServerAddress,omitempty"`
-}
+var (
+	targetServer     = "http://" + os.Getenv("TARGET_SERVER_ADDRESS")
+	targetMqttServer = os.Getenv("TARGET_MQTT_SERVER_ADDRESS")
+	targetSqlServer  = os.Getenv("TARGET_SQL_SERVER_ADDRESS")
+)
 
 func main() {
-	targetMqttServer := os.Getenv("TARGET_MQTT_SERVER_ADDRESS")
-	targetServer := "http://" + os.Getenv("TARGET_SERVER_ADDRESS")
+	mux := http.NewServeMux()
+	mux.HandleFunc("/mqtt", sendToMQTT)
+	mux.HandleFunc("/sql", sendToTDEngine)
+	http.ListenAndServe(":9090", mux)
 
-	err := sendRequest(targetServer, targetMqttServer)
-	if err != nil {
-		panic(err)
-	}
 }
 
-func sendRequest(targetServer string, mqttServerAddress string) error {
+func sendToMQTT(w http.ResponseWriter, r *http.Request) {
 	defaultTopic := "/test"
 	req := &v1alpha1.TelemetryRequest{
 		RawData: []byte("testData"),
 		MQTTSetting: &v1alpha1.MQTTSetting{
 			MQTTTopic:         &defaultTopic,
-			MQTTServerAddress: &mqttServerAddress,
+			MQTTServerAddress: &targetMqttServer,
 		},
 	}
+	if err := sendRequest(req); err != nil {
+		http.Error(w, "send failed", http.StatusInternalServerError)
+	}
+}
 
-	requestBody, err := json.Marshal(req)
+func sendToTDEngine(w http.ResponseWriter, r *http.Request) {
+	req := &v1alpha1.TelemetryRequest{
+		SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
+			ServerAddress: &targetSqlServer,
+			UserName:      toPointer("root"),
+			Secret:        toPointer("taosdata"),
+			DBName:        toPointer("shifu"),
+			DBTable:       toPointer("testTable2"),
+		},
+	}
+	sendRequest(req)
+}
+
+func sendRequest(request *v1alpha1.TelemetryRequest) error {
+	requestBody, err := json.Marshal(request)
 	if err != nil {
 		return err
 	}
 
 	_, err = http.DefaultClient.Post(targetServer+"/mqtt", "application/json", bytes.NewBuffer(requestBody))
 	return err
+}
+
+func toPointer[T any](v T) *T {
+	return &v
 }
