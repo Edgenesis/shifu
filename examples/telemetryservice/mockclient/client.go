@@ -59,7 +59,7 @@ func sendRequest(request *v1alpha1.TelemetryRequest) error {
 		return err
 	}
 
-	_, err = http.DefaultClient.Post(targetServer+"/mqtt", "application/json", bytes.NewBuffer(requestBody))
+	_, err = http.DefaultClient.Post(targetServer, "application/json", bytes.NewBuffer(requestBody))
 	return err
 }
 

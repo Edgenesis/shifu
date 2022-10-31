@@ -16,7 +16,6 @@ import (
 
 var serverListenPort = os.Getenv("SERVER_LISTEN_PORT")
 
-// TODO: need to modify path of mqtt.BindMQTTServicehandler after other servie implement
 func New(stop <-chan struct{}) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/", matchHandler)

@@ -476,8 +476,15 @@ stages:
       - script: |
           set -e
           docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.14
+          docker run -itd --network host  --name tdengine \
+          -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/init.sql:/root/init.sql
+          tdengine/tdengine:3.0.1.4
           docker run -itd --network host -e SERVER_LISTEN_PORT=:17772 edgehub/telemetryservice:$(tag)
           docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
+          docker run -itd --network host -e TARGET_SERVER_ADDRESS=:17772 \
+          TARGET_MQTT_SERVER_ADDRESS=localhost:1883 \
+          TARGET_SQL_SERVER_ADDRESS=localhost:6041 \
+          --name mockclient edgehub/mockclient:$(tag)
           docker run -itd --network host --name nginx nginx:1.21
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/checkoutput.sh $(tag)
         displayName: run docker images and compare output
