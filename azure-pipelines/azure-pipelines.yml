@@ -444,7 +444,7 @@ stages:
           -t edgehub/deviceshifu-http-plc4x:$(tag) --load
         displayName: build edgehub/deviceshifu-http-plc4x
 
-  - job: docker_e2e_test_telemetryservice
+  - job: docker_e2e_test_telemetryservice_MQTT
     steps:
       - script: |
           tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
@@ -460,34 +460,40 @@ stages:
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.telemetryservice \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/telemetryservice:$(tag) --load
+          docker run -itd --network host -e SERVER_LISTEN_PORT=:17772 edgehub/telemetryservice:$(tag)
         displayName: build edgehub/telemetryService
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockclient/Dockerfile.mockclient \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockclient:$(tag) --load
+          docker run -itd --network host -e TARGET_SERVER_ADDRESS=:17772 \
+          -e TARGET_MQTT_SERVER_ADDRESS=localhost:1883 \
+          -e TARGET_SQL_SERVER_ADDRESS=localhost:6041 \
+          --name mockclient edgehub/mockclient:$(tag)
         displayName: build mockClient
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockserver/Dockerfile.mockserver \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockserver:$(tag) --load
-        displayName: build mockServer
+          docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
+        displayName: build and run mockServer
+      - script: | 
+          docker run -itd --network host --name nginx nginx:1.21  
+        displayName: docker run nginx
       - script: |
           set -e
           docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.14
+          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput.sh
+        displayName: e2e_test_mqtt and checkoutput
+      - script: |
+          set -e
           docker run -itd --network host --name tdengine \
-          -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/init.sql:/root/init.sql \
+          -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/tdengine/init.sql:/root/init.sql \
           tdengine/tdengine:3.0.1.4
-          docker run -itd --network host -e SERVER_LISTEN_PORT=:17772 edgehub/telemetryservice:$(tag)
-          docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
-          docker run -itd --network host -e TARGET_SERVER_ADDRESS=:17772 \
-          -e TARGET_MQTT_SERVER_ADDRESS=localhost:1883 \
-          -e TARGET_SQL_SERVER_ADDRESS=localhost:6041 \
-          --name mockclient edgehub/mockclient:$(tag)
-          docker run -itd --network host --name nginx nginx:1.21
-          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/checkoutput.sh
-        displayName: run docker images and compare output
+          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/tdengine/checkoutput.sh
+        displayName: docker run tdengine and checkoutput
 
 - stage: docker_build_muiltiarch_and_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
