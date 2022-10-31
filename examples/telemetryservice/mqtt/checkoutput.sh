@@ -1,7 +1,6 @@
 #!bin/bash
 
 default='testData'
-tdengineOutput=2
 # testMQTT
 for i in {1..30} 
 do
