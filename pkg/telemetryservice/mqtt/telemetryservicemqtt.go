@@ -1,28 +1,49 @@
 package mqtt
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"k8s.io/klog"
 )
 
-func BindMQTTServicehandler(request v1alpha1.TelemetryRequest) error {
+func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		klog.Errorf("Error when Read Data From Body, error: %v", err)
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	klog.Infof("requestBody: %s", string(body))
+	request := v1alpha1.TelemetryRequest{}
+
+	err = json.Unmarshal(body, &request)
+	if err != nil {
+		klog.Errorf("Error to Unmarshal request body to struct")
+		http.Error(w, "unexpected end of JSON input", http.StatusBadRequest)
+		return
+	}
+
 	client, err := connectToMQTT(request.MQTTSetting)
 	if err != nil {
 		klog.Errorf("Error to connect to mqtt server, error: %#v", err)
-		return err
+		http.Error(w, "Error to connect to server", http.StatusBadRequest)
+		return
 	}
 	defer (*client).Disconnect(0)
 
 	token := (*client).Publish(*request.MQTTSetting.MQTTTopic, 1, false, request.RawData)
 	if token.Error() != nil {
 		klog.Errorf("Error when publish Data to MQTTServer, error: %#v", err.Error())
-		return err
+		http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
+		return
 	}
 	klog.Infof("Info: Success To publish a message %v to %v", string(request.RawData), request.MQTTSetting.MQTTServerAddress)
-	return nil
 }
 
 func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
@@ -37,7 +58,7 @@ func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
 		klog.Errorf("Error when connect to server error: %v", token.Error())
 		return nil, token.Error()
 	}
-	klog.Infof("Connect to %v success!", settings.MQTTServerAddress)
+	klog.Infof("Connect to %v success!", *settings.MQTTServerAddress)
 	return &client, nil
 }
 

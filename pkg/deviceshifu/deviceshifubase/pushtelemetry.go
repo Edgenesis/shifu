@@ -15,27 +15,38 @@ import (
 )
 
 func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {
-	request := &v1alpha1.TelemetryRequest{}
-
 	if tss.ServiceSettings == nil {
 		return fmt.Errorf("empty telemetryServiceSpec")
 	}
 
 	if tss.ServiceSettings.HTTPSetting != nil {
 		err := pushToHTTPTelemetryCollectionService(message, *tss.TelemetrySeriveEndpoint)
-		return err
+		if err != nil {
+			return err
+		}
 	}
 
 	if tss.ServiceSettings.MQTTSetting != nil {
-		request.MQTTSetting = tss.ServiceSettings.MQTTSetting
+		request := &v1alpha1.TelemetryRequest{
+			MQTTSetting: tss.ServiceSettings.MQTTSetting,
+		}
+		err := pushToShifuTelemetryCollectionService(message, request, *tss.TelemetrySeriveEndpoint)
+		if err != nil {
+			return err
+		}
 	}
 
 	if tss.ServiceSettings.SQLSetting != nil {
-		request.SQLConnectionSetting = tss.ServiceSettings.SQLSetting
+		request := &v1alpha1.TelemetryRequest{
+			SQLConnectionSetting: tss.ServiceSettings.SQLSetting,
+		}
+		err := pushToShifuTelemetryCollectionService(message, request, *tss.TelemetrySeriveEndpoint)
+		if err != nil {
+			return err
+		}
 	}
 
-	err := pushToShifuTelemetryCollectionService(message, request, *tss.TelemetrySeriveEndpoint)
-	return err
+	return nil
 }
 
 // PushToHTTPTelemetryCollectionService push telemetry data to Collection Service
