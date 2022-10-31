@@ -34,8 +34,8 @@ func TestMain(m *testing.M) {
 	}()
 	m.Run()
 	stop <- struct{}{}
-	os.Unsetenv("SERVER_LISTEN_PORT")
 	wg.Wait()
+	os.Unsetenv("SERVER_LISTEN_PORT")
 }
 
 func TestConnectToMQTT(t *testing.T) {
@@ -100,7 +100,6 @@ func mockMQTTServer(stop <-chan struct{}) {
 	svr.Start()
 
 	select {
-	case <-svr.Done:
 	case <-stop:
 	case <-time.After(time.Second * 10):
 		klog.Fatalf("Timeout")
