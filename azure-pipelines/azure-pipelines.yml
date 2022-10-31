@@ -477,7 +477,6 @@ stages:
           -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockserver/Dockerfile.mockserver \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockserver:$(tag) --load
-          docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
         displayName: build and run mockServer
       - script: | 
           docker run -itd --network host --name nginx nginx:1.21  
@@ -485,6 +484,7 @@ stages:
       - script: |
           set -e
           docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.14
+          docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput.sh
         displayName: e2e_test_mqtt and checkoutput
       - script: |

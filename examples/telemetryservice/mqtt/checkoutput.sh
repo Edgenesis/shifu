@@ -11,9 +11,7 @@ do
     echo $default
     if [[ $output == $default ]]
     then
-        break
-    elif [[ $i == 100 ]]
-    then
-        exit 1
+        exit 0
     fi
 done
+exit 1
