@@ -48,6 +48,7 @@ func sendToTDEngine(w http.ResponseWriter, r *http.Request) {
 			Secret:        toPointer("taosdata"),
 			DBName:        toPointer("shifu"),
 			DBTable:       toPointer("testsubtable"),
+			DBType:        toPointer(v1alpha1.DBTypeTDEngine),
 		},
 	}
 	sendRequest(req)

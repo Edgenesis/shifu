@@ -486,7 +486,7 @@ stages:
           -e TARGET_SQL_SERVER_ADDRESS=localhost:6041 \
           --name mockclient edgehub/mockclient:$(tag)
           docker run -itd --network host --name nginx nginx:1.21
-          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/checkoutput.sh $(tag)
+          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/checkoutput.sh
         displayName: run docker images and compare output
 
 - stage: docker_build_muiltiarch_and_push

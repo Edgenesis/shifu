@@ -50,12 +50,12 @@ func (db *DBHelper) insertDataToDB(ctx context.Context, rawData []byte) error {
 		return err
 	}
 
-	id, err := result.LastInsertId()
+	id, err := result.RowsAffected()
 	if err != nil {
-		klog.Errorf("Error to get LastInsertId, error: %v", err)
+		klog.Errorf("Error to get RowsAffected, error: %v", err)
 		return err
 	} else if id <= 0 {
-		klog.Errorf("Data insert failed, for LastInsertId is equal or lower than 0")
+		klog.Errorf("Data insert failed, for RowsAffected is equal or lower than 0")
 		return errors.New("insert Failed")
 	}
 
