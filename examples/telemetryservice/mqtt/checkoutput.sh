@@ -1,0 +1,19 @@
+#!bin/bash
+
+default='testData'
+tdengineOutput=2
+# testMQTT
+for i in {1..30} 
+do
+    docker exec nginx curl localhost:9090/mqtt
+    output=$(docker exec nginx curl localhost:17773/data)
+    echo $output
+    echo $default
+    if [[ $output == $default ]]
+    then
+        break
+    elif [[ $i == 100 ]]
+    then
+        exit 1
+    fi
+done
