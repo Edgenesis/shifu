@@ -50,6 +50,7 @@ func sendToTDEngine(w http.ResponseWriter, r *http.Request) {
 			DBTable:       toPointer("testsubtable"),
 			DBType:        toPointer(v1alpha1.DBTypeTDEngine),
 		},
+		RawData: []byte("testData"),
 	}
 	sendRequest(req)
 }
