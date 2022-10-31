@@ -4,7 +4,7 @@ for i in {1..30}
 do
     output=$(docker exec tdengine taos -s "Show databases;" | grep 'failed' | wc -l)
     echo $output
-    if [[ $output -ne 0 ]]
+    if [[ $output -eq 0 ]]
     then
         break
     elif [[ $i -eq 30 ]]
