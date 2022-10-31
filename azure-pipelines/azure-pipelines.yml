@@ -468,7 +468,7 @@ stages:
           -t edgehub/mockclient:$(tag) --load
         displayName: build mockClient
       - script: |
-          docker buildx build -f --platform=linux/amd64 \
+          docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockserver/Dockerfile.mockserver \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t edgehub/mockserver:$(tag) --load
@@ -482,8 +482,8 @@ stages:
           docker run -itd --network host -e SERVER_LISTEN_PORT=:17772 edgehub/telemetryservice:$(tag)
           docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
           docker run -itd --network host -e TARGET_SERVER_ADDRESS=:17772 \
-          TARGET_MQTT_SERVER_ADDRESS=localhost:1883 \
-          TARGET_SQL_SERVER_ADDRESS=localhost:6041 \
+          -e TARGET_MQTT_SERVER_ADDRESS=localhost:1883 \
+          -e TARGET_SQL_SERVER_ADDRESS=localhost:6041 \
           --name mockclient edgehub/mockclient:$(tag)
           docker run -itd --network host --name nginx nginx:1.21
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/checkoutput.sh $(tag)

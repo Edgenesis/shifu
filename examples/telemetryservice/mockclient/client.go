@@ -47,7 +47,7 @@ func sendToTDEngine(w http.ResponseWriter, r *http.Request) {
 			UserName:      toPointer("root"),
 			Secret:        toPointer("taosdata"),
 			DBName:        toPointer("shifu"),
-			DBTable:       toPointer("testTable2"),
+			DBTable:       toPointer("testsubtable"),
 		},
 	}
 	sendRequest(req)
