@@ -35,7 +35,7 @@ func sendToMQTT(w http.ResponseWriter, r *http.Request) {
 			MQTTServerAddress: &targetMqttServer,
 		},
 	}
-	if err := sendRequest(req); err != nil {
+	if err := sendRequest(req, "/mqtt"); err != nil {
 		http.Error(w, "send failed", http.StatusInternalServerError)
 	}
 }
@@ -52,16 +52,16 @@ func sendToTDEngine(w http.ResponseWriter, r *http.Request) {
 		},
 		RawData: []byte("testData"),
 	}
-	sendRequest(req)
+	sendRequest(req, "/sql")
 }
 
-func sendRequest(request *v1alpha1.TelemetryRequest) error {
+func sendRequest(request *v1alpha1.TelemetryRequest, path string) error {
 	requestBody, err := json.Marshal(request)
 	if err != nil {
 		return err
 	}
 
-	_, err = http.DefaultClient.Post(targetServer, "application/json", bytes.NewBuffer(requestBody))
+	_, err = http.DefaultClient.Post(targetServer+path, "application/json", bytes.NewBuffer(requestBody))
 	return err
 }
 
