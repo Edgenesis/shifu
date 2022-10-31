@@ -484,7 +484,6 @@ stages:
       - script: |
           set -e
           docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.15
-          docker wait mosquitto
           docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput.sh
         displayName: e2e_test_mqtt and checkoutput
