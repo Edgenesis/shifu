@@ -444,7 +444,7 @@ stages:
           -t edgehub/deviceshifu-http-plc4x:$(tag) --load
         displayName: build edgehub/deviceshifu-http-plc4x
 
-  - job: docker_e2e_test_telemetryservice_MQTT
+  - job: docker_e2e_test_telemetryservice
     steps:
       - script: |
           tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
