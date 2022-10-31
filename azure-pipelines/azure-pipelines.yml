@@ -476,8 +476,8 @@ stages:
       - script: |
           set -e
           docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.14
-          docker run -itd --network host  --name tdengine \
-          -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/init.sql:/root/init.sql
+          docker run -itd --network host --name tdengine \
+          -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/init.sql:/root/init.sql \
           tdengine/tdengine:3.0.1.4
           docker run -itd --network host -e SERVER_LISTEN_PORT=:17772 edgehub/telemetryservice:$(tag)
           docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
