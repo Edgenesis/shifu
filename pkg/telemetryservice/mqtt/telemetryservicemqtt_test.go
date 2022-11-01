@@ -24,14 +24,16 @@ const (
 )
 
 func TestMain(m *testing.M) {
+	start := make(chan struct{}, 1)
 	stop := make(chan struct{}, 1)
 	wg := sync.WaitGroup{}
 	os.Setenv("SERVER_LISTEN_PORT", ":18926")
 	wg.Add(1)
 	go func() {
-		mockMQTTServer(stop)
+		mockMQTTServer(stop, start)
 		wg.Done()
 	}()
+	<-start
 	m.Run()
 	stop <- struct{}{}
 	wg.Wait()
@@ -90,7 +92,7 @@ func TestConnectLostHandler(t *testing.T) {
 	connectLostHandler(nil, nil)
 }
 
-func mockMQTTServer(stop <-chan struct{}) {
+func mockMQTTServer(stop <-chan struct{}, start chan<- struct{}) {
 	lis, err := net.Listen("tcp", unitTestServerAddress)
 	if err != nil {
 		klog.Fatalf("Error when Listen ad %v, error: %v", unitTestServerAddress, err)
@@ -99,6 +101,7 @@ func mockMQTTServer(stop <-chan struct{}) {
 	svr := mqtt.NewServer(lis)
 	svr.Start()
 
+	start <- struct{}{}
 	select {
 	case <-stop:
 	case <-time.After(time.Second * 10):
