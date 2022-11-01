@@ -5,3 +5,5 @@
 *.out
 mockconfig
 setup-envtest
+*.pyc
+__debug_bin
