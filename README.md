@@ -27,7 +27,7 @@
 |👨‍💻 Efficient|Once a device is integrated, Shifu automatically abstracts its capabilities into APIs, completely decoupling your App from the hardware, making IoT App development simple and efficient.|
 |🚀 Stable|Shifu is running in multiple production scenarios with 99.9999% stability, relieving you from the operational mess.|
 |🛡️ Safe |Designed by ex-UN cloud native security team. Shifu can easily enforce data encryption, network security and much more.|
-|🌐 Global Community|Benefiting from its Kubernetes' native architecture, Shifu can seamless integrate with the powerful cloud native software eco-system that allows developers around the world to help you with your problems.|
+|🌐 Global Community|Benefiting from its Kubernetes-native architecture, Shifu can seamless integrate with the powerful cloud native software eco-system that allows developers around the world to help you with your problems.|
 
 ## Guide
 
