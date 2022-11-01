@@ -575,3 +575,8 @@ subjects:
 - kind: ServiceAccount
   name: shifu-crd-controller-manager
   namespace: shifu-crd-system
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shifu-service
