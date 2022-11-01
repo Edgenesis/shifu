@@ -17,22 +17,18 @@ Check [DeviceShifu](https://github.com/Edgenesis/shifu/tree/main/pkg/deviceshifu
 
 Below is the high-level of how to build a `DeviceShifu` called `deviceshifuxxx`:
 
-1. [Create a main file](#create-a-main-file)
-2. bbb
-3. ccc
-
-### Create a main file
-
-Create a `main.go` file in `cmd/deviceshifu/cmdxxx`. You can refer to [cmdopcua/main.go](../../../cmd/deviceshifu/cmdopcua/main.go) or [cmdhttp/main.go](../../../cmd/deviceshifu/cmdhttp/main.go) as an example.
+1. [Modify CRD](#crd).
+2. [Modify API](#api).
+3. [Add DeviceShifu source files](#deviceshifu)
 
 ## Components
 
-In order to create a new type of `deviceShifuXXX` (xxx stands for the protocol name you wish to support), you need to create or modify the following components:
+In order to create a new type of `deviceShifuxxx` (xxx stands for the protocol name you wish to support), you need to create or modify the following components:
 
 ### CRD
 
 `CRD` stands for `Customized Resource Definition`, we created a new `CRD` called `edgeDevice` to serve as the definition of the mapping of the physical device.
-To create a new type of `deviceShifuXXX`, you may need to change the files under directory `pkg/k8s/crd/`
+To create a new type of `deviceShifuxxx`, you may need to change the files under directory `pkg/k8s/crd/`
 
 Specific settings may be required for some protocols, like `MQTT`：
 
@@ -84,9 +80,19 @@ The struct should be perfectly aligned with the setting schema you added in CRD.
 
 `DeviceShifu` is the digital twin running as a pod in the k8s cluster. Basically it converts HTTP requests to whatever underlying protocol needs.
 
+#### shifuctl
+
+`shifuctl` is a command-line tool can help bootstrapping a new `DeviceShifu`. Here's how to use it:
+
+1. Set environment variable `SHIFU_ROOT_DIR` to root directory of shifu.
+On Linux: `export SHIFU_ROOT_DIR=[root directory of shifu]`.
+2. Bootstrap barebone source files with `shifuctl add deviceshifu--name deviceshifuxxx`.
+3. Under `cmd/deviceshifu/`, you will see `deviceshifuxxx/main.go`.You don't need to modify this file.
+4. Under `pkg/deviceshifu/`, you will see 4 files in `deviceshifuxxx`directory. You need to modify these files accordingly.
+
 #### deviceshifuxxx
 
-You need to create a new `deviceshifuxxx` directory under `pkg/deviceshifu`. This directory normally contains 2 main files, a `deviceshifuxxx.go` and a `deviceshifuxxxconfig.go`
+In `pkg/deviceshifu/deviceshifuxxx`, there are 4 files, including 2 main ones: `deviceshifuxxx.go` and `deviceshifuxxxconfig.go`
 `deviceshifuxxx.go` mainly contains actual logic of the program, and `deviceshifuconfig.go` mainly contains the configuration underlying protocol needs. Take `MQTT` as example:
 
 [deviceshifumqttconfig.go](https://github.com/Edgenesis/shifu/blob/main/pkg/deviceshifu/deviceshifumqtt/deviceshifumqttconfig.go)
@@ -130,7 +136,7 @@ Write a method to create an instance of the struct:
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error)
 ```
 
-`deviceShifuMetadata` is used to create `DeviceShifuBase`. 
+`deviceShifuMetadata` is used to create `DeviceShifuBase`.
 
 Inside the function, you can call
 
@@ -212,7 +218,7 @@ func main() {
 #### Dockerfile and makefile
 
 To run go program in k8s, you need to package it into a docker image. 
-To do that, you need to create a file named `Dockerfile.deviceshifuXXX` under `dockerfiles` directory.
+To do that, you need to create a file named `Dockerfile.deviceshifuxxx` under `dockerfiles` directory.
 The dockerfile, take `MQTT` as example, can be:
 
 ```dockerfile
