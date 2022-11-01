@@ -57,6 +57,7 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 	// case 7 has default with true and valid endpoint, has telemetry with valid push setting
 	// case 8 has default with true and valid endpoint, has telemetry with same endpoint
 	// case 9 has default with true and valid endpoint, has telemetry with push false setting
+	// case 10 has default without telemetry.
 	testCases := []struct {
 		Name        string
 		inputDevice *DeviceShifuBase
@@ -64,18 +65,18 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 		expErrStr   string
 	}{
 		{
-			"case 1 no setting",
-			&DeviceShifuBase{
+			Name: "case 1 no setting",
+			inputDevice: &DeviceShifuBase{
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{},
 				},
 			},
-			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
-			"",
+			expectedMap: map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
+			expErrStr:   "",
 		},
 		{
-			"case 2 has default with false",
-			&DeviceShifuBase{
+			Name: "case 2 has default with false",
+			inputDevice: &DeviceShifuBase{
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
@@ -85,12 +86,12 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 					},
 				},
 			},
-			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
-			"",
+			expectedMap: map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
+			expErrStr:   "",
 		},
 		{
-			"case 3 has default with true and empty endpoint",
-			&DeviceShifuBase{
+			Name: "case 3 has default with true and empty endpoint",
+			inputDevice: &DeviceShifuBase{
 				DeviceShifuConfig: &DeviceShifuConfig{
 					Telemetries: &DeviceShifuTelemetries{
 						DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
@@ -100,8 +101,8 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 					},
 				},
 			},
-			nil,
-			"you need to configure defaultTelemetryCollectionService if setting defaultPushToServer to true",
+			expectedMap: nil,
+			expErrStr:   "you need to configure defaultTelemetryCollectionService if setting defaultPushToServer to true",
 		},
 		{
 			"case 4 has default with true and valid endpoint",
@@ -294,6 +295,14 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 					},
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
+			},
+			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
+			"",
+		},
+		{
+			"case 10 no telemetry",
+			&DeviceShifuBase{
+				DeviceShifuConfig: &DeviceShifuConfig{},
 			},
 			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
 			"",
