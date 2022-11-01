@@ -31,6 +31,7 @@ func TestMain(m *testing.M) {
 	wg.Add(1)
 	go func() {
 		mockMQTTServer(stop, start)
+		klog.Infof("Server Closed")
 		wg.Done()
 	}()
 	<-start
