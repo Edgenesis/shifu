@@ -194,11 +194,11 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 		rawRespBody := resp.Results[0].Value.Value()
 		rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
 		respString := rawRespBodyString
-		_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+		InstructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 		klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 		if shouldUsePythonCustomProcessing {
 			klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-			respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
+			respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, InstructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
 		}
 		fmt.Fprintf(w, "%v", respString)
 	}

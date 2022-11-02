@@ -90,11 +90,11 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	rawMqttMessageStr := string(msg.Payload())
-	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
+	InstructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
 	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
 		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
-		mqttMessageStr = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+		mqttMessageStr = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, InstructionFuncName, rawMqttMessageStr, deviceshifubase.PythonScriptDir)
 	} else {
 		mqttMessageStr = rawMqttMessageStr
 	}
