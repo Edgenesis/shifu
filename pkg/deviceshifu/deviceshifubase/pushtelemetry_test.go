@@ -105,8 +105,8 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 			expErrStr:   "you need to configure defaultTelemetryCollectionService if setting defaultPushToServer to true",
 		},
 		{
-			"case 4 has default with true and valid endpoint",
-			&DeviceShifuBase{
+			Name: "case 4 has default with true and valid endpoint",
+			inputDevice: &DeviceShifuBase{
 				Name: "test",
 				EdgeDevice: &v1alpha1.EdgeDevice{
 					ObjectMeta: metav1.ObjectMeta{
@@ -123,12 +123,12 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/endpoint1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
-			"",
+			expectedMap: map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
+			expErrStr:   "",
 		},
 		{
-			"case 5 has default with true and valid endpoint, has telemetry with empty push setting",
-			&DeviceShifuBase{
+			Name: "case 5 has default with true and valid endpoint, has telemetry with empty push setting",
+			inputDevice: &DeviceShifuBase{
 				Name: "test",
 				EdgeDevice: &v1alpha1.EdgeDevice{
 					ObjectMeta: metav1.ObjectMeta{
@@ -155,17 +155,17 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
+			expectedMap: map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
 					Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
 					Address:  unitest.ToPointer(""),
 				},
 			}),
-			"",
+			expErrStr: "",
 		},
 		{
-			"case 6 has default with true and valid endpoint, has telemetry with no push setting",
-			&DeviceShifuBase{
+			Name: "case 6 has default with true and valid endpoint, has telemetry with no push setting",
+			inputDevice: &DeviceShifuBase{
 				Name: "test",
 				EdgeDevice: &v1alpha1.EdgeDevice{
 					ObjectMeta: metav1.ObjectMeta{
@@ -187,17 +187,17 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
+			expectedMap: map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
 					Protocol: unitest.ToPointer(v1alpha1.ProtocolHTTP),
 					Address:  unitest.ToPointer(""),
 				},
 			}),
-			"",
+			expErrStr: "",
 		},
 		{
-			"case 7 has default with true and valid endpoint, has telemetry with valid push setting",
-			&DeviceShifuBase{
+			Name: "case 7 has default with true and valid endpoint, has telemetry with valid push setting",
+			inputDevice: &DeviceShifuBase{
 				Name: "test",
 				EdgeDevice: &v1alpha1.EdgeDevice{
 					ObjectMeta: metav1.ObjectMeta{
@@ -224,16 +224,16 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test-healthy-endpoint\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
+			expectedMap: map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
 					Address: unitest.ToPointer("http://192.168.15.48:12345/test-healthy-endpoint"),
 				},
 			}),
-			"",
+			expErrStr: "",
 		},
 		{
-			"case 8 has default with true and valid endpoint, has telemetry with same endpoint",
-			&DeviceShifuBase{
+			Name: "case 8 has default with true and valid endpoint, has telemetry with same endpoint",
+			inputDevice: &DeviceShifuBase{
 				Name: "test",
 				EdgeDevice: &v1alpha1.EdgeDevice{
 					ObjectMeta: metav1.ObjectMeta{
@@ -260,16 +260,16 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
+			expectedMap: map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{
 				"device_healthy": {
 					Address: unitest.ToPointer("http://192.168.15.48:12345/test_endpoint-1"),
 				},
 			}),
-			"",
+			expErrStr: "",
 		},
 		{
-			"case 9 has default with true and valid endpoint, has telemetry with push false setting",
-			&DeviceShifuBase{
+			Name: "case 9 has default with true and valid endpoint, has telemetry with push false setting",
+			inputDevice: &DeviceShifuBase{
 				Name: "test",
 				EdgeDevice: &v1alpha1.EdgeDevice{
 					ObjectMeta: metav1.ObjectMeta{
@@ -296,16 +296,16 @@ func TestGetTelemetryCollectionServiceMap(t *testing.T) {
 				},
 				RestClient: mockRestClientFor("{\"spec\": {\"address\": \"http://192.168.15.48:12345/test_endpoint-1\",\"type\": \"HTTP\"}}", t),
 			},
-			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
-			"",
+			expectedMap: map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
+			expErrStr:   "",
 		},
 		{
-			"case 10 no telemetry",
-			&DeviceShifuBase{
+			Name: "case 10 no telemetry",
+			inputDevice: &DeviceShifuBase{
 				DeviceShifuConfig: &DeviceShifuConfig{},
 			},
-			map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
-			"",
+			expectedMap: map[string]v1alpha1.TelemetryServiceSpec(map[string]v1alpha1.TelemetryServiceSpec{}),
+			expErrStr:   "",
 		},
 	}
 
