@@ -25,8 +25,8 @@ import (
 
 // telemetry Service handler
 const (
-	HandlerMQTT = "/mqtt"
-	HandlerSQL  = "/sql"
+	TelemetryServiceURIMQTT = "/mqtt"
+	TelemetryServiceURISQL  = "/sql"
 )
 
 // HTTPSetting defines HTTP specific settings when connecting to an EdgeDevice

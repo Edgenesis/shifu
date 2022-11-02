@@ -1,4 +1,3 @@
---- #telemetry_service.yaml
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: TelemetryService
 metadata:
