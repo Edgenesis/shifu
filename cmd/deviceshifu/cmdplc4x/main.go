@@ -28,8 +28,8 @@ func main() {
 
 	err = ds.Start(wait.NeverStop)
 	if err != nil {
-		klog.Errorf("deviceshifu start default, error: %v", err)
-		return
+		klog.Errorf("Error starting deviceshifu: %v", err)
+		panic(err.Error())
 	}
 	select {}
 }
