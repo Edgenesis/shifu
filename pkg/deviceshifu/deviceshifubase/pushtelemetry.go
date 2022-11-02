@@ -117,7 +117,12 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 	defaultTelemetryServiceSpec := &v1alpha1.TelemetryServiceSpec{
 		TelemetrySeriveEndpoint: &defaultTelemetryServiceAddress,
 	}
+
 	telemetries := ds.DeviceShifuConfig.Telemetries
+	if telemetries == nil {
+		return res, nil
+	}
+
 	if telemetries.DeviceShifuTelemetrySettings == nil {
 		telemetries.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
 	}
@@ -147,38 +152,44 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 		serviceAddressCache[defaultTelemetryCollectionService] = telemetryService.Spec
 	}
 
-	for telemetryName, telemetries := range telemetries.DeviceShifuTelemetries {
-		pushSettings := telemetries.DeviceShifuTelemetryProperties.PushSettings
+	for telemetryName, telemetry := range telemetries.DeviceShifuTelemetries {
+		if telemetry == nil {
+			continue
+		}
 
-		if pushSettings != nil {
-			if pushSettings.DeviceShifuTelemetryPushToServer != nil {
-				if !*pushSettings.DeviceShifuTelemetryPushToServer {
-					continue
-				}
-			}
+		pushSettings := telemetry.DeviceShifuTelemetryProperties.PushSettings
+		if pushSettings == nil {
+			res[telemetryName] = *defaultTelemetryServiceSpec
+			continue
+		}
 
-			if pushSettings.DeviceShifuTelemetryCollectionService != nil &&
-				len(*pushSettings.DeviceShifuTelemetryCollectionService) != 0 {
-				if telemetryServiceAddress, exist := serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService]; exist {
-					res[telemetryName] = telemetryServiceAddress
-					continue
-				}
-
-				var telemetryService v1alpha1.TelemetryService
-				if err := ds.RestClient.Get().
-					Namespace(ds.EdgeDevice.Namespace).
-					Resource(TelemetryCollectionServiceResourceStr).
-					Name(*pushSettings.DeviceShifuTelemetryCollectionService).
-					Do(context.TODO()).
-					Into(&telemetryService); err != nil {
-					klog.Errorf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
-					continue
-				}
-
-				serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService] = telemetryService.Spec
-				res[telemetryName] = telemetryService.Spec
+		if pushSettings.DeviceShifuTelemetryPushToServer != nil {
+			if !*pushSettings.DeviceShifuTelemetryPushToServer {
 				continue
 			}
+		}
+
+		if pushSettings.DeviceShifuTelemetryCollectionService != nil &&
+			len(*pushSettings.DeviceShifuTelemetryCollectionService) != 0 {
+			if telemetryServiceAddress, exist := serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService]; exist {
+				res[telemetryName] = telemetryServiceAddress
+				continue
+			}
+
+			var telemetryService v1alpha1.TelemetryService
+			if err := ds.RestClient.Get().
+				Namespace(ds.EdgeDevice.Namespace).
+				Resource(TelemetryCollectionServiceResourceStr).
+				Name(*pushSettings.DeviceShifuTelemetryCollectionService).
+				Do(context.TODO()).
+				Into(&telemetryService); err != nil {
+				klog.Errorf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
+				continue
+			}
+
+			serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService] = telemetryService.Spec
+			res[telemetryName] = telemetryService.Spec
+			continue
 		}
 
 		res[telemetryName] = *defaultTelemetryServiceSpec
