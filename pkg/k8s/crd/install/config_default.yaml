@@ -108,6 +108,7 @@ spec:
                     properties:
                       bufferLength:
                         default: 1024
+                        format: int64
                         type: integer
                       encoding:
                         default: utf-8

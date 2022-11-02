@@ -36,7 +36,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		TelemetryInstructionNameGetReading        = "get_reading"
 		InstructionValueTypeInt32                 = "Int32"
 		InstructionReadWriteW                     = "W"
-		TelemetryMs1000                           = 1000
+		TelemetryMs1000                           = int64(1000)
 		TelemetryMs3000                           = int64(3000)
 		TelemetryMs6000                           = int64(6000)
 		TelemetrySettingsDefaultPushToServer      = true
