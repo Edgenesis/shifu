@@ -17,3 +17,6 @@ spec:
         image: edgehub/telemetryservice:nightly
         ports:
         - containerPort: 8080
+        env:
+        - name: SERVER_LISTEN_PORT
+          value: :8080

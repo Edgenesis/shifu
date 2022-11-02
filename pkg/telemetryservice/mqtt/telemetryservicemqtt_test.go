@@ -1,8 +1,9 @@
 package mqtt
 
 import (
-	"context"
+	"bytes"
 	"encoding/json"
+	"io"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -15,10 +16,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/jeffallen/mqtt"
 	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/apps/v1"
-	"k8s.io/client-go/rest"
 	"k8s.io/klog"
-	"k8s.io/kubectl/pkg/scheme"
 )
 
 const (
@@ -26,19 +24,21 @@ const (
 )
 
 func TestMain(m *testing.M) {
+	start := make(chan struct{}, 1)
 	stop := make(chan struct{}, 1)
 	wg := sync.WaitGroup{}
 	os.Setenv("SERVER_LISTEN_PORT", ":18926")
 	wg.Add(1)
 	go func() {
-		mockMQTTServer(stop)
+		mockMQTTServer(stop, start)
+		klog.Infof("Server Closed")
 		wg.Done()
 	}()
+	<-start
 	m.Run()
-
 	stop <- struct{}{}
-	os.Unsetenv("SERVER_LISTEN_PORT")
 	wg.Wait()
+	os.Unsetenv("SERVER_LISTEN_PORT")
 }
 
 func TestConnectToMQTT(t *testing.T) {
@@ -61,7 +61,7 @@ func TestConnectToMQTT(t *testing.T) {
 			name: "case2 pass",
 			setting: &v1alpha1.MQTTSetting{
 				MQTTTopic:         unitest.ToPointer("/default/topic"),
-				MQTTServerAddress: unitest.ToPointer("localhost" + unitTestServerAddress),
+				MQTTServerAddress: unitest.ToPointer(unitTestServerAddress),
 			},
 			isConnected: true,
 			expectedErr: "",
@@ -69,14 +69,15 @@ func TestConnectToMQTT(t *testing.T) {
 	}
 
 	for _, c := range testCases {
-		client, err := connectToMQTT(c.setting)
-		if err != nil {
-			assert.Equal(t, c.expectedErr, err.Error())
-			return
-		}
-
-		connected := (*client).IsConnected()
-		assert.Equal(t, c.isConnected, connected)
+		t.Run(c.name, func(t *testing.T) {
+			client, err := connectToMQTT(c.setting)
+			if err != nil {
+				assert.Equal(t, c.expectedErr, err.Error())
+				return
+			}
+			connected := (*client).IsConnected()
+			assert.Equal(t, c.isConnected, connected)
+		})
 	}
 }
 
@@ -92,7 +93,7 @@ func TestConnectLostHandler(t *testing.T) {
 	connectLostHandler(nil, nil)
 }
 
-func mockMQTTServer(stop <-chan struct{}) {
+func mockMQTTServer(stop <-chan struct{}, start chan<- struct{}) {
 	lis, err := net.Listen("tcp", unitTestServerAddress)
 	if err != nil {
 		klog.Fatalf("Error when Listen ad %v, error: %v", unitTestServerAddress, err)
@@ -101,8 +102,8 @@ func mockMQTTServer(stop <-chan struct{}) {
 	svr := mqtt.NewServer(lis)
 	svr.Start()
 
+	start <- struct{}{}
 	select {
-	case <-svr.Done:
 	case <-stop:
 	case <-time.After(time.Second * 10):
 		klog.Fatalf("Timeout")
@@ -110,73 +111,52 @@ func mockMQTTServer(stop <-chan struct{}) {
 	lis.Close()
 }
 
-func TestHandler(t *testing.T) {
-	mockServer := mockUnitTestServer(t)
-	client := mockRestClient(mockServer.URL, t)
-
-	req1 := TelemetryRequest{
-		RawData: []byte("test"),
-		MQTTSetting: &v1alpha1.MQTTSetting{
-			MQTTTopic:         unitest.ToPointer("/test"),
-			MQTTServerAddress: unitest.ToPointer(unitTestServerAddress),
-		},
-	}
-	req2 := TelemetryRequest{
-		RawData: []byte("test"),
-		MQTTSetting: &v1alpha1.MQTTSetting{
-			MQTTTopic:         unitest.ToPointer("/test"),
-			MQTTServerAddress: unitest.ToPointer("wrong address"),
-		},
-	}
-
-	requestBody1, err := json.Marshal(req1)
-	assert.Nil(t, err)
-	requestBody2, err := json.Marshal(req2)
-	assert.Nil(t, err)
-
+func TestBindMQTTServicehandler(t *testing.T) {
 	testCases := []struct {
-		name      string
-		req       *rest.Request
-		expectErr string
+		desc        string
+		requestBody *v1alpha1.TelemetryRequest
+		expectResp  string
 	}{
 		{
-			name:      "case1 without request body",
-			req:       client.Post(),
-			expectErr: "the server rejected our request for an unknown reason",
-		}, {
-			name:      "case2 correct request body but not connect to server",
-			req:       client.Post().Body(requestBody1),
-			expectErr: "",
-		}, {
-			name:      "case3 wrong request body with wrong address",
-			req:       client.Post().Body(requestBody2),
-			expectErr: "an error on the server (\"no servers defined to connect to\") has prevented the request from succeeding",
+			desc:       "testCase1 RequestBody is not a JSON",
+			expectResp: "unexpected end of JSON input\n",
+		},
+		{
+			desc:       "testCase2 wrong address",
+			expectResp: "Error to connect to server\n",
+			requestBody: &v1alpha1.TelemetryRequest{
+				MQTTSetting: &v1alpha1.MQTTSetting{
+					MQTTServerAddress: unitest.ToPointer("wrong address"),
+				},
+			},
+		},
+		{
+			desc:       "testCase3 pass",
+			expectResp: "",
+			requestBody: &v1alpha1.TelemetryRequest{
+				MQTTSetting: &v1alpha1.MQTTSetting{
+					MQTTTopic:         unitest.ToPointer("/test/test"),
+					MQTTServerAddress: unitest.ToPointer(unitTestServerAddress)},
+				RawData: []byte("123"),
+			},
 		},
 	}
-	for _, c := range testCases {
-		result := c.req.Do(context.TODO())
-		if err := result.Error(); err != nil {
-			assert.Equal(t, c.expectErr, err.Error())
-		}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			req := httptest.NewRequest(http.MethodPost, "test:80", bytes.NewBuffer([]byte("")))
+			if tC.requestBody != nil {
+				requestBody, err := json.Marshal(tC.requestBody)
+				assert.Nil(t, err)
+				req = httptest.NewRequest(http.MethodPost, "test:80", bytes.NewBuffer(requestBody))
+			}
+
+			rr := httptest.NewRecorder()
+			BindMQTTServicehandler(rr, req)
+			body, err := io.ReadAll(rr.Result().Body)
+			assert.Nil(t, err)
+			assert.Equal(t, tC.expectResp, string(body))
+
+		})
 	}
-}
 
-func mockRestClient(url string, t *testing.T) *rest.RESTClient {
-	c, _ := rest.RESTClientFor(&rest.Config{
-		Host: url,
-		ContentConfig: rest.ContentConfig{
-			GroupVersion:         &v1.SchemeGroupVersion,
-			NegotiatedSerializer: scheme.Codecs.WithoutConversion(),
-		},
-		Username: "user",
-		Password: "pass",
-	})
-
-	return c
-}
-
-func mockUnitTestServer(t *testing.T) *httptest.Server {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/", BindMQTTServicehandler)
-	return httptest.NewServer(mux)
 }

@@ -1,8 +1,13 @@
-FROM --platform=$BUILDPLATFORM golang:1.19 as builder
+FROM --platform=$BUILDPLATFORM golang:1.19.2 as builder
 
 WORKDIR /mockclient
 
+COPY pkg/k8s pkg/k8s
 COPY examples/telemetryservice/mockclient/client.go /mockclient/client.go
+COPY go.mod go.mod
+COPY go.sum go.sum
+
+RUN go mod download -x
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a \
     -o /output/mockclient \

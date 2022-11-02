@@ -19,31 +19,31 @@ func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	telemetryRequest := &TelemetryRequest{}
+	klog.Infof("requestBody: %s", string(body))
+	request := v1alpha1.TelemetryRequest{}
 
-	err = json.Unmarshal(body, telemetryRequest)
-	if err != nil || telemetryRequest.MQTTSetting == nil {
-		klog.Errorf("Error when unmarshal body to telemetryBody")
-		http.Error(w, fmt.Sprintf("%v", err), http.StatusBadRequest)
+	err = json.Unmarshal(body, &request)
+	if err != nil {
+		klog.Errorf("Error to Unmarshal request body to struct")
+		http.Error(w, "unexpected end of JSON input", http.StatusBadRequest)
 		return
 	}
 
-	klog.Infof("Info: pub Info %v To %v", string(telemetryRequest.RawData), *telemetryRequest.MQTTSetting.MQTTServerAddress)
-
-	client, err := connectToMQTT(telemetryRequest.MQTTSetting)
+	client, err := connectToMQTT(request.MQTTSetting)
 	if err != nil {
 		klog.Errorf("Error to connect to mqtt server, error: %#v", err)
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+		http.Error(w, "Error to connect to server", http.StatusBadRequest)
 		return
 	}
 	defer (*client).Disconnect(0)
 
-	token := (*client).Publish(*telemetryRequest.MQTTSetting.MQTTTopic, 1, false, telemetryRequest.RawData)
+	token := (*client).Publish(*request.MQTTSetting.MQTTTopic, 1, false, request.RawData)
 	if token.Error() != nil {
 		klog.Errorf("Error when publish Data to MQTTServer, error: %#v", err.Error())
+		http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
 		return
 	}
-	klog.Infof("Info: Success To publish a message %v to %v", string(telemetryRequest.RawData), telemetryRequest.MQTTSetting.MQTTServerAddress)
+	klog.Infof("Info: Success To publish a message %v to %v", string(request.RawData), request.MQTTSetting.MQTTServerAddress)
 }
 
 func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
@@ -58,7 +58,7 @@ func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
 		klog.Errorf("Error when connect to server error: %v", token.Error())
 		return nil, token.Error()
 	}
-	klog.Infof("Connect to %v success!", settings.MQTTServerAddress)
+	klog.Infof("Connect to %v success!", *settings.MQTTServerAddress)
 	return &client, nil
 }
 
