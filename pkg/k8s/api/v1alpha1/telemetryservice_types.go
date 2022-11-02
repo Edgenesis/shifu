@@ -23,6 +23,12 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// telemetry Service handler
+const (
+	HandlerMQTT = "/mqtt"
+	HandlerSQL  = "/sql"
+)
+
 // HTTPSetting defines HTTP specific settings when connecting to an EdgeDevice
 type HTTPSetting struct {
 	Username *string `json:"username,omitempty"`
