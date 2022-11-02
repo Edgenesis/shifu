@@ -65,11 +65,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
 	}
 
-	if err := base.ValidateTelemetryConfig(); err != nil {
-		klog.Errorf("%v", err)
-		return nil, err
-	}
-
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		// switch for different Shifu Protocols
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
