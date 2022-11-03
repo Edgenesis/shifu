@@ -105,5 +105,5 @@ type SQLConnectionSetting struct {
 type DBType string
 
 const (
-	DBTypeTDEngine DBType = "TDEngine"
+	DBTypeTDengine DBType = "TDengine"
 )
