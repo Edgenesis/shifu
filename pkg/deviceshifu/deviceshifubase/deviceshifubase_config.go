@@ -255,9 +255,7 @@ func (dsiss *DeviceShifuInstructionSettings) init() error {
 		DefaultTimeoutSeconds: &defaultTimeoutSeconds,
 	}
 
-	err := mergo.Merge(dsiss, defaultDeviceshifuInstructionSettings)
-	klog.Infof("%#v", *dsiss.DefaultTimeoutSeconds)
-	return err
+	return mergo.Merge(dsiss, defaultDeviceshifuInstructionSettings)
 }
 
 func (dsts *DeviceShifuTelemetries) init() error {
