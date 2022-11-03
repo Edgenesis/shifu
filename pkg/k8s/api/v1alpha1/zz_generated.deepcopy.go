@@ -420,7 +420,7 @@ func (in *SocketSetting) DeepCopyInto(out *SocketSetting) {
 	}
 	if in.BufferLength != nil {
 		in, out := &in.BufferLength, &out.BufferLength
-		*out = new(int)
+		*out = new(int64)
 		**out = **in
 	}
 	if in.NetworkType != nil {

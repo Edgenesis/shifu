@@ -42,33 +42,25 @@ type DeviceShifu interface {
 
 // Str and default value
 const (
-	ConfigmapDriverPropertiesStr                    = "driverProperties"
-	ConfigmapInstructionsStr                        = "instructions"
-	ConfigmapTelemetriesStr                         = "telemetries"
-	ConfigmapCustomizedInstructionsStr              = "customInstructionsPython"
-	EdgedeviceResourceStr                           = "edgedevices"
-	TelemetryCollectionServiceResourceStr           = "telemetryservices"
-	DeviceTelemetryTimeoutInMS               int64  = 3000
-	DeviceTelemetryUpdateIntervalInMS        int64  = 3000
-	DeviceTelemetryInitialDelayInMS          int64  = 3000
-	DeviceDefaultConnectionTimeoutInMS       int64  = 3000
-	DeviceDefaultPortStr                     string = ":8080"
-	DeviceDefaultRequestTimeoutInMS          int64  = 1000
-	DeviceDefaultTelemetryUpdateIntervalInMS int64  = 1000
-	DeviceIsHealthyStr                       string = "Device is healthy"
-	DeviceConfigmapFolderPath                string = "/etc/edgedevice/config"
-	DeviceKubeconfigDoNotLoadStr             string = "NULL"
-	DeviceNameSpaceDefault                   string = "default"
-	KubernetesConfigDefault                  string = ""
-	DeviceInstructionTimeoutURIQueryStr      string = "timeout"
-	DeviceDefaultGlobalTimeoutInSeconds      int    = 3
-	DefaultHTTPServerTimeoutInSeconds        int    = 0
-	DeviceDefaultCMDDoNotExec                string = "issue_cmd"
-	DeviceDefaultCMDStubHealth               string = "stub_health"
-	PowerShellStubTimeoutStr                 string = "cmdTimeout"
-	PowerShellStubTimeoutTolerationStr       string = "stub_toleration"
-	PythonHandlersModuleName                        = "customized_handlers"
-	PythonScriptDir                                 = "pythoncustomizedhandlers"
+	ConfigmapDriverPropertiesStr                 = "driverProperties"
+	ConfigmapInstructionsStr                     = "instructions"
+	ConfigmapTelemetriesStr                      = "telemetries"
+	ConfigmapCustomizedInstructionsStr           = "customInstructionsPython"
+	EdgedeviceResourceStr                        = "edgedevices"
+	TelemetryCollectionServiceResourceStr        = "telemetryservices"
+	DeviceDefaultPortStr                  string = ":8080"
+	DeviceIsHealthyStr                    string = "Device is healthy"
+	DeviceConfigmapFolderPath             string = "/etc/edgedevice/config"
+	DeviceKubeconfigDoNotLoadStr          string = "NULL"
+	DeviceNameSpaceDefault                string = "default"
+	KubernetesConfigDefault               string = ""
+	DeviceInstructionTimeoutURIQueryStr   string = "timeout"
+	DeviceDefaultCMDDoNotExec             string = "issue_cmd"
+	DeviceDefaultCMDStubHealth            string = "stub_health"
+	PowerShellStubTimeoutStr              string = "cmdTimeout"
+	PowerShellStubTimeoutTolerationStr    string = "stub_toleration"
+	PythonHandlersModuleName                     = "customized_handlers"
+	PythonScriptDir                              = "pythoncustomizedhandlers"
 )
 
 var (

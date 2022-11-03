@@ -396,7 +396,7 @@ func TestCollectHTTPTelemtries(t *testing.T) {
 									DeviceShifuTelemetryPushToServer:      unitest.ToPointer(false),
 									DeviceShifuTelemetryCollectionService: unitest.ToPointer("test_endpoint-1"),
 								},
-								InitialDelayMs: unitest.ToPointer(1),
+								InitialDelayMs: unitest.ToPointer(int64(1)),
 							},
 						},
 					},

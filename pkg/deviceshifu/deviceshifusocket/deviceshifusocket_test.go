@@ -259,7 +259,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 
 func TestDeviceCommandHandlerSocket(t *testing.T) {
 	hexEncoding := v1alpha1.HEX
-	bufferLength := 10
+	bufferLength := int64(10)
 	readBuffer := make([]byte, bufferLength)
 	ds := &DeviceShifu{}
 	server, client := net.Pipe()

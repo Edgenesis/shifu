@@ -3,6 +3,7 @@ package deviceshifubase
 import (
 	"context"
 	"errors"
+
 	"k8s.io/klog/v2"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -39,7 +40,7 @@ type DeviceShifuInstructions struct {
 
 // DeviceShifuInstructionSettings Settings of all instructions
 type DeviceShifuInstructionSettings struct {
-	DefaultTimeoutSeconds *int `yaml:"defaultTimeoutSeconds,omitempty"`
+	DefaultTimeoutSeconds *int64 `yaml:"defaultTimeoutSeconds,omitempty"`
 }
 
 // DeviceShifuInstruction Instruction of deviceshifu
@@ -64,8 +65,8 @@ type DeviceShifuTelemetryPushSettings struct {
 // DeviceShifuTelemetryProperties properties of Telemetry
 type DeviceShifuTelemetryProperties struct {
 	DeviceInstructionName *string                           `yaml:"instruction"`
-	InitialDelayMs        *int                              `yaml:"initialDelayMs,omitempty"`
-	IntervalMs            *int                              `yaml:"intervalMs,omitempty"`
+	InitialDelayMs        *int64                            `yaml:"initialDelayMs,omitempty"`
+	IntervalMs            *int64                            `yaml:"intervalMs,omitempty"`
 	PushSettings          *DeviceShifuTelemetryPushSettings `yaml:"pushSettings,omitempty"`
 }
 
@@ -95,6 +96,19 @@ type EdgeDeviceConfig struct {
 	DeviceName     string
 	KubeconfigPath string
 }
+
+// default value
+const (
+	DeviceInstructionInitialDelay            int64 = 3000
+	DeviceTelemetryTimeoutInMS               int64 = 3000
+	DeviceTelemetryUpdateIntervalInMS        int64 = 3000
+	DeviceTelemetryInitialDelayInMS          int64 = 3000
+	DeviceDefaultConnectionTimeoutInMS       int64 = 3000
+	DeviceDefaultRequestTimeoutInMS          int64 = 1000
+	DeviceDefaultTelemetryUpdateIntervalInMS int64 = 1000
+	DeviceDefaultGlobalTimeoutInSeconds      int64 = 3
+	DefaultHTTPServerTimeoutInSeconds        int64 = 0
+)
 
 // NewDeviceShifuConfig Read the configuration under the path directory and return configuration
 func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {

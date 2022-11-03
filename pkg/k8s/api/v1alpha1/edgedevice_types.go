@@ -68,7 +68,7 @@ type SocketSetting struct {
 	// +kubebuilder:default="utf-8"
 	Encoding *Encoding `json:"encoding,omitempty"`
 	// +kubebuilder:default=1024
-	BufferLength *int    `json:"bufferLength,omitempty"`
+	BufferLength *int64  `json:"bufferLength,omitempty"`
 	NetworkType  *string `json:"networkType,omitempty"`
 }
 
