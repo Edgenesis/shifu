@@ -13,7 +13,7 @@ require (
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/jeffallen/mqtt v0.0.0-20180518073322-5387cfa89df0
+	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.22.1
 	github.com/spf13/cobra v1.5.0
@@ -27,10 +27,9 @@ require (
 )
 
 require (
-	github.com/huin/gobinarytest v0.0.0-20170803182140-bc6c19e91749 // indirect
-	github.com/huin/mqtt v0.0.0-20220729180547-9e81042af5f7 // indirect
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/rs/xid v1.4.0 // indirect
 )
 
 require (
@@ -106,7 +105,6 @@ require (
 	k8s.io/apiextensions-apiserver v0.25.2 // indirect
 	k8s.io/component-base v0.25.3 // indirect
 	k8s.io/kube-openapi v0.0.0-20220803162953-67bda5d908f1 // indirect
-	k8s.io/kubectl v0.25.3
 	k8s.io/utils v0.0.0-20220728103510-ee6ede2d64ed // indirect
 	sigs.k8s.io/json v0.0.0-20220713155537-f223a00ba0e2 // indirect
 	sigs.k8s.io/structured-merge-diff/v4 v4.2.3 // indirect
