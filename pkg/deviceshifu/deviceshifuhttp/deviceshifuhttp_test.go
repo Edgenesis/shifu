@@ -367,6 +367,8 @@ func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
 func TestCollectHTTPTelemtries(t *testing.T) {
 	ts := mockTelemetryServer(t)
 	addr := strings.Split(ts.URL, "//")[1]
+	_, err := unitest.RetryAndGetHTTP(ts.URL, 10)
+	assert.Nil(t, err)
 	mockDevice := &DeviceShifuHTTP{
 		base: &deviceshifubase.DeviceShifuBase{
 			Name: "test",
