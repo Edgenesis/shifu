@@ -13,7 +13,7 @@ spec:
       secret: taosdata
       dbName: shifu
       dbTable: testTable2
-      dbtype: TDEngine
+      dbtype: TDengine
 ---
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: TelemetryService

@@ -30,7 +30,7 @@
 * Added design for telemetry_service to MQTT broker by @BtXin in https://github.com/Edgenesis/shifu/pull/310
 * <docs> fix readme typo by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/337
 * better doc structure by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/326
-* Added design for TDEngine integration by @BtXin in https://github.com/Edgenesis/shifu/pull/339
+* Added design for TDengine integration by @BtXin in https://github.com/Edgenesis/shifu/pull/339
 * [Issue #319] add Linux development guide by @tomqin93 in https://github.com/Edgenesis/shifu/pull/320
 
 ## Dependabot 🤖
