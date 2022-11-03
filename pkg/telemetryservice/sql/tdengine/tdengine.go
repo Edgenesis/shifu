@@ -17,10 +17,10 @@ type DBHelper struct {
 	Settings *v1alpha1.SQLConnectionSetting
 }
 
-func SendToTDengine(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConnectionSetting) error {
+func SendToTDEngine(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConnectionSetting) error {
 	db := &DBHelper{Settings: sqlcs}
 
-	err := db.connectToTDengine(ctx)
+	err := db.connectToTDEngine(ctx)
 	if err != nil {
 		klog.Errorf("Error to Connect to tdengine, error %v", err.Error())
 		return err
@@ -35,9 +35,9 @@ func SendToTDengine(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConn
 	return nil
 }
 
-func (db *DBHelper) connectToTDengine(ctx context.Context) error {
+func (db *DBHelper) connectToTDEngine(ctx context.Context) error {
 	var err error
-	taosUri := constructTDengineUri(db.Settings)
+	taosUri := constructTDEngineUri(db.Settings)
 	db.DB, err = sql.Open("taosRestful", taosUri)
 	klog.Infof("Try connect to tdengine %v", *db.Settings.DBName)
 	return err
@@ -63,7 +63,7 @@ func (db *DBHelper) insertDataToDB(ctx context.Context, rawData []byte) error {
 	return nil
 }
 
-// constructTDengineUri  example: root:taosdata@http(localhost:6041)/test
-func constructTDengineUri(sqlcs *v1alpha1.SQLConnectionSetting) string {
+// constructTDEngineUri  example: root:taosdata@http(localhost:6041)/test
+func constructTDEngineUri(sqlcs *v1alpha1.SQLConnectionSetting) string {
 	return fmt.Sprintf("%s:%s@http(%s)/%s", *sqlcs.UserName, *sqlcs.Secret, *sqlcs.ServerAddress, *sqlcs.DBName)
 }

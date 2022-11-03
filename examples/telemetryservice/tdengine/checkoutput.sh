@@ -12,7 +12,7 @@ do
         exit 1
     fi
 done
-# init TDengine Table
+# init TDEngine Table
 docker exec tdengine taos -f /root/init.sql
 
 for i in {1..30}

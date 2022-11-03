@@ -1,17 +1,17 @@
-# Telemetry Service TDengine Endpoint Design
+# Telemetry Service TDEngine Endpoint Design
 
 ## Introduction
-Telemetry Service is a standalone service that allow `deviceshifu` send its collected telemetry to designated endpoints. This design aims to add `TDengine` endpoint support to current Telemetry Service.
+Telemetry Service is a standalone service that allow `deviceshifu` send its collected telemetry to designated endpoints. This design aims to add `TDEngine` endpoint support to current Telemetry Service.
 
 ## Design-Goal
-Let telemetry service support pushing telemetries to TDengine endpoints.
+Let telemetry service support pushing telemetries to TDEngine endpoints.
 
 ## Design Non-Goal
 Let telemetry service support all timeseriesDB endpoint
 
 
 ## Design Details
-In order to add `TDengine` as a endpoint, we need to add connection related settings telemetry service's CRD, just like  what we did for `MQTT` 
+In order to add `TDEngine` as a endpoint, we need to add connection related settings telemetry service's CRD, just like  what we did for `MQTT` 
 
 ```ymal
 SQLConnectionSetting:
@@ -54,17 +54,17 @@ type TelemetryRequest struct {
 }
 ```
 
-We use the name `SQLConnection` instead of `TDengineConnection` because we want to it to be a generic DB connection setting for scalability concerns. We want to use it to conenct to various DBs instead of TDengine alone.
+We use the name `SQLConnection` instead of `TDEngineConnection` because we want to it to be a generic DB connection setting for scalability concerns. We want to use it to conenct to various DBs instead of TDEngine alone.
 
-Telemetry Service will push the data to TDengine:
+Telemetry Service will push the data to TDEngine:
 ```mermaid
 graph LR;
 DeviceShifu -->|TelemetryRequest| TelemetryService;
-TelemetryService -->|RawData| TDengine;
+TelemetryService -->|RawData| TDEngine;
 
 ```
 
-After we enabled `TDengine` endpoint ,we need to extract corresponding endpoint settings from `TelemetryRequest`.
+After we enabled `TDEngine` endpoint ,we need to extract corresponding endpoint settings from `TelemetryRequest`.
 
 ```go
 func HandleTelemtryRequest(request *TelemetryRequest) err {
@@ -76,10 +76,10 @@ func HandleTelemtryRequest(request *TelemetryRequest) err {
     }
 }
 
-func sendToTDengine(rawData []byte, sqlcs *v1alpha1.SQLConnectionSetting) err {
-	// Send rawData to TDengine
+func sendToTDEngine(rawData []byte, sqlcs *v1alpha1.SQLConnectionSetting) err {
+	// Send rawData to TDEngine
     // sample code:
-    taosUri := constructTDengineUri(sqlcs)
+    taosUri := constructTDEngineUri(sqlcs)
     taos, err := sql.Open("taosSql", taosUri)
     if err != nil {
         klog.Error("failed to connect TDengine, err:", err)
@@ -90,7 +90,7 @@ func sendToTDengine(rawData []byte, sqlcs *v1alpha1.SQLConnectionSetting) err {
 
 }
 
-func constructTDengineUri(sqlcs *v1alpha1.SQLConnectionSetting) (string, error) {
+func constructTDEngineUri(sqlcs *v1alpha1.SQLConnectionSetting) (string, error) {
 
 }
 ```

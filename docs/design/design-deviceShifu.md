@@ -123,7 +123,7 @@ Note: There's no additional components like message queues. Please add those com
     cache[internal cache]
     end
     
-    sg-ds-->tsdb["Time series database (TDengine, InfluxDB, etc.)"]
+    sg-ds-->tsdb["Time series database (TDEngine, InfluxDB, etc.)"]
     sg-ds-->sql["SQL database (MySQL, PostgreSQL, etc."]
     sg-ds-->nosql["NoSQL database (MongoDB, Apache HBase, etc.)"]
 ```

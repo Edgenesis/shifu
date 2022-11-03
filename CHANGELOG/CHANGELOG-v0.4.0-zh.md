@@ -29,7 +29,7 @@
 * 加入 telemetry_service 到 MQTT broker 的设计 by @BtXin in https://github.com/Edgenesis/shifu/pull/310
 * <docs> 修复 README 中的错误 by @MrLeea-13155bc in https://github.com/Edgenesis/shifu/pull/337
 * 更好的文档结构 by @Yang-Xijie in https://github.com/Edgenesis/shifu/pull/326
-* 加入整合 TDengine 的设计 by @BtXin in https://github.com/Edgenesis/shifu/pull/339
+* 加入整合 TDEngine 的设计 by @BtXin in https://github.com/Edgenesis/shifu/pull/339
 * [Issue #319] 添加 Linux 开发指南 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/320
 
 ## Dependabot 自动更新 🤖
