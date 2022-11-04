@@ -11,7 +11,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConstructTDEngineUri(t *testing.T) {
+func TestConstructTDengineUri(t *testing.T) {
 	testCases := []struct {
 		desc   string
 		Input  v1alpha1.SQLConnectionSetting
@@ -30,7 +30,7 @@ func TestConstructTDEngineUri(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			result := constructTDEngineUri(&tC.Input)
+			result := constructTDengineUri(&tC.Input)
 			assert.Equal(t, tC.output, result)
 		})
 	}
@@ -117,11 +117,11 @@ func TestConnectTdengine(t *testing.T) {
 			DBName:        unitest.ToPointer("testDB"),
 		},
 	}
-	err := db.connectToTDEngine(context.TODO())
+	err := db.connectToTDengine(context.TODO())
 	assert.Nil(t, err)
 }
 
-func TestSendToTDEngine(t *testing.T) {
+func TestSendToTDengine(t *testing.T) {
 	settings := &v1alpha1.SQLConnectionSetting{
 		UserName:      unitest.ToPointer("testUser"),
 		Secret:        unitest.ToPointer("testSecret"),
@@ -130,6 +130,6 @@ func TestSendToTDEngine(t *testing.T) {
 		DBTable:       unitest.ToPointer("testTable"),
 	}
 	expectErr := "invalid DSN: network address not terminated (missing closing brace)"
-	err := SendToTDEngine(context.TODO(), []byte("test"), settings)
+	err := SendToTDengine(context.TODO(), []byte("test"), settings)
 	assert.Equal(t, expectErr, err.Error())
 }

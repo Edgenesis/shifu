@@ -30,7 +30,8 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 		request := &v1alpha1.TelemetryRequest{
 			MQTTSetting: tss.ServiceSettings.MQTTSetting,
 		}
-		err := pushToShifuTelemetryCollectionService(message, request, *tss.TelemetrySeriveEndpoint)
+		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMQTT
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
 		}
@@ -40,7 +41,8 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 		request := &v1alpha1.TelemetryRequest{
 			SQLConnectionSetting: tss.ServiceSettings.SQLSetting,
 		}
-		err := pushToShifuTelemetryCollectionService(message, request, *tss.TelemetrySeriveEndpoint)
+		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMQTT
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
 		}

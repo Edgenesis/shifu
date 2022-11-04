@@ -21,7 +21,7 @@ var (
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/mqtt", sendToMQTT)
-	mux.HandleFunc("/sql", sendToTDEngine)
+	mux.HandleFunc("/sql", sendToTDengine)
 	http.ListenAndServe(":9090", mux)
 
 }
@@ -40,7 +40,7 @@ func sendToMQTT(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func sendToTDEngine(w http.ResponseWriter, r *http.Request) {
+func sendToTDengine(w http.ResponseWriter, r *http.Request) {
 	req := &v1alpha1.TelemetryRequest{
 		SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
 			ServerAddress: &targetSqlServer,
@@ -48,7 +48,7 @@ func sendToTDEngine(w http.ResponseWriter, r *http.Request) {
 			Secret:        toPointer("taosdata"),
 			DBName:        toPointer("shifu"),
 			DBTable:       toPointer("testsubtable"),
-			DBType:        toPointer(v1alpha1.DBTypeTDEngine),
+			DBType:        toPointer(v1alpha1.DBTypeTDengine),
 		},
 		RawData: []byte("testData"),
 	}

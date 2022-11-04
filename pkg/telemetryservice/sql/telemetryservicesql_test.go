@@ -33,12 +33,12 @@ func TestBindSQLServiceHandler(t *testing.T) {
 			},
 		},
 		{
-			desc:       "testCase3 db Type TDEngine",
+			desc:       "testCase3 db Type TDengine",
 			expectResp: "Error to send to server\n",
 			requestBody: &v1alpha1.TelemetryRequest{
 				SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
 					ServerAddress: unitest.ToPointer("testAddr"),
-					DBType:        unitest.ToPointer(v1alpha1.DBTypeTDEngine),
+					DBType:        unitest.ToPointer(v1alpha1.DBTypeTDengine),
 					UserName:      unitest.ToPointer("test"),
 					Secret:        unitest.ToPointer("test"),
 					DBName:        unitest.ToPointer("test"),
