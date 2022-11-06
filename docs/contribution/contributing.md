@@ -16,5 +16,5 @@ Secondly, ALL contributions, including but not limited to bug reports/fixes, doc
 
 Below is a list of contribution guides.
 
-- [develop deviceShifu](../guide/development/develop-deviceshifu.md)
+- [develop deviceShifu](../development/develop-deviceshifu.md)
   
