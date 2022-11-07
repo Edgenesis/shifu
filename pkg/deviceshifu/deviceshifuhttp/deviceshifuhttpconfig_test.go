@@ -101,7 +101,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	var mockDeviceTelemetrySettings = deviceshifubase.DeviceShifuTelemetrySettings{
 		DeviceShifuTelemetryUpdateIntervalInMilliseconds: &TelemetryMs6000,
 		DeviceShifuTelemetryTimeoutInMilliseconds:        &TelemetryMs3000,
-		DeviceShifuTelemetryInitialDelayInMilliseconds:   nil,
+		DeviceShifuTelemetryInitialDelayInMilliseconds:   &TelemetryMs3000,
 		DeviceShifuTelemetryDefaultPushToServer:          &TelemetrySettingsDefaultPushToServer,
 		DeviceShifuTelemetryDefaultCollectionService:     &TelemetrySettingsDefaultCollectionService,
 	}
