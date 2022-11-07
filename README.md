@@ -18,7 +18,7 @@
 
 </div>
 
-***Shifu*** is the next-generation open source IoT development framework, makes developing an IoT app as simple as developing a Web app. The high extensibility of ***Shifu*** allows it to integrate almost all devices and protocols. Once a device is integrated, ***Shifu*** generates a digital twin of the device as a microservice in the system and opens up device data and capabilities in the form of APIs. In this way, traditional IoT application development is simplified to web development, which greatly improves the efficiency, quality and reusability of IoT application development.
+***Shifu*** is the next-generation Kubernetes-native open source IoT development framework, which makes developing an IoT app as simple as developing a Web app. The high extensibility of ***Shifu*** allows it to integrate almost all devices and protocols. Once a device is integrated, ***Shifu*** generates a digital twin of the device as a microservice in the system and opens up device data and capabilities in the form of APIs. In this way, traditional IoT application development is simplified to web development, which greatly improves the efficiency, quality and reusability of IoT application development.
 
 |Features<div style="width: 100pt">|  |
 |---|---|
