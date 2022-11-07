@@ -130,7 +130,7 @@ if [ $1 = "build_demo" ]; then
     echo "Finished compressing tar!"
 elif [[ $1 = "run_demo" ]]; then
     echo "running demo"
-    IP_ADDRESS=$( curl cip.cc | head -n1 | cut -d ":" -f 2 | xargs)
+    IP_ADDRESS=$( curl cip.cc --connect-timeout 5 | head -n1 | cut -d ":" -f 2 | xargs)
     curl -X POST https://telemetry.shifu.run/demo-stat/ \
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"begin\"}" > /dev/null 2>&1 || true

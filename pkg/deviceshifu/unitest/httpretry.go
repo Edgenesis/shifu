@@ -23,7 +23,7 @@ func RetryAndGetHTTP(url string, retries int) (*http.Response, error) {
 		if err != nil {
 			klog.Errorf("%v", err)
 			retries--
-			time.Sleep(time.Second * 1)
+			time.Sleep(time.Millisecond * 100)
 			continue
 		}
 

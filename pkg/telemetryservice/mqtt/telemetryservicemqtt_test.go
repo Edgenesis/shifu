@@ -4,37 +4,34 @@ import (
 	"bytes"
 	"encoding/json"
 	"io"
-	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"github.com/jeffallen/mqtt"
+	"github.com/mochi-co/mqtt/server"
+	"github.com/mochi-co/mqtt/server/listeners"
 	"github.com/stretchr/testify/assert"
 	"k8s.io/klog"
 )
 
 const (
-	unitTestServerAddress = "localhost:18927"
+	unitTestServerAddress = "localhost:18928"
 )
 
 func TestMain(m *testing.M) {
-	start := make(chan struct{}, 1)
 	stop := make(chan struct{}, 1)
 	wg := sync.WaitGroup{}
 	os.Setenv("SERVER_LISTEN_PORT", ":18926")
 	wg.Add(1)
 	go func() {
-		mockMQTTServer(stop, start)
+		mockMQTTServer(stop)
 		klog.Infof("Server Closed")
 		wg.Done()
 	}()
-	<-start
 	m.Run()
 	stop <- struct{}{}
 	wg.Wait()
@@ -93,22 +90,22 @@ func TestConnectLostHandler(t *testing.T) {
 	connectLostHandler(nil, nil)
 }
 
-func mockMQTTServer(stop <-chan struct{}, start chan<- struct{}) {
-	lis, err := net.Listen("tcp", unitTestServerAddress)
+func mockMQTTServer(stop <-chan struct{}) {
+	tcp := listeners.NewTCP("t1", unitTestServerAddress)
+	server := server.NewServer(nil)
+	err := server.AddListener(tcp, nil)
 	if err != nil {
-		klog.Fatalf("Error when Listen ad %v, error: %v", unitTestServerAddress, err)
+		klog.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
 	}
-	klog.Infof("mockDevice listen at %v", unitTestServerAddress)
-	svr := mqtt.NewServer(lis)
-	svr.Start()
+	go func() {
+		<-stop
+		server.Close()
+	}()
 
-	start <- struct{}{}
-	select {
-	case <-stop:
-	case <-time.After(time.Second * 10):
-		klog.Fatalf("Timeout")
+	err = server.Serve()
+	if err != nil {
+		klog.Fatalf("Error when MQTT Server Serve, error: %v", err)
 	}
-	lis.Close()
 }
 
 func TestBindMQTTServicehandler(t *testing.T) {

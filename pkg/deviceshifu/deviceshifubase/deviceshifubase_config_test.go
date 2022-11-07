@@ -423,12 +423,12 @@ func TestDeviceShifuTelemetryInit(t *testing.T) {
 			desc: "testCase2 init with some data",
 			dsti: &DeviceShifuTelemetry{
 				DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
-					InitialDelayMs: unitest.ToPointer(123),
+					InitialDelayMs: unitest.ToPointer[int64](123),
 				},
 			},
 			expectedOutput: &DeviceShifuTelemetry{
 				DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
-					InitialDelayMs: unitest.ToPointer(123),
+					InitialDelayMs: unitest.ToPointer[int64](123),
 					IntervalMs:     unitest.ToPointer(DeviceInstructionInitialDelay),
 				},
 			},
@@ -498,13 +498,13 @@ func TestDeviceShifuInstructions(t *testing.T) {
 			desc: "testCase1 with DefaultTimeoutSeconds",
 			dsis: &DeviceShifuInstructions{
 				InstructionSettings: &DeviceShifuInstructionSettings{
-					DefaultTimeoutSeconds: unitest.ToPointer(123),
+					DefaultTimeoutSeconds: unitest.ToPointer[int64](123),
 				},
 			},
 			expectedOutput: &DeviceShifuInstructions{
 				Instructions: map[string]*DeviceShifuInstruction{},
 				InstructionSettings: &DeviceShifuInstructionSettings{
-					DefaultTimeoutSeconds: unitest.ToPointer(123),
+					DefaultTimeoutSeconds: unitest.ToPointer[int64](123),
 				},
 			},
 			expectedErr: "",

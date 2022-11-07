@@ -168,7 +168,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		timeoutStr := r.URL.Query().Get(deviceshifubase.DeviceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
-			timeout, parseErr = strconv.Atoi(timeoutStr)
+			timeout, parseErr = strconv.ParseInt(timeoutStr, 10, 64)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
 				klog.Errorf("timeout URI parsing error" + parseErr.Error())
@@ -318,15 +318,15 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			httpErr, parseErr error
 			ctx               context.Context
 			cancel            context.CancelFunc
-			timeout           = *instructionSettings.DefaultTimeoutSeconds
-			reqType           = http.MethodPost // For command line interface, we only use POST
-			toleration        = 1
+			timeout                 = *instructionSettings.DefaultTimeoutSeconds
+			reqType                 = http.MethodPost // For command line interface, we only use POST
+			toleration        int64 = 1
 		)
 
 		klog.Infof("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
 		timeoutStr := r.URL.Query().Get(deviceshifubase.DeviceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
-			timeout, parseErr = strconv.Atoi(timeoutStr)
+			timeout, parseErr = strconv.ParseInt(timeoutStr, 10, 64)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
 				klog.Infof("timeout URI parsing error %v", parseErr.Error())
@@ -336,7 +336,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 
 		tolerationStr := r.URL.Query().Get(deviceshifubase.PowerShellStubTimeoutTolerationStr)
 		if tolerationStr != "" {
-			toleration, parseErr = strconv.Atoi(tolerationStr)
+			toleration, parseErr = strconv.ParseInt(tolerationStr, 10, 64)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
 				klog.Infof("timeout URI parsing error %v", parseErr.Error())

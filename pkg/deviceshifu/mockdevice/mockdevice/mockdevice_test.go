@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"testing"
 	"time"
 
@@ -12,8 +11,8 @@ import (
 )
 
 func TestStartMockDevice(t *testing.T) {
-	os.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
-	os.Setenv("MOCKDEVICE_PORT", "12345")
+	t.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
+	t.Setenv("MOCKDEVICE_PORT", "12345")
 	availableFuncs := []string{
 		"get_position",
 		"get_status",

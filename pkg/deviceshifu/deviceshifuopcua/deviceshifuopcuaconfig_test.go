@@ -37,7 +37,6 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		InstructionNodeIDValue                = "ns=2;i=2"
 		InstructionNodeIDTime                 = "i=2258"
 		InstructionNodeIDServerVersion        = "i=2261"
-		TelemetryMs1000                       = 1000
 		TelemetryMs1000Int64            int64 = 1000
 		TelemetryMs3000Int64            int64 = 3000
 		TelemetryBoolFalse                    = false
@@ -78,8 +77,8 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 			"device_health": {
 				DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
 					DeviceInstructionName: &InstructionNameGetServerVersion,
-					InitialDelayMs:        &TelemetryMs1000,
-					IntervalMs:            &TelemetryMs1000,
+					InitialDelayMs:        &TelemetryMs1000Int64,
+					IntervalMs:            &TelemetryMs1000Int64,
 				},
 			},
 		},

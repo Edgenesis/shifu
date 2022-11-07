@@ -23,6 +23,12 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// telemetry Service handler
+const (
+	TelemetryServiceURIMQTT = "/mqtt"
+	TelemetryServiceURISQL  = "/sql"
+)
+
 // HTTPSetting defines HTTP specific settings when connecting to an EdgeDevice
 type HTTPSetting struct {
 	Username *string `json:"username,omitempty"`
@@ -99,5 +105,5 @@ type SQLConnectionSetting struct {
 type DBType string
 
 const (
-	DBTypeTDEngine DBType = "TDEngine"
+	DBTypeTDengine DBType = "TDengine"
 )
