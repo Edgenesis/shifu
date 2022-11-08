@@ -290,14 +290,14 @@ func writeMockConfigFile(t *testing.T, serverURL string) {
 
 func TestDeviceShifuTelemetrySettingsInit(t *testing.T) {
 	testCases := []struct {
-		desc           string
-		dsts           *DeviceShifuTelemetrySettings
+		name           string
+		input          *DeviceShifuTelemetrySettings
 		expectedOutput *DeviceShifuTelemetrySettings
 		expectedErr    string
 	}{
 		{
-			desc: "testCase1 init all data",
-			dsts: &DeviceShifuTelemetrySettings{},
+			name:  "testCase1 init all data",
+			input: &DeviceShifuTelemetrySettings{},
 			expectedOutput: &DeviceShifuTelemetrySettings{
 				DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(DeviceDefaultTelemetryUpdateIntervalInMS),
 				DeviceShifuTelemetryTimeoutInMilliseconds:        unitest.ToPointer(DeviceTelemetryTimeoutInMS),
@@ -307,8 +307,8 @@ func TestDeviceShifuTelemetrySettingsInit(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			desc: "testCase2 init with some data",
-			dsts: &DeviceShifuTelemetrySettings{
+			name: "testCase2 init with some data",
+			input: &DeviceShifuTelemetrySettings{
 				DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer[int64](123),
 			},
 			expectedOutput: &DeviceShifuTelemetrySettings{
@@ -320,14 +320,14 @@ func TestDeviceShifuTelemetrySettingsInit(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			desc:        "testCase3 init with nil",
+			name:        "testCase3 init with nil",
 			expectedErr: "only structs and maps are supported",
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			err := tC.dsts.init()
-			assert.Equal(t, tC.expectedOutput, tC.dsts)
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.init()
+			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
 			} else {
@@ -346,14 +346,14 @@ func TestDeviceShifuTelemetriesInit(t *testing.T) {
 		DeviceShifuTelemetryDefaultPushToServer:          unitest.ToPointer(false),
 	}
 	testCases := []struct {
-		desc           string
-		dsts           *DeviceShifuTelemetries
+		name           string
+		input          *DeviceShifuTelemetries
 		expectedOutput *DeviceShifuTelemetries
 		expectedErr    string
 	}{
 		{
-			desc: "testCase1 without Telemetries Map",
-			dsts: &DeviceShifuTelemetries{
+			name: "testCase1 without Telemetries Map",
+			input: &DeviceShifuTelemetries{
 				DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{},
 			},
 			expectedOutput: &DeviceShifuTelemetries{
@@ -363,8 +363,8 @@ func TestDeviceShifuTelemetriesInit(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			desc: "testCase2 without Telemetry",
-			dsts: &DeviceShifuTelemetries{
+			name: "testCase2 without Telemetry",
+			input: &DeviceShifuTelemetries{
 				DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{"test": nil},
 			},
 			expectedOutput: &DeviceShifuTelemetries{
@@ -378,8 +378,8 @@ func TestDeviceShifuTelemetriesInit(t *testing.T) {
 			},
 		},
 		{
-			desc: "testCase3 DeviceShifuTelemetries is emptu",
-			dsts: &DeviceShifuTelemetries{},
+			name:  "testCase3 DeviceShifuTelemetries is emptu",
+			input: &DeviceShifuTelemetries{},
 			expectedOutput: &DeviceShifuTelemetries{
 				DeviceShifuTelemetries:       map[string]*DeviceShifuTelemetry{},
 				DeviceShifuTelemetrySettings: defaultTelemetrySettings,
@@ -388,9 +388,9 @@ func TestDeviceShifuTelemetriesInit(t *testing.T) {
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			err := tC.dsts.init()
-			assert.Equal(t, tC.expectedOutput, tC.dsts)
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.init()
+			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
 			} else {
@@ -403,14 +403,14 @@ func TestDeviceShifuTelemetriesInit(t *testing.T) {
 
 func TestDeviceShifuTelemetryInit(t *testing.T) {
 	testCases := []struct {
-		desc           string
-		dsti           *DeviceShifuTelemetry
+		name           string
+		input          *DeviceShifuTelemetry
 		expectedOutput *DeviceShifuTelemetry
 		expectedErr    string
 	}{
 		{
-			desc: "testCase1 init all data",
-			dsti: &DeviceShifuTelemetry{},
+			name:  "testCase1 init all data",
+			input: &DeviceShifuTelemetry{},
 			expectedOutput: &DeviceShifuTelemetry{
 				DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
 					InitialDelayMs: unitest.ToPointer(DeviceInstructionInitialDelay),
@@ -420,8 +420,8 @@ func TestDeviceShifuTelemetryInit(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			desc: "testCase2 init with some data",
-			dsti: &DeviceShifuTelemetry{
+			name: "testCase2 init with some data",
+			input: &DeviceShifuTelemetry{
 				DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
 					InitialDelayMs: unitest.ToPointer[int64](123),
 				},
@@ -435,14 +435,14 @@ func TestDeviceShifuTelemetryInit(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			desc:        "testCase3 init with nil",
+			name:        "testCase3 init with nil",
 			expectedErr: "only structs and maps are supported",
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			err := tC.dsti.init()
-			assert.Equal(t, tC.expectedOutput, tC.dsti)
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.init()
+			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
 			} else {
@@ -455,28 +455,28 @@ func TestDeviceShifuTelemetryInit(t *testing.T) {
 
 func TestDeviceshifuInstructionSettingsInit(t *testing.T) {
 	testCases := []struct {
-		desc           string
-		dsiss          *DeviceShifuInstructionSettings
+		name           string
+		input          *DeviceShifuInstructionSettings
 		expectedOutput *DeviceShifuInstructionSettings
 		expectedErr    string
 	}{
 		{
-			desc:  "testCase1 init all data",
-			dsiss: &DeviceShifuInstructionSettings{},
+			name:  "testCase1 init all data",
+			input: &DeviceShifuInstructionSettings{},
 			expectedOutput: &DeviceShifuInstructionSettings{
 				DefaultTimeoutSeconds: unitest.ToPointer(DeviceDefaultGlobalTimeoutInSeconds),
 			},
 			expectedErr: "",
 		},
 		{
-			desc:        "testCase2 init with nil",
+			name:        "testCase2 init with nil",
 			expectedErr: "only structs and maps are supported",
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			err := tC.dsiss.init()
-			assert.Equal(t, tC.expectedOutput, tC.dsiss)
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.init()
+			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
 			} else {
@@ -489,14 +489,14 @@ func TestDeviceshifuInstructionSettingsInit(t *testing.T) {
 
 func TestDeviceShifuInstructions(t *testing.T) {
 	testCases := []struct {
-		desc           string
-		dsis           *DeviceShifuInstructions
+		name           string
+		input          *DeviceShifuInstructions
 		expectedOutput *DeviceShifuInstructions
 		expectedErr    string
 	}{
 		{
-			desc: "testCase1 with DefaultTimeoutSeconds",
-			dsis: &DeviceShifuInstructions{
+			name: "testCase1 with DefaultTimeoutSeconds",
+			input: &DeviceShifuInstructions{
 				InstructionSettings: &DeviceShifuInstructionSettings{
 					DefaultTimeoutSeconds: unitest.ToPointer[int64](123),
 				},
@@ -510,8 +510,8 @@ func TestDeviceShifuInstructions(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			desc: "testCase2 with empty",
-			dsis: &DeviceShifuInstructions{},
+			name:  "testCase2 with empty",
+			input: &DeviceShifuInstructions{},
 			expectedOutput: &DeviceShifuInstructions{
 				Instructions: map[string]*DeviceShifuInstruction{},
 				InstructionSettings: &DeviceShifuInstructionSettings{
@@ -522,9 +522,9 @@ func TestDeviceShifuInstructions(t *testing.T) {
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			err := tC.dsis.init()
-			assert.Equal(t, tC.expectedOutput, tC.dsis)
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.init()
+			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
 			} else {
@@ -537,14 +537,14 @@ func TestDeviceShifuInstructions(t *testing.T) {
 
 func TestDeviceShifuDriverProperties(t *testing.T) {
 	testCases := []struct {
-		desc           string
-		dsdp           *DeviceShifuDriverProperties
+		name           string
+		input          *DeviceShifuDriverProperties
 		expectedOutput *DeviceShifuDriverProperties
 		expectedErr    string
 	}{
 		{
-			desc: "testCase1 with DefaultTimeoutSeconds",
-			dsdp: &DeviceShifuDriverProperties{
+			name: "testCase1 with DefaultTimeoutSeconds",
+			input: &DeviceShifuDriverProperties{
 				DriverSku: "test",
 			},
 			expectedOutput: &DeviceShifuDriverProperties{
@@ -555,8 +555,8 @@ func TestDeviceShifuDriverProperties(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			desc: "testCase2 with empty",
-			dsdp: &DeviceShifuDriverProperties{},
+			name:  "testCase2 with empty",
+			input: &DeviceShifuDriverProperties{},
 			expectedOutput: &DeviceShifuDriverProperties{
 				DriverSku:       "defaultSku",
 				DriverImage:     "defaultImage",
@@ -565,14 +565,14 @@ func TestDeviceShifuDriverProperties(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			desc:        "testCase3 with nil",
+			name:        "testCase3 with nil",
 			expectedErr: "only structs and maps are supported",
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			err := tC.dsdp.init()
-			assert.Equal(t, tC.expectedOutput, tC.dsdp)
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.init()
+			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
 			} else {
@@ -585,14 +585,14 @@ func TestDeviceShifuDriverProperties(t *testing.T) {
 
 func TestDeviceShifuConfig(t *testing.T) {
 	testCases := []struct {
-		desc           string
-		dsc            *DeviceShifuConfig
+		name           string
+		input          *DeviceShifuConfig
 		expectedOutput *DeviceShifuConfig
 		expectedErr    string
 	}{
 		{
-			desc: "testCase1 with some data empty",
-			dsc: &DeviceShifuConfig{
+			name: "testCase1 with some data empty",
+			input: &DeviceShifuConfig{
 				Instructions: DeviceShifuInstructions{
 					Instructions: map[string]*DeviceShifuInstruction{},
 					InstructionSettings: &DeviceShifuInstructionSettings{
@@ -644,8 +644,8 @@ func TestDeviceShifuConfig(t *testing.T) {
 			expectedErr: "",
 		},
 		{
-			desc: "testCase2 with empty",
-			dsc:  &DeviceShifuConfig{},
+			name:  "testCase2 with empty",
+			input: &DeviceShifuConfig{},
 			expectedOutput: &DeviceShifuConfig{
 				Instructions: DeviceShifuInstructions{
 					Instructions: map[string]*DeviceShifuInstruction{},
@@ -672,9 +672,9 @@ func TestDeviceShifuConfig(t *testing.T) {
 		},
 	}
 	for _, tC := range testCases {
-		t.Run(tC.desc, func(t *testing.T) {
-			err := tC.dsc.init()
-			assert.Equal(t, tC.expectedOutput, tC.dsc)
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.init()
+			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
 			} else {

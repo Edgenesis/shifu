@@ -216,50 +216,50 @@ func newEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 }
 
 // init DeviceShifuConfig With default
-func (dsc *DeviceShifuConfig) init() error {
-	if err := dsc.DriverProperties.init(); err != nil {
-		klog.Errorf("Error to init DriverProperties, error %s", err.Error())
+func (dsConfig *DeviceShifuConfig) init() error {
+	if err := dsConfig.DriverProperties.init(); err != nil {
+		klog.Errorf("Error initializing DriverProperties, error %s", err.Error())
 		return err
 	}
 
-	if dsc.Telemetries == nil {
-		dsc.Telemetries = &DeviceShifuTelemetries{}
+	if dsConfig.Telemetries == nil {
+		dsConfig.Telemetries = &DeviceShifuTelemetries{}
 	}
-	if err := dsc.Telemetries.init(); err != nil {
-		klog.Errorf("Error to init Telemetries, error %s", err.Error())
+	if err := dsConfig.Telemetries.init(); err != nil {
+		klog.Errorf("Error initializing Telemetries, error %s", err.Error())
 		return err
 	}
 
-	if err := dsc.Instructions.init(); err != nil {
-		klog.Errorf("Error to init Instructions, error %s", err.Error())
+	if err := dsConfig.Instructions.init(); err != nil {
+		klog.Errorf("Error initializing Instructions, error %s", err.Error())
 		return err
 	}
 
 	return nil
 }
 
-func (dsdp *DeviceShifuDriverProperties) init() error {
+func (driverProperties *DeviceShifuDriverProperties) init() error {
 	defaultProperties := &DeviceShifuDriverProperties{
 		DriverSku:       "defaultSku",
 		DriverImage:     "defaultImage",
 		DriverExecution: "defaultExecution",
 	}
-	return mergo.Merge(dsdp, defaultProperties)
+	return mergo.Merge(driverProperties, defaultProperties)
 }
 
-func (dsis *DeviceShifuInstructions) init() error {
-	if dsis.Instructions == nil {
-		dsis.Instructions = map[string]*DeviceShifuInstruction{}
+func (instructions *DeviceShifuInstructions) init() error {
+	if instructions.Instructions == nil {
+		instructions.Instructions = map[string]*DeviceShifuInstruction{}
 	}
 
-	if dsis.InstructionSettings == nil {
-		dsis.InstructionSettings = &DeviceShifuInstructionSettings{}
+	if instructions.InstructionSettings == nil {
+		instructions.InstructionSettings = &DeviceShifuInstructionSettings{}
 	}
 
-	return dsis.InstructionSettings.init()
+	return instructions.InstructionSettings.init()
 }
 
-func (dsiss *DeviceShifuInstructionSettings) init() error {
+func (instructionSettings *DeviceShifuInstructionSettings) init() error {
 	var (
 		defaultTimeoutSeconds = DeviceDefaultGlobalTimeoutInSeconds
 	)
@@ -268,31 +268,31 @@ func (dsiss *DeviceShifuInstructionSettings) init() error {
 		DefaultTimeoutSeconds: &defaultTimeoutSeconds,
 	}
 
-	return mergo.Merge(dsiss, defaultDeviceshifuInstructionSettings)
+	return mergo.Merge(instructionSettings, defaultDeviceshifuInstructionSettings)
 }
 
-func (dsts *DeviceShifuTelemetries) init() error {
-	if dsts.DeviceShifuTelemetries == nil {
-		dsts.DeviceShifuTelemetries = map[string]*DeviceShifuTelemetry{}
+func (telemetries *DeviceShifuTelemetries) init() error {
+	if telemetries.DeviceShifuTelemetries == nil {
+		telemetries.DeviceShifuTelemetries = map[string]*DeviceShifuTelemetry{}
 	}
-	for id := range dsts.DeviceShifuTelemetries {
-		if dsts.DeviceShifuTelemetries[id] == nil {
-			dsts.DeviceShifuTelemetries[id] = &DeviceShifuTelemetry{}
+	for id := range telemetries.DeviceShifuTelemetries {
+		if telemetries.DeviceShifuTelemetries[id] == nil {
+			telemetries.DeviceShifuTelemetries[id] = &DeviceShifuTelemetry{}
 		}
-		err := dsts.DeviceShifuTelemetries[id].init()
+		err := telemetries.DeviceShifuTelemetries[id].init()
 		if err != nil {
-			klog.Errorf("Error to init telemetry, error %s", err.Error())
+			klog.Errorf("Error initializing telemetry, error %s", err.Error())
 			return err
 		}
 	}
 
-	if dsts.DeviceShifuTelemetrySettings == nil {
-		dsts.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
+	if telemetries.DeviceShifuTelemetrySettings == nil {
+		telemetries.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
 	}
-	return dsts.DeviceShifuTelemetrySettings.init()
+	return telemetries.DeviceShifuTelemetrySettings.init()
 }
 
-func (dst *DeviceShifuTelemetry) init() error {
+func (telemetry *DeviceShifuTelemetry) init() error {
 	var (
 		defaultInitialDelay = DeviceInstructionInitialDelay
 	)
@@ -304,10 +304,10 @@ func (dst *DeviceShifuTelemetry) init() error {
 		},
 	}
 
-	return mergo.Merge(dst, defaultDeviceShifuTelemetry)
+	return mergo.Merge(telemetry, defaultDeviceShifuTelemetry)
 }
 
-func (dsts *DeviceShifuTelemetrySettings) init() error {
+func (telemetrySettings *DeviceShifuTelemetrySettings) init() error {
 	var (
 		defaultUpdateInterval = DeviceDefaultTelemetryUpdateIntervalInMS
 		defaultTimeout        = DeviceTelemetryTimeoutInMS
@@ -320,5 +320,5 @@ func (dsts *DeviceShifuTelemetrySettings) init() error {
 		DeviceShifuTelemetryInitialDelayInMilliseconds:   &defaultInitialDelay,
 		DeviceShifuTelemetryDefaultPushToServer:          &defaultPushToServer,
 	}
-	return mergo.Merge(dsts, defaultDeviceshifuTelemtrySettings)
+	return mergo.Merge(telemetrySettings, defaultDeviceshifuTelemtrySettings)
 }
