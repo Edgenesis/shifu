@@ -1,11 +1,19 @@
-FROM golang:1.19.2
+FROM --platform=$BUILDPLATFORM golang:1.19.2 as builder
+WORKDIR /shifu
 
-WORKDIR /worker
-
+ENV GO111MODULE=on
 COPY examples/socketDeviceShifu/server/server.go server.go
 
-RUN go build -o /output/server server.go
+# Build the Go app
+ARG TARGETOS
+ARG TARGETARCH
 
-EXPOSE 11122:11122/tcp
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a \
+    -o /output/server server.go
 
-ENTRYPOINT [ "/output/server" ]
+FROM gcr.io/distroless/static-debian11
+WORKDIR /
+COPY --from=builder /output/server server
+
+USER 65532:65532
+ENTRYPOINT [ "/server" ]

@@ -37,8 +37,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		InstructionNodeIDValue                = "ns=2;i=2"
 		InstructionNodeIDTime                 = "i=2258"
 		InstructionNodeIDServerVersion        = "i=2261"
-		TelemetryMs1000                       = 1000
-		TelemetryMs1000Int64            int64 = 1000
+		TelemetryMs1000                 int64 = 1000
 	)
 
 	var DriverProperties = deviceshifubase.DeviceShifuDriverProperties{
@@ -67,7 +66,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 
 	var mockDeviceTelemetries = &deviceshifubase.DeviceShifuTelemetries{
 		DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
-			DeviceShifuTelemetryUpdateIntervalInMilliseconds: &TelemetryMs1000Int64,
+			DeviceShifuTelemetryUpdateIntervalInMilliseconds: &TelemetryMs1000,
 		},
 		DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
 			"device_health": {
