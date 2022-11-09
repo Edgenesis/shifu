@@ -10,7 +10,7 @@ Secondly, ALL contributions, including but not limited to bug reports/fixes, doc
 3. Finally, you can get your hands dirty and start setting up the development environment.
    1. If you are using Linux, please refer to [develop on Linux](../development/develop-on-linux.md)
    2. If you are using MacOS, please refer to [develop on Mac](../development/develop-on-mac.md).
-   3. If you are using Windows, please refer to [develop on Windows](../development/develop-on-Windows.md).
+   3. If you are using Windows, please refer to [develop on Windows](../development/develop-on-windows.md).
 
 ## Next steps
 
