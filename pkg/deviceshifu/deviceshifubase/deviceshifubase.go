@@ -2,7 +2,6 @@ package deviceshifubase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -171,37 +170,6 @@ func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDe
 	if err != nil {
 		klog.Errorf("Unable to update status, error: %v", err)
 	}
-}
-
-// ValidateTelemetryConfig Validate TelemetryConfig
-func (ds *DeviceShifuBase) ValidateTelemetryConfig() error {
-	if ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings == nil {
-		ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
-	}
-
-	var dsTelemetrySettings = ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
-	if initial := dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds; initial == nil {
-		var telemetryInitialDelayInMilliseconds = DeviceTelemetryInitialDelayInMS
-		dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds = &telemetryInitialDelayInMilliseconds
-	} else if *initial < 0 {
-		return errors.New("error deviceShifuTelemetryInitialDelay mustn't be negative number")
-	}
-
-	if timeout := dsTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds; timeout == nil {
-		var telemetryTimeoutInMilliseconds = DeviceTelemetryTimeoutInMS
-		dsTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds = &telemetryTimeoutInMilliseconds
-	} else if *timeout < 0 {
-		return errors.New("error deviceShifuTelemetryTimeout mustn't be negative number")
-	}
-
-	if interval := dsTelemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds; interval == nil {
-		var telemetryUpdateIntervalInMilliseconds = DeviceTelemetryUpdateIntervalInMS
-		dsTelemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = &telemetryUpdateIntervalInMilliseconds
-	} else if *interval < 0 {
-		return errors.New("error deviceShifuTelemetryInterval mustn't be negative number")
-	}
-
-	return nil
 }
 
 func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {
