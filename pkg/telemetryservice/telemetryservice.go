@@ -5,15 +5,16 @@ import (
 	"os"
 
 	"github.com/edgenesis/shifu/pkg/telemetryservice/mqtt"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/sql"
 	"k8s.io/klog"
 )
 
 var serverListenPort = os.Getenv("SERVER_LISTEN_PORT")
 
-// TODO: need to modify path of mqtt.BindMQTTServicehandler after other servie implement
 func New(stop <-chan struct{}) {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/", mqtt.BindMQTTServicehandler)
+	mux.HandleFunc("/mqtt", mqtt.BindMQTTServicehandler)
+	mux.HandleFunc("/sql", sql.BindSQLServiceHandler)
 	err := Start(stop, mux, serverListenPort)
 	if err != nil {
 		klog.Errorf("Error when telemetryService Running, error: %v", err)

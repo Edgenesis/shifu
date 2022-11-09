@@ -101,6 +101,7 @@ spec:
                     properties:
                       bufferLength:
                         default: 1024
+                        format: int64
                         type: integer
                       encoding:
                         default: utf-8
@@ -161,15 +162,10 @@ spec:
           spec:
             description: TelemetryServiceSpec defines the desired state of TelemetryService
             properties:
-              address:
-                type: string
               customMetadata:
                 additionalProperties:
                   type: string
                 type: object
-              protocol:
-                description: Protocol specifies the EdgeDevice's communication protocol.
-                type: string
               serviceSettings:
                 description: ServiceSettings defines service settings on telemetry
                 properties:
@@ -193,7 +189,24 @@ spec:
                       MQTTTopic:
                         type: string
                     type: object
+                  SQLSetting:
+                    properties:
+                      dbName:
+                        type: string
+                      dbTable:
+                        type: string
+                      dbtype:
+                        type: string
+                      secret:
+                        type: string
+                      serverAddress:
+                        type: string
+                      username:
+                        type: string
+                    type: object
                 type: object
+              telemetrySeriveEndpoint:
+                type: string
             type: object
           status:
             description: TelemetryServiceStatus defines the observed state of TelemetryService

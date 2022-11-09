@@ -99,7 +99,11 @@ func replaceTag(file *os.File, oldTag string, newTag string) error {
 			return err
 		}
 
-		if strings.Contains(line, "image") && (strings.Contains(line, "deviceshifu") || strings.Contains(line, "mockdevice")) && strings.Contains(line, oldTag) {
+		if strings.Contains(line, "image") &&
+			(strings.Contains(line, "deviceshifu") ||
+				strings.Contains(line, "mockdevice") ||
+				strings.Contains(line, "telemetryservice")) &&
+			strings.Contains(line, oldTag) {
 			line = strings.Replace(line, oldTag, newTag, 1)
 		}
 

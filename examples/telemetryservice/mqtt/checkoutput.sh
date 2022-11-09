@@ -1,10 +1,10 @@
 #!bin/bash
 
 default='testData'
-
-for i in {1..100} 
+# testMQTT
+for i in {1..30} 
 do
-    docker run -itd --network host edgehub/mockclient:$1
+    docker exec nginx curl localhost:9090/mqtt
     output=$(docker exec nginx curl localhost:17773/data)
     echo $output
     echo $default

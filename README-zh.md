@@ -53,27 +53,35 @@ kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
 了解更多内容请查看我们的[文档](https://shifu.run/zh-Hans/docs/)。
 
 ## 设计理念
-#### 📡 易于部署
+
+### 📡 易于部署
+
 Shifu必须只用一个命令即可完成部署。
-#### 🤖即插即用
+
+### 🤖即插即用
+
 Shifu必须自动识别并为一个新的物联网设备提供基本功能。一旦开发者完成了Shifu的模板，设备的所有功能就应该立即可用。
-#### 🪄易于扩展
+
+### 🪄易于扩展
+
 开发者可以进一步实现Shifu的接口/SDK，以创建自定义功能，释放出无限的可能性。
-#### 🔧零维护
+
+### 🔧零维护
+
 Shifu的目标是通过采用前沿的云原生最佳实践来实现零维护。毕竟，Shifu需要先照顾好自己，才能让物联网开发人员的工作更轻松!
 
 ## 社区
 
 ### 贡献
 
-***Shifu*** 欢迎您 [新建 Issue](https://github.com/Edgenesis/shifu/issues/new) 或 [提交 PR](https://github.com/Edgenesis/shifu/pulls)。
+我们欢迎各种来自于社区的贡献！请看我们的[贡献指南](./docs/contribution/contributing.md)
 
 ### 联系我们
 
 - 电子邮件
-    - info@edgenesis.com 
+    - info@edgenesis.com
 - 微信
-    - Donoteattoomuchla 
+    - Donoteattoomuchla
     - if7369
 
 ## GitHub Star 数量

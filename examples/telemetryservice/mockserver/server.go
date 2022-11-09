@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"k8s.io/klog"
@@ -61,16 +62,22 @@ var messageSubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 }
 
 func connectToMQTT(address string) (*mqtt.Client, error) {
-	opts := mqtt.NewClientOptions()
-	opts.AddBroker(fmt.Sprintf("tcp://%s", address))
-	opts.SetClientID("mockServer")
-	opts.SetDefaultPublishHandler(messageSubHandler)
-	opts.OnConnect = connectHandler
-	opts.OnConnectionLost = connectLostHandler
-	client := mqtt.NewClient(opts)
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		klog.Errorf("Error when connect to server error: %v", token.Error())
-		return nil, token.Error()
+	var client mqtt.Client
+	ticker := time.NewTicker(time.Second).C
+	for i := 0; i < 20; i++ {
+		<-ticker
+		opts := mqtt.NewClientOptions()
+		opts.AddBroker(fmt.Sprintf("tcp://%s", address))
+		opts.SetClientID("mockServer")
+		opts.SetDefaultPublishHandler(messageSubHandler)
+		opts.OnConnect = connectHandler
+		opts.OnConnectionLost = connectLostHandler
+		client = mqtt.NewClient(opts)
+		if token := client.Connect(); token.Wait() && token.Error() != nil {
+			klog.Errorf("Error when connect to server error: %v", token.Error())
+			continue
+		}
+		break
 	}
 
 	return &client, nil

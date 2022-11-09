@@ -19,16 +19,14 @@ data:
     telemetrySettings:
       telemetryUpdateIntervalInMilliseconds: 6000
       telemetryTimeoutInMilliseconds: 3000
-      defaultPushToServer: true
-      defaultTelemetryCollectionService: push-endpoint-1
     telemetries:
-      device_health:
+      device_health1:
         properties:
           instruction: status
           pushSettings:
-            telemetryCollectionService: push-endpoint-2
+           telemetryCollectionService: push-endpoint-1
       device_health2:
         properties:
-          instruction: info
+          instruction: status
           pushSettings:
-            pushToServer: false
+          telemetryCollectionService: push-endpoint-2

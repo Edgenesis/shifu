@@ -36,11 +36,14 @@ type ConfigMapData struct {
 func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
 		TelemetryMs1000Int64 int64 = 1000
+		TelemetryMs3000Int64 int64 = 3000
+		TelemetryBoolFalse   bool  = false
 	)
 
 	var DriverProperties = deviceshifubase.DeviceShifuDriverProperties{
-		DriverSku:   "Edgenesis Mock Device",
-		DriverImage: "edgenesis/mockdevice:v0.0.1",
+		DriverSku:       "Edgenesis Mock Device",
+		DriverImage:     "edgenesis/mockdevice:v0.0.1",
+		DriverExecution: "defaultExecution",
 	}
 
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
@@ -50,7 +53,11 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	var mockDeviceTelemetries = &deviceshifubase.DeviceShifuTelemetries{
 		DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
 			DeviceShifuTelemetryUpdateIntervalInMilliseconds: &TelemetryMs1000Int64,
+			DeviceShifuTelemetryTimeoutInMilliseconds:        &TelemetryMs3000Int64,
+			DeviceShifuTelemetryInitialDelayInMilliseconds:   &TelemetryMs3000Int64,
+			DeviceShifuTelemetryDefaultPushToServer:          &TelemetryBoolFalse,
 		},
+		DeviceShifuTelemetries: make(map[string]*deviceshifubase.DeviceShifuTelemetry),
 	}
 
 	mockdsc, err := deviceshifubase.NewDeviceShifuConfig(MockDeviceConfigFolder)

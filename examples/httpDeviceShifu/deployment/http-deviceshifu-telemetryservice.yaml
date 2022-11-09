@@ -5,18 +5,24 @@ metadata:
   name: push-endpoint-1
   namespace: devices
 spec:
-  type: HTTP
-  address: http://192.168.15.48:12345/endpoint1
+  telemetrySeriveEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
   serviceSettings:
-    HTTPSetting:
-      username: admin
-      password: password
---- #telemetry_service2.yaml
+    MQTTSetting:
+      MQTTServerAddress: 192.168.14.163:1883
+      MQTTTopic: /test/test
+--- #telemetry_service.yaml
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: TelemetryService
 metadata:
   name: push-endpoint-2
   namespace: devices
 spec:
-  type: HTTP
-  address: http://192.168.15.48:12345/api1
+  telemetrySeriveEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
+  serviceSettings:
+    SQLSetting:
+      serverAddress: 192.168.14.163:6041
+      username: root
+      secret: taosdata
+      dbName: shifu
+      dbTable: testTable2
+      dbtype: TDEngine

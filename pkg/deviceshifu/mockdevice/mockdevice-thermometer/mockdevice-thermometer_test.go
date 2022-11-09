@@ -1,15 +1,15 @@
 package main
 
 import (
-	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
-	"github.com/stretchr/testify/assert"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestInstructionHandler(t *testing.T) {
@@ -17,8 +17,8 @@ func TestInstructionHandler(t *testing.T) {
 		"read_value",
 		"get_status",
 	}
-	os.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
-	os.Setenv("MOCKDEVICE_PORT", "12345")
+	t.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
+	t.Setenv("MOCKDEVICE_PORT", "12345")
 	mocks := []struct {
 		name       string
 		url        string

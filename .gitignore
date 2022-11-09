@@ -10,6 +10,7 @@
 
 # Test binary, built with `go test -c`
 *.test
+*.pyc
 
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
@@ -30,3 +31,4 @@ go.work
 # Test
 mockconfig
 setup-envtest
+__debug_bin
