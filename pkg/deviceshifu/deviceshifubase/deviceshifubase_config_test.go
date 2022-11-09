@@ -326,7 +326,7 @@ func TestDeviceShifuTelemetrySettingsInit(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			err := tC.input.init()
+			err := tC.input.load()
 			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
@@ -389,7 +389,7 @@ func TestDeviceShifuTelemetriesInit(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			err := tC.input.init()
+			err := tC.input.load()
 			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
@@ -441,7 +441,7 @@ func TestDeviceShifuTelemetryInit(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			err := tC.input.init()
+			err := tC.input.load()
 			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
@@ -475,7 +475,7 @@ func TestDeviceshifuInstructionSettingsInit(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			err := tC.input.init()
+			err := tC.input.load()
 			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
@@ -523,7 +523,7 @@ func TestDeviceShifuInstructions(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			err := tC.input.init()
+			err := tC.input.load()
 			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
@@ -571,7 +571,7 @@ func TestDeviceShifuDriverProperties(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			err := tC.input.init()
+			err := tC.input.load()
 			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)
@@ -673,7 +673,7 @@ func TestDeviceShifuConfig(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			err := tC.input.init()
+			err := tC.input.load()
 			assert.Equal(t, tC.expectedOutput, tC.input)
 			if tC.expectedErr == "" {
 				assert.Nil(t, err)

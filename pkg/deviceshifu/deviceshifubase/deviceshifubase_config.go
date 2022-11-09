@@ -156,7 +156,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 		}
 	}
 
-	err = dsc.init()
+	err = dsc.load()
 	return dsc, err
 }
 
@@ -216,8 +216,8 @@ func newEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 }
 
 // init DeviceShifuConfig With default
-func (dsConfig *DeviceShifuConfig) init() error {
-	if err := dsConfig.DriverProperties.init(); err != nil {
+func (dsConfig *DeviceShifuConfig) load() error {
+	if err := dsConfig.DriverProperties.load(); err != nil {
 		klog.Errorf("Error initializing DriverProperties, error %s", err.Error())
 		return err
 	}
@@ -225,12 +225,12 @@ func (dsConfig *DeviceShifuConfig) init() error {
 	if dsConfig.Telemetries == nil {
 		dsConfig.Telemetries = &DeviceShifuTelemetries{}
 	}
-	if err := dsConfig.Telemetries.init(); err != nil {
+	if err := dsConfig.Telemetries.load(); err != nil {
 		klog.Errorf("Error initializing Telemetries, error %s", err.Error())
 		return err
 	}
 
-	if err := dsConfig.Instructions.init(); err != nil {
+	if err := dsConfig.Instructions.load(); err != nil {
 		klog.Errorf("Error initializing Instructions, error %s", err.Error())
 		return err
 	}
@@ -238,7 +238,7 @@ func (dsConfig *DeviceShifuConfig) init() error {
 	return nil
 }
 
-func (driverProperties *DeviceShifuDriverProperties) init() error {
+func (driverProperties *DeviceShifuDriverProperties) load() error {
 	defaultProperties := &DeviceShifuDriverProperties{
 		DriverSku:       "defaultSku",
 		DriverImage:     "defaultImage",
@@ -247,7 +247,7 @@ func (driverProperties *DeviceShifuDriverProperties) init() error {
 	return mergo.Merge(driverProperties, defaultProperties)
 }
 
-func (instructions *DeviceShifuInstructions) init() error {
+func (instructions *DeviceShifuInstructions) load() error {
 	if instructions.Instructions == nil {
 		instructions.Instructions = map[string]*DeviceShifuInstruction{}
 	}
@@ -256,10 +256,10 @@ func (instructions *DeviceShifuInstructions) init() error {
 		instructions.InstructionSettings = &DeviceShifuInstructionSettings{}
 	}
 
-	return instructions.InstructionSettings.init()
+	return instructions.InstructionSettings.load()
 }
 
-func (instructionSettings *DeviceShifuInstructionSettings) init() error {
+func (instructionSettings *DeviceShifuInstructionSettings) load() error {
 	var (
 		defaultTimeoutSeconds = DeviceDefaultGlobalTimeoutInSeconds
 	)
@@ -271,7 +271,7 @@ func (instructionSettings *DeviceShifuInstructionSettings) init() error {
 	return mergo.Merge(instructionSettings, defaultDeviceshifuInstructionSettings)
 }
 
-func (telemetries *DeviceShifuTelemetries) init() error {
+func (telemetries *DeviceShifuTelemetries) load() error {
 	if telemetries.DeviceShifuTelemetries == nil {
 		telemetries.DeviceShifuTelemetries = map[string]*DeviceShifuTelemetry{}
 	}
@@ -279,7 +279,7 @@ func (telemetries *DeviceShifuTelemetries) init() error {
 		if telemetries.DeviceShifuTelemetries[id] == nil {
 			telemetries.DeviceShifuTelemetries[id] = &DeviceShifuTelemetry{}
 		}
-		err := telemetries.DeviceShifuTelemetries[id].init()
+		err := telemetries.DeviceShifuTelemetries[id].load()
 		if err != nil {
 			klog.Errorf("Error initializing telemetry, error %s", err.Error())
 			return err
@@ -289,10 +289,10 @@ func (telemetries *DeviceShifuTelemetries) init() error {
 	if telemetries.DeviceShifuTelemetrySettings == nil {
 		telemetries.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
 	}
-	return telemetries.DeviceShifuTelemetrySettings.init()
+	return telemetries.DeviceShifuTelemetrySettings.load()
 }
 
-func (telemetry *DeviceShifuTelemetry) init() error {
+func (telemetry *DeviceShifuTelemetry) load() error {
 	var (
 		defaultInitialDelay = DeviceInstructionInitialDelay
 	)
@@ -307,7 +307,7 @@ func (telemetry *DeviceShifuTelemetry) init() error {
 	return mergo.Merge(telemetry, defaultDeviceShifuTelemetry)
 }
 
-func (telemetrySettings *DeviceShifuTelemetrySettings) init() error {
+func (telemetrySettings *DeviceShifuTelemetrySettings) load() error {
 	var (
 		defaultUpdateInterval = DeviceDefaultTelemetryUpdateIntervalInMS
 		defaultTimeout        = DeviceTelemetryTimeoutInMS
