@@ -23,7 +23,7 @@ require (
 	k8s.io/klog v1.0.0
 	k8s.io/klog/v2 v2.80.1
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
-	sigs.k8s.io/controller-runtime v0.13.0
+	sigs.k8s.io/controller-runtime v0.13.1
 )
 
 require (
