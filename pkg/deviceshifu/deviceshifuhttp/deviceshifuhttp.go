@@ -238,10 +238,9 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 
 			rawRespBodyString := string(respBody)
-			respBodyString := rawRespBodyString
 			klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 			klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-			respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
+			respBodyString := utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
 
 			_, writeErr := io.WriteString(w, respBodyString)
 			if writeErr != nil {
