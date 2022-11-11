@@ -4,7 +4,7 @@
 
 ### 本指南已在以下平台中测试过:
 ```
-MacBook Pro (14-inch, 2021)
+MacBook Pro (13-inch, 2022 M2 Pro)
 ```
 
 如您在使用本指南中有任何的问题以及发现了任何错误请毫不犹豫的在GitHub中建立一个 [issue](https://github.com/Edgenesis/shifu/issues/new) 。
