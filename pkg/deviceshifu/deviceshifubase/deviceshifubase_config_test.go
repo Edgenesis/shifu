@@ -321,7 +321,7 @@ func TestDeviceShifuTelemetrySettingsInit(t *testing.T) {
 		},
 		{
 			name:        "testCase3 init with nil",
-			expectedErr: "only structs and maps are supported",
+			expectedErr: "only structs, maps, and slices are supported",
 		},
 	}
 	for _, tC := range testCases {
@@ -436,7 +436,7 @@ func TestDeviceShifuTelemetryInit(t *testing.T) {
 		},
 		{
 			name:        "testCase3 init with nil",
-			expectedErr: "only structs and maps are supported",
+			expectedErr: "only structs, maps, and slices are supported",
 		},
 	}
 	for _, tC := range testCases {
@@ -470,7 +470,7 @@ func TestDeviceshifuInstructionSettingsInit(t *testing.T) {
 		},
 		{
 			name:        "testCase2 init with nil",
-			expectedErr: "only structs and maps are supported",
+			expectedErr: "only structs, maps, and slices are supported",
 		},
 	}
 	for _, tC := range testCases {
@@ -566,7 +566,7 @@ func TestDeviceShifuDriverProperties(t *testing.T) {
 		},
 		{
 			name:        "testCase3 with nil",
-			expectedErr: "only structs and maps are supported",
+			expectedErr: "only structs, maps, and slices are supported",
 		},
 	}
 	for _, tC := range testCases {
