@@ -27,7 +27,7 @@ func printVersion() {
 		panic(err)
 	}
 
-	versionPath := path.Join(shifuRootDir, "version.txt")
+	versionPath := path.Join(shifuRootDir, VersionFile)
 	versionByteSlice, err := os.ReadFile(versionPath)
 	if err != nil {
 		panic(err)
