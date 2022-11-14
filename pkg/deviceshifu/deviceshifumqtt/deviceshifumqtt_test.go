@@ -2,6 +2,10 @@ package deviceshifumqtt
 
 import (
 	"context"
+	"encoding/json"
+	"fmt"
+	"sync"
+
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"net/http"
@@ -17,6 +21,10 @@ import (
 	"testing"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/mochi-co/mqtt/server"
+	"github.com/mochi-co/mqtt/server/listeners"
+
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -25,7 +33,21 @@ import (
 	v1 "k8s.io/api/apps/v1"
 )
 
+const (
+	unitTestServerAddress = "localhost:18928"
+)
+
 func TestMain(m *testing.M) {
+	stop := make(chan struct{}, 1)
+	wg := sync.WaitGroup{}
+	os.Setenv("SERVER_LISTEN_PORT", ":18926")
+	wg.Add(1)
+	go func() {
+		mockMQTTServer(stop)
+		klog.Infof("Server Closed")
+		wg.Done()
+	}()
+
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
 		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
@@ -35,6 +57,28 @@ func TestMain(m *testing.M) {
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
 		klog.Fatal(err)
+	}
+
+	stop <- struct{}{}
+	wg.Wait()
+	os.Unsetenv("SERVER_LISTEN_PORT")
+}
+
+func mockMQTTServer(stop <-chan struct{}) {
+	tcp := listeners.NewTCP("t1", unitTestServerAddress)
+	server := server.NewServer(nil)
+	err := server.AddListener(tcp, nil)
+	if err != nil {
+		klog.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
+	}
+	go func() {
+		<-stop
+		server.Close()
+	}()
+
+	err = server.Serve()
+	if err != nil {
+		klog.Fatalf("Error when MQTT Server Serve, error: %v", err)
 	}
 }
 
@@ -114,8 +158,28 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	dc := mockRestClient(ds.URL, "testing")
 
 	// test post method
-	r := dc.Post().Do(context.TODO())
-	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker(fmt.Sprintf("tcp://%s", *unitest.ToPointer(unitTestServerAddress)))
+	opts.SetClientID("shifu-service")
+	opts.SetDefaultPublishHandler(messagePubHandler)
+	opts.OnConnect = connectHandler
+	opts.OnConnectionLost = connectLostHandler
+	client = mqtt.NewClient(opts)
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		klog.Errorf("Error when connect to server error: %v", token.Error())
+	} else {
+		klog.Infof("Connect to %v success!", unitTestServerAddress)
+		defer client.Disconnect(0)
+	}
+
+	requestBody := RequestBody{
+		MQTTTopic:   "/test/test",
+		MQTTMessage: []byte("1234"),
+	}
+	reqBody, err := json.Marshal(requestBody)
+	assert.Nil(t, err)
+	r := dc.Post().Body(reqBody).Do(context.TODO())
+	assert.Nil(t, r.Error())
 
 	// test Cannot Encode message to json
 	mqttMessageStr = ""
@@ -222,7 +286,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 				},
 			},
 			false,
-			errors.New("Device test does not have an address"),
+			errors.New("device test does not have an address"),
 		},
 		{
 			"case 3 DeviceShifuTelemetry Update",
