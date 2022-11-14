@@ -33,7 +33,7 @@ const (
 
 var (
 	client                      mqtt.Client
-	MQTTTopic 					string
+	MQTTTopic 	  	    string
 	mqttMessageStr              string
 	mqttMessageReceiveTimestamp time.Time
 )
