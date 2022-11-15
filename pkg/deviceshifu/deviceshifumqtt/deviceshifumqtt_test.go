@@ -156,8 +156,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	ds := mockDeviceServer(mockHandlerHTTP, t)
 	defer ds.Close()
 	dc := mockRestClient(ds.URL, "testing")
-
-	// test post method
+	
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", *unitest.ToPointer(unitTestServerAddress)))
 	opts.SetClientID("shifu-service")
@@ -165,6 +164,20 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
 	client = mqtt.NewClient(opts)
+
+	requestBody := RequestBody{
+		MQTTTopic:   "/test/test",
+		MQTTMessage: []byte("1234"),
+	}
+
+	// test post method
+	// test post method when MQTTServer not connected
+	reqBody, err := json.Marshal(requestBody)
+	assert.Nil(t, err)
+	r := dc.Post().Body(reqBody).Do(context.TODO())
+	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
+
+	// test post method when MQTTServer connected
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		klog.Errorf("Error when connect to server error: %v", token.Error())
 	} else {
@@ -172,14 +185,16 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 		defer client.Disconnect(0)
 	}
 
-	requestBody := RequestBody{
-		MQTTTopic:   "/test/test",
-		MQTTMessage: []byte("1234"),
-	}
-	reqBody, err := json.Marshal(requestBody)
-	assert.Nil(t, err)
-	r := dc.Post().Body(reqBody).Do(context.TODO())
+	r = dc.Post().Body(reqBody).Do(context.TODO())
 	assert.Nil(t, r.Error())
+
+	// test post method when RequestBody is not a JSON
+	r = dc.Post().Do(context.TODO())
+	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
+
+	// test put method
+	r = dc.Put().Do(context.TODO())
+	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
 	// test Cannot Encode message to json
 	mqttMessageStr = ""
