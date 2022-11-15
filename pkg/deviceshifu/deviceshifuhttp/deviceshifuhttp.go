@@ -221,19 +221,25 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			utils.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 
+			// Handling deviceshifu stuck when responseBody is a stream
+			_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+			if !shouldUsePythonCustomProcessing {
+				_, err := io.Copy(w, resp.Body)
+				if err != nil {
+					klog.Errorf("cannot copy requestBody from requestBody, error: %v", err)
+				}
+				return
+			}
+
 			respBody, readErr := io.ReadAll(resp.Body)
 			if readErr != nil {
 				klog.Errorf("error when read requestBody from responseBody, err: %v", readErr)
 			}
 
 			rawRespBodyString := string(respBody)
-			_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
-			respBodyString := rawRespBodyString
-			klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
-			if shouldUsePythonCustomProcessing {
-				klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
-			}
+			klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+			respBodyString := utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
+
 			_, writeErr := io.WriteString(w, respBodyString)
 			if writeErr != nil {
 				klog.Errorf("Failed to write response %v", respBodyString)
