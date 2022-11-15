@@ -33,7 +33,7 @@ const (
 
 var (
 	client                      mqtt.Client
-	MQTTTopic 	  	    string
+	MQTTTopic 	  	    		string
 	mqttMessageStr              string
 	mqttMessageReceiveTimestamp time.Time
 )
@@ -163,7 +163,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			}
 			klog.Infof("requestBody: %v", requestBody)
 
-			token := client.Publish(requestBody.MQTTTopic, 1, false, requestBody.MQTTMessage)
+			token := client.Publish(MQTTTopic, 1, false, requestBody.MQTTMessage)
 			if token.Error() != nil {
 				klog.Errorf("Error when publish Data to MQTTServer,%v",token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)

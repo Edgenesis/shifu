@@ -165,8 +165,8 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	opts.OnConnectionLost = connectLostHandler
 	client = mqtt.NewClient(opts)
 
+	MQTTTopic = "/test/test"
 	requestBody := RequestBody{
-		MQTTTopic:   "/test/test",
 		MQTTMessage: []byte("1234"),
 	}
 
