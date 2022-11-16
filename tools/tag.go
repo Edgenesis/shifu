@@ -49,7 +49,8 @@ func traverseDir(workPath string) ([]string, error) {
 	for _, file := range files {
 		if path.Ext(file) == ".yaml" {
 			filename := path.Base(file)
-			if strings.Contains(filename, "deployment") {
+			if strings.Contains(filename, "deployment") ||
+				strings.Contains(filename, "install") {
 				yamls = append(yamls, file)
 			}
 		}
