@@ -24,9 +24,9 @@ data:
         properties:
           instruction: status
           pushSettings:
-           telemetryCollectionService: push-endpoint-1
+            telemetryCollectionService: push-endpoint-1
       device_health2:
         properties:
           instruction: status
           pushSettings:
-          telemetryCollectionService: push-endpoint-2
+            telemetryCollectionService: push-endpoint-2
