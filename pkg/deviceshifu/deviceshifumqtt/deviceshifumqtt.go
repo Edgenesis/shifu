@@ -154,22 +154,17 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
-			requestBody := RequestBody{}
-			err = json.Unmarshal(body, &requestBody)
-			if err != nil {
-				klog.Errorf("Error to Unmarshal request body to struct")
-				http.Error(w, "unexpected end of JSON input", http.StatusBadRequest)
-				return
-			}
+			requestBody := RequestBody(body)
 			klog.Infof("requestBody: %v", requestBody)
 
-			token := client.Publish(MQTTTopic, 1, false, requestBody.MQTTMessage)
+			// TODO handle error asynchronously
+			token := client.Publish(MQTTTopic, 1, false, body)
 			if token.Error() != nil {
 				klog.Errorf("Error when publish Data to MQTTServer,%v",token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
 				return
 			}
-			klog.Infof("Info: Success To publish a message %v to MQTTServer!", string(requestBody.MQTTMessage))
+			klog.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
 			return			
 		} else {
 			http.Error(w, "must be GET or POST method", http.StatusBadRequest)

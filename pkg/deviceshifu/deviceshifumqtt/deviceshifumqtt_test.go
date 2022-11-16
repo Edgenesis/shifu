@@ -2,7 +2,6 @@ package deviceshifumqtt
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 
@@ -166,15 +165,10 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	client = mqtt.NewClient(opts)
 
 	MQTTTopic = "/test/test"
-	requestBody := RequestBody{
-		MQTTMessage: []byte("1234"),
-	}
+	requestBody := "abcd"
 
-	// test post method
 	// test post method when MQTTServer not connected
-	reqBody, err := json.Marshal(requestBody)
-	assert.Nil(t, err)
-	r := dc.Post().Body(reqBody).Do(context.TODO())
+	r := dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
 	// test post method when MQTTServer connected
@@ -185,12 +179,8 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 		defer client.Disconnect(0)
 	}
 
-	r = dc.Post().Body(reqBody).Do(context.TODO())
+	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error())
-
-	// test post method when RequestBody is not a JSON
-	r = dc.Post().Do(context.TODO())
-	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
 	// test put method
 	r = dc.Put().Do(context.TODO())

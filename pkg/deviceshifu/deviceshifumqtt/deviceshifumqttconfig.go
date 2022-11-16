@@ -7,6 +7,4 @@ type ReturnBody struct {
 }
 
 // RequestBody Body of mqtt's request by POST method
-type RequestBody struct {
-	MQTTMessage    []byte `json:"mqtt_message"`
-}
+type RequestBody string
