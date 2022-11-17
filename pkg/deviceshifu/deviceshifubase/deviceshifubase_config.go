@@ -7,6 +7,7 @@ import (
 	"k8s.io/klog/v2"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/imdario/mergo"
 
 	"gopkg.in/yaml.v3"
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -155,7 +156,8 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 		}
 	}
 
-	return dsc, nil
+	err = dsc.load()
+	return dsc, err
 }
 
 // NewEdgeDevice new edgeDevice
@@ -211,4 +213,112 @@ func newEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	}
 
 	return exampleRestClient, nil
+}
+
+// init DeviceShifuConfig With default
+func (dsConfig *DeviceShifuConfig) load() error {
+	if err := dsConfig.DriverProperties.load(); err != nil {
+		klog.Errorf("Error initializing DriverProperties, error %s", err.Error())
+		return err
+	}
+
+	if dsConfig.Telemetries == nil {
+		dsConfig.Telemetries = &DeviceShifuTelemetries{}
+	}
+	if err := dsConfig.Telemetries.load(); err != nil {
+		klog.Errorf("Error initializing Telemetries, error %s", err.Error())
+		return err
+	}
+
+	if err := dsConfig.Instructions.load(); err != nil {
+		klog.Errorf("Error initializing Instructions, error %s", err.Error())
+		return err
+	}
+
+	return nil
+}
+
+func (driverProperties *DeviceShifuDriverProperties) load() error {
+	defaultProperties := &DeviceShifuDriverProperties{
+		DriverSku:       "defaultSku",
+		DriverImage:     "defaultImage",
+		DriverExecution: "defaultExecution",
+	}
+	return mergo.Merge(driverProperties, defaultProperties)
+}
+
+func (instructions *DeviceShifuInstructions) load() error {
+	if instructions.Instructions == nil {
+		instructions.Instructions = map[string]*DeviceShifuInstruction{}
+	}
+
+	if instructions.InstructionSettings == nil {
+		instructions.InstructionSettings = &DeviceShifuInstructionSettings{}
+	}
+
+	return instructions.InstructionSettings.load()
+}
+
+func (instructionSettings *DeviceShifuInstructionSettings) load() error {
+	var (
+		defaultTimeoutSeconds = DeviceDefaultGlobalTimeoutInSeconds
+	)
+
+	defaultDeviceshifuInstructionSettings := &DeviceShifuInstructionSettings{
+		DefaultTimeoutSeconds: &defaultTimeoutSeconds,
+	}
+
+	return mergo.Merge(instructionSettings, defaultDeviceshifuInstructionSettings)
+}
+
+func (telemetries *DeviceShifuTelemetries) load() error {
+	if telemetries.DeviceShifuTelemetries == nil {
+		telemetries.DeviceShifuTelemetries = map[string]*DeviceShifuTelemetry{}
+	}
+	for id := range telemetries.DeviceShifuTelemetries {
+		if telemetries.DeviceShifuTelemetries[id] == nil {
+			telemetries.DeviceShifuTelemetries[id] = &DeviceShifuTelemetry{}
+		}
+		err := telemetries.DeviceShifuTelemetries[id].load()
+		if err != nil {
+			klog.Errorf("Error initializing telemetry, error %s", err.Error())
+			return err
+		}
+	}
+
+	if telemetries.DeviceShifuTelemetrySettings == nil {
+		telemetries.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
+	}
+	return telemetries.DeviceShifuTelemetrySettings.load()
+}
+
+func (telemetry *DeviceShifuTelemetry) load() error {
+	var (
+		defaultInitialDelay = DeviceInstructionInitialDelay
+	)
+
+	defaultDeviceShifuTelemetry := &DeviceShifuTelemetry{
+		DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
+			InitialDelayMs: &defaultInitialDelay,
+			IntervalMs:     &defaultInitialDelay,
+		},
+	}
+
+	return mergo.Merge(telemetry, defaultDeviceShifuTelemetry)
+}
+
+func (telemetrySettings *DeviceShifuTelemetrySettings) load() error {
+	var (
+		defaultUpdateInterval = DeviceDefaultTelemetryUpdateIntervalInMS
+		defaultTimeout        = DeviceTelemetryTimeoutInMS
+		defaultInitialDelay   = DeviceTelemetryInitialDelayInMS
+		defaultPushToServer   = false
+	)
+	defaultDeviceshifuTelemtrySettings := DeviceShifuTelemetrySettings{
+		DeviceShifuTelemetryUpdateIntervalInMilliseconds: &defaultUpdateInterval,
+		DeviceShifuTelemetryTimeoutInMilliseconds:        &defaultTimeout,
+		DeviceShifuTelemetryInitialDelayInMilliseconds:   &defaultInitialDelay,
+		DeviceShifuTelemetryDefaultPushToServer:          &defaultPushToServer,
+	}
+	return mergo.Merge(telemetrySettings, defaultDeviceshifuTelemtrySettings)
 }

@@ -287,3 +287,400 @@ func writeMockConfigFile(t *testing.T, serverURL string) {
 	}
 
 }
+
+func TestDeviceShifuTelemetrySettingsInit(t *testing.T) {
+	testCases := []struct {
+		name           string
+		input          *DeviceShifuTelemetrySettings
+		expectedOutput *DeviceShifuTelemetrySettings
+		expectedErr    string
+	}{
+		{
+			name:  "testCase1 init all data",
+			input: &DeviceShifuTelemetrySettings{},
+			expectedOutput: &DeviceShifuTelemetrySettings{
+				DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(DeviceDefaultTelemetryUpdateIntervalInMS),
+				DeviceShifuTelemetryTimeoutInMilliseconds:        unitest.ToPointer(DeviceTelemetryTimeoutInMS),
+				DeviceShifuTelemetryInitialDelayInMilliseconds:   unitest.ToPointer(DeviceTelemetryInitialDelayInMS),
+				DeviceShifuTelemetryDefaultPushToServer:          unitest.ToPointer(false),
+			},
+			expectedErr: "",
+		},
+		{
+			name: "testCase2 init with some data",
+			input: &DeviceShifuTelemetrySettings{
+				DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer[int64](123),
+			},
+			expectedOutput: &DeviceShifuTelemetrySettings{
+				DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer[int64](123),
+				DeviceShifuTelemetryTimeoutInMilliseconds:        unitest.ToPointer(DeviceTelemetryTimeoutInMS),
+				DeviceShifuTelemetryInitialDelayInMilliseconds:   unitest.ToPointer(DeviceTelemetryInitialDelayInMS),
+				DeviceShifuTelemetryDefaultPushToServer:          unitest.ToPointer(false),
+			},
+			expectedErr: "",
+		},
+		{
+			name:        "testCase3 init with nil",
+			expectedErr: "only structs, maps, and slices are supported",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.load()
+			assert.Equal(t, tC.expectedOutput, tC.input)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+func TestDeviceShifuTelemetriesInit(t *testing.T) {
+	defaultTelemetrySettings := &DeviceShifuTelemetrySettings{
+		DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(DeviceDefaultTelemetryUpdateIntervalInMS),
+		DeviceShifuTelemetryTimeoutInMilliseconds:        unitest.ToPointer(DeviceTelemetryTimeoutInMS),
+		DeviceShifuTelemetryInitialDelayInMilliseconds:   unitest.ToPointer(DeviceTelemetryInitialDelayInMS),
+		DeviceShifuTelemetryDefaultPushToServer:          unitest.ToPointer(false),
+	}
+	testCases := []struct {
+		name           string
+		input          *DeviceShifuTelemetries
+		expectedOutput *DeviceShifuTelemetries
+		expectedErr    string
+	}{
+		{
+			name: "testCase1 without Telemetries Map",
+			input: &DeviceShifuTelemetries{
+				DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{},
+			},
+			expectedOutput: &DeviceShifuTelemetries{
+				DeviceShifuTelemetries:       make(map[string]*DeviceShifuTelemetry),
+				DeviceShifuTelemetrySettings: defaultTelemetrySettings,
+			},
+			expectedErr: "",
+		},
+		{
+			name: "testCase2 without Telemetry",
+			input: &DeviceShifuTelemetries{
+				DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{"test": nil},
+			},
+			expectedOutput: &DeviceShifuTelemetries{
+				DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
+					"test": {
+						DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
+							InitialDelayMs: unitest.ToPointer(DeviceInstructionInitialDelay),
+							IntervalMs:     unitest.ToPointer(DeviceInstructionInitialDelay),
+						}}},
+				DeviceShifuTelemetrySettings: defaultTelemetrySettings,
+			},
+		},
+		{
+			name:  "testCase3 DeviceShifuTelemetries is emptu",
+			input: &DeviceShifuTelemetries{},
+			expectedOutput: &DeviceShifuTelemetries{
+				DeviceShifuTelemetries:       map[string]*DeviceShifuTelemetry{},
+				DeviceShifuTelemetrySettings: defaultTelemetrySettings,
+			},
+			expectedErr: "",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.load()
+			assert.Equal(t, tC.expectedOutput, tC.input)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+func TestDeviceShifuTelemetryInit(t *testing.T) {
+	testCases := []struct {
+		name           string
+		input          *DeviceShifuTelemetry
+		expectedOutput *DeviceShifuTelemetry
+		expectedErr    string
+	}{
+		{
+			name:  "testCase1 init all data",
+			input: &DeviceShifuTelemetry{},
+			expectedOutput: &DeviceShifuTelemetry{
+				DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
+					InitialDelayMs: unitest.ToPointer(DeviceInstructionInitialDelay),
+					IntervalMs:     unitest.ToPointer(DeviceInstructionInitialDelay),
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name: "testCase2 init with some data",
+			input: &DeviceShifuTelemetry{
+				DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
+					InitialDelayMs: unitest.ToPointer[int64](123),
+				},
+			},
+			expectedOutput: &DeviceShifuTelemetry{
+				DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
+					InitialDelayMs: unitest.ToPointer[int64](123),
+					IntervalMs:     unitest.ToPointer(DeviceInstructionInitialDelay),
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name:        "testCase3 init with nil",
+			expectedErr: "only structs, maps, and slices are supported",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.load()
+			assert.Equal(t, tC.expectedOutput, tC.input)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+func TestDeviceshifuInstructionSettingsInit(t *testing.T) {
+	testCases := []struct {
+		name           string
+		input          *DeviceShifuInstructionSettings
+		expectedOutput *DeviceShifuInstructionSettings
+		expectedErr    string
+	}{
+		{
+			name:  "testCase1 init all data",
+			input: &DeviceShifuInstructionSettings{},
+			expectedOutput: &DeviceShifuInstructionSettings{
+				DefaultTimeoutSeconds: unitest.ToPointer(DeviceDefaultGlobalTimeoutInSeconds),
+			},
+			expectedErr: "",
+		},
+		{
+			name:        "testCase2 init with nil",
+			expectedErr: "only structs, maps, and slices are supported",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.load()
+			assert.Equal(t, tC.expectedOutput, tC.input)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+func TestDeviceShifuInstructions(t *testing.T) {
+	testCases := []struct {
+		name           string
+		input          *DeviceShifuInstructions
+		expectedOutput *DeviceShifuInstructions
+		expectedErr    string
+	}{
+		{
+			name: "testCase1 with DefaultTimeoutSeconds",
+			input: &DeviceShifuInstructions{
+				InstructionSettings: &DeviceShifuInstructionSettings{
+					DefaultTimeoutSeconds: unitest.ToPointer[int64](123),
+				},
+			},
+			expectedOutput: &DeviceShifuInstructions{
+				Instructions: map[string]*DeviceShifuInstruction{},
+				InstructionSettings: &DeviceShifuInstructionSettings{
+					DefaultTimeoutSeconds: unitest.ToPointer[int64](123),
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name:  "testCase2 with empty",
+			input: &DeviceShifuInstructions{},
+			expectedOutput: &DeviceShifuInstructions{
+				Instructions: map[string]*DeviceShifuInstruction{},
+				InstructionSettings: &DeviceShifuInstructionSettings{
+					DefaultTimeoutSeconds: unitest.ToPointer(DeviceDefaultGlobalTimeoutInSeconds),
+				},
+			},
+			expectedErr: "",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.load()
+			assert.Equal(t, tC.expectedOutput, tC.input)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+func TestDeviceShifuDriverProperties(t *testing.T) {
+	testCases := []struct {
+		name           string
+		input          *DeviceShifuDriverProperties
+		expectedOutput *DeviceShifuDriverProperties
+		expectedErr    string
+	}{
+		{
+			name: "testCase1 with DefaultTimeoutSeconds",
+			input: &DeviceShifuDriverProperties{
+				DriverSku: "test",
+			},
+			expectedOutput: &DeviceShifuDriverProperties{
+				DriverSku:       "test",
+				DriverImage:     "defaultImage",
+				DriverExecution: "defaultExecution",
+			},
+			expectedErr: "",
+		},
+		{
+			name:  "testCase2 with empty",
+			input: &DeviceShifuDriverProperties{},
+			expectedOutput: &DeviceShifuDriverProperties{
+				DriverSku:       "defaultSku",
+				DriverImage:     "defaultImage",
+				DriverExecution: "defaultExecution",
+			},
+			expectedErr: "",
+		},
+		{
+			name:        "testCase3 with nil",
+			expectedErr: "only structs, maps, and slices are supported",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.load()
+			assert.Equal(t, tC.expectedOutput, tC.input)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+func TestDeviceShifuConfig(t *testing.T) {
+	testCases := []struct {
+		name           string
+		input          *DeviceShifuConfig
+		expectedOutput *DeviceShifuConfig
+		expectedErr    string
+	}{
+		{
+			name: "testCase1 with some data empty",
+			input: &DeviceShifuConfig{
+				Instructions: DeviceShifuInstructions{
+					Instructions: map[string]*DeviceShifuInstruction{},
+					InstructionSettings: &DeviceShifuInstructionSettings{
+						DefaultTimeoutSeconds: unitest.ToPointer(DeviceDefaultGlobalTimeoutInSeconds),
+					},
+				},
+				Telemetries: &DeviceShifuTelemetries{
+					DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
+						"aaa": nil,
+					},
+					DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
+						DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer[int64](123),
+						DeviceShifuTelemetryDefaultPushToServer:          unitest.ToPointer(true),
+						DeviceShifuTelemetryDefaultCollectionService:     unitest.ToPointer("endpoint"),
+					},
+				},
+				DriverProperties: DeviceShifuDriverProperties{
+					DriverSku: "testSKU",
+				},
+			},
+			expectedOutput: &DeviceShifuConfig{
+				Instructions: DeviceShifuInstructions{
+					Instructions: map[string]*DeviceShifuInstruction{},
+					InstructionSettings: &DeviceShifuInstructionSettings{
+						DefaultTimeoutSeconds: unitest.ToPointer(DeviceDefaultGlobalTimeoutInSeconds),
+					},
+				},
+				Telemetries: &DeviceShifuTelemetries{
+					DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{
+						"aaa": {DeviceShifuTelemetryProperties: DeviceShifuTelemetryProperties{
+							InitialDelayMs: unitest.ToPointer(DeviceInstructionInitialDelay),
+							IntervalMs:     unitest.ToPointer(DeviceInstructionInitialDelay),
+						}},
+					},
+					DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
+						DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer[int64](123),
+						DeviceShifuTelemetryTimeoutInMilliseconds:        unitest.ToPointer(DeviceTelemetryTimeoutInMS),
+						DeviceShifuTelemetryInitialDelayInMilliseconds:   unitest.ToPointer(DeviceTelemetryInitialDelayInMS),
+						DeviceShifuTelemetryDefaultPushToServer:          unitest.ToPointer(true),
+						DeviceShifuTelemetryDefaultCollectionService:     unitest.ToPointer("endpoint"),
+					},
+				},
+				DriverProperties: DeviceShifuDriverProperties{
+					DriverSku:       "testSKU",
+					DriverImage:     "defaultImage",
+					DriverExecution: "defaultExecution",
+				},
+			},
+			expectedErr: "",
+		},
+		{
+			name:  "testCase2 with empty",
+			input: &DeviceShifuConfig{},
+			expectedOutput: &DeviceShifuConfig{
+				Instructions: DeviceShifuInstructions{
+					Instructions: map[string]*DeviceShifuInstruction{},
+					InstructionSettings: &DeviceShifuInstructionSettings{
+						DefaultTimeoutSeconds: unitest.ToPointer(DeviceDefaultGlobalTimeoutInSeconds),
+					},
+				},
+				Telemetries: &DeviceShifuTelemetries{
+					DeviceShifuTelemetries: map[string]*DeviceShifuTelemetry{},
+					DeviceShifuTelemetrySettings: &DeviceShifuTelemetrySettings{
+						DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(DeviceDefaultTelemetryUpdateIntervalInMS),
+						DeviceShifuTelemetryTimeoutInMilliseconds:        unitest.ToPointer(DeviceTelemetryTimeoutInMS),
+						DeviceShifuTelemetryInitialDelayInMilliseconds:   unitest.ToPointer(DeviceTelemetryInitialDelayInMS),
+						DeviceShifuTelemetryDefaultPushToServer:          unitest.ToPointer(false),
+					},
+				},
+				DriverProperties: DeviceShifuDriverProperties{
+					DriverSku:       "defaultSku",
+					DriverImage:     "defaultImage",
+					DriverExecution: "defaultExecution",
+				},
+			},
+			expectedErr: "",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			err := tC.input.load()
+			assert.Equal(t, tC.expectedOutput, tC.input)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
+}
