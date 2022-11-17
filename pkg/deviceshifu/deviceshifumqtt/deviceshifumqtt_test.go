@@ -36,17 +36,7 @@ const (
 	unitTestServerAddress = "localhost:18928"
 )
 
-func TestMain(m *testing.M) {
-	stop := make(chan struct{}, 1)
-	wg := sync.WaitGroup{}
-	os.Setenv("SERVER_LISTEN_PORT", ":18926")
-	wg.Add(1)
-	go func() {
-		mockMQTTServer(stop)
-		klog.Infof("Server Closed")
-		wg.Done()
-	}()
-
+func TestMain(m *testing.M) {	
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
 		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
@@ -56,28 +46,6 @@ func TestMain(m *testing.M) {
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
 		klog.Fatal(err)
-	}
-
-	stop <- struct{}{}
-	wg.Wait()
-	os.Unsetenv("SERVER_LISTEN_PORT")
-}
-
-func mockMQTTServer(stop <-chan struct{}) {
-	tcp := listeners.NewTCP("t1", unitTestServerAddress)
-	server := server.NewServer(nil)
-	err := server.AddListener(tcp, nil)
-	if err != nil {
-		klog.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
-	}
-	go func() {
-		<-stop
-		server.Close()
-	}()
-
-	err = server.Serve()
-	if err != nil {
-		klog.Fatalf("Error when MQTT Server Serve, error: %v", err)
 	}
 }
 
@@ -155,7 +123,15 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	ds := mockDeviceServer(mockHandlerHTTP, t)
 	defer ds.Close()
 	dc := mockRestClient(ds.URL, "testing")
-	
+
+	stop := make(chan struct{}, 1)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	t.Setenv("SERVER_LISTEN_PORT", ":18926")
+	go func() {
+		mockMQTTServer(stop)
+		wg.Done()
+	}()
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", *unitest.ToPointer(unitTestServerAddress)))
 	opts.SetClientID("shifu-service")
@@ -191,6 +167,27 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	mqttMessageReceiveTimestamp = time.Now()
 	r = dc.Get().Do(context.TODO())
 	assert.Nil(t, r.Error())
+
+	stop <- struct{}{}
+	wg.Wait()
+}
+
+func mockMQTTServer(stop <-chan struct{}) {
+	tcp := listeners.NewTCP("t1", unitTestServerAddress)
+	server := server.NewServer(nil)
+	err := server.AddListener(tcp, nil)
+	if err != nil {
+		klog.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
+	}
+
+	err = server.Serve()
+	if err != nil {
+		klog.Fatalf("Error when MQTT Server Serve, error: %v", err)
+	}
+
+	<-stop
+	server.Close()
+	klog.Infof("Server Closed")
 }
 
 func mockRestClient(host string, path string) *rest.RESTClient {
