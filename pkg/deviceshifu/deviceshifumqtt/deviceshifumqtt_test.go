@@ -2,6 +2,9 @@ package deviceshifumqtt
 
 import (
 	"context"
+	"fmt"
+	"sync"
+
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
 	"net/http"
@@ -17,6 +20,10 @@ import (
 	"testing"
 	"time"
 
+	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/mochi-co/mqtt/server"
+	"github.com/mochi-co/mqtt/server/listeners"
+
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"k8s.io/apimachinery/pkg/util/wait"
@@ -25,7 +32,11 @@ import (
 	v1 "k8s.io/api/apps/v1"
 )
 
-func TestMain(m *testing.M) {
+const (
+	unitTestServerAddress = "localhost:18928"
+)
+
+func TestMain(m *testing.M) {	
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
 		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
@@ -113,8 +124,42 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	defer ds.Close()
 	dc := mockRestClient(ds.URL, "testing")
 
-	// test post method
-	r := dc.Post().Do(context.TODO())
+	stop := make(chan struct{}, 1)
+	wg := sync.WaitGroup{}
+	wg.Add(1)
+	t.Setenv("SERVER_LISTEN_PORT", ":18926")
+	go func() {
+		mockMQTTServer(stop)
+		wg.Done()
+	}()
+	opts := mqtt.NewClientOptions()
+	opts.AddBroker(fmt.Sprintf("tcp://%s", *unitest.ToPointer(unitTestServerAddress)))
+	opts.SetClientID("shifu-service")
+	opts.SetDefaultPublishHandler(messagePubHandler)
+	opts.OnConnect = connectHandler
+	opts.OnConnectionLost = connectLostHandler
+	client = mqtt.NewClient(opts)
+
+	MQTTTopic = "/test/test"
+	requestBody := "abcd"
+
+	// test post method when MQTTServer not connected
+	r := dc.Post().Body([]byte(requestBody)).Do(context.TODO())
+	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
+
+	// test post method when MQTTServer connected
+	if token := client.Connect(); token.Wait() && token.Error() != nil {
+		klog.Errorf("Error when connect to server error: %v", token.Error())
+	} else {
+		klog.Infof("Connect to %v success!", unitTestServerAddress)
+		defer client.Disconnect(0)
+	}
+
+	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
+	assert.Nil(t, r.Error())
+
+	// test put method
+	r = dc.Put().Do(context.TODO())
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
 	// test Cannot Encode message to json
@@ -122,6 +167,27 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	mqttMessageReceiveTimestamp = time.Now()
 	r = dc.Get().Do(context.TODO())
 	assert.Nil(t, r.Error())
+
+	stop <- struct{}{}
+	wg.Wait()
+}
+
+func mockMQTTServer(stop <-chan struct{}) {
+	tcp := listeners.NewTCP("t1", unitTestServerAddress)
+	server := server.NewServer(nil)
+	err := server.AddListener(tcp, nil)
+	if err != nil {
+		klog.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
+	}
+
+	err = server.Serve()
+	if err != nil {
+		klog.Fatalf("Error when MQTT Server Serve, error: %v", err)
+	}
+
+	<-stop
+	server.Close()
+	klog.Infof("Server Closed")
 }
 
 func mockRestClient(host string, path string) *rest.RESTClient {
@@ -222,7 +288,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 				},
 			},
 			false,
-			errors.New("Device test does not have an address"),
+			errors.New("device test does not have an address"),
 		},
 		{
 			"case 3 DeviceShifuTelemetry Update",
