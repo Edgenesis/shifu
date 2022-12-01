@@ -60,7 +60,7 @@ greatly improves the efficiency, quality and reusability of IoT application deve
 Welcome to the Shifu community to share your thoughts and ideas! Any suggestion will be deeply valued.
 We couldn't be more excited to have you.
 
-[Discord](https://discord.com/channels/1024601454306136074/1039472165399052339) | [Github discussion](https://github.com/Edgenesis/shifu/discussions) | [Twitter](https://twitter.com/ShifuFramework)
+[Discord](https://discord.com/channels/1024601454306136074/1039472165399052339) | [GitHub discussion](https://github.com/Edgenesis/shifu/discussions) | [Twitter](https://twitter.com/ShifuFramework)
 
 # ✍️ Contributing
 Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
