@@ -42,19 +42,21 @@ Shifu是一个Kubernetes原生的物联网开发框架，大大提高了物联�
     ```
 
 - 如果您没有Kubernetes集群也完全没有关系，您可以下载我们的demo来进行试玩
-  - Download Docker
+  - 下载Docker
   
     [Mac](https://docs.docker.com/desktop/install/mac-install/) | [Windows(WSL)](https://docs.docker.com/desktop/install/windows-install/) | [Linux](https://docs.docker.com/desktop/install/linux-install/)
-  - Download Shifu Demo with a single command
+  - 使用一行命令下载Shifu
     ```sh
     curl -sfL https://raw.githubusercontent.com/Edgenesis/shifu/main/test/scripts/shifu-demo-install.sh | sudo sh -
     ```
 
-- 现在您已经成功安装了Shifu，请参照我们的🗒️[文档](https://shifu.run/zh-Hans/docs/) 来尝试🔌[接入设备](https://shifu.run/zh-Hans/docs/guides/cases/) 以及 👨‍💻[应用开发](https://shifu.run/zh-Hans/docs/guides/application/)吧!
+- 现在您已经成功安装了Shifu，请参照我们的🗒️[文档](https://shifu.run/zh-Hans/docs/) 来尝试🔌[接入设备](https://shifu.run/zh-Hans/docs/guides/cases/) 以及 👨‍💻[应用开发](https://shifu.run/zh-Hans/docs/guides/application/)吧！
 
 # 💖加入社区
 
-欢迎加入Shifu社区，分享您的思考与想法，您的意见对我们来说无比宝贵。
+欢迎加入Shifu社区，分享您的思考与想法，
+
+您的意见对我们来说无比宝贵。
 我们无比欢迎您的到来！
 
 [Discord](https://discord.com/channels/1024601454306136074/1039472165399052339) | [Github discussion](https://github.com/Edgenesis/shifu/discussions) | [Twitter](https://twitter.com/ShifuFramework)
