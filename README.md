@@ -24,11 +24,15 @@ Shifu is a Kubernetes-native IoT development framework that greatly improves the
 |👨‍💻Efficient Application development|Shifu structually virtualizes each device and expose its capabilities in the form of APIs.|
 |🔧Easy Operation & Maintenance|Kubernetes-native framework, sparing the need for maintaining an additional O&M infrastructure.|
 </div>
+<br/><br/>
+
 # 🪄Demo
 <div align="center">
 <img width="800px" src="./img/demo-camera.gif"></img>
 <img width="800px" src="./img/demo-plc.gif"></img>
 </div>
+<br/><br/>
+
 # 🔧Install
 
 - If you have started a Kubernetes cluster, use the command `kubectl apply` to install Shifu in your cluster:

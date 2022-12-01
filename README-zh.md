@@ -23,11 +23,15 @@ Shifu是一个Kubernetes原生的物联网开发框架，大大提高了物联�
 |👨‍💻高效应用开发|Shifu将每一个设备进行结构化虚拟，并将其能力以API的形式开放出来|
 |🔧超低运维成本|Shifu使用Kubernetes原生框架，您无需再构建额外的运维基础设施|
 </div>
+<br/><br/>
+
 # 🪄Demo
 <div align="center">
 <img width="800px" src="./img/demo-camera.gif"></img>
 <img width="800px" src="./img/demo-plc.gif"></img>
 </div>
+<br/><br/>
+
 # 🔧安装
 
 - 如果你有Kubernetes集群，使用`kubectl apply` 命令将Shifu安装到您的集群上：
