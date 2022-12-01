@@ -10,78 +10,59 @@
 
 </div>
 
-# ***Shifu***
-
 <div align="center">
 
 <img width="200px" src="./img/shifu-logo.svg"></img>
 
+
+Shifu is a Kubernetes-native IoT development framework that greatly improves the efficiency, quality and reusability of IoT application development.
 </div>
 
-***Shifu*** is the next-generation Kubernetes-native open source IoT development framework, which makes developing an IoT app as simple as developing a Web app. The high extensibility of ***Shifu*** allows it to integrate almost all devices and protocols. Once a device is integrated, ***Shifu*** generates a digital twin of the device as a microservice in the system and opens up device data and capabilities in the form of APIs. In this way, traditional IoT application development is simplified to web development, which greatly improves the efficiency, quality and reusability of IoT application development.
-
-|Features<div style="width: 100pt">|  |
+|Feature|  |
 |---|---|
-|⚡ Blazing-fast|From thermohydrometers using standard protocols to complex machinery using proprietary drivers, Shifu is capable of integrating all kinds of heterogeneous devices.|
-|🧩 Modularized|All devices and Apps integrated into Shifu are packaged as modules that can be loaded on demand.|
-|👨‍💻 Efficient|Once a device is integrated, Shifu automatically abstracts its capabilities into APIs, completely decoupling your App from the hardware, making IoT App development simple and efficient.|
-|🚀 Stable|Shifu is running in multiple production scenarios with 99.9999% stability, relieving you from the operational mess.|
-|🛡️ Safe |Designed by ex-UN cloud native security team. Shifu can easily enforce data encryption, network security and much more.|
-|🌐 Global Community|Benefiting from its Kubernetes-native architecture, Shifu can seamless integrate with the powerful cloud native software eco-system that allows developers around the world to help you with your problems.|
+|🔌Fast Device integration &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Compatible with almost all protocols and drivers.|
+|👨‍💻Efficient Application development|Shifu structually virtualizes each device and expose its capabilities in the form of APIs.|
+|🔧Easy Operation & Maintenance|Kubernetes-native framework, sparing the need for maintaining an additional O&M infrastructure.|
 
-## Guide
+# 🪄Demo
+<img width="600px" src="./img/demo-camera.gif"></img>
+<img width="600px" src="./img/demo-plc.gif"></img>
 
-### Install
+# 🔧Install
 
-If you have started a Kubernetes cluster, use the command `kubectl apply` to install ***Shifu*** in your cluster:
+- If you have started a Kubernetes cluster, use the command `kubectl apply` to install Shifu in your cluster:
 
-```sh
-cd shifu
-kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
-```
+    ```sh
+    cd shifu
+    kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
+    ```
 
-### Try it out
+- If you don't have a Kubernetes cluster on your computer, that's totally ok, you can download our demo to try it out.
+  - Download Docker
+  
+    [Mac](https://docs.docker.com/desktop/install/mac-install/) | [Windows(WSL)](https://docs.docker.com/desktop/install/windows-install/) | [Linux](https://docs.docker.com/desktop/install/linux-install/)
+  - Download Shifu Demo with a single command
+    ```sh
+    curl -sfL https://raw.githubusercontent.com/Edgenesis/shifu/main/test/scripts/shifu-demo-install.sh | sudo sh -
+    ```
 
-We present you [***Shifu*** Demo](https://shifu.run/disclaimer). 
+- Now that you have installed Shifu, please visit our🗒️[documentation](https://shifu.run/docs/) to🔌[connect a device](https://shifu.run/docs/guides/cases/) and 👨‍💻[develop your own application](https://shifu.run/docs/guides/application/)!
 
-The Demo will show you how ***Shifu*** creates and manages digital twins of any physical devices.
+# 💖Community
 
-### Documentation
+Welcome to the Shifu community to share your thoughts and ideas! Any suggestion will be deeply valued.
+We couldn't be more excited to have you.
 
-For more information please visit our [documentation](https://shifu.run/docs/).
+[Discord](https://discord.com/channels/1024601454306136074/1039472165399052339) | [Github discussion](https://github.com/Edgenesis/shifu/discussions) | [Twitter](https://twitter.com/ShifuFramework)
 
-## Design principle
+# ✍️Contributing
+Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
 
-Our job is to make developers and operators happy. Which is why all our designs are developer-oriented:
+We will forever be beholden to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors)🥰.
 
-### 📡Easy to deploy
+# 🗒️License
+This project is Apache License 2.0.
 
-Shifu can be deployed with a single command.
-
-### 🤖Plug'n'Play
-
-Shifu will automatically recognize and provide basic functionalities to a supported IoT device. Once the developer completes Shifu's template, all features of the device should be immediately available.
-
-### 🪄High extensibility
-
-Developer can further implement Shifu's interface/SDKs to create custom features and unleash endless possibilities.
-
-### 🔧Zero maintenance
-
-Shifu aims to achieve zero maintenance by adopting cutting-edge cloud native best practices. After all, Shifu should take care of himself and make DevOps' lives easier!
-
-# Community
-
-## Contribute
-
-All sorts of contributions are welcomed! Please take a look at our [contribution guide](./docs/contribution/contributing.md).
-
-## Contact Us
-
-- Email
-  - info@edgenesis.com
-- [Discord](https://discord.gg/XDHFtA5ZhP)
-
-## Stargazers over time
+# 🌟Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
