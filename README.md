@@ -28,14 +28,14 @@ greatly improves the efficiency, quality and reusability of IoT application deve
 </div>
 <br/><br/>
 
-# 🪄Demo
+# 🪄 Demo
 <div align="center">
 <img width="900px" src="./img/demo-camera.gif"></img>
 <img width="900px" src="./img/demo-plc.gif"></img>
 </div>
 <br/><br/>
 
-# 🔧Install
+# 🔧 Install
 
 - If you have started a Kubernetes cluster, use the command `kubectl apply` to install Shifu in your cluster:
 
@@ -55,21 +55,21 @@ greatly improves the efficiency, quality and reusability of IoT application deve
 
 - Now that you have installed Shifu, please visit our🗒️[documentation](https://shifu.run/docs/) to🔌[connect a device](https://shifu.run/docs/guides/cases/) and 👨‍💻[develop your own application](https://shifu.run/docs/guides/application/)!
 
-# 💖Community
+# 💖 Community
 
 Welcome to the Shifu community to share your thoughts and ideas! Any suggestion will be deeply valued.
 We couldn't be more excited to have you.
 
 [Discord](https://discord.com/channels/1024601454306136074/1039472165399052339) | [Github discussion](https://github.com/Edgenesis/shifu/discussions) | [Twitter](https://twitter.com/ShifuFramework)
 
-# ✍️Contributing
+# ✍️ Contributing
 Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
 
 We will forever be beholden to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors)🥰.
 
-# 🗒️License
+# 🗒️ License
 This project is Apache License 2.0.
 
-# 🌟Stargazers over time
+# 🌟 Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
