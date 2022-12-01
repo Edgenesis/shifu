@@ -27,8 +27,8 @@ Shifu是一个Kubernetes原生的物联网开发框架，大大提高了物联�
 
 # 🪄Demo
 <div align="center">
-<img width="800px" src="./img/demo-camera.gif"></img>
-<img width="800px" src="./img/demo-plc.gif"></img>
+<img width="900px" src="./img/demo-camera.gif"></img>
+<img width="900px" src="./img/demo-plc.gif"></img>
 </div>
 <br/><br/>
 

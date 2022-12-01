@@ -28,8 +28,8 @@ Shifu is a Kubernetes-native IoT development framework that greatly improves the
 
 # 🪄Demo
 <div align="center">
-<img width="800px" src="./img/demo-camera.gif"></img>
-<img width="800px" src="./img/demo-plc.gif"></img>
+<img width="900px" src="./img/demo-camera.gif"></img>
+<img width="900px" src="./img/demo-plc.gif"></img>
 </div>
 <br/><br/>
 
