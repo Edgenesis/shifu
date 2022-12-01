@@ -24,7 +24,7 @@ greatly improves the efficiency, quality and reusability of IoT application deve
 |---|---|
 |🔌 Fast Device integration &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Compatible with almost all protocols and drivers.|
 |👨‍💻 Efficient Application development|Shifu structually virtualizes each device and expose its capabilities in the form of APIs.|
-|🔧 Easy Operation & Maintenance|Kubernetes-native framework, sparing the need for maintaining an additional O&M infrastructure.|
+|👨‍🔧 Easy Operation & Maintenance|Kubernetes-native framework, sparing the need for maintaining an additional O&M infrastructure.|
 </div>
 <br/><br/>
 
