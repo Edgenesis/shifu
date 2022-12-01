@@ -45,10 +45,10 @@ greatly improves the efficiency, quality and reusability of IoT application deve
     ```
 
 - If you don't have a Kubernetes cluster on your computer, that's totally ok, you can download our demo to try it out.
-  - Download Docker
+  - Download and Install Docker
   
     [Mac](https://docs.docker.com/desktop/install/mac-install/) | [Windows(WSL)](https://docs.docker.com/desktop/install/windows-install/) | [Linux](https://docs.docker.com/desktop/install/linux-install/)
-  - Download Shifu Demo with a single command
+  - Download and Install Shifu Demo with a single command
     ```sh
     curl -sfL https://raw.githubusercontent.com/Edgenesis/shifu/main/test/scripts/shifu-demo-install.sh | sudo sh -
     ```
@@ -67,9 +67,9 @@ Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/cho
 
 We will forever be beholden to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors)🥰.
 
-# 🗒️ License
-This project is Apache License 2.0.
-
 # 🌟 Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
+
+# License
+This project is Apache License 2.0.

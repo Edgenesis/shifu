@@ -34,7 +34,7 @@ Shifu是一个Kubernetes原生的物联网开发框架，大大提高了物联�
 
 # 🔧 安装
 
-- 如果你有Kubernetes集群，使用`kubectl apply` 命令将Shifu安装到您的集群上：
+- 如果你有Kubernetes集群，可以使用 `kubectl apply` 命令将Shifu安装到您的集群上：
 
     ```sh
     cd shifu
@@ -42,10 +42,10 @@ Shifu是一个Kubernetes原生的物联网开发框架，大大提高了物联�
     ```
 
 - 如果您没有Kubernetes集群也完全没有关系，您可以下载我们的demo来进行试玩
-  - 下载Docker
+  - 下载并安装Docker
   
     [Mac](https://docs.docker.com/desktop/install/mac-install/) | [Windows(WSL)](https://docs.docker.com/desktop/install/windows-install/) | [Linux](https://docs.docker.com/desktop/install/linux-install/)
-  - 使用一行命令下载Shifu
+  - 下载并安装Shifu Demo
     ```sh
     curl -sfL https://raw.githubusercontent.com/Edgenesis/shifu/main/test/scripts/shifu-demo-install.sh | sudo sh -
     ```
@@ -66,8 +66,9 @@ Shifu是一个Kubernetes原生的物联网开发框架，大大提高了物联�
 
 我们对[贡献者](https://github.com/Edgenesis/shifu/graphs/contributors)满怀感激🥰。
 
-# 🗒️ 证书
-This project is Apache License 2.0.
+
 
 # 🌟 GitHub Star 数量
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
+# 许可证
+This project is Apache License 2.0.
