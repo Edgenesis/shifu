@@ -76,4 +76,4 @@ We will forever be beholden to all the [contributors](https://github.com/Edgenes
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
 
 # License
-This project is Apache License 2.0.
+This project is distributed under Apache 2.0 License.
