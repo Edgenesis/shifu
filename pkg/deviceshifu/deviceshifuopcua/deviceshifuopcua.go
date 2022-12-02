@@ -80,6 +80,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				options = append(options,
 					opcua.SecurityPolicy(ua.SecurityPolicyURINone),
 					opcua.SecurityMode(ua.MessageSecurityModeNone),
+					opcua.AutoReconnect(false),
 				)
 
 				var setting = *base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting
