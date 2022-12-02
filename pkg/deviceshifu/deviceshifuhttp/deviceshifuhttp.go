@@ -65,11 +65,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
 	}
 
-	if err := base.ValidateTelemetryConfig(); err != nil {
-		klog.Errorf("%v", err)
-		return nil, err
-	}
-
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		// switch for different Shifu Protocols
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
@@ -173,7 +168,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 
 		timeoutStr := r.URL.Query().Get(deviceshifubase.DeviceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
-			timeout, parseErr = strconv.Atoi(timeoutStr)
+			timeout, parseErr = strconv.ParseInt(timeoutStr, 10, 64)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
 				klog.Errorf("timeout URI parsing error" + parseErr.Error())
@@ -225,6 +220,16 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		if resp != nil {
 			utils.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
+
+			// Handling deviceshifu stuck when responseBody is a stream
+			_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+			if !shouldUsePythonCustomProcessing {
+				_, err := io.Copy(w, resp.Body)
+				if err != nil {
+					klog.Errorf("cannot copy requestBody from requestBody, error: %v", err)
+				}
+				return
+			}
 
 			respBody, readErr := io.ReadAll(resp.Body)
 			if readErr != nil {
@@ -323,15 +328,15 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			httpErr, parseErr error
 			ctx               context.Context
 			cancel            context.CancelFunc
-			timeout           = *instructionSettings.DefaultTimeoutSeconds
-			reqType           = http.MethodPost // For command line interface, we only use POST
-			toleration        = 1
+			timeout                 = *instructionSettings.DefaultTimeoutSeconds
+			reqType                 = http.MethodPost // For command line interface, we only use POST
+			toleration        int64 = 1
 		)
 
 		klog.Infof("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
 		timeoutStr := r.URL.Query().Get(deviceshifubase.DeviceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
-			timeout, parseErr = strconv.Atoi(timeoutStr)
+			timeout, parseErr = strconv.ParseInt(timeoutStr, 10, 64)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
 				klog.Infof("timeout URI parsing error %v", parseErr.Error())
@@ -341,7 +346,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 
 		tolerationStr := r.URL.Query().Get(deviceshifubase.PowerShellStubTimeoutTolerationStr)
 		if tolerationStr != "" {
-			toleration, parseErr = strconv.Atoi(tolerationStr)
+			toleration, parseErr = strconv.ParseInt(tolerationStr, 10, 64)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
 				klog.Infof("timeout URI parsing error %v", parseErr.Error())

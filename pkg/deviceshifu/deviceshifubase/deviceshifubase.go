@@ -2,7 +2,6 @@ package deviceshifubase
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -42,33 +41,25 @@ type DeviceShifu interface {
 
 // Str and default value
 const (
-	ConfigmapDriverPropertiesStr                    = "driverProperties"
-	ConfigmapInstructionsStr                        = "instructions"
-	ConfigmapTelemetriesStr                         = "telemetries"
-	ConfigmapCustomizedInstructionsStr              = "customInstructionsPython"
-	EdgedeviceResourceStr                           = "edgedevices"
-	TelemetryCollectionServiceResourceStr           = "telemetryservices"
-	DeviceTelemetryTimeoutInMS               int64  = 3000
-	DeviceTelemetryUpdateIntervalInMS        int64  = 3000
-	DeviceTelemetryInitialDelayInMS          int64  = 3000
-	DeviceDefaultConnectionTimeoutInMS       int64  = 3000
-	DeviceDefaultPortStr                     string = ":8080"
-	DeviceDefaultRequestTimeoutInMS          int64  = 1000
-	DeviceDefaultTelemetryUpdateIntervalInMS int64  = 1000
-	DeviceIsHealthyStr                       string = "Device is healthy"
-	DeviceConfigmapFolderPath                string = "/etc/edgedevice/config"
-	DeviceKubeconfigDoNotLoadStr             string = "NULL"
-	DeviceNameSpaceDefault                   string = "default"
-	KubernetesConfigDefault                  string = ""
-	DeviceInstructionTimeoutURIQueryStr      string = "timeout"
-	DeviceDefaultGlobalTimeoutInSeconds      int    = 3
-	DefaultHTTPServerTimeoutInSeconds        int    = 0
-	DeviceDefaultCMDDoNotExec                string = "issue_cmd"
-	DeviceDefaultCMDStubHealth               string = "stub_health"
-	PowerShellStubTimeoutStr                 string = "cmdTimeout"
-	PowerShellStubTimeoutTolerationStr       string = "stub_toleration"
-	PythonHandlersModuleName                        = "customized_handlers"
-	PythonScriptDir                                 = "pythoncustomizedhandlers"
+	ConfigmapDriverPropertiesStr                 = "driverProperties"
+	ConfigmapInstructionsStr                     = "instructions"
+	ConfigmapTelemetriesStr                      = "telemetries"
+	ConfigmapCustomizedInstructionsStr           = "customInstructionsPython"
+	EdgedeviceResourceStr                        = "edgedevices"
+	TelemetryCollectionServiceResourceStr        = "telemetryservices"
+	DeviceDefaultPortStr                  string = ":8080"
+	DeviceIsHealthyStr                    string = "Device is healthy"
+	DeviceConfigmapFolderPath             string = "/etc/edgedevice/config"
+	DeviceKubeconfigDoNotLoadStr          string = "NULL"
+	DeviceNameSpaceDefault                string = "default"
+	KubernetesConfigDefault               string = ""
+	DeviceInstructionTimeoutURIQueryStr   string = "timeout"
+	DeviceDefaultCMDDoNotExec             string = "issue_cmd"
+	DeviceDefaultCMDStubHealth            string = "stub_health"
+	PowerShellStubTimeoutStr              string = "cmdTimeout"
+	PowerShellStubTimeoutTolerationStr    string = "stub_toleration"
+	PythonHandlersModuleName                     = "customized_handlers"
+	PythonScriptDir                              = "pythoncustomizedhandlers"
 )
 
 var (
@@ -179,37 +170,6 @@ func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDe
 	if err != nil {
 		klog.Errorf("Unable to update status, error: %v", err)
 	}
-}
-
-// ValidateTelemetryConfig Validate TelemetryConfig
-func (ds *DeviceShifuBase) ValidateTelemetryConfig() error {
-	if ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings == nil {
-		ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings = &DeviceShifuTelemetrySettings{}
-	}
-
-	var dsTelemetrySettings = ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
-	if initial := dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds; initial == nil {
-		var telemetryInitialDelayInMilliseconds = DeviceTelemetryInitialDelayInMS
-		dsTelemetrySettings.DeviceShifuTelemetryInitialDelayInMilliseconds = &telemetryInitialDelayInMilliseconds
-	} else if *initial < 0 {
-		return errors.New("error deviceShifuTelemetryInitialDelay mustn't be negative number")
-	}
-
-	if timeout := dsTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds; timeout == nil {
-		var telemetryTimeoutInMilliseconds = DeviceTelemetryTimeoutInMS
-		dsTelemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds = &telemetryTimeoutInMilliseconds
-	} else if *timeout < 0 {
-		return errors.New("error deviceShifuTelemetryTimeout mustn't be negative number")
-	}
-
-	if interval := dsTelemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds; interval == nil {
-		var telemetryUpdateIntervalInMilliseconds = DeviceTelemetryUpdateIntervalInMS
-		dsTelemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = &telemetryUpdateIntervalInMilliseconds
-	} else if *interval < 0 {
-		return errors.New("error deviceShifuTelemetryInterval mustn't be negative number")
-	}
-
-	return nil
 }
 
 func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {

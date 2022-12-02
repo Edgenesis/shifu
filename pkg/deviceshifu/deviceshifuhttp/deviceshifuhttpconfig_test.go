@@ -36,7 +36,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		TelemetryInstructionNameGetReading        = "get_reading"
 		InstructionValueTypeInt32                 = "Int32"
 		InstructionReadWriteW                     = "W"
-		TelemetryMs1000                           = 1000
+		TelemetryMs1000                           = int64(1000)
 		TelemetryMs3000                           = int64(3000)
 		TelemetryMs6000                           = int64(6000)
 		TelemetrySettingsDefaultPushToServer      = true
@@ -101,7 +101,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	var mockDeviceTelemetrySettings = deviceshifubase.DeviceShifuTelemetrySettings{
 		DeviceShifuTelemetryUpdateIntervalInMilliseconds: &TelemetryMs6000,
 		DeviceShifuTelemetryTimeoutInMilliseconds:        &TelemetryMs3000,
-		DeviceShifuTelemetryInitialDelayInMilliseconds:   nil,
+		DeviceShifuTelemetryInitialDelayInMilliseconds:   &TelemetryMs3000,
 		DeviceShifuTelemetryDefaultPushToServer:          &TelemetrySettingsDefaultPushToServer,
 		DeviceShifuTelemetryDefaultCollectionService:     &TelemetrySettingsDefaultCollectionService,
 	}

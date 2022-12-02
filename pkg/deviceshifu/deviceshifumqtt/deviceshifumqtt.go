@@ -3,10 +3,12 @@ package deviceshifumqtt
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-	"k8s.io/klog/v2"
+	"io"
 	"net/http"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"k8s.io/klog/v2"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
@@ -30,6 +32,8 @@ const (
 )
 
 var (
+	client                      mqtt.Client
+	MQTTTopic                   string
 	mqttMessageStr              string
 	mqttMessageReceiveTimestamp time.Time
 )
@@ -64,12 +68,12 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			opts.SetDefaultPublishHandler(messagePubHandler)
 			opts.OnConnect = connectHandler
 			opts.OnConnectionLost = connectLostHandler
-			client := mqtt.NewClient(opts)
+			client = mqtt.NewClient(opts)
 			if token := client.Connect(); token.Wait() && token.Error() != nil {
 				panic(token.Error())
 			}
-
-			sub(client, *mqttSetting.MQTTTopic)
+			MQTTTopic = *mqttSetting.MQTTTopic
+			sub(client, MQTTTopic)
 
 			HandlerMetaData := &HandlerMetaData{
 				base.EdgeDevice.Spec,
@@ -142,8 +146,28 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				klog.Errorf("Cannot Encode message to json")
 				return
 			}
+		} else if reqType == http.MethodPost {
+			body, err := io.ReadAll(r.Body)
+			if err != nil {
+				klog.Errorf("Error when Read Data From Body, error: %v", err)
+				http.Error(w, err.Error(), http.StatusBadRequest)
+				return
+			}
+
+			requestBody := RequestBody(body)
+			klog.Infof("requestBody: %v", requestBody)
+
+			// TODO handle error asynchronously
+			token := client.Publish(MQTTTopic, 1, false, body)
+			if token.Error() != nil {
+				klog.Errorf("Error when publish Data to MQTTServer,%v",token.Error())
+				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
+				return
+			}
+			klog.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
+			return			
 		} else {
-			http.Error(w, "must be GET method", http.StatusBadRequest)
+			http.Error(w, "must be GET or POST method", http.StatusBadRequest)
 			klog.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
@@ -161,7 +185,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 		case v1alpha1.ProtocolMQTT:
 			telemetrySettings := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
 			if ds.base.EdgeDevice.Spec.Address == nil {
-				return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
+				return false, fmt.Errorf("device %v does not have an address", ds.base.Name)
 			}
 
 			if interval := telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds; interval == nil {

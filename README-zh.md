@@ -10,72 +10,65 @@
 
 </div>
 
-# ***Shifu***
-
 <div align="center">
 
 <img width="200px" src="./img/shifu-logo.svg"></img>
 
-</div>
-
-***Shifu***是下一代开源的产业物联网开发框架，让开发工业场景就像开发Web应用一样简单。***Shifu***的高度可扩展性使其能够访问几乎所有的设备和协议。一旦集成了一个设备，***Shifu***就会以微服务的形式在系统中生成一个设备的数字孪生，并以API的形式开放设备数据和功能。这样一来，传统的物联网应用开发就被简化为简单的Web开发，从而大大提高了物联网应用开发的效率、质量和复用性。
+Shifu是一个Kubernetes原生的物联网开发框架，大大提高了物联网开发的效率、质量及可复用性。
 
 
-|特点<div style="width: 80pt">|  |
+|特点|描述  |
 |---|---|
-|⚡极速|大到使用私有驱动的工程机械，小到使用公有协议的温湿度计，Shifu的超高兼容性能让你轻松应对各种异构设备。|
-|🧩模块化|所有接入Shifu的设备及应用都会被封装成一个个拼图式模块，根据场景内的设备不同, 按需加载即可。|
-|👨‍💻高效|接入设备后，Shifu会自动把设备的能力抽象成API，让你的应用和硬件设备彻底解耦，让低效的物联网应用开发变得像面向对象编程一样高效。|
-|🚀稳定|Shifu已通过在航天场景验证，提供99.9999%的可靠性, 让你远离宕机烦恼。|
-|🛡️安全|联合国前云原生安全团队操刀，无论是数据加密还是网络安全，Shifu均可无缝集成。|
-|🌐全球化|得益于Kubernetes原生架构, Shifu可以无缝接入强大的云原生软件生态，让全球的开发者帮你解决后顾之忧。|
+|🔌 极速设备接入 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|可兼容各类协议及设备|
+|👨‍💻 高效应用开发|Shifu将每一个设备进行结构化虚拟，并将其能力以API的形式开放出来|
+|👨‍🔧 超低运维成本|Shifu使用Kubernetes原生框架，您无需再构建额外的运维基础设施|
+</div>
+<br/><br/>
+
+# 🪄 Demo
+<div align="center">
+<img width="900px" src="./img/demo-camera.gif"></img>
+<img width="900px" src="./img/demo-plc.gif"></img>
+</div>
+<br/><br/>
+
+# 🔧 安装
+
+- 如果你有Kubernetes集群，可以使用 `kubectl apply` 命令将Shifu安装到您的集群上：
+
+    ```sh
+    cd shifu
+    kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
+    ```
+
+- 如果您没有Kubernetes集群也完全没有关系，您可以下载我们的demo来进行试玩
+  - 下载并安装Docker
+  
+    [Mac](https://docs.docker.com/desktop/install/mac-install/) | [Windows(WSL)](https://docs.docker.com/desktop/install/windows-install/) | [Linux](https://docs.docker.com/desktop/install/linux-install/)
+  - 下载并安装Shifu Demo
+    ```sh
+    curl -sfL https://raw.githubusercontent.com/Edgenesis/shifu/main/test/scripts/shifu-demo-install.sh | sudo sh -
+    ```
+
+- 现在您已经成功安装了Shifu，请参照我们的🗒️[文档](https://shifu.run/zh-Hans/docs/) 来尝试🔌[接入设备](https://shifu.run/zh-Hans/docs/guides/cases/) 以及 👨‍💻[应用开发](https://shifu.run/zh-Hans/docs/guides/application/)吧！
+
+# 💖 加入社区
+
+欢迎加入Shifu社区，分享您的思考与想法，
+
+您的意见对我们来说无比宝贵。
+我们无比欢迎您的到来！
+
+[Discord](https://discord.com/channels/1024601454306136074/1039472165399052339) | [Github discussion](https://github.com/Edgenesis/shifu/discussions) | [Twitter](https://twitter.com/ShifuFramework)
+
+# ✍️ 贡献
+欢迎向我们[提交issue](https://github.com/Edgenesis/shifu/issues/new/choose)或者 [提交pull request](https://github.com/Edgenesis/shifu/pulls)!
+
+我们对[贡献者](https://github.com/Edgenesis/shifu/graphs/contributors)满怀感激🥰。
 
 
-## 使用
 
-### 安装
-
-在已有Kubernetes集群的情况下，使用`kubectl apply`命令即可将***Shifu***安装至集群：
-
-```sh
-cd shifu
-kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
-```
-
-### 试玩
-
-我们为您准备了 [***Shifu*** Demo](https://shifu.run/zh-Hans/disclaimer/)。
-
-您可以下载Demo体验 ***Shifu*** 如何通过数字孪生来连接和管理实体设备。
-
-### 深入了解
-
-了解更多内容请查看我们的[文档](https://shifu.run/zh-Hans/docs/)。
-
-## 设计理念
-#### 📡 易于部署
-Shifu必须只用一个命令即可完成部署。
-#### 🤖即插即用
-Shifu必须自动识别并为一个新的物联网设备提供基本功能。一旦开发者完成了Shifu的模板，设备的所有功能就应该立即可用。
-#### 🪄易于扩展
-开发者可以进一步实现Shifu的接口/SDK，以创建自定义功能，释放出无限的可能性。
-#### 🔧零维护
-Shifu的目标是通过采用前沿的云原生最佳实践来实现零维护。毕竟，Shifu需要先照顾好自己，才能让物联网开发人员的工作更轻松!
-
-## 社区
-
-### 贡献
-
-***Shifu*** 欢迎您 [新建 Issue](https://github.com/Edgenesis/shifu/issues/new) 或 [提交 PR](https://github.com/Edgenesis/shifu/pulls)。
-
-### 联系我们
-
-- 电子邮件
-    - info@edgenesis.com 
-- 微信
-    - Donoteattoomuchla 
-    - if7369
-
-## GitHub Star 数量
-
+# 🌟 GitHub Star 数量
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
+# 许可证
+This project is Apache License 2.0.
