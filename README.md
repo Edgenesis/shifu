@@ -69,7 +69,7 @@ We couldn't be more excited to have you.
 # ✍️ Contributing
 Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
 
-We will forever be beholden to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors)🥰.
+We will forever be grateful to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors)🥰.
 
 # 🌟 Stargazers over time
 
