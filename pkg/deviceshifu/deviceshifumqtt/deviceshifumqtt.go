@@ -78,7 +78,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 
 			for instruction, properties := range mqttInstructions.Instructions {
-				MQTTTopic = *properties.MQTTInstructionProperty.MQTTTopic
+				MQTTTopic = properties.MQTTInstructionProperty.MQTTTopic
 				sub(client, MQTTTopic)
 
 				HandlerMetaData := &HandlerMetaData{
