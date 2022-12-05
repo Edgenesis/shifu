@@ -77,7 +77,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				panic(token.Error())
 			}
 
-			for instruction, properties := range opcuaInstructions.Instructions {
+			for instruction, properties := range mqttInstructions.Instructions {
 				MQTTTopic = *properties.MQTTInstructionProperty.MQTTTopic
 				sub(client, MQTTTopic)
 
@@ -143,8 +143,8 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 
 		if reqType == http.MethodGet {
 			returnMessage := ReturnBody{
-				MQTTMessage:   mqttMessageStr[handler.properties.MQTTTopic],
-				MQTTTimestamp: mqttMessageReceiveTimestamp[handler.properties.MQTTTopic].String(),
+				MQTTMessage:   mqttMessageStr[handler.HandlerMetaData.properties.MQTTTopic],
+				MQTTTimestamp: mqttMessageReceiveTimestamp[handler.HandlerMetaData.properties.MQTTTopic].String(),
 			}
 
 			w.WriteHeader(http.StatusOK)

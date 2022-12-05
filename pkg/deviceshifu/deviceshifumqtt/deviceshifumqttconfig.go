@@ -1,5 +1,10 @@
 package deviceshifumqtt
 
+
+import (
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+)
+
 const (
 	mqttTopic = "MQTTTopic"
 )
