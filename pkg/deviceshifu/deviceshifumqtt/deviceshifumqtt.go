@@ -23,19 +23,21 @@ type DeviceShifu struct {
 // HandlerMetaData MetaData for EdgeDevice Setting
 type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
+	instruction    string
+	properties     *MQTTInstructionProperty
 }
 
 // Str and default value
 const (
-	MqttDataEndpoint          string = "mqtt_data"
+	// MqttDataEndpoint          string = "mqtt_data"
 	DefaultUpdateIntervalInMS int64  = 3000
 )
 
 var (
 	client                      mqtt.Client
 	MQTTTopic                   string
-	mqttMessageStr              string
-	mqttMessageReceiveTimestamp time.Time
+	mqttMessageStr              map[string]string
+	mqttMessageReceiveTimestamp map[string]time.Time
 )
 
 // New new MQTT Deviceshifu
@@ -45,14 +47,16 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, err
 	}
 
+	mqttInstructions := CreateMQTTInstructions(&base.DeviceShifuConfig.Instructions)
+
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
 			mqttSetting := *base.EdgeDevice.Spec.ProtocolSettings.MQTTSetting
 			var mqttServerAddress string
-			if mqttSetting.MQTTTopic == nil || *mqttSetting.MQTTTopic == "" {
-				return nil, fmt.Errorf("MQTT Topic cannot be empty")
-			}
+			// if mqttSetting.MQTTTopic == nil || *mqttSetting.MQTTTopic == "" {
+			// 	return nil, fmt.Errorf("MQTT Topic cannot be empty")
+			// }
 
 			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
 				// return nil, fmt.Errorf("MQTT server cannot be empty")
@@ -72,15 +76,20 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			if token := client.Connect(); token.Wait() && token.Error() != nil {
 				panic(token.Error())
 			}
-			MQTTTopic = *mqttSetting.MQTTTopic
-			sub(client, MQTTTopic)
 
-			HandlerMetaData := &HandlerMetaData{
-				base.EdgeDevice.Spec,
+			for instruction, properties := range opcuaInstructions.Instructions {
+				MQTTTopic = *properties.MQTTInstructionProperty.MQTTTopic
+				sub(client, MQTTTopic)
+
+				HandlerMetaData := &HandlerMetaData{
+					base.EdgeDevice.Spec,
+					instruction,
+					properties.MQTTInstructionProperty,
+				}
+
+				handler := DeviceCommandHandlerMQTT{HandlerMetaData}
+				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
-
-			handler := DeviceCommandHandlerMQTT{HandlerMetaData}
-			mux.HandleFunc("/"+MqttDataEndpoint, handler.commandHandleFunc())
 		}
 	}
 	deviceshifubase.BindDefaultHandler(mux)
@@ -98,11 +107,11 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
 		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
-		mqttMessageStr = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+		mqttMessageStr[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
 	} else {
-		mqttMessageStr = rawMqttMessageStr
+		mqttMessageStr[msg.Topic()] = rawMqttMessageStr
 	}
-	mqttMessageReceiveTimestamp = time.Now()
+	mqttMessageReceiveTimestamp[msg.Topic()] = time.Now()
 	klog.Infof("MESSAGE_STR updated")
 }
 
@@ -134,8 +143,8 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 
 		if reqType == http.MethodGet {
 			returnMessage := ReturnBody{
-				MQTTMessage:   mqttMessageStr,
-				MQTTTimestamp: mqttMessageReceiveTimestamp.String(),
+				MQTTMessage:   mqttMessageStr[handler.properties.MQTTTopic],
+				MQTTTimestamp: mqttMessageReceiveTimestamp[handler.properties.MQTTTopic].String(),
 			}
 
 			w.WriteHeader(http.StatusOK)
