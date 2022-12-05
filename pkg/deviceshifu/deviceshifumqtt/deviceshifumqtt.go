@@ -203,7 +203,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 			}
 
 			nowTime := time.Now()
-			if int64(nowTime.Sub(mqttMessageReceiveTimestamp).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
+			if int64(nowTime.Sub(mqttMessageReceiveTimestamp["test/test1"]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
 				return true, nil
 			}
 		default:

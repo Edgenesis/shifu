@@ -1,10 +1,18 @@
 instructions:
   get_reading:
+    protocolPropertyList:
+      MQTTTopic: /test/test1
   get_status:
+    protocolPropertyList:
+      MQTTTopic: /test/test2
   set_reading:
     argumentPropertyList:
     - valueType: "Int32"
       readWrite: "W"
       defaultValue: null
   start:
+    protocolPropertyList:
+      MQTTTopic: /test/test3
   stop:
+    protocolPropertyList:
+      MQTTTopic: /test/test4

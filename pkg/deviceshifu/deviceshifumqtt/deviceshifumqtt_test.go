@@ -163,8 +163,8 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
 	// test Cannot Encode message to json
-	mqttMessageStr = ""
-	mqttMessageReceiveTimestamp = time.Now()
+	mqttMessageStr["test/test1"] = ""
+	mqttMessageReceiveTimestamp["test/test1"] = time.Now()
 	r = dc.Get().Do(context.TODO())
 	assert.Nil(t, r.Error())
 
@@ -355,7 +355,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 		},
 	}
 
-	mqttMessageReceiveTimestamp = time.Now()
+	mqttMessageReceiveTimestamp["test/test1"] = time.Now()
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
 			got, err := c.inputDevice.collectMQTTTelemetry()

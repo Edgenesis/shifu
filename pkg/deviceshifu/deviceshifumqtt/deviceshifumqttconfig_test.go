@@ -43,8 +43,18 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	}
 
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
-		"get_reading": nil,
-		"get_status":  nil,
+		"get_reading": {
+			DeviceShifuInstructionProperties: nil,
+			DeviceShifuProtocolProperties: map[string]string{
+				"MQTTTopic": "/test/test1",
+			},
+		},
+		"get_status":  {
+			DeviceShifuInstructionProperties: nil,
+			DeviceShifuProtocolProperties: map[string]string{
+				"MQTTTopic": "/test/test2",
+			},
+		},
 		"set_reading": {
 			DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
 				{
@@ -55,8 +65,18 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 			},
 			DeviceShifuProtocolProperties: nil,
 		},
-		"start": nil,
-		"stop":  nil,
+		"start": {
+			DeviceShifuInstructionProperties: nil,
+			DeviceShifuProtocolProperties: map[string]string{
+				"MQTTTopic": "/test/test3",
+			},
+		},
+		"stop":  {
+			DeviceShifuInstructionProperties: nil,
+			DeviceShifuProtocolProperties: map[string]string{
+				"MQTTTopic": "/test/test4",
+			},
+		},
 	}
 
 	var mockDeviceTelemetries = &deviceshifubase.DeviceShifuTelemetries{
