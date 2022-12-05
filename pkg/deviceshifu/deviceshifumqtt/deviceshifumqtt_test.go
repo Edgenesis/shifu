@@ -36,7 +36,7 @@ const (
 	unitTestServerAddress = "localhost:18928"
 )
 
-func TestMain(m *testing.M) {	
+func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
 		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
@@ -132,6 +132,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 		mockMQTTServer(stop)
 		wg.Done()
 	}()
+
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", *unitest.ToPointer(unitTestServerAddress)))
 	opts.SetClientID("shifu-service")
@@ -154,9 +155,15 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 		klog.Infof("Connect to %v success!", unitTestServerAddress)
 		defer client.Disconnect(0)
 	}
-
+	ConfigFiniteStateMachine(map[string]string{"abcd": ""})
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error())
+	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
+	assert.NotNil(t, r.Error()) // should be blocked
+	// reset mutex
+	MutexProcess(requestBody)
+	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
+	assert.Nil(t, r.Error()) // not blocked
 
 	// test put method
 	r = dc.Put().Do(context.TODO())
