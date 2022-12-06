@@ -37,14 +37,14 @@ greatly improves the efficiency, quality and reusability of IoT application deve
 
 # 🔧 Install
 
-- If you have started a Kubernetes cluster, use the command `kubectl apply` to install Shifu in your cluster:
+- If you have a running Kubernetes cluster: Please use the command `kubectl apply` to install Shifu in your cluster:
 
     ```sh
     cd shifu
     kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
     ```
 
-- If you don't have a Kubernetes cluster on your computer, that's totally ok, you can download our demo to try it out.
+- If you don't have a running Kubernetes cluster: Please follow the following steps to try our demo.
   - Download and Install Docker
   
     [Mac](https://docs.docker.com/desktop/install/mac-install/) | [Windows(WSL)](https://docs.docker.com/desktop/install/windows-install/) | [Linux](https://docs.docker.com/desktop/install/linux-install/)
@@ -60,16 +60,20 @@ greatly improves the efficiency, quality and reusability of IoT application deve
 Welcome to the Shifu community to share your thoughts and ideas! Any suggestion will be deeply valued.
 We couldn't be more excited to have you.
 
-[Discord](https://discord.com/channels/1024601454306136074/1039472165399052339) | [GitHub discussion](https://github.com/Edgenesis/shifu/discussions) | [Twitter](https://twitter.com/ShifuFramework)
+[![Discord](https://img.shields.io/badge/Discord-join-brightgreen)](https://discord.gg/gF2hHtFu)
+[![Twitter](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
+[![Reddit](https://img.shields.io/badge/Reddit-post-orange)](https://www.reddit.com/r/Shifu/)
+[![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
+
 
 # ✍️ Contributing
 Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
 
-We will forever be beholden to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors)🥰.
+We will forever be grateful to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors)🥰.
 
 # 🌟 Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
 
 # License
-This project is Apache License 2.0.
+This project is distributed under Apache 2.0 License.
