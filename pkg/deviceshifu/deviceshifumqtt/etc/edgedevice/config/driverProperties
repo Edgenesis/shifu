@@ -1,3 +1,0 @@
-driverSku: Edgenesis Mock Device
-driverImage: edgenesis/mockdevice:v0.0.1
-driverExecution: python mock_driver.py
