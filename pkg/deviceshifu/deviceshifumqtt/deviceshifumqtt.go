@@ -18,6 +18,7 @@ import (
 // DeviceShifu implemented from deviceshifuBase
 type DeviceShifu struct {
 	base *deviceshifubase.DeviceShifuBase
+	mqttInstructions *MQTTInstructions
 }
 
 // HandlerMetaData MetaData for EdgeDevice Setting
@@ -94,7 +95,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	}
 	deviceshifubase.BindDefaultHandler(mux)
 
-	ds := &DeviceShifu{base: base}
+	ds := &DeviceShifu{
+		base: base,
+		mqttInstructions: mqttInstructions,
+	}
 
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil
@@ -184,6 +188,14 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 	}
 }
 
+func (ds *DeviceShifu) getMQTTTopicFromInstructionName(instructionName string) (string, error) {
+	if instructionProperties, exists := ds.mqttInstructions.Instructions[instructionName]; exists {
+		return instructionProperties.MQTTInstructionProperty.MQTTTopic, nil
+	}
+
+	return "", fmt.Errorf("Instruction %v not found in list of deviceshifu instructions", instructionName)
+}
+
 // TODO: update configs
 // TODO: update status based on telemetry
 
@@ -202,10 +214,31 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = &telemetryUpdateIntervalInMilliseconds
 			}
 
-			nowTime := time.Now()
-			if int64(nowTime.Sub(mqttMessageReceiveTimestamp["test/test1"]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
-				return true, nil
+			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
+			for telemetry, telemetryProperties := range telemetries {
+
+				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
+					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+				}
+
+				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
+				mqtttopic, err := ds.getMQTTTopicFromInstructionName(instruction)
+				if err != nil {
+					klog.Errorf("%v", err.Error())
+					return false, err
+				}
+
+				//use mqtttopic to get the mqttMessageReceiveTimestamp
+				//determine whether the message interval exceed DeviceShifuTelemetryUpdateIntervalInMilliseconds
+				//return true if there is a topic message interval is normal
+				//return false if the time interval of all topics is abnormal
+				nowTime := time.Now()
+				if int64(nowTime.Sub(mqttMessageReceiveTimestamp[mqtttopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
+					return true, nil
+				}
 			}
+
+			
 		default:
 			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
