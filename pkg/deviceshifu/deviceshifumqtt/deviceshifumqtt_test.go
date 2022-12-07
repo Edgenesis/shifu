@@ -140,7 +140,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	opts.OnConnectionLost = connectLostHandler
 	client = mqtt.NewClient(opts)
 
-	MQTTTopic = "/test/test"
+	MQTTTopic = "/test/test1"
 	requestBody := "abcd"
 
 	// test post method when MQTTServer not connected

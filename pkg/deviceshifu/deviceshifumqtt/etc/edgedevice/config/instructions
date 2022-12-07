@@ -1,10 +1,10 @@
 instructions:
   get_reading:
     protocolPropertyList:
-      MQTTTopic: /test/test1
+      MQTTTopic: "/test/test1"
   get_status:
     protocolPropertyList:
-      MQTTTopic: /test/test2
+      MQTTTopic: "/test/test2"
   set_reading:
     argumentPropertyList:
     - valueType: "Int32"
@@ -12,7 +12,7 @@ instructions:
       defaultValue: null
   start:
     protocolPropertyList:
-      MQTTTopic: /test/test3
+      MQTTTopic: "/test/test3"
   stop:
     protocolPropertyList:
-      MQTTTopic: /test/test4
+      MQTTTopic: "/test/test4"

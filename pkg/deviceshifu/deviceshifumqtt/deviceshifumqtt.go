@@ -37,9 +37,11 @@ const (
 var (
 	client                      mqtt.Client
 	MQTTTopic                   string
-	mqttMessageStr              map[string]string
-	mqttMessageReceiveTimestamp map[string]time.Time
+	mqttMessageStr              = map[string]string{}
+	mqttMessageReceiveTimestamp = map[string]time.Time{}
 )
+
+
 
 // New new MQTT Deviceshifu
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
@@ -55,9 +57,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		case v1alpha1.ProtocolMQTT:
 			mqttSetting := *base.EdgeDevice.Spec.ProtocolSettings.MQTTSetting
 			var mqttServerAddress string
-			// if mqttSetting.MQTTTopic == nil || *mqttSetting.MQTTTopic == "" {
-			// 	return nil, fmt.Errorf("MQTT Topic cannot be empty")
-			// }
 
 			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
 				// return nil, fmt.Errorf("MQTT server cannot be empty")
@@ -107,6 +106,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	rawMqttMessageStr := string(msg.Payload())
+	// if mqttMessageStr == nil && mqttMessageReceiveTimestamp == nil {
+	// 	mqttMessageStr = make(map[string]string)
+	// 	mqttMessageReceiveTimestamp = make(map[string]time.Time)
+	// }
 	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
 	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
