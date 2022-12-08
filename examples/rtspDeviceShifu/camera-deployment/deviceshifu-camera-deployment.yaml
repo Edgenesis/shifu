@@ -37,6 +37,9 @@ spec:
         - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
           readOnly: true
+        - name: rtsp-secret
+          mountPath: /etc/edgedevice/secret
+          readOnly: true
         env:
         - name: EDGEDEVICE_NAME
           value: "edgedevice-camera"
@@ -56,4 +59,7 @@ spec:
       - name: deviceshifu-config
         configMap:
           name: camera-configmap-0.0.1
+      - name: rtsp-secret
+        secret:
+          secretName: rtsp-secret
       serviceAccountName: edgedevice-sa
