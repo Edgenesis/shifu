@@ -106,10 +106,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	rawMqttMessageStr := string(msg.Payload())
-	// if mqttMessageStr == nil && mqttMessageReceiveTimestamp == nil {
-	// 	mqttMessageStr = make(map[string]string)
-	// 	mqttMessageReceiveTimestamp = make(map[string]time.Time)
-	// }
 	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
 	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
@@ -170,11 +166,12 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
+			mqtttopic := handler.HandlerMetaData.properties.MQTTTopic
 			requestBody := RequestBody(body)
 			klog.Infof("requestBody: %v", requestBody)
 
 			// TODO handle error asynchronously
-			token := client.Publish(MQTTTopic, 1, false, body)
+			token := client.Publish(mqtttopic, 1, false, body)
 			if token.Error() != nil {
 				klog.Errorf("Error when publish Data to MQTTServer,%v",token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
