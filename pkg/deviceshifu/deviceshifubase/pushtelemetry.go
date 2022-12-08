@@ -159,8 +159,12 @@ func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) 
 	username, exist := secret[UsernameSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
+		if ts.Spec.ServiceSettings.HTTPSetting.Username == nil {
+			ts.Spec.ServiceSettings.HTTPSetting.Username = new(string)
+		}
 	} else {
-		*ts.Spec.ServiceSettings.HTTPSetting.Username = username
+		// get pointer of string
+		ts.Spec.ServiceSettings.HTTPSetting.Username = struct{ str *string }{str: &username}.str
 		logger.Info("HTTPSetting.Username load from secret")
 	}
 }
