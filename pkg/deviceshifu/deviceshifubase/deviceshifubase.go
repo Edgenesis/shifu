@@ -18,7 +18,6 @@ var zlog *zap.SugaredLogger
 func init() {
 	logger, _ := zap.NewProduction()
 	zlog = logger.Sugar()
-	defer zlog.Sync()
 }
 
 // DeviceShifuBase deviceshifu Basic Info
