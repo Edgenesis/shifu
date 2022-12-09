@@ -400,7 +400,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 		},
 	}
 
-	mqttMessageReceiveTimestamp["test/test1"] = time.Now()
+	mqttMessageReceiveTimestampMap["test/test1"] = time.Now()
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
 			got, err := c.inputDevice.collectMQTTTelemetry()

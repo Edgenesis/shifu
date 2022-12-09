@@ -37,8 +37,8 @@ const (
 var (
 	client                      mqtt.Client
 	MQTTTopic                   string
-	mqttMessageStr              = map[string]string{}
-	mqttMessageReceiveTimestamp = map[string]time.Time{}
+	mqttMessageStrMap              = map[string]string{}
+	mqttMessageReceiveTimestampMap = map[string]time.Time{}
 )
 
 
@@ -110,11 +110,11 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
 		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
-		mqttMessageStr[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+		mqttMessageStrMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
 	} else {
-		mqttMessageStr[msg.Topic()] = rawMqttMessageStr
+		mqttMessageStrMap[msg.Topic()] = rawMqttMessageStr
 	}
-	mqttMessageReceiveTimestamp[msg.Topic()] = time.Now()
+	mqttMessageReceiveTimestampMap[msg.Topic()] = time.Now()
 	klog.Infof("MESSAGE_STR updated")
 }
 
@@ -146,8 +146,8 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 
 		if reqType == http.MethodGet {
 			returnMessage := ReturnBody{
-				MQTTMessage:   mqttMessageStr[handler.HandlerMetaData.properties.MQTTTopic],
-				MQTTTimestamp: mqttMessageReceiveTimestamp[handler.HandlerMetaData.properties.MQTTTopic].String(),
+				MQTTMessage:   mqttMessageStrMap[handler.HandlerMetaData.properties.MQTTTopic],
+				MQTTTimestamp: mqttMessageReceiveTimestampMap[handler.HandlerMetaData.properties.MQTTTopic].String(),
 			}
 
 			w.WriteHeader(http.StatusOK)
@@ -228,12 +228,12 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 					return false, err
 				}
 
-				//use mqtttopic to get the mqttMessageReceiveTimestamp
+				//use mqtttopic to get the mqttMessageReceiveTimestampMap
 				//determine whether the message interval exceed DeviceShifuTelemetryUpdateIntervalInMilliseconds
 				//return true if there is a topic message interval is normal
 				//return false if the time interval of all topics is abnormal
 				nowTime := time.Now()
-				if int64(nowTime.Sub(mqttMessageReceiveTimestamp[mqtttopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
+				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqtttopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
 					return true, nil
 				}
 			}
