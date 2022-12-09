@@ -14,7 +14,10 @@ try:
         CAMERA_PASSWORD = f.read()
         print("Load password from secret.")
 except FileNotFoundError:
-    print("The secret password file does not exist.")
+    print("The secret password file does not exist. We will load password from ENV: IP_CAMERA_PASSWORD")
+except Exception as e:
+    print(e)
+    raise e
 
 port = os.environ.get("IP_CAMERA_CONTAINER_PORT")
 

@@ -57,7 +57,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	passwordByte, err := os.ReadFile(DeviceSecretPasswordPath)
 	password := *setting.Password
 	// secret will overwrite the password in edge device
-	if err == nil {
+	if err != nil {
+		klog.Infof("secret load error: %v, password will be loaded from OPCUASetting.Password", err)
+	} else {
+		klog.Infof("password loaded from secret")
 		password = string(passwordByte)
 	}
 
