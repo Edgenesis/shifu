@@ -219,7 +219,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				}
 
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
-				mqtttopic, err := ds.getMQTTTopicFromInstructionName(instruction)
+				mqttTopic, err := ds.getMQTTTopicFromInstructionName(instruction)
 				if err != nil {
 					klog.Errorf("%v", err.Error())
 					return false, err
@@ -230,7 +230,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				// return true if there is a topic message interval is normal
 				// return false if the time interval of all topics is abnormal
 				nowTime := time.Now()
-				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqtttopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
+				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqttTopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
 					return true, nil
 				}
 			}
