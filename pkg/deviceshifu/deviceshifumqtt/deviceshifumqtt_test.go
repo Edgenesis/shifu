@@ -252,7 +252,6 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 }
 
 func TestCollectMQTTTelemetry(t *testing.T) {
-
 	instructionName := "get_reading"
 	testtelemetryinstructionName := &instructionName
 	
