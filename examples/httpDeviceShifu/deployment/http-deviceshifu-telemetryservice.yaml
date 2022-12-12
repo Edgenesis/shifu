@@ -26,3 +26,15 @@ spec:
       dbName: shifu
       dbTable: testTable2
       dbtype: TDEngine
+--- #telemetry_service.yaml
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: TelemetryService
+metadata:
+  name: push-endpoint-3
+  namespace: devices
+spec:
+  telemetrySeriveEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
+  serviceSettings:
+    HTTPSetting:
+      username: name
+      password: pwd

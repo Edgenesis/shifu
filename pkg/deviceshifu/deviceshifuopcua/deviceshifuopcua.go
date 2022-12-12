@@ -7,7 +7,6 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"k8s.io/klog/v2"
 	"net/http"
-	"os"
 	"path"
 	"time"
 
@@ -34,7 +33,7 @@ type HandlerMetaData struct {
 // DeviceConfigmapCertificatePath default cert path
 const (
 	DeviceConfigmapCertificatePath string = "/etc/edgedevice/certificate"
-	DeviceSecretPasswordPath       string = "/etc/edgedevice/secret/password"
+	OPCUASettingPasswordSecret     string = "opcua_password"
 )
 
 // New This function creates a new Device Shifu based on the configuration
@@ -53,15 +52,13 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
-	setting := *base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting
-	passwordByte, err := os.ReadFile(DeviceSecretPasswordPath)
-	password := *setting.Password
+	password, exist := base.DeviceShifuSecret[OPCUASettingPasswordSecret]
 	// secret will overwrite the password in edge device
-	if err != nil {
-		klog.Infof("secret load error: %v, password will be loaded from OPCUASetting.Password", err)
-	} else {
+	if exist {
 		klog.Infof("password loaded from secret")
-		password = string(passwordByte)
+	} else {
+		klog.Infof("secret not found, password will be loaded from OPCUASetting.Password")
+		password = *base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.Password
 	}
 
 	var opcuaClient *opcua.Client

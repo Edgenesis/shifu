@@ -3,6 +3,7 @@ package deviceshifubase
 import (
 	"context"
 	"errors"
+	"os"
 
 	"k8s.io/klog/v2"
 
@@ -110,6 +111,28 @@ const (
 	DeviceDefaultGlobalTimeoutInSeconds      int64 = 3
 	DefaultHTTPServerTimeoutInSeconds        int64 = 0
 )
+
+// NewDeviceShifuSecret Read the secret files under the path directory and return secret map
+func NewDeviceShifuSecret(path string) (DeviceShifuSecret, error) {
+	if path == "" {
+		return nil, errors.New("DeviceShifuSecret path can't be empty")
+	}
+	secrets := make(DeviceShifuSecret)
+	files, err := os.ReadDir(path)
+	if err != nil {
+		return nil, err
+	}
+	for _, file := range files {
+		if !file.IsDir() {
+			content, err := os.ReadFile(file.Name())
+			if err != nil {
+				return nil, err
+			}
+			secrets[file.Name()] = string(content)
+		}
+	}
+	return secrets, nil
+}
 
 // NewDeviceShifuConfig Read the configuration under the path directory and return configuration
 func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {

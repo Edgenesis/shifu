@@ -18,14 +18,18 @@ type DeviceShifuBase struct {
 	Name              string
 	Server            *http.Server
 	DeviceShifuConfig *DeviceShifuConfig
+	DeviceShifuSecret DeviceShifuSecret
 	EdgeDevice        *v1alpha1.EdgeDevice
 	RestClient        *rest.RESTClient
 }
+
+type DeviceShifuSecret map[string]string
 
 // DeviceShifuMetaData Deviceshifu MetaData
 type DeviceShifuMetaData struct {
 	Name           string
 	ConfigFilePath string
+	SecretFilePath string
 	KubeConfigPath string
 	Namespace      string
 }
@@ -50,6 +54,7 @@ const (
 	DeviceDefaultPortStr                  string = ":8080"
 	DeviceIsHealthyStr                    string = "Device is healthy"
 	DeviceConfigmapFolderPath             string = "/etc/edgedevice/config"
+	DeviceSecretFolderPath                string = "/etc/edgedevice/secret"
 	DeviceKubeconfigDoNotLoadStr          string = "NULL"
 	DeviceNameSpaceDefault                string = "default"
 	KubernetesConfigDefault               string = ""
@@ -60,6 +65,8 @@ const (
 	PowerShellStubTimeoutTolerationStr    string = "stub_toleration"
 	PythonHandlersModuleName                     = "customized_handlers"
 	PythonScriptDir                              = "pythoncustomizedhandlers"
+	SQLSettingSecret                             = "telemetry_service_sql_pwd"
+	HTTPSettingSecret                            = "telemetry_service_http_pwd"
 )
 
 var (
@@ -81,6 +88,15 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
 	if err != nil {
 		return nil, nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
+	}
+
+	if deviceShifuMetadata.SecretFilePath == "" {
+		deviceShifuMetadata.SecretFilePath = DeviceSecretFolderPath
+	}
+
+	deviceShifuSecret, err := NewDeviceShifuSecret(deviceShifuMetadata.SecretFilePath)
+	if err != nil {
+		fmt.Printf("error: %v, when parsing Secret at %v, use the default plaintext password", err, deviceShifuMetadata.SecretFilePath)
 	}
 
 	mux := http.NewServeMux()
@@ -113,6 +129,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 			ReadTimeout:  time.Duration(DefaultHTTPServerTimeoutInSeconds) * time.Second,
 			WriteTimeout: time.Duration(DefaultHTTPServerTimeoutInSeconds) * time.Second,
 		},
+		DeviceShifuSecret: deviceShifuSecret,
 		DeviceShifuConfig: deviceShifuConfig,
 		EdgeDevice:        edgeDevice,
 		RestClient:        client,

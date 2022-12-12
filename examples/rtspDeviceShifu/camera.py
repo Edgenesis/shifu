@@ -8,7 +8,7 @@ app = Flask(__name__)
 ip = os.environ.get("IP_CAMERA_ADDRESS")
 CAMERA_USERNAME = os.environ.get("IP_CAMERA_USERNAME")
 CAMERA_PASSWORD = os.environ.get("IP_CAMERA_PASSWORD")
-DEFAULT_SECRET_PATH = "/etc/edgedevice/secret/password"
+DEFAULT_SECRET_PATH = "/etc/edgedevice/secret/rtsp_password"
 try:
     with open(DEFAULT_SECRET_PATH, "r") as f:
         CAMERA_PASSWORD = f.read()

@@ -110,6 +110,11 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 	return nil
 }
 
+func injectSecret(ds *DeviceShifuBase, ts *v1alpha1.TelemetryService) {
+	*ts.Spec.ServiceSettings.SQLSetting.Secret = ds.DeviceShifuSecret[SQLSettingSecret]
+	*ts.Spec.ServiceSettings.HTTPSetting.Password = ds.DeviceShifuSecret[HTTPSettingSecret]
+}
+
 func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.TelemetryServiceSpec, error) {
 	serviceAddressCache := make(map[string]v1alpha1.TelemetryServiceSpec)
 	res := make(map[string]v1alpha1.TelemetryServiceSpec)
@@ -150,7 +155,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 			Into(&telemetryService); err != nil {
 			klog.Errorf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, err)
 		}
-
+		injectSecret(ds, &telemetryService)
 		serviceAddressCache[defaultTelemetryCollectionService] = telemetryService.Spec
 	}
 
@@ -188,7 +193,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 				klog.Errorf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
 				continue
 			}
-
+			injectSecret(ds, &telemetryService)
 			serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService] = telemetryService.Spec
 			res[telemetryName] = telemetryService.Spec
 			continue
