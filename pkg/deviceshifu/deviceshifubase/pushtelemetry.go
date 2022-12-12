@@ -111,8 +111,22 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 }
 
 func injectSecret(ds *DeviceShifuBase, ts *v1alpha1.TelemetryService) {
-	*ts.Spec.ServiceSettings.SQLSetting.Secret = ds.DeviceShifuSecret[SQLSettingSecret]
-	*ts.Spec.ServiceSettings.HTTPSetting.Password = ds.DeviceShifuSecret[HTTPSettingSecret]
+	if ts.Spec.ServiceSettings == nil {
+		klog.Infof("empty telemetry service setting.")
+		return
+	}
+	if ts.Spec.ServiceSettings.SQLSetting != nil {
+		pwd, exist := ds.DeviceShifuSecret[SQLSettingSecret]
+		if exist {
+			*ts.Spec.ServiceSettings.SQLSetting.Secret = pwd
+		}
+	}
+	if ts.Spec.ServiceSettings.HTTPSetting != nil {
+		pwd, exist := ds.DeviceShifuSecret[HTTPSettingSecret]
+		if exist {
+			*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
+		}
+	}
 }
 
 func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.TelemetryServiceSpec, error) {
