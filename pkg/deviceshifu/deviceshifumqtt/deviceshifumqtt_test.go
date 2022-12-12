@@ -379,7 +379,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 							DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
 								"health": &deviceshifubase.DeviceShifuTelemetry{
 									DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
-									DeviceInstructionName: testtelemetryinstructionName,
+									DeviceInstructionName: testTelemetryInstructionName,
 								},
 							    },
 								

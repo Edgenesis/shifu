@@ -77,6 +77,12 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 				"MQTTTopic": "/test/test4",
 			},
 		},
+		"get_data":  {
+			DeviceShifuInstructionProperties: nil,
+			DeviceShifuProtocolProperties: map[string]string{
+				"MQTTTopic": "",
+			},
+		},
 	}
 
 	var mockDeviceTelemetries = &deviceshifubase.DeviceShifuTelemetries{

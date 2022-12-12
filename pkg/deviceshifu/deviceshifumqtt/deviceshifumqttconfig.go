@@ -2,6 +2,7 @@ package deviceshifumqtt
 
 
 import (
+	"k8s.io/klog/v2"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 )
 
