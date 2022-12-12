@@ -53,17 +53,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
-	setting := *base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting
-	passwordByte, err := os.ReadFile(DeviceSecretPasswordPath)
-	password := *setting.Password
-	// secret will overwrite the password in edge device
-	if err != nil {
-		klog.Infof("secret load error: %v, password will be loaded from OPCUASetting.Password", err)
-	} else {
-		klog.Infof("password loaded from secret")
-		password = string(passwordByte)
-	}
-
 	var opcuaClient *opcua.Client
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
@@ -114,7 +103,15 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 						opcua.AuthCertificate(cert.Certificate[0]),
 					)
 				case ua.UserTokenTypeUserName:
-					options = append(options, opcua.AuthUsername(*setting.Username, password))
+					passwordByte, err := os.ReadFile(DeviceSecretPasswordPath)
+					// secret will overwrite the password in edge device
+					if err != nil {
+						klog.Infof("secret load error: %v, password will be loaded from OPCUASetting.Password", err)
+						options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
+					} else {
+						klog.Infof("password loaded from secret")
+						options = append(options, opcua.AuthUsername(*setting.Username, string(passwordByte)))
+					}
 				case ua.UserTokenTypeAnonymous:
 					fallthrough
 				default:
