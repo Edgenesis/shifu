@@ -36,8 +36,6 @@ const (
 	unitTestServerAddress = "localhost:18928"
 )
 
-
-
 func TestMain(m *testing.M) {	
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
