@@ -50,7 +50,11 @@ spec:
         - name: IP_CAMERA_USERNAME
           value: "admin"
         - name: IP_CAMERA_PASSWORD
-          value: "password"
+          valueFrom:
+            secretKeyRef:
+              name: deviceshifu-secret
+              key: rtsp_password
+              optional: false
         - name: IP_CAMERA_CONTAINER_PORT
           value: "11112"
         - name: PYTHONUNBUFFERED

@@ -1,1 +1,1 @@
-kubectl create secret generic rtsp-secret --from-literal=password=new_password -n deviceshifu
+kubectl create secret generic deviceshifu-secret --from-literal=rtsp_password=new_password -n deviceshifu
