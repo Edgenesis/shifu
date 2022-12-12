@@ -22,6 +22,8 @@ data:
       stop:
         protocolPropertyList:
           MQTTTopic: "/test/test4"
+      get_data:
+        protocolPropertyList:
   telemetries: |
     telemetrySettings:
       telemetryUpdateIntervalInMilliseconds: 1000

@@ -25,23 +25,20 @@ type DeviceShifu struct {
 type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *MQTTInstructionProperty
+	properties     *MQTTProtocolProperty
 }
 
 // Str and default value
 const (
-	// MqttDataEndpoint          string = "mqtt_data"
 	DefaultUpdateIntervalInMS int64  = 3000
 )
 
 var (
 	client                      mqtt.Client
 	MQTTTopic                   string
-	mqttMessageStrMap              = map[string]string{}
+	mqttMessageInstructionMap              = map[string]string{}
 	mqttMessageReceiveTimestampMap = map[string]time.Time{}
 )
-
-
 
 // New new MQTT Deviceshifu
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
@@ -78,13 +75,13 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 
 			for instruction, properties := range mqttInstructions.Instructions {
-				MQTTTopic = properties.MQTTInstructionProperty.MQTTTopic
+				MQTTTopic = properties.MQTTProtocolProperty.MQTTTopic
 				sub(client, MQTTTopic)
 
 				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
-					properties.MQTTInstructionProperty,
+					properties.MQTTProtocolProperty,
 				}
 
 				handler := DeviceCommandHandlerMQTT{HandlerMetaData}
@@ -110,9 +107,9 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
 		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
-		mqttMessageStrMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+		mqttMessageInstructionMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
 	} else {
-		mqttMessageStrMap[msg.Topic()] = rawMqttMessageStr
+		mqttMessageInstructionMap[msg.Topic()] = rawMqttMessageStr
 	}
 	mqttMessageReceiveTimestampMap[msg.Topic()] = time.Now()
 	klog.Infof("MESSAGE_STR updated")
@@ -146,7 +143,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 
 		if reqType == http.MethodGet {
 			returnMessage := ReturnBody{
-				MQTTMessage:   mqttMessageStrMap[handler.HandlerMetaData.properties.MQTTTopic],
+				MQTTMessage:   mqttMessageInstructionMap[handler.HandlerMetaData.properties.MQTTTopic],
 				MQTTTimestamp: mqttMessageReceiveTimestampMap[handler.HandlerMetaData.properties.MQTTTopic].String(),
 			}
 
@@ -166,12 +163,12 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
-			mqtttopic := handler.HandlerMetaData.properties.MQTTTopic
+			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
 			requestBody := RequestBody(body)
 			klog.Infof("requestBody: %v", requestBody)
 
 			// TODO handle error asynchronously
-			token := client.Publish(mqtttopic, 1, false, body)
+			token := client.Publish(mqttTopic, 1, false, body)
 			if token.Error() != nil {
 				klog.Errorf("Error when publish Data to MQTTServer,%v",token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
@@ -190,7 +187,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 
 func (ds *DeviceShifu) getMQTTTopicFromInstructionName(instructionName string) (string, error) {
 	if instructionProperties, exists := ds.mqttInstructions.Instructions[instructionName]; exists {
-		return instructionProperties.MQTTInstructionProperty.MQTTTopic, nil
+		return instructionProperties.MQTTProtocolProperty.MQTTTopic, nil
 	}
 
 	return "", fmt.Errorf("Instruction %v not found in list of deviceshifu instructions", instructionName)

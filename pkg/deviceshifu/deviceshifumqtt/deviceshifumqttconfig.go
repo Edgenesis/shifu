@@ -26,12 +26,12 @@ type MQTTInstructions struct {
 
 // MQTTInstruction MQTT Instruction
 type MQTTInstruction struct {
-	MQTTInstructionProperty *MQTTInstructionProperty `yaml:"instructionProperties,omitempty"`
+	MQTTProtocolProperty *MQTTProtocolProperty 
 }
 
-// MQTTInstructionProperty MQTT Instruction's Property
-type MQTTInstructionProperty struct {
-	MQTTTopic string `yaml:"MQTTTopic"`
+// MQTTProtocolProperty MQTT Instruction's Property
+type MQTTProtocolProperty struct {
+	MQTTTopic string
 }
 
 // CreateMQTTInstructions Create MQTT Instructions
@@ -39,8 +39,11 @@ func CreateMQTTInstructions(dsInstructions *deviceshifubase.DeviceShifuInstructi
 	instructions := make(map[string]*MQTTInstruction)
 
 	for key, dsInstruction := range dsInstructions.Instructions {
+		if dsInstruction.DeviceShifuProtocolProperties != nil && dsInstruction.DeviceShifuProtocolProperties[mqttTopic] == "" {
+			panic("MQTTTopic is empty")
+		}
 		instruction := &MQTTInstruction{
-			&MQTTInstructionProperty{
+			&MQTTProtocolProperty{
 				MQTTTopic: dsInstruction.DeviceShifuProtocolProperties[mqttTopic],
 			},
 		}

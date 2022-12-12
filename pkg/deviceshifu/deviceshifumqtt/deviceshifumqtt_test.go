@@ -114,7 +114,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	hs := mockHandlerServer(t)
 	defer hs.Close()
 	addr := strings.Split(hs.URL, "//")[1]
-	properties := &MQTTInstructionProperty{
+	properties := &MQTTProtocolProperty{
 		MQTTTopic: "test/test1",
 	}
 	mockHandlerHTTP := &DeviceCommandHandlerMQTT{
@@ -146,7 +146,6 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	opts.OnConnectionLost = connectLostHandler
 	client = mqtt.NewClient(opts)
 
-	// MQTTTopic = "/test/test1"
 	requestBody := "abcd"
 
 	// test post method when MQTTServer not connected
@@ -169,8 +168,6 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
 	// test Cannot Encode message to json
-	// mqttMessageStr["test/test1"] = ""
-	// mqttMessageReceiveTimestamp["test/test1"] = time.Now()
 	r = dc.Get().Do(context.TODO())
 	assert.Nil(t, r.Error())
 
@@ -258,9 +255,8 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 
 func TestCollectMQTTTelemetry(t *testing.T) {
 
-	var testtelemetryinstructionName *string
-	instructionname := "get_reading"
-	testtelemetryinstructionName = &instructionname
+	instructionName := "get_reading"
+	testtelemetryinstructionName := &instructionName
 	
 	testCases := []struct {
 		Name        string
@@ -307,7 +303,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 				mqttInstructions: &MQTTInstructions{
 					Instructions: map[string]*MQTTInstruction{
 						"get_reading": &MQTTInstruction{
-							MQTTInstructionProperty: &MQTTInstructionProperty {
+							MQTTProtocolProperty: &MQTTProtocolProperty {
 								MQTTTopic: "test/test1",
 							},
 						},
@@ -366,7 +362,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 				mqttInstructions: &MQTTInstructions{
 					Instructions: map[string]*MQTTInstruction{
 						"get_reading": &MQTTInstruction{
-							MQTTInstructionProperty: &MQTTInstructionProperty {
+							MQTTProtocolProperty: &MQTTProtocolProperty {
 								MQTTTopic: "test/test1",
 							},
 						},
