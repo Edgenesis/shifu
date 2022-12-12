@@ -137,6 +137,8 @@ def moveCameraWithAuth(s, ip, auth, direction):
     result = None
     s.auth = auth
     try:
+        # send request once to avoid send put request error
+        getCameraInfoWithAuth(s,ip,auth)
         headers = {'Content-Type': 'application/xml'}
         r = s.put('http://' + ip + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_DICT[direction], headers=headers)
         if r.ok:
