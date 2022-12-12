@@ -225,10 +225,10 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 					return false, err
 				}
 
-				//use mqtttopic to get the mqttMessageReceiveTimestampMap
-				//determine whether the message interval exceed DeviceShifuTelemetryUpdateIntervalInMilliseconds
-				//return true if there is a topic message interval is normal
-				//return false if the time interval of all topics is abnormal
+				// use mqtttopic to get the mqttMessageReceiveTimestampMap
+				// determine whether the message interval exceed DeviceShifuTelemetryUpdateIntervalInMilliseconds
+				// return true if there is a topic message interval is normal
+				// return false if the time interval of all topics is abnormal
 				nowTime := time.Now()
 				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqtttopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
 					return true, nil
