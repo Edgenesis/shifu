@@ -41,7 +41,7 @@ func CreateMQTTInstructions(dsInstructions *deviceshifubase.DeviceShifuInstructi
 
 	for key, dsInstruction := range dsInstructions.Instructions {
 		if dsInstruction.DeviceShifuProtocolProperties != nil && dsInstruction.DeviceShifuProtocolProperties[mqttTopic] == "" {
-			klog.Errorf("Error when Read MQTTTopic From DeviceShifuInstructions, error: instruction %v has an empty topic", key)
+			klog.Fatalf("Error when Read MQTTTopic From DeviceShifuInstructions, error: instruction %v has an empty topic", key)
 		}
 		instruction := &MQTTInstruction{
 			&MQTTProtocolProperty{
