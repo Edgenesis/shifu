@@ -52,15 +52,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
-	password, exist := base.DeviceShifuSecret[OPCUASettingPasswordSecret]
-	// secret will overwrite the password in edge device
-	if exist {
-		klog.Infof("password loaded from secret")
-	} else {
-		klog.Infof("secret not found, password will be loaded from OPCUASetting.Password")
-		password = *base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.Password
-	}
-
 	var opcuaClient *opcua.Client
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
@@ -111,7 +102,15 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 						opcua.AuthCertificate(cert.Certificate[0]),
 					)
 				case ua.UserTokenTypeUserName:
-					options = append(options, opcua.AuthUsername(*setting.Username, password))
+					password, exist := base.DeviceShifuSecret[OPCUASettingPasswordSecret]
+					// secret will overwrite the password in edge device
+					if exist {
+						klog.Infof("password loaded from secret")
+						options = append(options, opcua.AuthUsername(*setting.Username, password))
+					} else {
+						klog.Infof("secret not found, password will be loaded from OPCUASetting.Password")
+						options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
+					}
 				case ua.UserTokenTypeAnonymous:
 					fallthrough
 				default:

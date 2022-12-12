@@ -8,17 +8,6 @@ app = Flask(__name__)
 ip = os.environ.get("IP_CAMERA_ADDRESS")
 CAMERA_USERNAME = os.environ.get("IP_CAMERA_USERNAME")
 CAMERA_PASSWORD = os.environ.get("IP_CAMERA_PASSWORD")
-DEFAULT_SECRET_PATH = "/etc/edgedevice/secret/rtsp_password"
-try:
-    with open(DEFAULT_SECRET_PATH, "r") as f:
-        CAMERA_PASSWORD = f.read()
-        print("Load password from secret.")
-except FileNotFoundError:
-    print("The secret password file does not exist. We will load password from ENV: IP_CAMERA_PASSWORD")
-except Exception as e:
-    print(e)
-    raise e
-
 port = os.environ.get("IP_CAMERA_CONTAINER_PORT")
 
 CAMERA_CTRL_MOVE_UP = '<?xml version="1.0" encoding="UTF-8"?><PTZData><pan>0</pan><tilt>60</tilt></PTZData>'
@@ -137,6 +126,8 @@ def moveCameraWithAuth(s, ip, auth, direction):
     result = None
     s.auth = auth
     try:
+        # send request once to avoid send put request error
+        getCameraInfoWithAuth(s,ip,auth)
         headers = {'Content-Type': 'application/xml'}
         r = s.put('http://' + ip + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_DICT[direction], headers=headers)
         if r.ok:
