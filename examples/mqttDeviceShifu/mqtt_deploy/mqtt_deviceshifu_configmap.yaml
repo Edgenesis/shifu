@@ -8,7 +8,19 @@ data:
     driverSku: testMQTT
     driverImage: 
   instructions: |
-    
+    instructions:
+      get_reading:
+        protocolPropertyList:
+          MQTTTopic: "/test/test1"
+      get_status:
+        protocolPropertyList:
+          MQTTTopic: "/test/test2"
+      start:
+        protocolPropertyList:
+          MQTTTopic: "/test/test3"
+      stop:
+        protocolPropertyList:
+          MQTTTopic: "/test/test4"
   telemetries: |
     telemetries:
       device_health:
