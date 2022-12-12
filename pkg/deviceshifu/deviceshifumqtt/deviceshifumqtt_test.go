@@ -253,7 +253,7 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 
 func TestCollectMQTTTelemetry(t *testing.T) {
 	instructionName := "get_reading"
-	testtelemetryinstructionName := &instructionName
+	testTelemetryInstructionName := &instructionName
 	
 	testCases := []struct {
 		Name        string
@@ -325,7 +325,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 							DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
 								"health": &deviceshifubase.DeviceShifuTelemetry{
 									DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
-									DeviceInstructionName: testtelemetryinstructionName,
+									DeviceInstructionName: testTelemetryInstructionName,
 								},
 							    },
 								
