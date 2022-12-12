@@ -9,21 +9,18 @@ data:
     driverImage: 
   instructions: |
     instructions:
-      get_reading:
+      get_topicmsg1:
         protocolPropertyList:
           MQTTTopic: "/test/test1"
-      get_status:
+      get_topicmsg2:
         protocolPropertyList:
           MQTTTopic: "/test/test2"
-      start:
+      get_topicmsg3:
         protocolPropertyList:
           MQTTTopic: "/test/test3"
-      stop:
+      get_topicmsg4:
         protocolPropertyList:
           MQTTTopic: "/test/test4"
-      get_data:
-        protocolPropertyList:
-          MQTTTopic:
   telemetries: |
     telemetries:
       device_health:
