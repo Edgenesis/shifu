@@ -216,7 +216,6 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 
 			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
 			for telemetry, telemetryProperties := range telemetries {
-
 				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
 					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
 				}
@@ -236,9 +235,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqttTopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
 					return true, nil
 				}
-			}
-
-			
+			}	
 		default:
 			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
