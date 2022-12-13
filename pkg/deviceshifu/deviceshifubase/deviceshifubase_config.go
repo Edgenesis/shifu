@@ -3,9 +3,9 @@ package deviceshifubase
 import (
 	"context"
 	"errors"
-	"os"
-
 	"k8s.io/klog/v2"
+	"os"
+	"path/filepath"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/imdario/mergo"
@@ -123,8 +123,14 @@ func NewDeviceShifuSecret(path string) (DeviceShifuSecret, error) {
 		return nil, err
 	}
 	for _, file := range files {
-		if !file.IsDir() {
-			content, err := os.ReadFile(file.Name())
+		filePath := filepath.Join(path, file.Name())
+		info, err := os.Stat(filePath)
+		if err != nil {
+			return nil, err
+		}
+
+		if !info.IsDir() {
+			content, err := os.ReadFile(filePath)
 			if err != nil {
 				return nil, err
 			}

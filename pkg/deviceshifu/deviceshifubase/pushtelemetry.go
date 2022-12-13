@@ -119,12 +119,18 @@ func injectSecret(ds *DeviceShifuBase, ts *v1alpha1.TelemetryService) {
 		pwd, exist := ds.DeviceShifuSecret[SQLSettingSecret]
 		if exist {
 			*ts.Spec.ServiceSettings.SQLSetting.Secret = pwd
+			klog.Infof("SQLSetting.Secret load from secret")
+		} else {
+			klog.Infof("SQLSetting.Secret load from default")
 		}
 	}
 	if ts.Spec.ServiceSettings.HTTPSetting != nil {
 		pwd, exist := ds.DeviceShifuSecret[HTTPSettingSecret]
 		if exist {
 			*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
+			klog.Infof("HTTPSetting.Password load from secret")
+		} else {
+			klog.Infof("HTTPSetting.Password load from default")
 		}
 	}
 }
