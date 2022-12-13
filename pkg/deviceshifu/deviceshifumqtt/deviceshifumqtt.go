@@ -52,7 +52,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
-			mqttSetting := *base.EdgeDevice.Spec.ProtocolSettings.MQTTSetting
+			mqttSetting := base.EdgeDevice.Spec.ProtocolSettings.MQTTSetting
+			if mqttSetting == nil {
+				mqttSetting = &v1alpha1.MQTTSetting{}
+			}
 			var mqttServerAddress string
 
 			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
