@@ -11,7 +11,6 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"k8s.io/klog/v2"
 )
 
 func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {
@@ -57,15 +56,15 @@ func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryColle
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, telemetryCollectionService, message.Body)
 	if err != nil {
-		klog.Errorf("error creating request for telemetry service, error: %v" + err.Error())
+		zlog.Errorf("error creating request for telemetry service, error: %v" + err.Error())
 		return err
 	}
 
-	klog.Infof("pushing %v to %v", message.Body, telemetryCollectionService)
+	zlog.Infof("pushing %v to %v", message.Body, telemetryCollectionService)
 	utils.CopyHeader(req.Header, req.Header)
 	_, err = http.DefaultClient.Do(req)
 	if err != nil {
-		klog.Errorf("HTTP POST error for telemetry service %v, error: %v", telemetryCollectionService, err.Error())
+		zlog.Errorf("HTTP POST error for telemetry service %v, error: %v", telemetryCollectionService, err.Error())
 		return err
 	}
 	return nil
@@ -77,33 +76,33 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 
 	rawData, err := io.ReadAll(message.Body)
 	if err != nil {
-		klog.Errorf("Error when Read Info From RequestBody, error: %v", err)
+		zlog.Errorf("Error when Read Info From RequestBody, error: %v", err)
 		return err
 	}
 
 	request.RawData = rawData
 	requestBody, err := json.Marshal(request)
 	if err != nil {
-		klog.Errorf("Error when marshal request to []byte, error: %v", err)
+		zlog.Errorf("Error when marshal request to []byte, error: %v", err)
 		return err
 	}
-	klog.Infof("requestBody is %s", string(requestBody))
+	zlog.Infof("requestBody is %s", string(requestBody))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, targetServerAddress, bytes.NewBuffer(requestBody))
 	if err != nil {
-		klog.Errorf("Error when build request with requestBody, error: %v", err)
+		zlog.Errorf("Error when build request with requestBody, error: %v", err)
 		return err
 	}
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		klog.Errorf("Error when send request to Server, error: %v", err)
+		zlog.Errorf("Error when send request to Server, error: %v", err)
 		return err
 	}
-	klog.Infof("successfully sent message %v to telemetry service address %v", string(rawData), targetServerAddress)
+	zlog.Infof("successfully sent message %v to telemetry service address %v", string(rawData), targetServerAddress)
 	err = resp.Body.Close()
 	if err != nil {
-		klog.Errorf("Error when Close response Body, error: %v", err)
+		zlog.Errorf("Error when Close response Body, error: %v", err)
 		return err
 	}
 
@@ -173,7 +172,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 			Name(defaultTelemetryCollectionService).
 			Do(context.TODO()).
 			Into(&telemetryService); err != nil {
-			klog.Errorf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, err)
+			zlog.Errorf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, err)
 		}
 		injectSecret(ds, &telemetryService)
 		serviceAddressCache[defaultTelemetryCollectionService] = telemetryService.Spec
@@ -210,7 +209,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 				Name(*pushSettings.DeviceShifuTelemetryCollectionService).
 				Do(context.TODO()).
 				Into(&telemetryService); err != nil {
-				klog.Errorf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
+				zlog.Errorf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
 				continue
 			}
 			injectSecret(ds, &telemetryService)
