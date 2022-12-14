@@ -52,22 +52,16 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
-			mqttSetting := *base.EdgeDevice.Spec.ProtocolSettings.MQTTSetting
-			if &mqttSetting == nil {
-				mqttSetting = v1alpha1.MQTTSetting{}
-			}
-			var mqttServerAddress string
-
-			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
-				// return nil, fmt.Errorf("MQTT server cannot be empty")
-				klog.Errorf("MQTT Server Address is empty, use address instead")
-				mqttServerAddress = *base.EdgeDevice.Spec.Address
-			} else {
-				mqttServerAddress = *mqttSetting.MQTTServerAddress
+			mqttProtocolSetting := base.EdgeDevice.Spec.ProtocolSettings
+			if mqttProtocolSetting != nil {
+				if mqttProtocolSetting.MQTTSetting != nil && mqttProtocolSetting.MQTTSetting.MQTTServerSecret != nil {
+					klog.Infof("MQTT Server Secret is not empty, currently Shifu does not use MQTT Server Secret")
+					// TODO Add MQTT Server secret processing logic
+				}
 			}
 
 			opts := mqtt.NewClientOptions()
-			opts.AddBroker(fmt.Sprintf("tcp://%s", mqttServerAddress))
+			opts.AddBroker(fmt.Sprintf("tcp://%s", *base.EdgeDevice.Spec.Address))
 			opts.SetClientID(base.EdgeDevice.Name)
 			opts.SetDefaultPublishHandler(messagePubHandler)
 			opts.OnConnect = connectHandler

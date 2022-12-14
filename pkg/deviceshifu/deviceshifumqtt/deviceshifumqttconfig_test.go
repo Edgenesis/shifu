@@ -43,13 +43,13 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	}
 
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
-		"get_reading": {
+		"get_topicmsg1": {
 			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test1",
 			},
 		},
-		"get_status":  {
+		"get_topicmsg2":  {
 			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test2",
@@ -65,13 +65,13 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 			},
 			DeviceShifuProtocolProperties: nil,
 		},
-		"start": {
+		"get_topicmsg3": {
 			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test3",
 			},
 		},
-		"stop":  {
+		"get_topicmsg4":  {
 			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test4",
