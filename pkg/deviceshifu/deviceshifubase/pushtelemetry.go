@@ -111,25 +111,25 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 
 func injectSecret(ds *DeviceShifuBase, ts *v1alpha1.TelemetryService) {
 	if ts.Spec.ServiceSettings == nil {
-		klog.Infof("empty telemetry service setting.")
+		zlog.Infof("empty telemetry service setting.")
 		return
 	}
 	if ts.Spec.ServiceSettings.SQLSetting != nil {
 		pwd, exist := ds.DeviceShifuSecret[SQLSettingSecret]
 		if exist {
 			*ts.Spec.ServiceSettings.SQLSetting.Secret = pwd
-			klog.Infof("SQLSetting.Secret load from secret")
+			zlog.Infof("SQLSetting.Secret load from secret")
 		} else {
-			klog.Infof("SQLSetting.Secret load from default")
+			zlog.Infof("SQLSetting.Secret load from default")
 		}
 	}
 	if ts.Spec.ServiceSettings.HTTPSetting != nil {
 		pwd, exist := ds.DeviceShifuSecret[HTTPSettingSecret]
 		if exist {
 			*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
-			klog.Infof("HTTPSetting.Password load from secret")
+			zlog.Infof("HTTPSetting.Password load from secret")
 		} else {
-			klog.Infof("HTTPSetting.Password load from default")
+			zlog.Infof("HTTPSetting.Password load from default")
 		}
 	}
 }
