@@ -39,4 +39,5 @@ spec:
         - name: deviceshifu-secret
           secret:
             secretName: deviceshifu-secret
+            optional: true
       serviceAccountName: edgedevice-sa
