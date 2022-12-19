@@ -111,7 +111,7 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 
 func injectSecret(ds *DeviceShifuBase, ts *v1alpha1.TelemetryService) {
 	if ts.Spec.ServiceSettings == nil {
-		zlog.Infof("empty telemetry service setting.")
+		zlog.Warnf("empty telemetry service setting.")
 		return
 	}
 	if ts.Spec.ServiceSettings.SQLSetting != nil {

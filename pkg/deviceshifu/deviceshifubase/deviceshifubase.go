@@ -103,7 +103,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 
 	deviceShifuSecret, err := NewDeviceShifuSecret(deviceShifuMetadata.SecretFilePath)
 	if err != nil {
-		zlog.Infof("error: %v, when parsing Secret at %v, use the default plaintext password", err, deviceShifuMetadata.SecretFilePath)
+		zlog.Errorf("error: %v, when parsing Secret at %v, use the default plaintext password", err, deviceShifuMetadata.SecretFilePath)
 	}
 
 	mux := http.NewServeMux()
