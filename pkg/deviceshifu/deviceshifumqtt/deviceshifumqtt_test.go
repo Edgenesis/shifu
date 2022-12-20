@@ -112,11 +112,15 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	hs := mockHandlerServer(t)
 	defer hs.Close()
 	addr := strings.Split(hs.URL, "//")[1]
+	properties := &MQTTProtocolProperty{
+		MQTTTopic: "test/test1",
+	}
 	mockHandlerHTTP := &DeviceCommandHandlerMQTT{
 		HandlerMetaData: &HandlerMetaData{
 			edgeDeviceSpec: v1alpha1.EdgeDeviceSpec{
 				Address: &addr,
 			},
+			properties: properties,
 		},
 	}
 
@@ -140,7 +144,6 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	opts.OnConnectionLost = connectLostHandler
 	client = mqtt.NewClient(opts)
 
-	MQTTTopic = "/test/test"
 	requestBody := "abcd"
 
 	// test post method when MQTTServer not connected
@@ -163,8 +166,6 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
 	// test Cannot Encode message to json
-	mqttMessageStr = ""
-	mqttMessageReceiveTimestamp = time.Now()
 	r = dc.Get().Do(context.TODO())
 	assert.Nil(t, r.Error())
 
@@ -251,6 +252,9 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 }
 
 func TestCollectMQTTTelemetry(t *testing.T) {
+	instructionName := "get_reading"
+	testTelemetryInstructionName := &instructionName
+	
 	testCases := []struct {
 		Name        string
 		inputDevice *DeviceShifu
@@ -293,6 +297,15 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 		{
 			"case 3 DeviceShifuTelemetry Update",
 			&DeviceShifu{
+				mqttInstructions: &MQTTInstructions{
+					Instructions: map[string]*MQTTInstruction{
+						"get_reading": &MQTTInstruction{
+							MQTTProtocolProperty: &MQTTProtocolProperty {
+								MQTTTopic: "test/test1",
+							},
+						},
+					},
+				},
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "test",
 					EdgeDevice: &v1alpha1.EdgeDevice{
@@ -308,6 +321,14 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
 							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{
 								DeviceShifuTelemetryUpdateIntervalInMilliseconds: unitest.ToPointer(time.Now().UnixMilli()),
+							},
+							DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
+								"health": &deviceshifubase.DeviceShifuTelemetry{
+									DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
+									DeviceInstructionName: testTelemetryInstructionName,
+								},
+							    },
+								
 							},
 						},
 					},
@@ -335,6 +356,15 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 		{
 			"case 5 interval is nil",
 			&DeviceShifu{
+				mqttInstructions: &MQTTInstructions{
+					Instructions: map[string]*MQTTInstruction{
+						"get_reading": &MQTTInstruction{
+							MQTTProtocolProperty: &MQTTProtocolProperty {
+								MQTTTopic: "test/test1",
+							},
+						},
+					},
+				},
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "test",
 					EdgeDevice: &v1alpha1.EdgeDevice{
@@ -346,6 +376,14 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 					DeviceShifuConfig: &deviceshifubase.DeviceShifuConfig{
 						Telemetries: &deviceshifubase.DeviceShifuTelemetries{
 							DeviceShifuTelemetrySettings: &deviceshifubase.DeviceShifuTelemetrySettings{},
+							DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
+								"health": &deviceshifubase.DeviceShifuTelemetry{
+									DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
+									DeviceInstructionName: testTelemetryInstructionName,
+								},
+							    },
+								
+							},
 						},
 					},
 				},
@@ -355,7 +393,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 		},
 	}
 
-	mqttMessageReceiveTimestamp = time.Now()
+	mqttMessageReceiveTimestampMap["test/test1"] = time.Now()
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
 			got, err := c.inputDevice.collectMQTTTelemetry()

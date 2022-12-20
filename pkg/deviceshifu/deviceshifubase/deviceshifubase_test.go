@@ -9,19 +9,18 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/klog/v2"
 )
 
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		klog.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
+		zlog.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
-		klog.Fatal(err)
+		zlog.Fatal(err)
 	}
 }
 

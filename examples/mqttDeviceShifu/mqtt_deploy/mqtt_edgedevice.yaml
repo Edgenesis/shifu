@@ -10,4 +10,3 @@ spec:
   protocol: MQTT
   protocolSettings:
     MQTTSetting:
-      MQTTTopic: /test/test
