@@ -7,6 +7,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"k8s.io/klog/v2"
 	"net/http"
+	"os"
 	"path"
 	"time"
 
@@ -33,6 +34,7 @@ type HandlerMetaData struct {
 // DeviceConfigmapCertificatePath default cert path
 const (
 	DeviceConfigmapCertificatePath string = "/etc/edgedevice/certificate"
+	DeviceSecretPasswordPath       string = "/etc/edgedevice/secret/password"
 )
 
 // New This function creates a new Device Shifu based on the configuration
@@ -50,6 +52,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
+
 	var opcuaClient *opcua.Client
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
@@ -100,7 +103,15 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 						opcua.AuthCertificate(cert.Certificate[0]),
 					)
 				case ua.UserTokenTypeUserName:
-					options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
+					passwordByte, err := os.ReadFile(DeviceSecretPasswordPath)
+					// secret will overwrite the password in edge device
+					if err != nil {
+						klog.Infof("secret load error: %v, password will be loaded from OPCUASetting.Password", err)
+						options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
+					} else {
+						klog.Infof("password loaded from secret")
+						options = append(options, opcua.AuthUsername(*setting.Username, string(passwordByte)))
+					}
 				case ua.UserTokenTypeAnonymous:
 					fallthrough
 				default:
