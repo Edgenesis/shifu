@@ -1,1 +1,1 @@
-kubectl create secret generic deviceshifu-secret --from-literal=telemetry_service_sql_pwd=sqlpwd -n deviceshifu
+kubectl create secret generic deviceshifu-secret --from-literal=push-endpoint-1=sqlpwd -n deviceshifu

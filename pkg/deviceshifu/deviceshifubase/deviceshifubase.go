@@ -72,8 +72,6 @@ const (
 	PowerShellStubTimeoutTolerationStr    string = "stub_toleration"
 	PythonHandlersModuleName                     = "customized_handlers"
 	PythonScriptDir                              = "pythoncustomizedhandlers"
-	SQLSettingSecret                             = "telemetry_service_sql_pwd"
-	HTTPSettingSecret                            = "telemetry_service_http_pwd"
 )
 
 var (

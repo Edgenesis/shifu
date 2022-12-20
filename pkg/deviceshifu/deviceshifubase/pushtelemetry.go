@@ -115,7 +115,7 @@ func injectSecret(ds *DeviceShifuBase, ts *v1alpha1.TelemetryService) {
 		return
 	}
 	if ts.Spec.ServiceSettings.SQLSetting != nil {
-		pwd, exist := ds.DeviceShifuSecret[SQLSettingSecret]
+		pwd, exist := ds.DeviceShifuSecret[ts.Name]
 		if exist {
 			*ts.Spec.ServiceSettings.SQLSetting.Secret = pwd
 			zlog.Infof("SQLSetting.Secret load from secret")
@@ -124,7 +124,7 @@ func injectSecret(ds *DeviceShifuBase, ts *v1alpha1.TelemetryService) {
 		}
 	}
 	if ts.Spec.ServiceSettings.HTTPSetting != nil {
-		pwd, exist := ds.DeviceShifuSecret[HTTPSettingSecret]
+		pwd, exist := ds.DeviceShifuSecret[ts.Name]
 		if exist {
 			*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
 			zlog.Infof("HTTPSetting.Password load from secret")
