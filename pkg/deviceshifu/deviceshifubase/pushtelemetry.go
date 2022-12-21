@@ -4,8 +4,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/rest"
 	"net/http"
 	"time"
 
@@ -109,28 +112,36 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 	return nil
 }
 
-func injectSecret(ds *DeviceShifuBase, ts *v1alpha1.TelemetryService) {
+func getPasswordFromSecret(c *rest.RESTClient, name, ns string) (string, error) {
+	secret := v1.Secret{}
+	secretPath := fmt.Sprintf("/api/v1/namespaces/%s/%s/%s", ns, "secrets", name)
+	if err := c.Get().AbsPath(secretPath).Do(context.TODO()).Into(&secret); err != nil {
+		return "", err
+	}
+	pwd, exist := secret.Data["password"]
+	if !exist {
+		return "", errors.New("the 'password' field not found in telemetry secret")
+	}
+	return string(pwd), nil
+}
+
+func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService) {
 	if ts.Spec.ServiceSettings == nil {
 		zlog.Warnf("empty telemetry service setting.")
 		return
 	}
+	pwd, err := getPasswordFromSecret(c, "telemetry-"+ts.Name, ts.Namespace)
+	if err != nil {
+		zlog.Errorf("unable to get secret for telemetry %v, error: %v, use plaintext password from telemetry setting", ts.Name, err)
+		return
+	}
 	if ts.Spec.ServiceSettings.SQLSetting != nil {
-		pwd, exist := ds.DeviceShifuSecret[ts.Name]
-		if exist {
-			*ts.Spec.ServiceSettings.SQLSetting.Secret = pwd
-			zlog.Infof("SQLSetting.Secret load from secret")
-		} else {
-			zlog.Infof("SQLSetting.Secret load from default")
-		}
+		*ts.Spec.ServiceSettings.SQLSetting.Secret = pwd
+		zlog.Infof("SQLSetting.Secret load from secret")
 	}
 	if ts.Spec.ServiceSettings.HTTPSetting != nil {
-		pwd, exist := ds.DeviceShifuSecret[ts.Name]
-		if exist {
-			*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
-			zlog.Infof("HTTPSetting.Password load from secret")
-		} else {
-			zlog.Infof("HTTPSetting.Password load from default")
-		}
+		*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
+		zlog.Infof("HTTPSetting.Password load from secret")
 	}
 }
 
@@ -174,7 +185,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 			Into(&telemetryService); err != nil {
 			zlog.Errorf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, err)
 		}
-		injectSecret(ds, &telemetryService)
+		injectSecret(ds.RestClient, &telemetryService)
 		serviceAddressCache[defaultTelemetryCollectionService] = telemetryService.Spec
 	}
 
@@ -212,7 +223,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 				zlog.Errorf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
 				continue
 			}
-			injectSecret(ds, &telemetryService)
+			injectSecret(ds.RestClient, &telemetryService)
 			serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService] = telemetryService.Spec
 			res[telemetryName] = telemetryService.Spec
 			continue

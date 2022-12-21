@@ -1,1 +1,1 @@
-kubectl create secret generic deviceshifu-secret --from-literal=push-endpoint-1=sqlpwd -n deviceshifu
+kubectl create secret generic telemetry-push-endpoint-1 --from-literal=password=sqlpwd -n devices
