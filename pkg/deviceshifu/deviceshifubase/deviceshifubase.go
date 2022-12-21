@@ -25,18 +25,14 @@ type DeviceShifuBase struct {
 	Name              string
 	Server            *http.Server
 	DeviceShifuConfig *DeviceShifuConfig
-	DeviceShifuSecret DeviceShifuSecret
 	EdgeDevice        *v1alpha1.EdgeDevice
 	RestClient        *rest.RESTClient
 }
-
-type DeviceShifuSecret map[string]string
 
 // DeviceShifuMetaData Deviceshifu MetaData
 type DeviceShifuMetaData struct {
 	Name           string
 	ConfigFilePath string
-	SecretFilePath string
 	KubeConfigPath string
 	Namespace      string
 }
@@ -61,7 +57,6 @@ const (
 	DeviceDefaultPortStr                  string = ":8080"
 	DeviceIsHealthyStr                    string = "Device is healthy"
 	DeviceConfigmapFolderPath             string = "/etc/edgedevice/config"
-	DeviceSecretFolderPath                string = "/etc/edgedevice/secret"
 	DeviceKubeconfigDoNotLoadStr          string = "NULL"
 	DeviceNameSpaceDefault                string = "default"
 	KubernetesConfigDefault               string = ""
@@ -95,15 +90,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 		return nil, nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
-	if deviceShifuMetadata.SecretFilePath == "" {
-		deviceShifuMetadata.SecretFilePath = DeviceSecretFolderPath
-	}
-
-	deviceShifuSecret, err := NewDeviceShifuSecret(deviceShifuMetadata.SecretFilePath)
-	if err != nil {
-		zlog.Errorf("error: %v, when parsing Secret at %v, use the default plaintext password", err, deviceShifuMetadata.SecretFilePath)
-	}
-
 	mux := http.NewServeMux()
 	edgeDevice := &v1alpha1.EdgeDevice{}
 	client := &rest.RESTClient{}
@@ -134,7 +120,6 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 			ReadTimeout:  time.Duration(DefaultHTTPServerTimeoutInSeconds) * time.Second,
 			WriteTimeout: time.Duration(DefaultHTTPServerTimeoutInSeconds) * time.Second,
 		},
-		DeviceShifuSecret: deviceShifuSecret,
 		DeviceShifuConfig: deviceShifuConfig,
 		EdgeDevice:        edgeDevice,
 		RestClient:        client,

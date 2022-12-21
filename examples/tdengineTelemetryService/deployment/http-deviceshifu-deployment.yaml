@@ -24,9 +24,6 @@ spec:
             - name: deviceshifu-config
               mountPath: "/etc/edgedevice/config"
               readOnly: true
-            - name: deviceshifu-secret
-              mountPath: /etc/edgedevice/secret
-              readOnly: true
           env:
             - name: EDGEDEVICE_NAME
               value: "edgedevice-http"
@@ -36,8 +33,4 @@ spec:
         - name: deviceshifu-config
           configMap:
             name: http-configmap-0.0.1
-        - name: deviceshifu-secret
-          secret:
-            secretName: deviceshifu-secret
-            optional: true
       serviceAccountName: edgedevice-sa

@@ -4,9 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"os"
-	"path/filepath"
-
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/imdario/mergo"
 
@@ -111,34 +108,6 @@ const (
 	DeviceDefaultGlobalTimeoutInSeconds      int64 = 3
 	DefaultHTTPServerTimeoutInSeconds        int64 = 0
 )
-
-// NewDeviceShifuSecret Read the secret files under the path directory and return secret map
-func NewDeviceShifuSecret(path string) (DeviceShifuSecret, error) {
-	if path == "" {
-		return nil, errors.New("DeviceShifuSecret path can't be empty")
-	}
-	secrets := make(DeviceShifuSecret)
-	files, err := os.ReadDir(path)
-	if err != nil {
-		return nil, err
-	}
-	for _, file := range files {
-		filePath := filepath.Join(path, file.Name())
-		info, err := os.Stat(filePath)
-		if err != nil {
-			return nil, err
-		}
-
-		if !info.IsDir() {
-			content, err := os.ReadFile(filePath)
-			if err != nil {
-				return nil, err
-			}
-			secrets[file.Name()] = string(content)
-		}
-	}
-	return secrets, nil
-}
 
 // NewDeviceShifuConfig Read the configuration under the path directory and return configuration
 func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
