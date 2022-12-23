@@ -33,8 +33,10 @@ pr:
     - CHANGELOG
 
 variables:
-  name: tag
-  value: 
+  - name: tag
+    value:
+  - name: cn-docker-registry
+    value: $(CN_DOCKER_REGISTRY)
 
 pool:
    vmImage: 'ubuntu-latest'
@@ -503,8 +505,6 @@ stages:
       value: 'nightly'
     ${{ else }}:
       value: $[replace(variables['build.sourcebranch'], 'refs/tags/', '')]
-  - name: cn-docker-registry
-    value: swr.cn-north-4.myhuaweicloud.com/name
   jobs:
   - job: docker_push_deviceshifu_http_http
     steps: 
@@ -527,13 +527,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuHTTP \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/deviceshifu-http-http:$(release_tag) --push
-        displayName: build edgehub/deviceshifu-http-http
+        displayName: build $(cn-docker-registry)/shifu/deviceshifu-http-http
 
   - job: docker_push_deviceshifu_http_socket
     steps: 
@@ -556,13 +556,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuSocket \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/deviceshifu-http-socket:$(release_tag) --push
-        displayName: build edgehub/deviceshifu-http-socket
+        displayName: build $(cn-docker-registry)/shifu/deviceshifu-http-socket
 
   - job: docker_push_deviceshifu_http_mqtt
     steps: 
@@ -585,13 +585,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuMQTT \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/deviceshifu-http-mqtt:$(release_tag) --push
-        displayName: build edgehub/deviceshifu-http-mqtt
+        displayName: build $(cn-docker-registry)/shifu/deviceshifu-http-mqtt
 
   - job: docker_push_deviceshifu_http_opcua
     steps: 
@@ -614,13 +614,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuOPCUA \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/deviceshifu-http-opcua:$(release_tag) --push
-        displayName: build edgehub/deviceshifu-http-opcua
+        displayName: build $(cn-docker-registry)/shifu/deviceshifu-http-opcua
 
   - job: docker_push_deviceshifu_http_plc4x
     steps: 
@@ -643,13 +643,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64 \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuPLC4X \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/deviceshifu-http-plc4x:$(release_tag) --push
-        displayName: build edgehub/deviceshifu-http-plc4x
+        displayName: build $(cn-docker-registry)/shifu/deviceshifu-http-plc4x
 
   - job: docker_push_shifu_controller
     steps: 
@@ -672,13 +672,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/shifu-controller:$(release_tag) --push
-        displayName: build edgehub/shifu-controller
+        displayName: build $(cn-docker-registry)/shifu/shifu-controller
 
   - job: docker_push_mockdevice_thermometer
     steps: 
@@ -701,13 +701,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/mockdevice-thermometer:$(release_tag) --push
-        displayName: build edgehub/mockdevice-thermometer
+        displayName: build $(cn-docker-registry)/shifu/mockdevice-thermometer
 
   - job: docker_push_mockdevice_robot_arm
     steps: 
@@ -730,13 +730,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/mockdevice-robot-arm:$(release_tag) --push
-        displayName: build edgehub/mockdevice-robot-arm
+        displayName: build $(cn-docker-registry)/shifu/mockdevice-robot-arm
 
   - job: docker_push_mockdevice_plate_reader
     steps: 
@@ -759,13 +759,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/mockdevice-plate-reader:$(release_tag) --push
-        displayName: build edgehub/mockdevice-plate-reader
+        displayName: build $(cn-docker-registry)/shifu/mockdevice-plate-reader
 
   - job: docker_push_mockdevice_agv
     steps: 
@@ -788,13 +788,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/mockdevice-agv:$(release_tag) --push
-        displayName: build edgehub/mockdevice-agv
+        displayName: build $(cn-docker-registry)/shifu/mockdevice-agv
 
   - job: docker_push_mockdevice_plc
     steps: 
@@ -817,13 +817,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plc/Dockerfile.mockdevice-plc \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/mockdevice-plc:$(release_tag) --push
-        displayName: build edgehub/mockdevice-plc
+        displayName: build $(cn-docker-registry)/shifu/mockdevice-plc
 
   - job: docker_push_mockdevice_socket
     steps: 
@@ -846,13 +846,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/mockdevice-socket:$(release_tag) --push
-        displayName: build edgehub/mockdevice-socket
+        displayName: build $(cn-docker-registry)/shifu/mockdevice-socket
 
   - job: docker_push_mockdevice_opcua
     steps: 
@@ -875,13 +875,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64 \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/mockdevice-opcua:$(release_tag) --push
-        displayName: build edgehub/mockdevice-opcua
+        displayName: build $(cn-docker-registry)/shifu/mockdevice-opcua
 
   - job: docker_push_telemetry_service
     steps: 
@@ -904,13 +904,13 @@ stages:
         displayName: Login to DockerHub
         inputs:
           command: login
-          containerRegistry: cn-dockerhub-connection
+          containerRegistry: cn-docker-connection
       - script: |
           docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
           -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.telemetryservice \
           --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
           -t $(cn-docker-registry)/shifu/telemetryservice:$(release_tag) --push
-        displayName: build edgehub/telemetryservice
+        displayName: build $(cn-docker-registry)/shifu/telemetryservice
 
 - stage: docker_build_shifu_demo_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.SourceBranch'],'refs/tags'), not(contains(variables['Build.SourceBranchName'],'rc')))
