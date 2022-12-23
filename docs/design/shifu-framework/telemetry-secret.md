@@ -2,12 +2,12 @@
 
 ## Introduction
 
-Telemetry Service is a standalone service, hereafter referred to as TSCenter. But the settings in TelemetryService CRD is loaded by Deviceshifu and sent to TSCenter. If the setting contains password, there will exist the problem of  plaintext password in comunication between Deviceshifu and TSCenter.
+Telemetry Service is a standalone service, hereafter referred to as TSCenter. But the settings in TelemetryService CRD is loaded by Deviceshifu and sent to TSCenter. If the setting contains password, there will exist the problem of plaintext password in communication between Deviceshifu and TSCenter.
 
 There could be multiple ways to deal with it:
 
 1. Add a custom encode/decode algorithm in communication between Deviceshifu and TSCenter.
-2. Let the TSCenter to manage all TelemetryService CRD info. Deivceshifu only specifies the name of TelemetryService CRD. But the TSCenter's workload may be too high.
+2. Let the TSCenter to manage all TelemetryService CRD info. Deviceshifu only specifies the name of TelemetryService CRD. But the TSCenter's workload may be too high.
 3. Deviceshifu still send all info as before but hide the password, instead, it will let the TSCenter to find the Secret by the name of TelemetryService CRD.
 
 We will use the last way here. There may still exist some improvement space, like:
