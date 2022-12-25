@@ -1,10 +1,10 @@
-# deviceShifu Rtsp overall design
+# deviceShifu RTSP overall design
 
-deviceShifu-RTSP allows shifu connect to rtsp server and save the vedio into file. User can watch rtsp vedio using media player like VLC and get history vedio file from PV.
+deviceShifu-RTSP allows shifu connect to rtsp server and save the video into file. User can watch rtsp video using media player like VLC and get history video file from PV.
 
 ## Goal
 
-Create a deviceShifu-RTSP using thired-party library and allow user to connect RTSP server, and record the rtsp stream into file like mp4 / flv and so on, user can export file out of k8s.
+Create a deviceShifu-RTSP using third-party library and allow user to connect RTSP server, and record the rtsp stream into file like mp4 / flv and so on, user can export file out of k8s.
 
 ## General Design
 
@@ -26,12 +26,22 @@ type ProtocolSettings struct {
 type RTSPSetting struct {
     Username        string `json:"username,omitempty"`
     PasswordSecret  string `json:"passwordSecret,omitempty"`
-    Record          bool   `json:"record,omitempty"`
 }
 ```
 
-If user turn on Record, deviceShifu will Save the vedio into PV.(using ffmpeg or the others) 
-Create PVC and PV need Separate with deviceShifu to avoid user delete pv by mistake. 
+If user turn on Record, deviceShifu will using telemetry Service to push the rtsp stream to telemetry Service, and telemetry Service will forward the stream to the rtsp recording server to record the rtsp video into file.
+```yaml
+...
+telemetry:
+  telemetry:
+    push_stream:
+      instruction: stream
+      pushSettings:
+        telemetryCollectionService: rtsp_record_telemetry
+        kind: stream
+...
+```
+Create PVC and PV need Separate with other deploy to avoid user delete pv by mistake. 
 ```yaml
 apiVersion: v1
 kind: PersistentVolume
@@ -64,7 +74,7 @@ spec:
     matchLabels:
       pv: <devicename>-pv
 ```
-append in deviceShifu's deployment Yaml file
+recording server deployment.yaml
 ```yaml
 # deployment.yaml
 ...
@@ -78,11 +88,30 @@ volumns:
     claimName:  pvc-name
     optional: true
 ```
+### Recording Logic
 
+```mermaid
+flowchart LR
+  dv[device]
+  subgraph k8s
+    ds[deviceshifu-RTSP]
+    ts[telemetryService]
+    rrs[RTSP Recording Server]
+    pv[Persistent Volumes]
+  end
+  dv --> ds --> ts --> rrs --> pv
+```
+
+We need to store the video in pieces, each clip is 1 hour by default, the user can set this option
+
+ffmpeg example:
+```bash
+ffmpeg -i rtsp://[RTSP_URL] -c copy -map 0 -segment_time 300 -f segment video/output%03d.mp4
+```
 ### Serving requests
 
 deviceShifu-RTSP would take RESTful-style requests just as other deviceShifu do.
-RTSP support like `stream` / `describe` requests.
+RTSP support like `stream` / `describe` / `record/start` / `record/stop` requests.
 
 For `stream`, the method will forward or redirect the RTSP stream
 
