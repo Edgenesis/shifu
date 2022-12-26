@@ -237,9 +237,13 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 
 			rawRespBodyString := string(respBody)
-			klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-			respBodyString := utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
-
+			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+			respBodyString := rawRespBodyString
+			klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+			if shouldUsePythonCustomProcessing {
+				klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
+			}
 			_, writeErr := io.WriteString(w, respBodyString)
 			if writeErr != nil {
 				klog.Errorf("Failed to write response %v", respBodyString)
@@ -391,12 +395,12 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			}
 
 			rawRespBodyString := string(respBody)
-			_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 			respBodyString := rawRespBodyString
 			klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 			if shouldUsePythonCustomProcessing {
 				klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
+				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
 			}
 			_, writeErr := io.WriteString(w, respBodyString)
 			if writeErr != nil {

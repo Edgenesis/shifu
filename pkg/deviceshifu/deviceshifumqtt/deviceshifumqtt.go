@@ -100,11 +100,11 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	rawMqttMessageStr := string(msg.Payload())
-	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
+	instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
 	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
 		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
-		mqttMessageInstructionMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+		mqttMessageInstructionMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawMqttMessageStr, deviceshifubase.PythonScriptDir)
 	} else {
 		mqttMessageInstructionMap[msg.Topic()] = rawMqttMessageStr
 	}
@@ -229,7 +229,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqttTopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
 					return true, nil
 				}
-			}	
+			}
 		default:
 			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
