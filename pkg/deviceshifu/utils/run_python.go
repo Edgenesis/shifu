@@ -2,8 +2,9 @@ package utils
 
 import (
 	"fmt"
-	"k8s.io/klog/v2"
 	"os/exec"
+
+	zlog "github.com/edgenesis/shifu/pkg/logger"
 )
 
 const (
@@ -18,7 +19,7 @@ func ProcessInstruction(moduleName string, funcName string, rawData string, scri
 
 	processed, err := cmd.CombinedOutput()
 	if err != nil {
-		klog.Errorf("Failed process command %v\n, error:%v", cmdString, err.Error())
+		zlog.Errorf("Failed process command %v\n, error:%v", cmdString, err.Error())
 	}
 	return string(processed)
 }

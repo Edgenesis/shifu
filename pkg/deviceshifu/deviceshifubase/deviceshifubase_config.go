@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	zlog "github.com/edgenesis/shifu/pkg/logger"
 	"github.com/imdario/mergo"
 
 	"gopkg.in/yaml.v3"

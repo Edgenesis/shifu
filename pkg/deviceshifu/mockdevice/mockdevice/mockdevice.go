@@ -6,8 +6,9 @@ import (
 	"os"
 	"time"
 
+	zlog "github.com/edgenesis/shifu/pkg/logger"
+
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog/v2"
 )
 
 // MockDevice basic info
@@ -34,19 +35,19 @@ var StatusSetList = []string{
 
 // Start start http server
 func (md *MockDevice) Start(stopCh <-chan struct{}) error {
-	klog.Infof("mockDevice %s started", md.Name)
+	zlog.Infof("mockDevice %s started", md.Name)
 
 	go func() {
 		err := md.startHTTPServer(stopCh)
 		if err != nil {
-			klog.Errorf("error during HTTP Server is Up")
+			zlog.Errorf("error during HTTP Server is Up")
 		}
 	}()
 	return nil
 }
 
 func (md *MockDevice) startHTTPServer(stopCh <-chan struct{}) error {
-	klog.Infof("mockDevice %s's http server started", md.Name)
+	zlog.Infof("mockDevice %s's http server started", md.Name)
 	return md.server.ListenAndServe()
 }
 
@@ -80,12 +81,12 @@ func StartMockDevice(availableFuncs []string, instructionHandler instructionHand
 	devicePort := os.Getenv("MOCKDEVICE_PORT")
 	md, err := New(deviceName, devicePort, availableFuncs, instructionHandler)
 	if err != nil {
-		klog.Errorf("Error starting device %v", deviceName)
+		zlog.Errorf("Error starting device %v", deviceName)
 	}
 
 	err = md.Start(wait.NeverStop)
 	if err != nil {
-		klog.Errorf("Error start MockDevice %#v", err)
+		zlog.Errorf("Error start MockDevice %#v", err)
 	}
 
 	select {}

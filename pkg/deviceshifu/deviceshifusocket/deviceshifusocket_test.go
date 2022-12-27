@@ -14,6 +14,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	zlog "github.com/edgenesis/shifu/pkg/logger"
 	"github.com/stretchr/testify/assert"
 
 	v1 "k8s.io/api/apps/v1"
@@ -21,19 +22,18 @@ import (
 	"k8s.io/apimachinery/pkg/util/wait"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
 )
 
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
+		zlog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
 		os.Exit(-1)
 	}
 
 	listener, err := net.Listen("tcp", UnitTestAddress)
 	if err != nil {
-		klog.Fatalf("Cannot Listen at %v", UnitTestAddress)
+		zlog.Fatalf("Cannot Listen at %v", UnitTestAddress)
 	}
 
 	go func() {
@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
-		klog.Fatal(err)
+		zlog.Fatal(err)
 	}
 }
 
@@ -363,7 +363,7 @@ func mockRestClient(host string, path string) *rest.RESTClient {
 		},
 	)
 	if err != nil {
-		klog.Errorf("mock client for host %s, apipath: %s failed,", host, path)
+		zlog.Errorf("mock client for host %s, apipath: %s failed,", host, path)
 		return nil
 	}
 

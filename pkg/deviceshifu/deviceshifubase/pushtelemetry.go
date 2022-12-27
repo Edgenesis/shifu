@@ -11,6 +11,7 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	zlog "github.com/edgenesis/shifu/pkg/logger"
 )
 
 func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {

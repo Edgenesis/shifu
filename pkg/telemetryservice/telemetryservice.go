@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"os"
 
+	zlog "github.com/edgenesis/shifu/pkg/logger"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/mqtt"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/sql"
-	"k8s.io/klog"
 )
 
 var serverListenPort = os.Getenv("SERVER_LISTEN_PORT")
@@ -17,7 +17,7 @@ func New(stop <-chan struct{}) {
 	mux.HandleFunc("/sql", sql.BindSQLServiceHandler)
 	err := Start(stop, mux, serverListenPort)
 	if err != nil {
-		klog.Errorf("Error when telemetryService Running, error: %v", err)
+		zlog.Errorf("Error when telemetryService Running, error: %v", err)
 	}
 }
 
@@ -31,12 +31,12 @@ func Start(stop <-chan struct{}, mux *http.ServeMux, addr string) error {
 	go func() {
 		err := server.ListenAndServe()
 		if err != nil {
-			klog.Errorf("Error when server running, error: %v", err)
+			zlog.Errorf("Error when server running, error: %v", err)
 			errChan <- err
 		}
 	}()
 
-	klog.Infof("Listening at %#v", addr)
+	zlog.Infof("Listening at %#v", addr)
 	select {
 	case err := <-errChan:
 		return err

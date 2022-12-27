@@ -6,19 +6,12 @@ import (
 	"net/http"
 	"time"
 
-	"go.uber.org/zap"
+	zlog "github.com/edgenesis/shifu/pkg/logger"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 
 	"k8s.io/client-go/rest"
 )
-
-var zlog *zap.SugaredLogger
-
-func init() {
-	logger, _ := zap.NewProduction()
-	zlog = logger.Sugar()
-}
 
 // DeviceShifuBase deviceshifu Basic Info
 type DeviceShifuBase struct {

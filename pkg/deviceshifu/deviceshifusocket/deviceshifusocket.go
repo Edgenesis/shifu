@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-	"k8s.io/klog/v2"
+	zlog "github.com/edgenesis/shifu/pkg/logger"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -52,7 +52,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				return nil, fmt.Errorf("Cannot connect to %v", *base.EdgeDevice.Spec.Address)
 			}
 
-			klog.Infof("Connected to '%v'", *base.EdgeDevice.Spec.Address)
+			zlog.Infof("Connected to '%v'", *base.EdgeDevice.Spec.Address)
 			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
 				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
@@ -79,25 +79,25 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		headerContentType := r.Header.Get("Content-Type")
 		if headerContentType != "application/json" {
 			http.Error(w, "content-type is not application/json", http.StatusBadRequest)
-			klog.Errorf("content-type is not application/json")
+			zlog.Errorf("content-type is not application/json")
 			return
 		}
 
 		var socketRequest RequestBody
 		err := json.NewDecoder(r.Body).Decode(&socketRequest)
 		if err != nil {
-			klog.Errorf("error decode: %v", socketRequest)
+			zlog.Errorf("error decode: %v", socketRequest)
 			http.Error(w, "error decode JSON "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		klog.Infof("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
+		zlog.Infof("After decode socket request: '%v', timeout:'%v'", socketRequest.Command, socketRequest.Timeout)
 		connection := HandlerMetaData.connection
 		timeout := socketRequest.Timeout
 		if timeout > 0 {
 			err := (*connection).SetDeadline(time.Now().Add(time.Duration(timeout) * time.Second))
 			if err != nil {
-				klog.Errorf("cannot send deadline to socket, error: %v", err)
+				zlog.Errorf("cannot send deadline to socket, error: %v", err)
 				http.Error(w, "Failed to send deadline to socket, error:  "+err.Error(), http.StatusBadRequest)
 				return
 			}
@@ -105,15 +105,15 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 
 		command, err := decodeCommand(socketRequest.Command, *settings.Encoding)
 		if err != nil {
-			klog.Errorf("cannot decode Command from body, error: %v", err)
+			zlog.Errorf("cannot decode Command from body, error: %v", err)
 			http.Error(w, "Failed to decode Command from body, error:  "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		klog.Infof("Sending %v", command)
+		zlog.Infof("Sending %v", command)
 		_, err = (*connection).Write(command)
 		if err != nil {
-			klog.Errorf("cannot write command into socket, error: %v", err)
+			zlog.Errorf("cannot write command into socket, error: %v", err)
 			http.Error(w, "Failed to send message to socket, error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -121,22 +121,22 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		message := make([]byte, *settings.BufferLength)
 		n, _ := bufio.NewReader(*connection).Read(message)
 		if n <= 0 {
-			klog.Errorf("Error when Read data from connection to buffer")
+			zlog.Errorf("Error when Read data from connection to buffer")
 			http.Error(w, "Failed to Read data from connection to buffer, for Read 0 byte from buffer", http.StatusInternalServerError)
 			return
 		}
 
 		outputMessage, err := encodeMessage(message, *settings.Encoding)
 		if err != nil {
-			klog.Errorf("Error when encode message with Encoding, Encoding %v, error: %v", *settings.Encoding, err)
+			zlog.Errorf("Error when encode message with Encoding, Encoding %v, error: %v", *settings.Encoding, err)
 			http.Error(w, "Failed to encode message with Encoding,  Encoding "+string(*settings.Encoding)+", error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 		handlerInstruction := HandlerMetaData.instruction
 		instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
-		klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+		zlog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 		if shouldUsePythonCustomProcessing {
-			klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+			zlog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
 			outputMessage = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, outputMessage, deviceshifubase.PythonScriptDir)
 		}
 
@@ -149,7 +149,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 		w.Header().Set("Content-Type", "application/json")
 		err = json.NewEncoder(w).Encode(returnMessage)
 		if err != nil {
-			klog.Errorf("Failed encode message to json, error: %v" + err.Error())
+			zlog.Errorf("Failed encode message to json, error: %v" + err.Error())
 			http.Error(w, "Failed encode message to json, error: "+err.Error(), http.StatusBadRequest)
 		}
 	}
@@ -168,14 +168,14 @@ func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 		case v1alpha1.ProtocolSocket:
 			conn, err := net.Dial("tcp", *ds.base.EdgeDevice.Spec.Address)
 			if err != nil {
-				klog.Errorf("error checking telemetry: error: %v", err.Error())
+				zlog.Errorf("error checking telemetry: error: %v", err.Error())
 				return false, err
 			}
 
 			defer conn.Close()
 			return true, nil
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
+			zlog.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
 		}
 	}

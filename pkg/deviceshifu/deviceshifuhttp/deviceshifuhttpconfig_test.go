@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"k8s.io/klog/v2"
+	zlog "github.com/edgenesis/shifu/pkg/logger"
 
 	"gopkg.in/yaml.v3"
 )
@@ -141,7 +141,7 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 	var cmData ConfigMapData
 	err = yaml.Unmarshal(snippetFile, &cmData)
 	if err != nil {
-		klog.Fatalf("Error parsing ConfigMap %v, error: %v", fileName, err)
+		zlog.Fatalf("Error parsing ConfigMap %v, error: %v", fileName, err)
 		return err
 	}
 
@@ -153,14 +153,14 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 
 	err = os.MkdirAll(MockDeviceConfigFolder, os.ModePerm)
 	if err != nil {
-		klog.Fatalf("Error creating path for: %v", MockDeviceConfigFolder)
+		zlog.Fatalf("Error creating path for: %v", MockDeviceConfigFolder)
 		return err
 	}
 
 	for outputDir, data := range MockDeviceConfigMapping {
 		err = os.WriteFile(outputDir, []byte(data), MockDeviceWritFilePermission)
 		if err != nil {
-			klog.Fatalf("Error creating configFile for: %v", outputDir)
+			zlog.Fatalf("Error creating configFile for: %v", outputDir)
 			return err
 		}
 	}
