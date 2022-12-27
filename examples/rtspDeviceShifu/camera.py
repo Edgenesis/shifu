@@ -56,7 +56,7 @@ class VideoGet:
 def capture():
     try:  
         global video_getter
-        if video_getter.grabbed:
+        if not video_getter.grabbed:
             video_getter.stop()
             video_getter = VideoGet(ip, CAMERA_USERNAME, CAMERA_PASSWORD).start()
         if not video_getter.stopped:
