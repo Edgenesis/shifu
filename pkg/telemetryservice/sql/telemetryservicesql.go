@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
+	"go.uber.org/zap"
 	"io"
 	"net/http"
 
@@ -11,6 +13,13 @@ import (
 	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/tdengine"
 	"k8s.io/klog"
 )
+
+var zlog *zap.SugaredLogger
+
+func init() {
+	logger, _ := zap.NewProduction()
+	zlog = logger.Sugar()
+}
 
 func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
@@ -30,6 +39,8 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	InjectSecret(request.SQLConnectionSetting)
+
 	switch *request.SQLConnectionSetting.DBType {
 	case v1alpha1.DBTypeTDengine:
 		err = tdengine.SendToTDengine(context.TODO(), request.RawData, request.SQLConnectionSetting)
@@ -41,4 +52,18 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 		klog.Errorf("Error to Send to SQL Server, error: %s", err.Error())
 		http.Error(w, "Error to send to server", http.StatusBadRequest)
 	}
+}
+
+func InjectSecret(setting *v1alpha1.SQLConnectionSetting) {
+	if setting == nil {
+		zlog.Warnf("empty telemetry service setting.")
+		return
+	}
+	pwd, err := utils.GetPasswordFromSecret(*setting.Secret)
+	if err != nil {
+		zlog.Errorf("unable to get secret for telemetry %v, error: %v", *setting.Secret, err)
+		return
+	}
+	*setting.Secret = pwd
+	zlog.Infof("SQLSetting.Secret load from secret")
 }
