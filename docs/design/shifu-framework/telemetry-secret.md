@@ -43,26 +43,38 @@ Deviceshifu -->|Settings| TelemetryService
 
 ## Design Details
 
-Currently, only SQLSetting uses the credential.
-
 1. Telemetry Service
    1. Create k8s client at the begining.
-      1. ```Go
-         func init() {
-            config, err := rest.InClusterConfig()
-            ...
-            clientSet, err = kubernetes.NewForConfig(config)
-            ...
-         }
-         ```
-   2. When receiving an SQL request, load the credential from the `Secret` and write it to the setting.
-      1. ```Go
-         func InjectSecret(setting *v1alpha1.SQLConnectionSetting) {
-            ...
-            pwd, err := utils.GetcredentialFromSecret(*setting.Secret)
-            *setting.Secret = pwd
-            ...
-         }
-         ```
+      ```Go
+      func init() {
+        config, err := rest.InClusterConfig()
+        ...
+        clientSet, err = kubernetes.NewForConfig(config)
+        ...
+      }
+      ```
+   
+   2. When receiving a request, load the credential from the `Secret` and write it to the setting.
+      ```Go
+      func InjectSecret(setting *v1alpha1.SQLConnectionSetting) {
+        ...
+        // for SQL
+        *setting.Secret, err := GetPasswordFromSecret(*setting.Secret)
+        // for MQTT
+        *setting.MQTTServerSecret, err := GetPasswordFromSecret(*setting.MQTTServerSecret)
+        ...
+      }
+      ```
 
-2. Modify the RBAC YAML files. Add `get`, `list` and `watch` to Telemetry Service-sa.
+2. Deviceshifu
+
+   HTTP Telemetry requests will bypass Telemetry Service, so Deviceshifu is still required to load credential from `Secret`.
+
+   ```go
+   // before push to HTTP endpoint
+   func InjectSecret(setting *v1alpha1.HTTPSetting) {
+     *setting.Password, err := GetPasswordFromSecret(*setting.Password)
+   }
+   ```
+
+3. Modify the RBAC YAML files. Add `get`, `list` and `watch` to Telemetry Service-sa.
