@@ -43,7 +43,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 		request := &v1alpha1.TelemetryRequest{
 			SQLConnectionSetting: tss.ServiceSettings.SQLSetting,
 		}
-		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMQTT
+		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURISQL
 		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
@@ -125,24 +125,22 @@ func getPasswordFromSecret(c *rest.RESTClient, name, ns string) (string, error) 
 	return string(pwd), nil
 }
 
-func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService) {
+func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) {
 	if ts.Spec.ServiceSettings == nil {
-		zlog.Warnf("empty telemetry service setting.")
+		zlog.Warn("empty telemetry service setting.")
 		return
 	}
-	pwd, err := getPasswordFromSecret(c, "telemetry-"+ts.Name, ts.Namespace)
+	if ts.Spec.ServiceSettings.HTTPSetting == nil {
+		zlog.Info("service setting is not HTTP, skip secret injection")
+		return
+	}
+	pwd, err := getPasswordFromSecret(c, ts.Name, ns)
 	if err != nil {
 		zlog.Errorf("unable to get secret for telemetry %v, error: %v, use plaintext password from telemetry setting", ts.Name, err)
 		return
 	}
-	if ts.Spec.ServiceSettings.SQLSetting != nil {
-		*ts.Spec.ServiceSettings.SQLSetting.Secret = pwd
-		zlog.Infof("SQLSetting.Secret load from secret")
-	}
-	if ts.Spec.ServiceSettings.HTTPSetting != nil {
-		*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
-		zlog.Infof("HTTPSetting.Password load from secret")
-	}
+	*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
+	zlog.Info("HTTPSetting.Password load from secret")
 }
 
 func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.TelemetryServiceSpec, error) {
@@ -185,7 +183,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 			Into(&telemetryService); err != nil {
 			zlog.Errorf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, err)
 		}
-		injectSecret(ds.RestClient, &telemetryService)
+		injectSecret(ds.RestClient, &telemetryService, ds.EdgeDevice.Namespace)
 		serviceAddressCache[defaultTelemetryCollectionService] = telemetryService.Spec
 	}
 
@@ -223,7 +221,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 				zlog.Errorf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
 				continue
 			}
-			injectSecret(ds.RestClient, &telemetryService)
+			injectSecret(ds.RestClient, &telemetryService, ds.EdgeDevice.Namespace)
 			serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService] = telemetryService.Spec
 			res[telemetryName] = telemetryService.Spec
 			continue

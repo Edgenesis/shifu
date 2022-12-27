@@ -39,7 +39,7 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	InjectSecret(request.SQLConnectionSetting)
+	injectSecret(request.SQLConnectionSetting)
 
 	switch *request.SQLConnectionSetting.DBType {
 	case v1alpha1.DBTypeTDengine:
@@ -54,7 +54,7 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func InjectSecret(setting *v1alpha1.SQLConnectionSetting) {
+func injectSecret(setting *v1alpha1.SQLConnectionSetting) {
 	if setting == nil {
 		zlog.Warnf("empty telemetry service setting.")
 		return

@@ -1,1 +1,1 @@
-kubectl create secret generic telemetry-push-endpoint-1 --from-literal=password=sqlpwd -n devices
+kubectl create secret generic taosdata --from-literal=password=sqlpwd -n devices
