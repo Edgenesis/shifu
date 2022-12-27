@@ -1,14 +1,14 @@
 # RTSP recording application 
 
-User can use this application to watch rtsp using ffmpeg or other third-party package to store the stream into PV in other host which has RTX 4090.
+User can use this application to watch RTSP using ffmpeg or other third-party package to store the stream into PV in other host which supporting GPU that can accelerate video encoding.
 
 ## Goal
 
-application running in the kubernetes allow user to connect RTSP server, and record the rtsp stream into file like mp4 / flv and so on, user can export file out of kubernetes.
+application running in the kubernetes allow user to connect RTSP server, and record the RTSP stream into file like mp4 / flv and so on, user can export file out of kubernetes.
 
 ## General Design
 
-The application is a HTTP Server running in the kubernetes, which can store the rtsp stream into a file like mp4 / flv and so on, user can export file out of kubernetes with the instruction manual.
+The application is a HTTP Server running in the kubernetes, which can store the RTSP stream into a file like mp4 / flv and so on, user can export file out of kubernetes with the instruction manual.
 
 
 
@@ -40,7 +40,7 @@ We need to store the video in pieces, each clip is 1 hour by default, the user c
 this application could using the third-party package like ffmpeg to implement it or using `exec.Command`
 ffmpeg command example:
 ```bash
-ffmpeg -i rtsp://[RTSP_URL] -c copy -map 0 -segment_time 300 -f segment video/output%03d.mp4
+ffmpeg -i RTSP://[RTSP_URL] -c copy -map 0 -segment_time 300 -f segment video/output%03d.mp4
 ```
 
 Create PVC and PV need Separate with other deploy to avoid user delete pv by mistake. 
@@ -80,12 +80,6 @@ recording server deployment.yaml
 ```yaml
 # deployment.yaml
 ...
-- env:
-  RTSPServerAddress: ""
-  UserName: ""
-  PasswordSecret: "" # this just a case, secret using the secret env mode
-  FileSavePath: ""
-...
 volumeMounts:
 - name: storage-pv
   mountPath: /data
@@ -120,11 +114,11 @@ volumns:
 ```json
 {
     "deviceName":"",
-    "recodable":false,
+    "record":false,
 }
 ```
 
 
 ### Testing Plan
 
-We can use Hikvision / Dahua Camera, create a deviceShifu-TCP and application to connect it and record the stream into file. Meanwhile we can create a mock-rtsp server or build a mock-rtsp device docker image to test.
+We can use Hikvision / Dahua Camera, create a deviceShifu-TCP and application to connect it and record the stream into file. Meanwhile we can create a mock-RTSP server or build a mock-RTSP device docker image to test.
