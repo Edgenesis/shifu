@@ -12,6 +12,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	zlog "github.com/edgenesis/shifu/pkg/logger"
 	"k8s.io/klog/v2"
 )
 
