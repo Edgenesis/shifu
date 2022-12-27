@@ -49,7 +49,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 				"MQTTTopic": "/test/test1",
 			},
 		},
-		"get_topicmsg2":  {
+		"get_topicmsg2": {
 			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test2",
@@ -71,7 +71,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 				"MQTTTopic": "/test/test3",
 			},
 		},
-		"get_topicmsg4":  {
+		"get_topicmsg4": {
 			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test4",
