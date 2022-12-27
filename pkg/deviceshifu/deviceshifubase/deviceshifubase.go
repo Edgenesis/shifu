@@ -67,6 +67,7 @@ const (
 	PowerShellStubTimeoutTolerationStr    string = "stub_toleration"
 	PythonHandlersModuleName                     = "customized_handlers"
 	PythonScriptDir                              = "pythoncustomizedhandlers"
+	MutexInstructionsConfigStr                   = "mutexInstructions"
 )
 
 var (
