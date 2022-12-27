@@ -21,11 +21,7 @@ func init() {
 	if err != nil {
 		panic(err.Error())
 	}
-	nsb, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
-	if err != nil {
-		panic(err.Error())
-	}
-	ns = string(nsb)
+	ns = os.Getenv("EDGEDEVICE_NAMESPACE")
 }
 
 func GetPasswordFromSecret(name string) (string, error) {

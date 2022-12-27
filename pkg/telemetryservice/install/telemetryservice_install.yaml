@@ -20,6 +20,8 @@ spec:
         env:
         - name: SERVER_LISTEN_PORT
           value: :8080
+        - name: EDGEDEVICE_NAMESPACE
+          value: "devices"
 ---
 apiVersion: v1
 kind: Service
