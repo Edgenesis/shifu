@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 
@@ -13,13 +12,6 @@ import (
 	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/tdengine"
 	"k8s.io/klog"
 )
-
-var zlog *zap.SugaredLogger
-
-func init() {
-	logger, _ := zap.NewProduction()
-	zlog = logger.Sugar()
-}
 
 func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
@@ -56,14 +48,18 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 func injectSecret(setting *v1alpha1.SQLConnectionSetting) {
 	if setting == nil {
-		zlog.Warnf("empty telemetry service setting.")
+		klog.Warning("empty telemetry service setting.")
+		return
+	}
+	if setting.Secret == nil {
+		klog.Warning("empty secret setting.")
 		return
 	}
 	pwd, err := utils.GetPasswordFromSecret(*setting.Secret)
 	if err != nil {
-		zlog.Errorf("unable to get secret for telemetry %v, error: %v", *setting.Secret, err)
+		klog.Errorf("unable to get secret for telemetry %v, error: %v", *setting.Secret, err)
 		return
 	}
 	*setting.Secret = pwd
-	zlog.Infof("SQLSetting.Secret load from secret")
+	klog.Info("SQLSetting.Secret load from secret")
 }

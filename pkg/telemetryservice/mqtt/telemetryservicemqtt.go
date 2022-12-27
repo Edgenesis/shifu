@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
-	"go.uber.org/zap"
 	"io"
 	"net/http"
 
@@ -12,13 +11,6 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"k8s.io/klog"
 )
-
-var zlog *zap.SugaredLogger
-
-func init() {
-	logger, _ := zap.NewProduction()
-	zlog = logger.Sugar()
-}
 
 func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
@@ -87,14 +79,18 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 
 func injectSecret(setting *v1alpha1.MQTTSetting) {
 	if setting == nil {
-		zlog.Warnf("empty telemetry service setting.")
+		klog.Warning("empty telemetry service setting.")
+		return
+	}
+	if setting.MQTTServerSecret == nil {
+		klog.Warning("empty secret setting.")
 		return
 	}
 	pwd, err := utils.GetPasswordFromSecret(*setting.MQTTServerSecret)
 	if err != nil {
-		zlog.Errorf("unable to get secret for telemetry %v, error: %v", *setting.MQTTServerSecret, err)
+		klog.Errorf("unable to get secret for telemetry %v, error: %v", *setting.MQTTServerSecret, err)
 		return
 	}
 	*setting.MQTTServerSecret = pwd
-	zlog.Infof("MQTTSetting.Secret load from secret")
+	klog.Info("MQTTSetting.Secret load from secret")
 }
