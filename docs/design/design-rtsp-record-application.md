@@ -8,32 +8,40 @@ application running in the kubernetes allow user to connect RTSP server, and rec
 
 ## General Design
 
-The application is a container running in the kubernetes, which can store the rtsp stream into a file like mp4 / flv and so on, user can export file out of kubernetes with the instruction manual.
+The application is a HTTP Server running in the kubernetes, which can store the rtsp stream into a file like mp4 / flv and so on, user can export file out of kubernetes with the instruction manual.
 
-By Default, the application connect to the deviceShifu-TCP to achieve deviceShifu-RTSP, so that user can record the RTSP Stream into file, or watch the RTSP Stream in VLC from deviceShifu.
+
 
 ## Detailed Design
 
-```mermaid
-flowchart LR
-  dv[device]
-  subgraph k8s
-    ds[deviceshifu-TCP]
-    rrs[RTSP Recording Server]
-    pv[Persistent Volumes]
-  end
-  dv --> ds --> rrs --> pv
+### Management RTSP Servers
+
+application manage a map to record the info of each device which record and can save this map into a file in PV for Backups, When The Application is up, it will recover from backups first.
+
+user can register his device using `/register`, so that application need using a Kubernetes to get this namespace's secret.
+
+rbac.yaml
+```yaml
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: application
+  namespace: shifu-app
+rules:
+  - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: [ "get", "list", "watch", "update", "create","delete"]
 ```
+
+### Store the Stream
 
 We need to store the video in pieces, each clip is 1 hour by default, the user can set this option, user can customize the path where the files saved
 
-this application can implemenet with a shell script, or a Binary files and so on
-ffmpeg example:
+this application could using the third-party package like ffmpeg to implement it or using `exec.Command`
+ffmpeg command example:
 ```bash
 ffmpeg -i rtsp://[RTSP_URL] -c copy -map 0 -segment_time 300 -f segment video/output%03d.mp4
 ```
-
-The application provides two interfaces, such as `/record/on` and `/record/off`, to control the record state and can stop the record gracefully.
 
 Create PVC and PV need Separate with other deploy to avoid user delete pv by mistake. 
 ```yaml
@@ -88,6 +96,34 @@ volumns:
     claimName:  pvc-name
     optional: true
 ```
+
+### Serving requests
+
+`/register` regist the RTSP Stream which need to record
+```json
+{
+    "deviceName":"",
+    "secretName":"",
+    "serverAddress":"",
+    "recoding":true, // default recoding when register
+}
+```
+
+`/unregister` unregister is remove the Target RTSP Server from application and stop to recording but the data exists will not delete.
+```json
+{
+    "deviceName":"",
+}
+```
+
+`/update` turn on or down the recording from the device(RTSP Server)
+```json
+{
+    "deviceName":"",
+    "recodable":false,
+}
+```
+
 
 ### Testing Plan
 
