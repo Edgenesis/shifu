@@ -11,7 +11,7 @@ import (
 	"strings"
 
 	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/types"
-	"k8s.io/klog/v2"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 const (
@@ -36,7 +36,7 @@ func GetPublicIPAddr(url string) (string, error) {
 	if resp.StatusCode == http.StatusOK {
 		bodyBytes, err := io.ReadAll(resp.Body)
 		if err != nil {
-			klog.Errorf("Error getting response of IP query")
+			logger.Errorf("Error getting response of IP query")
 			return "", err
 		}
 
@@ -56,13 +56,13 @@ func GetPublicIPAddr(url string) (string, error) {
 func SendUserMetrics(telemetry types.UserMetricsResponse) error {
 	postBodyJson, err := json.Marshal(telemetry)
 	if err != nil {
-		klog.Errorf("Error marshaling telemetry")
+		logger.Errorf("Error marshaling telemetry")
 		return err
 	}
 
 	resp, err := http.Post(URL_SHIFU_TELEMETRY, HTTP_CONTENT_TYPE_JSON, bytes.NewBuffer(postBodyJson))
 	if err != nil {
-		klog.Errorln("error posting telemetry, errors: ", err)
+		logger.Errorln("error posting telemetry, errors: ", err)
 		return err
 	}
 

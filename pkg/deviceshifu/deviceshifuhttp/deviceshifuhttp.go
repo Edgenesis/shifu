@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -96,7 +96,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
 		default:
-			zlog.Errorf("EdgeDevice protocol %v not supported in deviceShifu_http_http", protocol)
+			logger.Errorf("EdgeDevice protocol %v not supported in deviceShifu_http_http", protocol)
 			return nil, errors.New("wrong protocol not supported in deviceShifu_http_http")
 		}
 	}
@@ -150,7 +150,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		if handlerProperties != nil {
 			// TODO: handle validation compile
 			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				zlog.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
+				logger.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
 			}
 		}
 
@@ -164,14 +164,14 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			reqType           = r.Method
 		)
 
-		zlog.Infof("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
+		logger.Infof("handling instruction '%v' to '%v' with request type %v", handlerInstruction, *handlerEdgeDeviceSpec.Address, reqType)
 
 		timeoutStr := r.URL.Query().Get(deviceshifubase.DeviceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
 			timeout, parseErr = strconv.ParseInt(timeoutStr, 10, 64)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
-				zlog.Errorf("timeout URI parsing error" + parseErr.Error())
+				logger.Errorf("timeout URI parsing error" + parseErr.Error())
 				return
 			}
 		}
@@ -181,7 +181,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			requestBody, parseErr = io.ReadAll(r.Body)
 			if parseErr != nil {
 				http.Error(w, "Error on parsing body", http.StatusBadRequest)
-				zlog.Errorf("Error on parsing body" + parseErr.Error())
+				logger.Errorf("Error on parsing body" + parseErr.Error())
 				return
 			}
 
@@ -200,7 +200,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			req, reqErr := http.NewRequestWithContext(ctx, reqType, httpURL, bytes.NewBuffer(requestBody))
 			if reqErr != nil {
 				http.Error(w, reqErr.Error(), http.StatusBadRequest)
-				zlog.Errorf("error creating HTTP request" + reqErr.Error())
+				logger.Errorf("error creating HTTP request" + reqErr.Error())
 				return
 			}
 
@@ -208,12 +208,12 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			resp, httpErr = handlerHTTPClient.Do(req)
 			if httpErr != nil {
 				http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-				zlog.Errorf("HTTP error" + httpErr.Error())
+				logger.Errorf("HTTP error" + httpErr.Error())
 				return
 			}
 		default:
 			http.Error(w, "not supported yet", http.StatusBadRequest)
-			zlog.Errorf("Request type %v is not supported yet!", reqType)
+			logger.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
 
@@ -226,36 +226,36 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			if !shouldUsePythonCustomProcessing {
 				_, err := io.Copy(w, resp.Body)
 				if err != nil {
-					zlog.Errorf("cannot copy requestBody from requestBody, error: %v", err)
+					logger.Errorf("cannot copy requestBody from requestBody, error: %v", err)
 				}
 				return
 			}
 
 			respBody, readErr := io.ReadAll(resp.Body)
 			if readErr != nil {
-				zlog.Errorf("error when read requestBody from responseBody, err: %v", readErr)
+				logger.Errorf("error when read requestBody from responseBody, err: %v", readErr)
 			}
 
 			rawRespBodyString := string(respBody)
 			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 			respBodyString := rawRespBodyString
-			zlog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+			logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 			if shouldUsePythonCustomProcessing {
-				zlog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+				logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
 				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
 			}
 			_, writeErr := io.WriteString(w, respBodyString)
 			if writeErr != nil {
-				zlog.Errorf("Failed to write response %v", respBodyString)
+				logger.Errorf("Failed to write response %v", respBodyString)
 			}
 			return
 		}
 
 		// TODO: For now, just write tht instruction to the response
-		zlog.Warnf("resp is nil")
+		logger.Warnf("resp is nil")
 		_, err := w.Write([]byte(handlerInstruction))
 		if err != nil {
-			zlog.Errorf("cannot write instruction into response's body, err: %v", err)
+			logger.Errorf("cannot write instruction into response's body, err: %v", err)
 		}
 	}
 }
@@ -319,7 +319,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		if handlerProperties != nil {
 			// TODO: handle validation compile
 			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				zlog.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
+				logger.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
 			}
 		}
 
@@ -333,13 +333,13 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			toleration        int64 = 1
 		)
 
-		zlog.Infof("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
+		logger.Infof("handling instruction '%v' to '%v'", handlerInstruction, *handlerEdgeDeviceSpec.Address)
 		timeoutStr := r.URL.Query().Get(deviceshifubase.DeviceInstructionTimeoutURIQueryStr)
 		if timeoutStr != "" {
 			timeout, parseErr = strconv.ParseInt(timeoutStr, 10, 64)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
-				zlog.Infof("timeout URI parsing error %v", parseErr.Error())
+				logger.Infof("timeout URI parsing error %v", parseErr.Error())
 				return
 			}
 		}
@@ -349,7 +349,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 			toleration, parseErr = strconv.ParseInt(tolerationStr, 10, 64)
 			if parseErr != nil {
 				http.Error(w, parseErr.Error(), http.StatusBadRequest)
-				zlog.Infof("timeout URI parsing error %v", parseErr.Error())
+				logger.Infof("timeout URI parsing error %v", parseErr.Error())
 				return
 			}
 		}
@@ -358,7 +358,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		// we are passing the 'cmdTimeout' param to HTTP PowerShell stub to control the execution timeout
 		postAddressString := "http://" + *handlerEdgeDeviceSpec.Address + "/?" +
 			deviceshifubase.PowerShellStubTimeoutStr + "=" + timeoutStr
-		zlog.Infof("posting HTTP command line '%v' to '%v'", commandString, postAddressString)
+		logger.Infof("posting HTTP command line '%v' to '%v'", commandString, postAddressString)
 
 		if timeout <= 0 {
 			ctx, cancel = context.WithCancel(context.Background())
@@ -373,7 +373,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		req, reqErr := http.NewRequestWithContext(ctx, reqType, postAddressString, bytes.NewBuffer([]byte(commandString)))
 		if reqErr != nil {
 			http.Error(w, reqErr.Error(), http.StatusBadRequest)
-			zlog.Errorf("error creating HTTP request %v", reqErr.Error())
+			logger.Errorf("error creating HTTP request %v", reqErr.Error())
 			return
 		}
 
@@ -381,7 +381,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		resp, httpErr = handlerHTTPClient.Do(req)
 		if httpErr != nil {
 			http.Error(w, httpErr.Error(), http.StatusServiceUnavailable)
-			zlog.Errorf("HTTP error, %v", httpErr.Error())
+			logger.Errorf("HTTP error, %v", httpErr.Error())
 			return
 		}
 
@@ -391,29 +391,29 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 
 			respBody, readErr := io.ReadAll(resp.Body)
 			if readErr != nil {
-				zlog.Errorf("error when read requestBody from responseBody, err: %v", readErr)
+				logger.Errorf("error when read requestBody from responseBody, err: %v", readErr)
 			}
 
 			rawRespBodyString := string(respBody)
 			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 			respBodyString := rawRespBodyString
-			zlog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+			logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 			if shouldUsePythonCustomProcessing {
-				zlog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+				logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
 				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
 			}
 			_, writeErr := io.WriteString(w, respBodyString)
 			if writeErr != nil {
-				zlog.Errorf("Failed to write response %v", respBodyString)
+				logger.Errorf("Failed to write response %v", respBodyString)
 			}
 			return
 		}
 
 		// TODO: For now, if response is nil without error, just write the instruction to the response
-		zlog.Warnf("resp is nil")
+		logger.Warnf("resp is nil")
 		_, err := w.Write([]byte(handlerInstruction))
 		if err != nil {
-			zlog.Errorf("cannot write instruction into responseBody")
+			logger.Errorf("cannot write instruction into responseBody")
 		}
 	}
 }
@@ -452,13 +452,13 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				req, ReqErr := http.NewRequestWithContext(ctx, http.MethodGet, "http://"+address+"/"+instruction, nil)
 				if ReqErr != nil {
-					zlog.Errorf("error checking telemetry: %v, error: %v", telemetry, ReqErr.Error())
+					logger.Errorf("error checking telemetry: %v, error: %v", telemetry, ReqErr.Error())
 					return false, ReqErr
 				}
 
 				resp, err := ds.base.RestClient.Client.Do(req)
 				if err != nil {
-					zlog.Errorf("error checking telemetry: %v, error: %v", telemetry, err.Error())
+					logger.Errorf("error checking telemetry: %v, error: %v", telemetry, err.Error())
 					return false, err
 				}
 
@@ -480,7 +480,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				return false, nil
 			}
 		default:
-			zlog.Warnf("EdgeDevice protocol %v not supported in deviceshifu_http_http", protocol)
+			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu_http_http", protocol)
 			return false, nil
 		}
 	}

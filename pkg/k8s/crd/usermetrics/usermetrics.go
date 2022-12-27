@@ -6,11 +6,11 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/types"
 	"github.com/edgenesis/shifu/pkg/k8s/crd/usermetrics/utils"
+	"github.com/edgenesis/shifu/pkg/logger"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog/v2"
 )
 
 func StartUserMetricsCollection(source string) {
@@ -19,38 +19,38 @@ func StartUserMetricsCollection(source string) {
 
 		publicIP, err := utils.GetPublicIPAddr(utils.URL_EXTERNAL_IP)
 		if err != nil {
-			klog.Errorf("issue getting Public IP")
+			logger.Errorf("issue getting Public IP")
 			publicIP = utils.URL_DEFAULT_PUBLIC_IP
 		}
 
-		klog.Infof("Public IP is %v\n", publicIP)
+		logger.Infof("Public IP is %v\n", publicIP)
 		config, err := rest.InClusterConfig()
 		if err != nil {
-			klog.Errorln("error when get cluster Config,error: ", err)
+			logger.Errorln("error when get cluster Config,error: ", err)
 			continue
 		}
 
 		clientset, err := kubernetes.NewForConfig(config)
 		if err != nil {
-			klog.Errorln("cannot get ClusterInfo,errors: ", err)
+			logger.Errorln("cannot get ClusterInfo,errors: ", err)
 			continue
 		}
 
 		kVersion, err := clientset.ServerVersion()
 		if err != nil {
-			klog.Errorln("cannot get Kubernetes Server Info,errors: ", err)
+			logger.Errorln("cannot get Kubernetes Server Info,errors: ", err)
 			continue
 		}
-		klog.Infof("%#v", kVersion)
+		logger.Infof("%#v", kVersion)
 		pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
-			klog.Errorln("cannot get Pod Info,errors: ", err)
+			logger.Errorln("cannot get Pod Info,errors: ", err)
 			continue
 		}
 
 		deploy, err := clientset.AppsV1().Deployments("").List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
-			klog.Errorln("cannot get Deployment Info,errors: ", err)
+			logger.Errorln("cannot get Deployment Info,errors: ", err)
 			continue
 		}
 
@@ -81,7 +81,7 @@ func StartUserMetricsCollection(source string) {
 		}
 
 		if result := utils.SendUserMetrics(controllerTelemetry); result == nil {
-			klog.Infoln("telemetry done")
+			logger.Infoln("telemetry done")
 		}
 	}
 }

@@ -11,7 +11,7 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -108,7 +108,7 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 	var cmData ConfigMapData
 	err = yaml.Unmarshal(snippetFile, &cmData)
 	if err != nil {
-		zlog.Fatalf("Error parsing ConfigMap %v, error: %v", fileName, err)
+		logger.Fatalf("Error parsing ConfigMap %v, error: %v", fileName, err)
 		return err
 	}
 
@@ -120,14 +120,14 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 
 	err = os.MkdirAll(MockDeviceConfigFolder, os.ModePerm)
 	if err != nil {
-		zlog.Fatalf("Error creating path for: %v", MockDeviceConfigFolder)
+		logger.Fatalf("Error creating path for: %v", MockDeviceConfigFolder)
 		return err
 	}
 
 	for outputDir, data := range MockDeviceConfigMapping {
 		err = os.WriteFile(outputDir, []byte(data), MockDeviceWritFilePermission)
 		if err != nil {
-			zlog.Fatalf("Error creating configFile for: %v", outputDir)
+			logger.Fatalf("Error creating configFile for: %v", outputDir)
 			return err
 		}
 	}

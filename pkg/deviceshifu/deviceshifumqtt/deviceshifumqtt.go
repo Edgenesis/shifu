@@ -12,7 +12,7 @@ import (
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 // DeviceShifu implemented from deviceshifuBase
@@ -55,7 +55,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			mqttProtocolSetting := base.EdgeDevice.Spec.ProtocolSettings
 			if mqttProtocolSetting != nil {
 				if mqttProtocolSetting.MQTTSetting != nil && mqttProtocolSetting.MQTTSetting.MQTTServerSecret != nil {
-					zlog.Infof("MQTT Server Secret is not empty, currently Shifu does not use MQTT Server Secret")
+					logger.Infof("MQTT Server Secret is not empty, currently Shifu does not use MQTT Server Secret")
 					// TODO Add MQTT Server secret processing logic
 				}
 			}
@@ -98,33 +98,33 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 }
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	zlog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
+	logger.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	rawMqttMessageStr := string(msg.Payload())
 	instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
-	zlog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
+	logger.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
-		zlog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
+		logger.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
 		mqttMessageInstructionMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawMqttMessageStr, deviceshifubase.PythonScriptDir)
 	} else {
 		mqttMessageInstructionMap[msg.Topic()] = rawMqttMessageStr
 	}
 	mqttMessageReceiveTimestampMap[msg.Topic()] = time.Now()
-	zlog.Infof("MESSAGE_STR updated")
+	logger.Infof("MESSAGE_STR updated")
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	zlog.Infof("Connected")
+	logger.Infof("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	zlog.Infof("Connect lost: %v", err)
+	logger.Infof("Connect lost: %v", err)
 }
 
 func sub(client mqtt.Client, topic string) {
 	// topic := "topic/test"
 	token := client.Subscribe(topic, 1, nil)
 	token.Wait()
-	zlog.Infof("Subscribed to topic: %s", topic)
+	logger.Infof("Subscribed to topic: %s", topic)
 }
 
 // DeviceCommandHandlerMQTT handler for Mqtt
@@ -149,33 +149,33 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			err := json.NewEncoder(w).Encode(returnMessage)
 			if err != nil {
 				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
-				zlog.Errorf("Cannot Encode message to json")
+				logger.Errorf("Cannot Encode message to json")
 				return
 			}
 		} else if reqType == http.MethodPost {
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
-				zlog.Errorf("Error when Read Data From Body, error: %v", err)
+				logger.Errorf("Error when Read Data From Body, error: %v", err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 
 			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
 			requestBody := RequestBody(body)
-			zlog.Infof("requestBody: %v", requestBody)
+			logger.Infof("requestBody: %v", requestBody)
 
 			// TODO handle error asynchronously
 			token := client.Publish(mqttTopic, 1, false, body)
 			if token.Error() != nil {
-				zlog.Errorf("Error when publish Data to MQTTServer,%v", token.Error())
+				logger.Errorf("Error when publish Data to MQTTServer,%v", token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
 				return
 			}
-			zlog.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
+			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
 			return
 		} else {
 			http.Error(w, "must be GET or POST method", http.StatusBadRequest)
-			zlog.Errorf("Request type %v is not supported yet!", reqType)
+			logger.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
 
@@ -217,7 +217,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				mqttTopic, err := ds.getMQTTTopicFromInstructionName(instruction)
 				if err != nil {
-					zlog.Errorf("%v", err.Error())
+					logger.Errorf("%v", err.Error())
 					return false, err
 				}
 
@@ -231,7 +231,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				}
 			}
 		default:
-			zlog.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
+			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
 		}
 	}

@@ -2,7 +2,7 @@ package deviceshifumqtt
 
 import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 const (
@@ -39,7 +39,7 @@ func CreateMQTTInstructions(dsInstructions *deviceshifubase.DeviceShifuInstructi
 
 	for key, dsInstruction := range dsInstructions.Instructions {
 		if dsInstruction.DeviceShifuProtocolProperties != nil && dsInstruction.DeviceShifuProtocolProperties[mqttTopic] == "" {
-			zlog.Fatalf("Error when Read MQTTTopic From DeviceShifuInstructions, error: instruction %v has an empty topic", key)
+			logger.Fatalf("Error when Read MQTTTopic From DeviceShifuInstructions, error: instruction %v has an empty topic", key)
 		}
 		instruction := &MQTTInstruction{
 			&MQTTProtocolProperty{

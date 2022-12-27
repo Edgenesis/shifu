@@ -7,7 +7,7 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/stretchr/testify/assert"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -16,13 +16,13 @@ import (
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		zlog.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
+		logger.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
-		zlog.Fatal(err)
+		logger.Fatal(err)
 	}
 }
 

@@ -15,7 +15,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/stretchr/testify/assert"
 
 	v1 "k8s.io/api/apps/v1"
@@ -28,24 +28,24 @@ import (
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		zlog.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
+		logger.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
-		zlog.Fatal(err)
+		logger.Fatal(err)
 	}
 
 	err = GenerateConfigMapFromSnippet(MockDeviceCmStr2, MockDeviceConfigFolder)
 	if err != nil {
-		zlog.Errorf("error when generateConfigmapFromSnippet2, err: %v", err)
+		logger.Errorf("error when generateConfigmapFromSnippet2, err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
-		zlog.Fatal(err)
+		logger.Fatal(err)
 	}
 }
 
@@ -58,7 +58,7 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 
 	_, err := New(deviceShifuMetadata)
 	if err != nil {
-		zlog.Errorf("%v", err)
+		logger.Errorf("%v", err)
 	} else {
 		t.Errorf("DeviceShifuHTTP Test with empty namespace failed")
 	}
@@ -125,7 +125,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 func TestCreateHTTPCommandlineRequestString(t *testing.T) {
 	req, err := http.NewRequest("GET", "http://localhost:8081/start?time=10:00:00&flags_no_parameter=-a,-c,--no-dependency&target=machine2", nil)
-	zlog.Infof("%v", req.URL.Query())
+	logger.Infof("%v", req.URL.Query())
 	createdRequestString := createHTTPCommandlineRequestString(req, "/usr/local/bin/python /usr/src/driver/python-car-driver.py", "start")
 	if err != nil {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
@@ -163,7 +163,7 @@ func TestCreatehttpURIString(t *testing.T) {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	zlog.Infof("%v", req.URL.Query())
+	logger.Infof("%v", req.URL.Query())
 	createdURIString := createURIFromRequest("localhost:8081", "start", req)
 
 	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
@@ -185,7 +185,7 @@ func TestCreatehttpURIStringNoQuery(t *testing.T) {
 		t.Errorf("Cannot create HTTP commandline request: %v", err.Error())
 	}
 
-	zlog.Infof("%v", req.URL.Query())
+	logger.Infof("%v", req.URL.Query())
 	createdURIString := createURIFromRequest("localhost:8081", "start", req)
 
 	createdURIStringWithoutQueries := strings.Split(createdURIString, "?")[0]
@@ -201,7 +201,7 @@ func TestCreatehttpURIStringNoQuery(t *testing.T) {
 // func initTestEnv() {
 // 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 // 	if err != nil {
-// 		klog.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
+// 		logger.Errorf("error when generateConfigmapFromSnippet, err: %v", err)
 // 		os.Exit(-1)
 // 	}
 // 	deviceShifuMetadata := &deviceshifubase.DeviceShifuMetaData{
@@ -301,7 +301,7 @@ func mockRestClient(host string, path string) *rest.RESTClient {
 		},
 	)
 	if err != nil {
-		zlog.Errorf("mock client for host %s, apipath: %s failed,", host, path)
+		logger.Errorf("mock client for host %s, apipath: %s failed,", host, path)
 		return nil
 	}
 
@@ -318,14 +318,14 @@ func mockDeviceServer(h MockCommandHandler, t *testing.T) *httptest.Server {
 		path := r.URL.Path
 		switch path {
 		case "/testing/apps/v1":
-			zlog.Info("ds get testing call, calling the handler server")
+			logger.Info("ds get testing call, calling the handler server")
 			assert.Equal(t, "/testing/apps/v1", path)
 			f := h.commandHandleFunc()
 			f.ServeHTTP(w, r)
 		default:
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			zlog.Info("ds default request, path:", path)
+			logger.Info("ds default request, path:", path)
 		}
 	}))
 	return server
@@ -340,10 +340,10 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			assert.Equal(t, "/test_instruction", path)
-			zlog.Info("handler get the instruction and executed.")
+			logger.Info("handler get the instruction and executed.")
 		default:
 			w.WriteHeader(http.StatusOK)
-			zlog.Info("hs get default request, path:", path)
+			logger.Info("hs get default request, path:", path)
 		}
 
 	}))
@@ -419,13 +419,13 @@ func mockTelemetryServer(t *testing.T) *httptest.Server {
 		path := r.URL.Path
 		switch path {
 		case "/telemetry_health":
-			zlog.Info("telemetry detected.")
+			logger.Info("telemetry detected.")
 			assert.Equal(t, "/telemetry_health", path)
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 		default:
 			w.WriteHeader(http.StatusOK)
-			zlog.Info("ts get default request, path:", path)
+			logger.Info("ts get default request, path:", path)
 		}
 
 	}))

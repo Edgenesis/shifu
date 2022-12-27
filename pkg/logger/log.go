@@ -1,9 +1,10 @@
 package logger
 
 import (
-	"go.uber.org/zap"
 	"os"
 	"sync"
+
+	"go.uber.org/zap"
 )
 
 var zlog *zap.SugaredLogger
@@ -75,5 +76,25 @@ func Error(args ...interface{}) {
 }
 
 func Fatal(args ...interface{}) {
+	zlog.Fatal(args...)
+}
+
+func Debugln(args ...interface{}) {
+	zlog.Debugln(args...)
+}
+
+func Infoln(args ...interface{}) {
+	zlog.Infoln(args...)
+}
+
+func Warnln(args ...interface{}) {
+	zlog.Warnln(args...)
+}
+
+func Errorln(args ...interface{}) {
+	zlog.Errorln(args...)
+}
+
+func Fatalln(args ...interface{}) {
 	zlog.Fatal(args...)
 }

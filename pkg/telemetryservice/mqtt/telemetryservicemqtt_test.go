@@ -12,7 +12,7 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 
 	"github.com/mochi-co/mqtt/server"
 	"github.com/mochi-co/mqtt/server/listeners"
@@ -30,7 +30,7 @@ func TestMain(m *testing.M) {
 	wg.Add(1)
 	go func() {
 		mockMQTTServer(stop)
-		zlog.Infof("Server Closed")
+		logger.Infof("Server Closed")
 		wg.Done()
 	}()
 	m.Run()
@@ -96,7 +96,7 @@ func mockMQTTServer(stop <-chan struct{}) {
 	server := server.NewServer(nil)
 	err := server.AddListener(tcp, nil)
 	if err != nil {
-		zlog.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
+		logger.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
 	}
 	go func() {
 		<-stop
@@ -105,7 +105,7 @@ func mockMQTTServer(stop <-chan struct{}) {
 
 	err = server.Serve()
 	if err != nil {
-		zlog.Fatalf("Error when MQTT Server Serve, error: %v", err)
+		logger.Fatalf("Error when MQTT Server Serve, error: %v", err)
 	}
 }
 

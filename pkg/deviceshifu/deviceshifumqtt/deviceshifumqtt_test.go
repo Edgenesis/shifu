@@ -19,7 +19,7 @@ import (
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -41,13 +41,13 @@ const (
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		zlog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
+		logger.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
-		zlog.Fatal(err)
+		logger.Fatal(err)
 	}
 }
 
@@ -154,9 +154,9 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 
 	// test post method when MQTTServer connected
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		zlog.Errorf("Error when connect to server error: %v", token.Error())
+		logger.Errorf("Error when connect to server error: %v", token.Error())
 	} else {
-		zlog.Infof("Connect to %v success!", unitTestServerAddress)
+		logger.Infof("Connect to %v success!", unitTestServerAddress)
 		defer client.Disconnect(0)
 	}
 
@@ -180,17 +180,17 @@ func mockMQTTServer(stop <-chan struct{}) {
 	server := server.NewServer(nil)
 	err := server.AddListener(tcp, nil)
 	if err != nil {
-		zlog.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
+		logger.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
 	}
 
 	err = server.Serve()
 	if err != nil {
-		zlog.Fatalf("Error when MQTT Server Serve, error: %v", err)
+		logger.Fatalf("Error when MQTT Server Serve, error: %v", err)
 	}
 
 	<-stop
 	server.Close()
-	zlog.Infof("Server Closed")
+	logger.Infof("Server Closed")
 }
 
 func mockRestClient(host string, path string) *rest.RESTClient {
@@ -205,7 +205,7 @@ func mockRestClient(host string, path string) *rest.RESTClient {
 		},
 	)
 	if err != nil {
-		zlog.Errorf("mock client for host %s, apipath: %s failed,", host, path)
+		logger.Errorf("mock client for host %s, apipath: %s failed,", host, path)
 		return nil
 	}
 
@@ -222,14 +222,14 @@ func mockDeviceServer(h MockCommandHandler, t *testing.T) *httptest.Server {
 		path := r.URL.Path
 		switch path {
 		case "/testing/apps/v1":
-			zlog.Info("ds get testing call, calling the handler server")
+			logger.Info("ds get testing call, calling the handler server")
 			assert.Equal(t, "/testing/apps/v1", path)
 			f := h.commandHandleFunc()
 			f.ServeHTTP(w, r)
 		default:
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			zlog.Info("ds default request, path:", path)
+			logger.Info("ds default request, path:", path)
 		}
 	}))
 	return server
@@ -243,10 +243,10 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 		case "/test_instruction":
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			zlog.Info("handler get the instruction and executed.")
+			logger.Info("handler get the instruction and executed.")
 		default:
 			w.WriteHeader(http.StatusOK)
-			zlog.Info("hs get default request, path:", path)
+			logger.Info("hs get default request, path:", path)
 		}
 
 	}))

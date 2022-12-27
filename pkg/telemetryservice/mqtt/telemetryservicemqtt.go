@@ -8,30 +8,30 @@ import (
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		zlog.Errorf("Error when Read Data From Body, error: %v", err)
+		logger.Errorf("Error when Read Data From Body, error: %v", err)
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	zlog.Infof("requestBody: %s", string(body))
+	logger.Infof("requestBody: %s", string(body))
 	request := v1alpha1.TelemetryRequest{}
 
 	err = json.Unmarshal(body, &request)
 	if err != nil {
-		zlog.Errorf("Error to Unmarshal request body to struct")
+		logger.Errorf("Error to Unmarshal request body to struct")
 		http.Error(w, "unexpected end of JSON input", http.StatusBadRequest)
 		return
 	}
 
 	client, err := connectToMQTT(request.MQTTSetting)
 	if err != nil {
-		zlog.Errorf("Error to connect to mqtt server, error: %#v", err)
+		logger.Errorf("Error to connect to mqtt server, error: %#v", err)
 		http.Error(w, "Error to connect to server", http.StatusBadRequest)
 		return
 	}
@@ -39,11 +39,11 @@ func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 
 	token := (*client).Publish(*request.MQTTSetting.MQTTTopic, 1, false, request.RawData)
 	if token.Error() != nil {
-		zlog.Errorf("Error when publish Data to MQTTServer, error: %#v", err.Error())
+		logger.Errorf("Error when publish Data to MQTTServer, error: %#v", err.Error())
 		http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
 		return
 	}
-	zlog.Infof("Info: Success To publish a message %v to %v", string(request.RawData), request.MQTTSetting.MQTTServerAddress)
+	logger.Infof("Info: Success To publish a message %v to %v", string(request.RawData), request.MQTTSetting.MQTTServerAddress)
 }
 
 func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
@@ -55,21 +55,21 @@ func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
 	opts.OnConnectionLost = connectLostHandler
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		zlog.Errorf("Error when connect to server error: %v", token.Error())
+		logger.Errorf("Error when connect to server error: %v", token.Error())
 		return nil, token.Error()
 	}
-	zlog.Infof("Connect to %v success!", *settings.MQTTServerAddress)
+	logger.Infof("Connect to %v success!", *settings.MQTTServerAddress)
 	return &client, nil
 }
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	zlog.Infof("MESSAGE_STR updated")
+	logger.Infof("MESSAGE_STR updated")
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	zlog.Infof("Connected")
+	logger.Infof("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	zlog.Infof("Connect lost: %v", err)
+	logger.Infof("Connect lost: %v", err)
 }

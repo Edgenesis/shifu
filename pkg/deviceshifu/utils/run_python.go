@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os/exec"
 
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 const (
@@ -19,7 +19,7 @@ func ProcessInstruction(moduleName string, funcName string, rawData string, scri
 
 	processed, err := cmd.CombinedOutput()
 	if err != nil {
-		zlog.Errorf("Failed process command %v\n, error:%v", cmdString, err.Error())
+		logger.Errorf("Failed process command %v\n, error:%v", cmdString, err.Error())
 	}
 	return string(processed)
 }

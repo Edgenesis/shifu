@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 func TestStartMockDevice(t *testing.T) {
@@ -20,7 +20,7 @@ func TestStartMockDevice(t *testing.T) {
 
 	instructionHandler := func(functionName string) http.HandlerFunc {
 		return func(w http.ResponseWriter, r *http.Request) {
-			zlog.Infof("Handling: %v", functionName)
+			logger.Infof("Handling: %v", functionName)
 			switch functionName {
 			case "get_status":
 				fmt.Fprintf(w, "Running")

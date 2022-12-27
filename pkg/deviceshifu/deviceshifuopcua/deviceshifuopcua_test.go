@@ -7,7 +7,7 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"github.com/edgenesis/shifu/pkg/logger"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -15,13 +15,13 @@ import (
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		zlog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
+		logger.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
-		zlog.Fatal(err)
+		logger.Fatal(err)
 	}
 }
 
@@ -48,7 +48,7 @@ func TestDeviceShifuEmptyNamespace(t *testing.T) {
 
 	_, err := New(deviceShifuMetadata)
 	if err != nil {
-		zlog.Errorf("%v", err)
+		logger.Errorf("%v", err)
 	} else {
 		t.Errorf("DeviceShifu Test with empty namespace failed")
 	}
