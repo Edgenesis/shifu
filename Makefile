@@ -1,7 +1,7 @@
 PROJECT_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 IMAGE_VERSION = $(shell cat version.txt)
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.24.2
+ENVTEST_K8S_VERSION = 1.25.2
 
 fmt: ## Run go fmt against code.
 	go fmt ./...

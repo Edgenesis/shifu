@@ -17,7 +17,7 @@ import (
 
 // DeviceShifu implemented from deviceshifuBase
 type DeviceShifu struct {
-	base *deviceshifubase.DeviceShifuBase
+	base             *deviceshifubase.DeviceShifuBase
 	mqttInstructions *MQTTInstructions
 }
 
@@ -30,13 +30,13 @@ type HandlerMetaData struct {
 
 // Str and default value
 const (
-	DefaultUpdateIntervalInMS int64  = 3000
+	DefaultUpdateIntervalInMS int64 = 3000
 )
 
 var (
-	client                      mqtt.Client
-	MQTTTopic                   string
-	mqttMessageInstructionMap              = map[string]string{}
+	client                         mqtt.Client
+	MQTTTopic                      string
+	mqttMessageInstructionMap      = map[string]string{}
 	mqttMessageReceiveTimestampMap = map[string]time.Time{}
 )
 
@@ -89,7 +89,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	deviceshifubase.BindDefaultHandler(mux)
 
 	ds := &DeviceShifu{
-		base: base,
+		base:             base,
 		mqttInstructions: mqttInstructions,
 	}
 
@@ -167,12 +167,12 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			// TODO handle error asynchronously
 			token := client.Publish(mqttTopic, 1, false, body)
 			if token.Error() != nil {
-				klog.Errorf("Error when publish Data to MQTTServer,%v",token.Error())
+				klog.Errorf("Error when publish Data to MQTTServer,%v", token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
 				return
 			}
 			klog.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
-			return			
+			return
 		} else {
 			http.Error(w, "must be GET or POST method", http.StatusBadRequest)
 			klog.Errorf("Request type %v is not supported yet!", reqType)
