@@ -36,7 +36,7 @@ const (
 	unitTestServerAddress = "localhost:18928"
 )
 
-func TestMain(m *testing.M) {	
+func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
 		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
@@ -254,7 +254,7 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 func TestCollectMQTTTelemetry(t *testing.T) {
 	instructionName := "get_reading"
 	testTelemetryInstructionName := &instructionName
-	
+
 	testCases := []struct {
 		Name        string
 		inputDevice *DeviceShifu
@@ -300,7 +300,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 				mqttInstructions: &MQTTInstructions{
 					Instructions: map[string]*MQTTInstruction{
 						"get_reading": &MQTTInstruction{
-							MQTTProtocolProperty: &MQTTProtocolProperty {
+							MQTTProtocolProperty: &MQTTProtocolProperty{
 								MQTTTopic: "test/test1",
 							},
 						},
@@ -325,10 +325,9 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 							DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
 								"health": &deviceshifubase.DeviceShifuTelemetry{
 									DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
-									DeviceInstructionName: testTelemetryInstructionName,
+										DeviceInstructionName: testTelemetryInstructionName,
+									},
 								},
-							    },
-								
 							},
 						},
 					},
@@ -359,7 +358,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 				mqttInstructions: &MQTTInstructions{
 					Instructions: map[string]*MQTTInstruction{
 						"get_reading": &MQTTInstruction{
-							MQTTProtocolProperty: &MQTTProtocolProperty {
+							MQTTProtocolProperty: &MQTTProtocolProperty{
 								MQTTTopic: "test/test1",
 							},
 						},
@@ -379,10 +378,9 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 							DeviceShifuTelemetries: map[string]*deviceshifubase.DeviceShifuTelemetry{
 								"health": &deviceshifubase.DeviceShifuTelemetry{
 									DeviceShifuTelemetryProperties: deviceshifubase.DeviceShifuTelemetryProperties{
-									DeviceInstructionName: testTelemetryInstructionName,
+										DeviceInstructionName: testTelemetryInstructionName,
+									},
 								},
-							    },
-								
 							},
 						},
 					},

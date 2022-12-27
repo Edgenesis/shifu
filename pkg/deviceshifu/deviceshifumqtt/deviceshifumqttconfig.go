@@ -1,9 +1,8 @@
 package deviceshifumqtt
 
-
 import (
-	"k8s.io/klog/v2"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"k8s.io/klog/v2"
 )
 
 const (
@@ -19,7 +18,6 @@ type ReturnBody struct {
 // RequestBody Body of mqtt's request by POST method
 type RequestBody string
 
-
 // MQTTInstructions MQTT Instructions
 type MQTTInstructions struct {
 	Instructions map[string]*MQTTInstruction
@@ -27,7 +25,7 @@ type MQTTInstructions struct {
 
 // MQTTInstruction MQTT Instruction
 type MQTTInstruction struct {
-	MQTTProtocolProperty *MQTTProtocolProperty 
+	MQTTProtocolProperty *MQTTProtocolProperty
 }
 
 // MQTTProtocolProperty MQTT Instruction's Property

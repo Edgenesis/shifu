@@ -8,10 +8,10 @@ import (
 
 	plc4go "github.com/apache/plc4x/plc4go/pkg/api"
 	"github.com/apache/plc4x/plc4go/pkg/api/drivers"
-	"github.com/apache/plc4x/plc4go/pkg/api/model"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"golang.org/x/net/context"
 	"k8s.io/klog/v2"
 )
 
@@ -119,14 +119,9 @@ func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 			return
 		}
 
-		var resultData model.PlcWriteRequestResult
-		select {
-		case resultData = <-plc4xRequest.Execute():
-		case <-time.After(time.Second * timeout):
-			klog.Errorf("Timeout when send request to device")
-			http.Error(w, "Timeout when send request to device", http.StatusInternalServerError)
-			return
-		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*timeout)
+		defer cancel()
+		resultData := <-plc4xRequest.ExecuteWithContext(ctx)
 
 		if err := resultData.GetErr(); err != nil {
 			klog.Errorf("Got Error on execute request, error: %v", err)
@@ -163,14 +158,9 @@ func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 			return
 		}
 
-		var resultData model.PlcReadRequestResult
-		select {
-		case resultData = <-plc4xRequest.Execute():
-		case <-time.After(time.Second * timeout):
-			klog.Errorf("Timeout when send request to device")
-			http.Error(w, "Timeout when send request to device", http.StatusInternalServerError)
-			return
-		}
+		ctx, cancel := context.WithTimeout(context.Background(), time.Second*timeout)
+		defer cancel()
+		resultData := <-plc4xRequest.ExecuteWithContext(ctx)
 
 		if err := resultData.GetErr(); err != nil {
 			klog.Errorf("Got Error on execute request, error: %v", err)
