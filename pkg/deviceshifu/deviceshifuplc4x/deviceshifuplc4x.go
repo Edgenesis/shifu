@@ -12,7 +12,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	zlog "github.com/edgenesis/shifu/pkg/logger"
+	"k8s.io/klog/v2"
 )
 
 // DeviceShifu deviceshifu and socketConnection for Socket
@@ -123,7 +123,7 @@ func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 		select {
 		case resultData = <-plc4xRequest.Execute():
 		case <-time.After(time.Second * timeout):
-			zlog.Errorf("Timeout when send request to device")
+			klog.Errorf("Timeout when send request to device")
 			http.Error(w, "Timeout when send request to device", http.StatusInternalServerError)
 			return
 		}
@@ -167,7 +167,7 @@ func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 		select {
 		case resultData = <-plc4xRequest.Execute():
 		case <-time.After(time.Second * timeout):
-			zlog.Errorf("Timeout when send request to device")
+			klog.Errorf("Timeout when send request to device")
 			http.Error(w, "Timeout when send request to device", http.StatusInternalServerError)
 			return
 		}
