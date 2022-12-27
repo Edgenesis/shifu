@@ -36,26 +36,26 @@ class VideoGet:
         self.stopped = False
 
     def start(self):
-        Thread(target=self.get, args=()).start()
+        self.thread = Thread(target=self.get, args=())
+        self.thread.start()
         return self
 
     def get(self):
         while not self.stopped:
             if not self.grabbed:
                 self.restart()
+                return
             else:
                 (self.grabbed, self.frame) = self.stream.read()
 
     def stop(self):
         self.stopped = True
+        self.thread.join()
 
     def restart(self):
         print("capture failed, restarting...")
-        self.stream.release()
-        print("released stream and allocate new one...")
         try:
-            self.stream = cv2.VideoCapture("rtsp://{}:{}@{}".format(CAMERA_USERNAME, CAMERA_PASSWORD, ip))
-            print("capture reopen success!")
+            print("capture reopen success, please refresh the page!")
         except Exception as e:
             print("error open stream, error: {}".format(e))
         if not self.stream.isOpened():
@@ -67,7 +67,10 @@ class VideoGet:
 
 @app.route('/capture')
 def capture():
-    try:    
+    try:  
+        global video_getter
+        video_getter.stop()
+        video_getter = VideoGet(ip, CAMERA_USERNAME, CAMERA_PASSWORD).start()
         if not video_getter.stopped:
             ret, frame = video_getter.grabbed, video_getter.frame
             if ret:
@@ -184,6 +187,9 @@ def getCameraInfo():
 @app.route('/stream')
 def video_feed():
     #Video streaming route. Put this in the src attribute of an img tag
+    global video_getter
+    video_getter.stop()
+    video_getter = VideoGet(ip, CAMERA_USERNAME, CAMERA_PASSWORD).start()
     return Response(stream(ip, CAMERA_USERNAME, CAMERA_PASSWORD), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
