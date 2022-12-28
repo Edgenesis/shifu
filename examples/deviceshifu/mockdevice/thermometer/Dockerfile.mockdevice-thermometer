@@ -14,7 +14,6 @@ COPY go.mod go.mod
 COPY go.sum go.sum
 COPY pkg/deviceshifu pkg/deviceshifu
 COPY pkg/logger pkg/logger
-
 RUN go mod download
 
 # Build the Go app

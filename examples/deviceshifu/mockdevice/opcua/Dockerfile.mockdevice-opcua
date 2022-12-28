@@ -4,6 +4,7 @@ WORKDIR /worker
 
 COPY examples/opcuaDeviceShifu/server/requirements.txt requirements.txt
 COPY examples/opcuaDeviceShifu/server/server.py server.py
+COPY pkg/logger pkg/logger
 
 RUN pip3 install -r requirements.txt
 
