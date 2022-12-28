@@ -24,11 +24,6 @@ rules:
   resources:
   - edgedevices
   verbs: ["get", "update"]
-- apiGroups:
-  - "" # "" indicates the core API group
-  resources:
-  - "secrets"
-  verbs: [ "get", "list", "watch" ]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -53,11 +48,6 @@ rules:
   resources:
   - telemetryservices
   verbs: ["get", "update"]
-- apiGroups:
-    - "" # "" indicates the core API group
-  resources:
-    - "secrets"
-  verbs: [ "get", "list", "watch" ]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -84,3 +74,46 @@ subjects:
 - kind: ServiceAccount
   name: shifu-crd-controller-manager
   namespace: shifu-crd-system
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: telemetry-service-sa
+  namespace: shifu-service
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: secret-view
+rules:
+  - apiGroups:
+      - "" # "" indicates the core API group
+    resources:
+      - "secrets"
+    verbs: [ "get", "list", "watch" ]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: telemetryservice-secret-view-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: secret-view
+subjects:
+  - kind: ServiceAccount
+    name: telemetry-service-sa
+    namespace: shifu-service
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: deviceshifu-secret-view-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: secret-view
+subjects:
+  - kind: ServiceAccount
+    name: edgedevice-sa
+    namespace: deviceshifu

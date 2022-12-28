@@ -22,6 +22,7 @@ spec:
           value: :8080
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
+      serviceAccountName: telemetry-service-sa
 ---
 apiVersion: v1
 kind: Service
