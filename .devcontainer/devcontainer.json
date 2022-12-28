@@ -32,12 +32,14 @@
 			
 			// Add the IDs of extensions you want installed when the container is created.
 			"extensions": [
-				"davidanson.vscode-markdownlint",
 				"golang.Go",
-				"ms-azuretools.vscode-dapr",
 				"ms-azuretools.vscode-docker",
-				"ms-kubernetes-tools.vscode-kubernetes-tools"
+				"ms-kubernetes-tools.vscode-kubernetes-tools",
+				"GitHub.copilot",
+				"streetsidesoftware.code-spell-checker",
+				"yzhang.markdown-all-in-one"
 			]
 		}
-	}
+	},
+		"remoteUser": "root"
 }

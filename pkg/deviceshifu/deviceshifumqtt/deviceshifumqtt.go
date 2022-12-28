@@ -19,7 +19,7 @@ import (
 
 // DeviceShifu implemented from deviceshifuBase
 type DeviceShifu struct {
-	base *deviceshifubase.DeviceShifuBase
+	base             *deviceshifubase.DeviceShifuBase
 	mqttInstructions *MQTTInstructions
 }
 
@@ -32,16 +32,16 @@ type HandlerMetaData struct {
 
 // Str and default value
 const (
-	DefaultUpdateIntervalInMS int64  = 3000
+	DefaultUpdateIntervalInMS int64 = 3000
 )
 
 var (
-	client                      mqtt.Client
-	MQTTTopic                   string
+	client                         mqtt.Client
+	MQTTTopic                      string
 	mqttMessageInstructionMap      = map[string]string{}
 	mqttMessageReceiveTimestampMap = map[string]time.Time{}
 	mutexBlockingMap               = map[string]bool{}
-	mutexInstructions           map[string]string
+	mutexInstructions              map[string]string
 )
 
 // New new MQTT Deviceshifu
@@ -94,7 +94,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	deviceshifubase.BindDefaultHandler(mux)
 
 	ds := &DeviceShifu{
-		base: base,
+		base:             base,
 		mqttInstructions: mqttInstructions,
 	}
 
@@ -105,11 +105,11 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	rawMqttMessageStr := string(msg.Payload())
-	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
+	instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
 	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
 		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
-		mqttMessageInstructionMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+		mqttMessageInstructionMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawMqttMessageStr, deviceshifubase.PythonScriptDir)
 	} else {
 		mqttMessageInstructionMap[msg.Topic()] = rawMqttMessageStr
 	}
@@ -207,7 +207,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				klog.Infof("Message %v is mutex, blocking.", requestBody)
 			}
 			klog.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
-			return			
+			return
 		} else {
 			http.Error(w, "must be GET or POST method", http.StatusBadRequest)
 			klog.Errorf("Request type %v is not supported yet!", reqType)
@@ -264,7 +264,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqttTopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
 					return true, nil
 				}
-			}	
+			}
 		default:
 			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil

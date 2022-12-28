@@ -133,11 +133,11 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 			return
 		}
 		handlerInstruction := HandlerMetaData.instruction
-		_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+		instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 		klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 		if shouldUsePythonCustomProcessing {
 			klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-			outputMessage = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, outputMessage, deviceshifubase.PythonScriptDir)
+			outputMessage = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, outputMessage, deviceshifubase.PythonScriptDir)
 		}
 
 		returnMessage := ReturnBody{
