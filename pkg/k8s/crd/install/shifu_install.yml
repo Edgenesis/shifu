@@ -511,6 +511,11 @@ metadata:
   name: deviceshifu
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: shifu-service
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: edgedevice-sa
@@ -619,8 +624,3 @@ subjects:
   - kind: ServiceAccount
     name: edgedevice-sa
     namespace: deviceshifu
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: shifu-service
