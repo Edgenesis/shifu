@@ -5,6 +5,7 @@ WORKDIR /mockserver
 COPY examples/telemetryservice/mockserver/server.go /mockserver/server.go
 COPY go.mod go.mod
 COPY go.sum go.sum
+COPY pkg/logger pkg/logger
 
 RUN go mod download -x
 

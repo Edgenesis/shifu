@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
-	"k8s.io/klog/v2"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 func main() {
@@ -21,7 +21,7 @@ func main() {
 
 func instructionHandler(functionName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		klog.Infof("Handling: %v", functionName)
+		logger.Infof("Handling: %v", functionName)
 		switch functionName {
 		case "get_position":
 			rand.Seed(time.Now().UnixNano())
