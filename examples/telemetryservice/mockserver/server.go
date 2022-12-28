@@ -12,7 +12,7 @@ import (
 	"time"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
-	"k8s.io/klog"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 var (
@@ -24,7 +24,7 @@ var (
 func main() {
 	client, err := connectToMQTT(serverAddress)
 	if err != nil {
-		klog.Errorf("Error when connect to mqtt server")
+		logger.Errorf("Error when connect to mqtt server")
 	}
 	subTopic(client)
 
@@ -32,10 +32,10 @@ func main() {
 
 	mux.HandleFunc("/", GetLatestData)
 
-	klog.Infof("Client listening at %v", clientAddress)
+	logger.Infof("Client listening at %v", clientAddress)
 	err = http.ListenAndServe(clientAddress, mux)
 	if err != nil {
-		klog.Errorf("Error when server running, errors: %v", err)
+		logger.Errorf("Error when server running, errors: %v", err)
 	}
 }
 
@@ -51,13 +51,13 @@ func subTopic(client *mqtt.Client) {
 	token := (*client).Subscribe("/test", 1, nil)
 	token.Wait()
 	if token.Error() != nil {
-		klog.Fatalf("Error when sub to topic,error: %v", token.Error().Error())
+		logger.Fatalf("Error when sub to topic,error: %v", token.Error().Error())
 	}
-	klog.Infof("Subscribed to topic: /test")
+	logger.Infof("Subscribed to topic: /test")
 }
 
 var messageSubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	klog.Infof("%v", string(msg.Payload()))
+	logger.Infof("%v", string(msg.Payload()))
 	tmpMessage = string(msg.Payload())
 }
 
@@ -74,7 +74,7 @@ func connectToMQTT(address string) (*mqtt.Client, error) {
 		opts.OnConnectionLost = connectLostHandler
 		client = mqtt.NewClient(opts)
 		if token := client.Connect(); token.Wait() && token.Error() != nil {
-			klog.Errorf("Error when connect to server error: %v", token.Error())
+			logger.Errorf("Error when connect to server error: %v", token.Error())
 			continue
 		}
 		break
@@ -84,9 +84,9 @@ func connectToMQTT(address string) (*mqtt.Client, error) {
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	klog.Infof("Connected")
+	logger.Infof("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	klog.Infof("Connect lost: %v", err)
+	logger.Infof("Connect lost: %v", err)
 }

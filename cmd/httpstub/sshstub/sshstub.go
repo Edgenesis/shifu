@@ -8,8 +8,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/edgenesis/shifu/pkg/logger"
+
 	"golang.org/x/crypto/ssh"
-	"k8s.io/klog/v2"
 )
 
 // Get the required configuration from the environment variables
@@ -22,34 +23,34 @@ var (
 
 func init() {
 	if privateSSHKeyFile == "" {
-		klog.Fatalf("SSH Keyfile needs to be specified")
+		logger.Fatalf("SSH Keyfile needs to be specified")
 	}
 
 	if driverHTTPPort == "" {
 		driverHTTPPort = "11112"
-		klog.Infof("No HTTP Port specified for driver, default to %v", driverHTTPPort)
+		logger.Infof("No HTTP Port specified for driver, default to %v", driverHTTPPort)
 	}
 
 	if sshExecTimeoutSecond == "" {
 		sshExecTimeoutSecond = "5"
-		klog.Infof("No SSH exec timeout specified for driver, default to %v seconds", sshExecTimeoutSecond)
+		logger.Infof("No SSH exec timeout specified for driver, default to %v seconds", sshExecTimeoutSecond)
 	}
 
 	if sshUser == "" {
 		sshUser = "root"
-		klog.Infof("No SSH user specified for driver, default to %v", sshUser)
+		logger.Infof("No SSH user specified for driver, default to %v", sshUser)
 	}
 }
 
 func main() {
 	key, err := os.ReadFile(privateSSHKeyFile)
 	if err != nil {
-		klog.Fatalf("unable to read private key: %v", err)
+		logger.Fatalf("unable to read private key: %v", err)
 	}
 
 	signer, err := ssh.ParsePrivateKey(key)
 	if err != nil {
-		klog.Fatalf("unable to parse private key: %v", err)
+		logger.Fatalf("unable to parse private key: %v", err)
 	}
 
 	config := &ssh.ClientConfig{
@@ -63,21 +64,21 @@ func main() {
 
 	sshClient, err := ssh.Dial("tcp", "localhost:22", config)
 	if err != nil {
-		klog.Fatalf("unable to connect: %v", err)
+		logger.Fatalf("unable to connect: %v", err)
 	}
 	defer sshClient.Close()
-	klog.Infof("Driver SSH established")
+	logger.Infof("Driver SSH established")
 
 	sshListener, err := sshClient.Listen("tcp", "localhost:"+driverHTTPPort)
 	if err != nil {
-		klog.Fatalf("unable to register tcp forward: %v", err)
+		logger.Fatalf("unable to register tcp forward: %v", err)
 	}
 	defer sshListener.Close()
-	klog.Infof("Driver HTTP listener established")
+	logger.Infof("Driver HTTP listener established")
 
 	err = http.Serve(sshListener, httpCmdlinePostHandler(sshClient))
 	if err != nil {
-		klog.Errorf("cannot start server, error: %v", err)
+		logger.Errorf("cannot start server, error: %v", err)
 	}
 }
 
@@ -88,7 +89,7 @@ func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 	return func(resp http.ResponseWriter, req *http.Request) {
 		session, err := sshConnection.NewSession()
 		if err != nil {
-			klog.Fatalf("Failed to create session: %v", err)
+			logger.Fatalf("Failed to create session: %v", err)
 		}
 
 		defer session.Close()
@@ -98,19 +99,19 @@ func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 		}
 
 		cmdString := "timeout " + sshExecTimeoutSecond + " " + string(httpCommand)
-		klog.Infof("running command: %v", cmdString)
+		logger.Infof("running command: %v", cmdString)
 		var stdout bytes.Buffer
 		var stderr bytes.Buffer
 		session.Stdout = &stdout
 		session.Stderr = &stderr
 		if err := session.Run(cmdString); err != nil {
-			klog.Errorf("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stderr.String(), stdout.String())
+			logger.Errorf("Failed to run cmd: %v\n stderr: %v \n stdout: %v", cmdString, stderr.String(), stdout.String())
 			resp.WriteHeader(http.StatusBadRequest)
 			_, _ = resp.Write(append(stderr.Bytes(), stdout.Bytes()...))
 			return
 		}
 
-		klog.Infof("cmd: %v success", cmdString)
+		logger.Infof("cmd: %v success", cmdString)
 		resp.WriteHeader(http.StatusOK)
 		_, _ = resp.Write(stdout.Bytes())
 	}

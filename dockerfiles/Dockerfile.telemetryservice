@@ -8,6 +8,7 @@ ENV GO111MODULE=on
 COPY go.mod go.mod
 COPY go.sum go.sum
 COPY pkg/k8s pkg/k8s
+COPY pkg/logger pkg/logger
 COPY cmd/telemetryservice cmd/telemetryservice
 COPY pkg/telemetryservice pkg/telemetryservice
 COPY pkg/deviceshifu/unitest pkg/deviceshifu/unitest 
