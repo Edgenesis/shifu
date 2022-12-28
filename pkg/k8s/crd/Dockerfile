@@ -17,6 +17,9 @@ COPY pkg/k8s/crd/main.go main.go
 COPY pkg/k8s/crd/usermetrics pkg/k8s/crd/usermetrics
 COPY pkg/k8s/api pkg/k8s/api
 COPY pkg/k8s/controllers pkg/k8s/controllers
+COPY pkg/logger pkg/logger
+
+
 
 # Build
 ARG TARGETOS
