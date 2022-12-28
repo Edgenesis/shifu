@@ -2,7 +2,7 @@ package utils
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -40,7 +40,7 @@ func GetPasswordFromSecret(name string) (string, error) {
 	}
 	pwd, exist := secret.Data["password"]
 	if !exist {
-		return "", errors.New("the 'password' field not found in telemetry secret")
+		return "", fmt.Errorf("the 'password' field not found in telemetry secret")
 	}
 	return string(pwd), nil
 }

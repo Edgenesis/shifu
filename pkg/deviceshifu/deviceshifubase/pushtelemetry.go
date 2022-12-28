@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	v1 "k8s.io/api/core/v1"
@@ -120,7 +119,7 @@ func getPasswordFromSecret(c *rest.RESTClient, name, ns string) (string, error) 
 	}
 	pwd, exist := secret.Data["password"]
 	if !exist {
-		return "", errors.New("the 'password' field not found in telemetry secret")
+		return "", fmt.Errorf("the 'password' field not found in telemetry secret")
 	}
 	return string(pwd), nil
 }
