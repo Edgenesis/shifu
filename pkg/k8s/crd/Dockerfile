@@ -19,8 +19,6 @@ COPY pkg/k8s/api pkg/k8s/api
 COPY pkg/k8s/controllers pkg/k8s/controllers
 COPY pkg/logger pkg/logger
 
-
-
 # Build
 ARG TARGETOS
 ARG TARGETARCH

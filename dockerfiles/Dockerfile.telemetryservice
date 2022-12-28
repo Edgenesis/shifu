@@ -11,7 +11,6 @@ COPY pkg/k8s pkg/k8s
 COPY cmd/telemetryservice cmd/telemetryservice
 COPY pkg/telemetryservice pkg/telemetryservice
 COPY pkg/deviceshifu/unitest pkg/deviceshifu/unitest 
-COPY pkg/logger pkg/logger
 
 RUN go mod download -x
 
