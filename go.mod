@@ -21,7 +21,6 @@ require (
 	github.com/taosdata/driver-go/v3 v3.0.4
 	golang.org/x/crypto v0.4.0
 	k8s.io/klog v1.0.0
-	k8s.io/klog/v2 v2.80.1
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
 	sigs.k8s.io/controller-runtime v0.14.1
 )
@@ -30,6 +29,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
+	k8s.io/klog/v2 v2.80.1 // indirect
 )
 
 require (
@@ -77,7 +77,7 @@ require (
 	go.uber.org/atomic v1.9.0 // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.24.0
-	golang.org/x/net v0.4.0
+	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20220223155221-ee480838109b // indirect
 	golang.org/x/sync v0.0.0-20220722155255-886fb9371eb4 // indirect
 	golang.org/x/sys v0.3.0 // indirect

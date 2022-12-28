@@ -8,11 +8,11 @@ import (
 
 	plc4go "github.com/apache/plc4x/plc4go/pkg/api"
 	"github.com/apache/plc4x/plc4go/pkg/api/drivers"
+	"github.com/apache/plc4x/plc4go/pkg/api/model"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"golang.org/x/net/context"
-	"k8s.io/klog/v2"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 // DeviceShifu deviceshifu and socketConnection for Socket
@@ -70,7 +70,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 		// Check if something went wrong
 		if connectionResult.GetErr() != nil {
-			klog.Errorf("Error connecting to PLC: %s", connectionResult.GetErr().Error())
+			logger.Errorf("Error connecting to PLC: %s", connectionResult.GetErr().Error())
 			return nil, err
 		}
 
@@ -78,13 +78,13 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		connection := connectionResult.GetConnection()
 
 		if !connection.IsConnected() {
-			klog.Errorf("Cannot Connected to %v", *base.EdgeDevice.Spec.Address)
+			logger.Errorf("Cannot Connected to %v", *base.EdgeDevice.Spec.Address)
 			return nil, fmt.Errorf("Cannot Connect to %v", *base.EdgeDevice.Spec.Address)
 		}
 
 		ds.conn = &connectionResult
 
-		klog.Infof("Connected to '%v'", *base.EdgeDevice.Spec.Address)
+		logger.Infof("Connected to '%v'", *base.EdgeDevice.Spec.Address)
 		mux.HandleFunc("/read", ds.readCommandHandlerPlc4x())
 		mux.HandleFunc("/write", ds.writeCommandHandlerPlc4x())
 
@@ -101,7 +101,7 @@ func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 
 		params, err := utils.ParseHTTPGetParams(r.URL.String())
 		if err != nil {
-			klog.Errorf("Error when parse request url, error: %v", err)
+			logger.Errorf("Error when parse request url, error: %v", err)
 			http.Error(w, "Error when parse request url, error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
@@ -114,17 +114,22 @@ func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 
 		plc4xRequest, err := request.Build()
 		if err != nil {
-			klog.Errorf("Error when build request by params, error: %v", err)
+			logger.Errorf("Error when build request by params, error: %v", err)
 			http.Error(w, "Error when build request with params, error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*timeout)
-		defer cancel()
-		resultData := <-plc4xRequest.ExecuteWithContext(ctx)
+		var resultData model.PlcWriteRequestResult
+		select {
+		case resultData = <-plc4xRequest.Execute():
+		case <-time.After(time.Second * timeout):
+			logger.Errorf("Timeout when send request to device")
+			http.Error(w, "Timeout when send request to device", http.StatusInternalServerError)
+			return
+		}
 
 		if err := resultData.GetErr(); err != nil {
-			klog.Errorf("Got Error on execute request, error: %v", err)
+			logger.Errorf("Got Error on execute request, error: %v", err)
 			http.Error(w, "Got Error on execute request, error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -133,18 +138,18 @@ func (ds *DeviceShifu) writeCommandHandlerPlc4x() http.HandlerFunc {
 
 func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		klog.Infof("Url: %v", r.RequestURI)
+		logger.Infof("Url: %v", r.RequestURI)
 		timeout := time.Duration(*ds.base.DeviceShifuConfig.Instructions.InstructionSettings.DefaultTimeoutSeconds)
 
 		params, err := utils.ParseHTTPGetParams(r.RequestURI)
 		if err != nil {
-			klog.Errorf("Error when parse request url, error: %v", err)
+			logger.Errorf("Error when parse request url, error: %v", err)
 			http.Error(w, "Error when parse request url, error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 		request := (*ds.conn).GetConnection().ReadRequestBuilder()
 
-		klog.Infof("Params: %v", params)
+		logger.Infof("Params: %v", params)
 
 		for key := range params {
 			fieldId := fmt.Sprintf("field_%s", key)
@@ -153,17 +158,22 @@ func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 
 		plc4xRequest, err := request.Build()
 		if err != nil {
-			klog.Errorf("Error when build request by params, error: %v", err)
+			logger.Errorf("Error when build request by params, error: %v", err)
 			http.Error(w, "Error when build request with params, error: "+err.Error(), http.StatusBadRequest)
 			return
 		}
 
-		ctx, cancel := context.WithTimeout(context.Background(), time.Second*timeout)
-		defer cancel()
-		resultData := <-plc4xRequest.ExecuteWithContext(ctx)
+		var resultData model.PlcReadRequestResult
+		select {
+		case resultData = <-plc4xRequest.Execute():
+		case <-time.After(time.Second * timeout):
+			logger.Errorf("Timeout when send request to device")
+			http.Error(w, "Timeout when send request to device", http.StatusInternalServerError)
+			return
+		}
 
 		if err := resultData.GetErr(); err != nil {
-			klog.Errorf("Got Error on execute request, error: %v", err)
+			logger.Errorf("Got Error on execute request, error: %v", err)
 			http.Error(w, "Got Error on execute request, error: "+err.Error(), http.StatusInternalServerError)
 			return
 		}
@@ -176,14 +186,14 @@ func (ds *DeviceShifu) readCommandHandlerPlc4x() http.HandlerFunc {
 
 		result, err := json.Marshal(resultMap)
 		if err != nil {
-			klog.Errorf("Error when marshal result to []byte, error: ", err)
+			logger.Errorf("Error when marshal result to []byte, error: ", err)
 			http.Error(w, "Error when marshal result to []byte, error:"+err.Error(), http.StatusInternalServerError)
 			return
 		}
 
 		_, err = w.Write(result)
 		if err != nil {
-			klog.Errorf("Error when write data into response, error: %v", err)
+			logger.Errorf("Error when write data into response, error: %v", err)
 			http.Error(w, "Error when write data into response, error: "+err.Error(), http.StatusInternalServerError)
 		}
 	}

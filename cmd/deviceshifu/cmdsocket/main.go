@@ -5,9 +5,9 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifusocket"
+	"github.com/edgenesis/shifu/pkg/logger"
 
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog/v2"
 )
 
 func main() {
@@ -27,7 +27,7 @@ func main() {
 	}
 
 	if err = ds.Start(wait.NeverStop); err != nil {
-		klog.Errorf("Error starting deviceshifu: %v", err)
+		logger.Errorf("Error starting deviceshifu: %v", err)
 		panic(err.Error())
 	}
 
