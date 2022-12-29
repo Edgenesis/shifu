@@ -3,6 +3,7 @@ WORKDIR /shifu
 
 ENV GO111MODULE=on
 COPY examples/socketDeviceShifu/server/server.go server.go
+COPY pkg/logger pkg/logger
 
 # Build the Go app
 ARG TARGETOS

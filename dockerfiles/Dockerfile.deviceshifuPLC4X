@@ -10,6 +10,7 @@ COPY go.sum go.sum
 COPY pkg/k8s pkg/k8s
 COPY cmd/deviceshifu/cmdplc4x cmd/deviceshifu/cmdplc4x
 COPY pkg/deviceshifu pkg/deviceshifu
+COPY pkg/logger pkg/logger
 
 RUN apt-get update
 RUN apt-get install -y libpcap-dev

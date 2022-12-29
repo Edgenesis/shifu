@@ -11,6 +11,7 @@ COPY go.sum go.sum
 COPY pkg/k8s pkg/k8s
 COPY cmd/deviceshifu/cmdopcua cmd/deviceshifu/cmdopcua
 COPY pkg/deviceshifu pkg/deviceshifu
+COPY pkg/logger pkg/logger
 
 RUN go mod download
 
