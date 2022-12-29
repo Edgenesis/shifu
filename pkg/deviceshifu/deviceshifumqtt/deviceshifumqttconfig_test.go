@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"k8s.io/klog/v2"
+	"github.com/edgenesis/shifu/pkg/logger"
 
 	"gopkg.in/yaml.v3"
 )
@@ -43,8 +43,18 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	}
 
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
-		"get_reading": nil,
-		"get_status":  nil,
+		"get_topicmsg1": {
+			DeviceShifuInstructionProperties: nil,
+			DeviceShifuProtocolProperties: map[string]string{
+				"MQTTTopic": "/test/test1",
+			},
+		},
+		"get_topicmsg2": {
+			DeviceShifuInstructionProperties: nil,
+			DeviceShifuProtocolProperties: map[string]string{
+				"MQTTTopic": "/test/test2",
+			},
+		},
 		"set_reading": {
 			DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
 				{
@@ -55,8 +65,18 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 			},
 			DeviceShifuProtocolProperties: nil,
 		},
-		"start": nil,
-		"stop":  nil,
+		"get_topicmsg3": {
+			DeviceShifuInstructionProperties: nil,
+			DeviceShifuProtocolProperties: map[string]string{
+				"MQTTTopic": "/test/test3",
+			},
+		},
+		"get_topicmsg4": {
+			DeviceShifuInstructionProperties: nil,
+			DeviceShifuProtocolProperties: map[string]string{
+				"MQTTTopic": "/test/test4",
+			},
+		},
 	}
 
 	var mockDeviceTelemetries = &deviceshifubase.DeviceShifuTelemetries{
@@ -96,7 +116,7 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 	var cmData ConfigMapData
 	err = yaml.Unmarshal(snippetFile, &cmData)
 	if err != nil {
-		klog.Fatalf("Error parsing ConfigMap %v, error: %v", fileName, err)
+		logger.Fatalf("Error parsing ConfigMap %v, error: %v", fileName, err)
 		return err
 	}
 
@@ -108,14 +128,14 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 
 	err = os.MkdirAll(MockDeviceConfigFolder, os.ModePerm)
 	if err != nil {
-		klog.Fatalf("Error creating path for: %v", MockDeviceConfigFolder)
+		logger.Fatalf("Error creating path for: %v", MockDeviceConfigFolder)
 		return err
 	}
 
 	for outputDir, data := range MockDeviceConfigMapping {
 		err = os.WriteFile(outputDir, []byte(data), MockDeviceWritFilePermission)
 		if err != nil {
-			klog.Fatalf("Error creating configFile for: %v", outputDir)
+			logger.Fatalf("Error creating configFile for: %v", outputDir)
 			return err
 		}
 	}

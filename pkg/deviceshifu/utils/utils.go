@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strings"
 
-	"k8s.io/klog/v2"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 // ParseHTTPGetParams Parse Params from HTTP get request
@@ -14,7 +14,7 @@ import (
 // for url.Query() cannot parse symbol like % + and etc
 func ParseHTTPGetParams(urlStr string) (map[string]string, error) {
 	var paramStr string
-	klog.Infof("url: ", urlStr)
+	logger.Infof("url: ", urlStr)
 	url := strings.Split(urlStr, "?")
 
 	if len(url) <= 0 {

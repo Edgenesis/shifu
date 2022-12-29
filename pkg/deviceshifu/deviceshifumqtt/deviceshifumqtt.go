@@ -10,27 +10,29 @@ import (
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-	"k8s.io/klog/v2"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 // DeviceShifu implemented from deviceshifuBase
 type DeviceShifu struct {
-	base *deviceshifubase.DeviceShifuBase
+	base             *deviceshifubase.DeviceShifuBase
+	mqttInstructions *MQTTInstructions
 }
 
 // HandlerMetaData MetaData for EdgeDevice Setting
 type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
+	instruction    string
+	properties     *MQTTProtocolProperty
 }
 
 // Str and default value
 const (
-	MqttDataEndpoint          string = "mqtt_data"
-	DefaultUpdateIntervalInMS int64  = 3000
+	DefaultUpdateIntervalInMS int64 = 3000
 )
 
 var (
@@ -48,6 +50,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if err != nil {
 		return nil, err
 	}
+
+	mqttInstructions := CreateMQTTInstructions(&base.DeviceShifuConfig.Instructions)
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
@@ -68,7 +72,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 
 			opts := mqtt.NewClientOptions()
-			opts.AddBroker(fmt.Sprintf("tcp://%s", mqttServerAddress))
+			opts.AddBroker(fmt.Sprintf("tcp://%s", *base.EdgeDevice.Spec.Address))
 			opts.SetClientID(base.EdgeDevice.Name)
 			opts.SetDefaultPublishHandler(messagePubHandler)
 			opts.OnConnect = connectHandler
@@ -77,53 +81,61 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			if token := client.Connect(); token.Wait() && token.Error() != nil {
 				panic(token.Error())
 			}
-			MQTTTopic = *mqttSetting.MQTTTopic
-			sub(client, MQTTTopic)
 
-			HandlerMetaData := &HandlerMetaData{
-				base.EdgeDevice.Spec,
+			for instruction, properties := range mqttInstructions.Instructions {
+				MQTTTopic = properties.MQTTProtocolProperty.MQTTTopic
+				sub(client, MQTTTopic)
+
+				HandlerMetaData := &HandlerMetaData{
+					base.EdgeDevice.Spec,
+					instruction,
+					properties.MQTTProtocolProperty,
+				}
+
+				handler := DeviceCommandHandlerMQTT{HandlerMetaData}
+				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 			}
-
-			handler := DeviceCommandHandlerMQTT{HandlerMetaData}
-			mux.HandleFunc("/"+MqttDataEndpoint, handler.commandHandleFunc())
 		}
 	}
 	deviceshifubase.BindDefaultHandler(mux)
 
-	ds := &DeviceShifu{base: base}
+	ds := &DeviceShifu{
+		base:             base,
+		mqttInstructions: mqttInstructions,
+	}
 
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil
 }
 
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
-	klog.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
+	logger.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	rawMqttMessageStr := string(msg.Payload())
-	_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
-	klog.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
+	instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
+	logger.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
-		klog.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
-		mqttMessageStr = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, msg.Topic(), rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+		logger.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
+		mqttMessageInstructionMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawMqttMessageStr, deviceshifubase.PythonScriptDir)
 	} else {
-		mqttMessageStr = rawMqttMessageStr
+		mqttMessageInstructionMap[msg.Topic()] = rawMqttMessageStr
 	}
-	mqttMessageReceiveTimestamp = time.Now()
-	klog.Infof("MESSAGE_STR updated")
+	mqttMessageReceiveTimestampMap[msg.Topic()] = time.Now()
+	logger.Infof("MESSAGE_STR updated")
 }
 
 var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
-	klog.Infof("Connected")
+	logger.Infof("Connected")
 }
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
-	klog.Infof("Connect lost: %v", err)
+	logger.Infof("Connect lost: %v", err)
 }
 
 func sub(client mqtt.Client, topic string) {
 	// topic := "topic/test"
 	token := client.Subscribe(topic, 1, receiver)
 	token.Wait()
-	klog.Infof("Subscribed to topic: %s", topic)
+	logger.Infof("Subscribed to topic: %s", topic)
 }
 
 func receiver(client mqtt.Client, msg mqtt.Message) {
@@ -158,8 +170,8 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 
 		if reqType == http.MethodGet {
 			returnMessage := ReturnBody{
-				MQTTMessage:   mqttMessageStr,
-				MQTTTimestamp: mqttMessageReceiveTimestamp.String(),
+				MQTTMessage:   mqttMessageInstructionMap[handler.HandlerMetaData.properties.MQTTTopic],
+				MQTTTimestamp: mqttMessageReceiveTimestampMap[handler.HandlerMetaData.properties.MQTTTopic].String(),
 			}
 
 			w.WriteHeader(http.StatusOK)
@@ -167,7 +179,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			err := json.NewEncoder(w).Encode(returnMessage)
 			if err != nil {
 				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
-				klog.Errorf("Cannot Encode message to json")
+				logger.Errorf("Cannot Encode message to json")
 				return
 			}
 		} else if reqType == http.MethodPost {
@@ -179,16 +191,17 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			}
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
-				klog.Errorf("Error when Read Data From Body, error: %v", err)
+				logger.Errorf("Error when Read Data From Body, error: %v", err)
 				http.Error(w, err.Error(), http.StatusBadRequest)
 				return
 			}
 
+			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
 			requestBody := RequestBody(body)
-			klog.Infof("requestBody: %v", requestBody)
+			logger.Infof("requestBody: %v", requestBody)
 
 			// TODO handle error asynchronously
-			token := client.Publish(MQTTTopic, 1, false, body)
+			token := client.Publish(mqttTopic, 1, false, body)
 			if token.Error() != nil {
 				klog.Errorf("Error when publish Data to MQTTServer,%v", token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
@@ -202,11 +215,19 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			return
 		} else {
 			http.Error(w, "must be GET or POST method", http.StatusBadRequest)
-			klog.Errorf("Request type %v is not supported yet!", reqType)
+			logger.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
 
 	}
+}
+
+func (ds *DeviceShifu) getMQTTTopicFromInstructionName(instructionName string) (string, error) {
+	if instructionProperties, exists := ds.mqttInstructions.Instructions[instructionName]; exists {
+		return instructionProperties.MQTTProtocolProperty.MQTTTopic, nil
+	}
+
+	return "", fmt.Errorf("Instruction %v not found in list of deviceshifu instructions", instructionName)
 }
 
 // TODO: update configs
@@ -227,12 +248,30 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds = &telemetryUpdateIntervalInMilliseconds
 			}
 
-			nowTime := time.Now()
-			if int64(nowTime.Sub(mqttMessageReceiveTimestamp).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
-				return true, nil
+			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
+			for telemetry, telemetryProperties := range telemetries {
+				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
+					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+				}
+
+				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
+				mqttTopic, err := ds.getMQTTTopicFromInstructionName(instruction)
+				if err != nil {
+					logger.Errorf("%v", err.Error())
+					return false, err
+				}
+
+				// use mqtttopic to get the mqttMessageReceiveTimestampMap
+				// determine whether the message interval exceed DeviceShifuTelemetryUpdateIntervalInMilliseconds
+				// return true if there is a topic message interval is normal
+				// return false if the time interval of all topics is abnormal
+				nowTime := time.Now()
+				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqttTopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
+					return true, nil
+				}
 			}
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
+			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
 		}
 	}
