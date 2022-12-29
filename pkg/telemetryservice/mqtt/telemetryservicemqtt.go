@@ -12,6 +12,8 @@ import (
 	"k8s.io/klog"
 )
 
+const PasswordSecretField = "password"
+
 func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -86,11 +88,16 @@ func injectSecret(setting *v1alpha1.MQTTSetting) {
 		klog.Warning("empty secret setting.")
 		return
 	}
-	pwd, err := utils.GetPasswordFromSecret(*setting.MQTTServerSecret)
+	secret, err := utils.GetSecret(*setting.MQTTServerSecret)
 	if err != nil {
 		klog.Errorf("unable to get secret for telemetry %v, error: %v", *setting.MQTTServerSecret, err)
 		return
 	}
-	*setting.MQTTServerSecret = pwd
-	klog.Info("MQTTSetting.Secret load from secret")
+	var exist bool
+	*setting.MQTTServerSecret, exist = secret[PasswordSecretField]
+	if !exist {
+		klog.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
+	} else {
+		klog.Info("MQTTServerSecret load from secret")
+	}
 }

@@ -13,6 +13,11 @@ import (
 	"k8s.io/klog"
 )
 
+const (
+	PasswordSecretField = "password"
+	UsernameSecretField = "username"
+)
+
 func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
@@ -55,11 +60,22 @@ func injectSecret(setting *v1alpha1.SQLConnectionSetting) {
 		klog.Warning("empty secret setting.")
 		return
 	}
-	pwd, err := utils.GetPasswordFromSecret(*setting.Secret)
+	secret, err := utils.GetSecret(*setting.Secret)
 	if err != nil {
 		klog.Errorf("unable to get secret for telemetry %v, error: %v", *setting.Secret, err)
 		return
 	}
-	*setting.Secret = pwd
-	klog.Info("SQLSetting.Secret load from secret")
+	var exist bool
+	*setting.Secret, exist = secret[PasswordSecretField]
+	if !exist {
+		klog.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
+	} else {
+		klog.Info("SQLSetting.Secret load from secret")
+	}
+	*setting.UserName, exist = secret[UsernameSecretField]
+	if !exist {
+		klog.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
+	} else {
+		klog.Info("SQLSetting.UserName load from secret")
+	}
 }

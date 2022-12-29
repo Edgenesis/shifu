@@ -2,7 +2,6 @@ package utils
 
 import (
 	"context"
-	"fmt"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
@@ -26,21 +25,21 @@ func initClient() error {
 	return nil
 }
 
-func GetPasswordFromSecret(name string) (string, error) {
+func GetSecret(name string) (map[string]string, error) {
 	if clientSet == nil {
 		err := initClient()
 		if err != nil {
 			klog.Errorf("Can't init k8s client: %v", err)
-			return "", err
+			return nil, err
 		}
 	}
 	secret, err := clientSet.CoreV1().Secrets(ns).Get(context.TODO(), name, metav1.GetOptions{})
 	if err != nil {
-		return "", err
+		return nil, err
 	}
-	pwd, exist := secret.Data["password"]
-	if !exist {
-		return "", fmt.Errorf("the 'password' field not found in telemetry secret")
+	res := make(map[string]string)
+	for k, v := range secret.Data {
+		res[k] = string(v)
 	}
-	return string(pwd), nil
+	return res, nil
 }

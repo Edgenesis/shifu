@@ -15,6 +15,12 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 )
 
+const (
+	PasswordSecretField = "password"
+	UsernameSecretField = "username"
+	SecretResource      = "secrets"
+)
+
 func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {
 	if tss.ServiceSettings == nil {
 		return fmt.Errorf("empty telemetryServiceSpec")
@@ -111,17 +117,17 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 	return nil
 }
 
-func getPasswordFromSecret(c *rest.RESTClient, name, ns string) (string, error) {
+func getSecret(c *rest.RESTClient, name, ns string) (map[string]string, error) {
 	secret := v1.Secret{}
-	secretPath := fmt.Sprintf("/api/v1/namespaces/%s/%s/%s", ns, "secrets", name)
+	secretPath := fmt.Sprintf("/api/v1/namespaces/%s/%s/%s", ns, SecretResource, name)
 	if err := c.Get().AbsPath(secretPath).Do(context.TODO()).Into(&secret); err != nil {
-		return "", err
+		return nil, err
 	}
-	pwd, exist := secret.Data["password"]
-	if !exist {
-		return "", fmt.Errorf("the 'password' field not found in telemetry secret")
+	res := make(map[string]string)
+	for k, v := range secret.Data {
+		res[k] = string(v)
 	}
-	return string(pwd), nil
+	return res, nil
 }
 
 func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) {
@@ -133,13 +139,25 @@ func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) 
 		zlog.Info("service setting is not HTTP, skip secret injection")
 		return
 	}
-	pwd, err := getPasswordFromSecret(c, ts.Name, ns)
+	// we use the telemetry name to find the secret
+	secret, err := getSecret(c, ts.Name, ns)
 	if err != nil {
 		zlog.Errorf("unable to get secret for telemetry %v, error: %v, use plaintext password from telemetry setting", ts.Name, err)
 		return
 	}
-	*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
-	zlog.Info("HTTPSetting.Password load from secret")
+	var exist bool
+	*ts.Spec.ServiceSettings.HTTPSetting.Password, exist = secret[PasswordSecretField]
+	if !exist {
+		zlog.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
+	} else {
+		zlog.Info("HTTPSetting.Password load from secret")
+	}
+	*ts.Spec.ServiceSettings.HTTPSetting.Username, exist = secret[UsernameSecretField]
+	if !exist {
+		zlog.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
+	} else {
+		zlog.Info("HTTPSetting.Username load from secret")
+	}
 }
 
 func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.TelemetryServiceSpec, error) {
