@@ -20,8 +20,6 @@ require (
 	github.com/stretchr/testify v1.8.1
 	github.com/taosdata/driver-go/v3 v3.0.4
 	golang.org/x/crypto v0.4.0
-	k8s.io/klog v1.0.0
-	k8s.io/klog/v2 v2.80.1
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
 	sigs.k8s.io/controller-runtime v0.14.1
 )
@@ -30,6 +28,7 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
+	k8s.io/klog/v2 v2.80.1 // indirect
 )
 
 require (

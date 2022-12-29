@@ -6,6 +6,7 @@ COPY pkg/k8s pkg/k8s
 COPY examples/telemetryservice/mockclient/client.go /mockclient/client.go
 COPY go.mod go.mod
 COPY go.sum go.sum
+COPY pkg/logger pkg/logger
 
 RUN go mod download -x
 
