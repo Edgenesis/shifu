@@ -81,23 +81,23 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 
 func injectSecret(setting *v1alpha1.MQTTSetting) {
 	if setting == nil {
-		klog.Warning("empty telemetry service setting.")
+		logger.Warn("empty telemetry service setting.")
 		return
 	}
 	if setting.MQTTServerSecret == nil {
-		klog.Warning("empty secret setting.")
+		logger.Warn("empty secret setting.")
 		return
 	}
 	secret, err := utils.GetSecret(*setting.MQTTServerSecret)
 	if err != nil {
-		klog.Errorf("unable to get secret for telemetry %v, error: %v", *setting.MQTTServerSecret, err)
+		logger.Errorf("unable to get secret for telemetry %v, error: %v", *setting.MQTTServerSecret, err)
 		return
 	}
 	var exist bool
 	*setting.MQTTServerSecret, exist = secret[PasswordSecretField]
 	if !exist {
-		klog.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
+		logger.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
 	} else {
-		klog.Info("MQTTServerSecret load from secret")
+		logger.Info("MQTTServerSecret load from secret")
 	}
 }

@@ -2,10 +2,10 @@ package utils
 
 import (
 	"context"
+	"github.com/edgenesis/shifu/pkg/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-	"k8s.io/klog"
 	"os"
 )
 
@@ -29,7 +29,7 @@ func GetSecret(name string) (map[string]string, error) {
 	if clientSet == nil {
 		err := initClient()
 		if err != nil {
-			klog.Errorf("Can't init k8s client: %v", err)
+			logger.Errorf("Can't init k8s client: %v", err)
 			return nil, err
 		}
 	}

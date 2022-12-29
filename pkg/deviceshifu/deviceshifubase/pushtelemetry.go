@@ -133,31 +133,31 @@ func getSecret(c *rest.RESTClient, name, ns string) (map[string]string, error) {
 
 func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) {
 	if ts.Spec.ServiceSettings == nil {
-		zlog.Warn("empty telemetry service setting.")
+		logger.Warn("empty telemetry service setting.")
 		return
 	}
 	if ts.Spec.ServiceSettings.HTTPSetting == nil {
-		zlog.Info("service setting is not HTTP, skip secret injection")
+		logger.Info("service setting is not HTTP, skip secret injection")
 		return
 	}
 	// we use the telemetry name to find the secret
 	secret, err := getSecret(c, ts.Name, ns)
 	if err != nil {
-		zlog.Errorf("unable to get secret for telemetry %v, error: %v, use plaintext password from telemetry setting", ts.Name, err)
+		logger.Errorf("unable to get secret for telemetry %v, error: %v, use plaintext password from telemetry setting", ts.Name, err)
 		return
 	}
 	var exist bool
 	*ts.Spec.ServiceSettings.HTTPSetting.Password, exist = secret[PasswordSecretField]
 	if !exist {
-		zlog.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
+		logger.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
 	} else {
-		zlog.Info("HTTPSetting.Password load from secret")
+		logger.Info("HTTPSetting.Password load from secret")
 	}
 	*ts.Spec.ServiceSettings.HTTPSetting.Username, exist = secret[UsernameSecretField]
 	if !exist {
-		zlog.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
+		logger.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
 	} else {
-		zlog.Info("HTTPSetting.Username load from secret")
+		logger.Info("HTTPSetting.Username load from secret")
 	}
 }
 

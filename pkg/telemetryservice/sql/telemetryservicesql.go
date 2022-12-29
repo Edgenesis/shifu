@@ -53,29 +53,29 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 func injectSecret(setting *v1alpha1.SQLConnectionSetting) {
 	if setting == nil {
-		klog.Warning("empty telemetry service setting.")
+		logger.Warn("empty telemetry service setting.")
 		return
 	}
 	if setting.Secret == nil {
-		klog.Warning("empty secret setting.")
+		logger.Warn("empty secret setting.")
 		return
 	}
 	secret, err := utils.GetSecret(*setting.Secret)
 	if err != nil {
-		klog.Errorf("unable to get secret for telemetry %v, error: %v", *setting.Secret, err)
+		logger.Errorf("unable to get secret for telemetry %v, error: %v", *setting.Secret, err)
 		return
 	}
 	var exist bool
 	*setting.Secret, exist = secret[PasswordSecretField]
 	if !exist {
-		klog.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
+		logger.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
 	} else {
-		klog.Info("SQLSetting.Secret load from secret")
+		logger.Info("SQLSetting.Secret load from secret")
 	}
 	*setting.UserName, exist = secret[UsernameSecretField]
 	if !exist {
-		klog.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
+		logger.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
 	} else {
-		klog.Info("SQLSetting.UserName load from secret")
+		logger.Info("SQLSetting.UserName load from secret")
 	}
 }
