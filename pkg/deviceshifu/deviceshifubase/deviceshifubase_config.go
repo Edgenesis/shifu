@@ -5,6 +5,7 @@ import (
 	"errors"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/imdario/mergo"
 
 	"gopkg.in/yaml.v3"
@@ -125,7 +126,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if driverProperties, ok := cfg[ConfigmapDriverPropertiesStr]; ok {
 		err := yaml.Unmarshal([]byte(driverProperties), &dsc.DriverProperties)
 		if err != nil {
-			zlog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
+			logger.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapDriverPropertiesStr, err)
 			return nil, err
 		}
 	}
@@ -134,7 +135,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if instructions, ok := cfg[ConfigmapInstructionsStr]; ok {
 		err := yaml.Unmarshal([]byte(instructions), &dsc.Instructions)
 		if err != nil {
-			zlog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
+			logger.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
 			return nil, err
 		}
 	}
@@ -142,7 +143,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if telemetries, ok := cfg[ConfigmapTelemetriesStr]; ok {
 		err = yaml.Unmarshal([]byte(telemetries), &dsc.Telemetries)
 		if err != nil {
-			zlog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapTelemetriesStr, err)
+			logger.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapTelemetriesStr, err)
 			return nil, err
 		}
 	}
@@ -150,7 +151,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if customInstructionsPython, ok := cfg[ConfigmapCustomizedInstructionsStr]; ok {
 		err = yaml.Unmarshal([]byte(customInstructionsPython), &dsc.CustomInstructionsPython)
 		if err != nil {
-			zlog.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapCustomizedInstructionsStr, err)
+			logger.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapCustomizedInstructionsStr, err)
 			return nil, err
 		}
 	}
@@ -171,13 +172,13 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *rest.RESTClient, error) {
 	config, err := getRestConfig(edgeDeviceConfig.KubeconfigPath)
 	if err != nil {
-		zlog.Errorf("Error parsing incluster/kubeconfig, error: %v", err.Error())
+		logger.Errorf("Error parsing incluster/kubeconfig, error: %v", err.Error())
 		return nil, nil, err
 	}
 
 	client, err := newEdgeDeviceRestClient(config)
 	if err != nil {
-		zlog.Errorf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
+		logger.Errorf("Error creating EdgeDevice custom REST client, error: %v", err.Error())
 		return nil, nil, err
 	}
 	ed := &v1alpha1.EdgeDevice{}
@@ -188,7 +189,7 @@ func NewEdgeDevice(edgeDeviceConfig *EdgeDeviceConfig) (*v1alpha1.EdgeDevice, *r
 		Do(context.TODO()).
 		Into(ed)
 	if err != nil {
-		zlog.Errorf("Error GET EdgeDevice resource, error: %v", err.Error())
+		logger.Errorf("Error GET EdgeDevice resource, error: %v", err.Error())
 		return nil, nil, err
 	}
 	return ed, client, nil
@@ -206,7 +207,7 @@ func getRestConfig(kubeConfigPath string) (*rest.Config, error) {
 func newEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 	err := v1alpha1.AddToScheme(scheme.Scheme)
 	if err != nil {
-		zlog.Errorf("cannot add to scheme, error: %v", err)
+		logger.Errorf("cannot add to scheme, error: %v", err)
 		return nil, err
 	}
 	crdConfig := config
@@ -225,7 +226,7 @@ func newEdgeDeviceRestClient(config *rest.Config) (*rest.RESTClient, error) {
 // init DeviceShifuConfig With default
 func (dsConfig *DeviceShifuConfig) load() error {
 	if err := dsConfig.DriverProperties.load(); err != nil {
-		zlog.Errorf("Error initializing DriverProperties, error %s", err.Error())
+		logger.Errorf("Error initializing DriverProperties, error %s", err.Error())
 		return err
 	}
 
@@ -233,12 +234,12 @@ func (dsConfig *DeviceShifuConfig) load() error {
 		dsConfig.Telemetries = &DeviceShifuTelemetries{}
 	}
 	if err := dsConfig.Telemetries.load(); err != nil {
-		zlog.Errorf("Error initializing Telemetries, error %s", err.Error())
+		logger.Errorf("Error initializing Telemetries, error %s", err.Error())
 		return err
 	}
 
 	if err := dsConfig.Instructions.load(); err != nil {
-		zlog.Errorf("Error initializing Instructions, error %s", err.Error())
+		logger.Errorf("Error initializing Instructions, error %s", err.Error())
 		return err
 	}
 
@@ -288,7 +289,7 @@ func (telemetries *DeviceShifuTelemetries) load() error {
 		}
 		err := telemetries.DeviceShifuTelemetries[id].load()
 		if err != nil {
-			zlog.Errorf("Error initializing telemetry, error %s", err.Error())
+			logger.Errorf("Error initializing telemetry, error %s", err.Error())
 			return err
 		}
 	}

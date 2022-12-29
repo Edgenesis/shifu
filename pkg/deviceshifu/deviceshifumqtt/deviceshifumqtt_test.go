@@ -5,20 +5,23 @@ import (
 	"fmt"
 	"sync"
 
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	"net/http"
 	"net/http/httptest"
 
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
+
 	"errors"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"github.com/stretchr/testify/assert"
 	"io"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"os"
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/edgenesis/shifu/pkg/logger"
+	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/mochi-co/mqtt/server"
@@ -27,7 +30,6 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"k8s.io/apimachinery/pkg/util/wait"
-	"k8s.io/klog/v2"
 
 	v1 "k8s.io/api/apps/v1"
 )
@@ -39,13 +41,13 @@ const (
 func TestMain(m *testing.M) {
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
 	if err != nil {
-		klog.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
+		logger.Errorf("error when generateConfigmapFromSnippet,err: %v", err)
 		os.Exit(-1)
 	}
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
-		klog.Fatal(err)
+		logger.Fatal(err)
 	}
 }
 
@@ -152,9 +154,9 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 
 	// test post method when MQTTServer connected
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		klog.Errorf("Error when connect to server error: %v", token.Error())
+		logger.Errorf("Error when connect to server error: %v", token.Error())
 	} else {
-		klog.Infof("Connect to %v success!", unitTestServerAddress)
+		logger.Infof("Connect to %v success!", unitTestServerAddress)
 		defer client.Disconnect(0)
 	}
 	ConfigFiniteStateMachine(map[string]string{"abcd": ""})
@@ -184,17 +186,17 @@ func mockMQTTServer(stop <-chan struct{}) {
 	server := server.NewServer(nil)
 	err := server.AddListener(tcp, nil)
 	if err != nil {
-		klog.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
+		logger.Fatalf("Error when Listen at %v, error: %v", unitTestServerAddress, err)
 	}
 
 	err = server.Serve()
 	if err != nil {
-		klog.Fatalf("Error when MQTT Server Serve, error: %v", err)
+		logger.Fatalf("Error when MQTT Server Serve, error: %v", err)
 	}
 
 	<-stop
 	server.Close()
-	klog.Infof("Server Closed")
+	logger.Infof("Server Closed")
 }
 
 func mockRestClient(host string, path string) *rest.RESTClient {
@@ -209,7 +211,7 @@ func mockRestClient(host string, path string) *rest.RESTClient {
 		},
 	)
 	if err != nil {
-		klog.Errorf("mock client for host %s, apipath: %s failed,", host, path)
+		logger.Errorf("mock client for host %s, apipath: %s failed,", host, path)
 		return nil
 	}
 
@@ -226,14 +228,14 @@ func mockDeviceServer(h MockCommandHandler, t *testing.T) *httptest.Server {
 		path := r.URL.Path
 		switch path {
 		case "/testing/apps/v1":
-			klog.Info("ds get testing call, calling the handler server")
+			logger.Info("ds get testing call, calling the handler server")
 			assert.Equal(t, "/testing/apps/v1", path)
 			f := h.commandHandleFunc()
 			f.ServeHTTP(w, r)
 		default:
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			klog.Info("ds default request, path:", path)
+			logger.Info("ds default request, path:", path)
 		}
 	}))
 	return server
@@ -247,10 +249,10 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 		case "/test_instruction":
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			klog.Info("handler get the instruction and executed.")
+			logger.Info("handler get the instruction and executed.")
 		default:
 			w.WriteHeader(http.StatusOK)
-			klog.Info("hs get default request, path:", path)
+			logger.Info("hs get default request, path:", path)
 		}
 
 	}))
