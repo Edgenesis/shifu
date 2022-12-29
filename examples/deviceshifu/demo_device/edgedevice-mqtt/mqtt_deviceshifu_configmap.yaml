@@ -25,3 +25,5 @@ data:
     telemetries:
       device_health:
         properties:
+  mutexInstructions: |
+      testMutexInstruction: "to test"

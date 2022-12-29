@@ -159,7 +159,7 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 	if mutexInstructions, ok := cfg[MutexInstructionsConfigStr]; ok {
 		err = yaml.Unmarshal([]byte(mutexInstructions), &dsc.MutexInstructions)
 		if err != nil {
-			klog.Fatalf("Error parsing %v from ConfigMap, error: %v", MutexInstructionsConfigStr, err)
+			logger.Errorf("Error parsing %v from ConfigMap, error: %v", MutexInstructionsConfigStr, err)
 			return nil, err
 		}
 	}

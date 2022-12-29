@@ -36,12 +36,12 @@ const (
 )
 
 var (
-	client                      mqtt.Client
-	MQTTTopic                   string
-	mqttMessageStr              string
-	mqttMessageReceiveTimestamp time.Time
-	mutexBlocking               bool
-	mutexInstructions           map[string]string
+	client                         mqtt.Client
+	MQTTTopic                      string
+	mqttMessageInstructionMap      = map[string]string{}
+	mqttMessageReceiveTimestampMap = map[string]time.Time{}
+	mutexBlockingMap               = map[string]bool{}
+	mutexInstructions              map[string]string
 )
 
 // New new MQTT Deviceshifu
@@ -57,18 +57,12 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
 			ConfigFiniteStateMachine(base.DeviceShifuConfig.MutexInstructions)
-			mqttSetting := *base.EdgeDevice.Spec.ProtocolSettings.MQTTSetting
-			var mqttServerAddress string
-			if mqttSetting.MQTTTopic == nil || *mqttSetting.MQTTTopic == "" {
-				return nil, fmt.Errorf("MQTT Topic cannot be empty")
-			}
-
-			if mqttSetting.MQTTServerAddress == nil || *mqttSetting.MQTTServerAddress == "" {
-				// return nil, fmt.Errorf("MQTT server cannot be empty")
-				klog.Errorf("MQTT Server Address is empty, use address instead")
-				mqttServerAddress = *base.EdgeDevice.Spec.Address
-			} else {
-				mqttServerAddress = *mqttSetting.MQTTServerAddress
+			mqttProtocolSetting := base.EdgeDevice.Spec.ProtocolSettings
+			if mqttProtocolSetting != nil {
+				if mqttProtocolSetting.MQTTSetting != nil && mqttProtocolSetting.MQTTSetting.MQTTServerSecret != nil {
+					logger.Infof("MQTT Server Secret is not empty, currently Shifu does not use MQTT Server Secret")
+					// TODO Add MQTT Server secret processing logic
+				}
 			}
 
 			opts := mqtt.NewClientOptions()
@@ -140,21 +134,21 @@ func sub(client mqtt.Client, topic string) {
 
 func receiver(client mqtt.Client, msg mqtt.Message) {
 	msg.Ack()
+	messagePubHandler(client, msg)
 	message := string(msg.Payload())
-	MutexProcess(message)
-	klog.Infof("Received message:{id:%v, message:%v}", strconv.Itoa(int(msg.MessageID())), message)
+	MutexProcess(msg.Topic(), message)
+	logger.Infof("Received message:{id:%v, message:%v}", strconv.Itoa(int(msg.MessageID())), message)
 }
 
-func MutexProcess(message string) {
-	if mutexBlocking && strings.Contains(message, mqttMessageStr) {
-		klog.Infof("Resetting mutex")
-		mutexBlocking = false
+func MutexProcess(topic string, message string) {
+	if mutexBlockingMap[topic] && strings.Contains(message, mqttMessageInstructionMap[topic]) {
+		logger.Infof("Resetting mutex")
+		mutexBlockingMap[topic] = false
 	}
 }
 
 func ConfigFiniteStateMachine(minsts map[string]string) {
 	mutexInstructions = minsts
-	mutexBlocking = false
 }
 
 // DeviceCommandHandlerMQTT handler for Mqtt
@@ -183,9 +177,11 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 		} else if reqType == http.MethodPost {
-			if mutexBlocking {
-				blockedMessage := fmt.Sprintf("MQTT broker is blocked by %v", mqttMessageStr)
-				klog.Errorf(blockedMessage)
+			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
+			logger.Infof("the mutexInstructions is %v", mutexInstructions)
+			if mutexBlockingMap[mqttTopic] {
+				blockedMessage := "MQTT broker is blocked"
+				logger.Errorf(blockedMessage)
 				http.Error(w, blockedMessage, http.StatusConflict)
 				return
 			}
@@ -196,22 +192,21 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
-			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
 			requestBody := RequestBody(body)
 			logger.Infof("requestBody: %v", requestBody)
 
 			// TODO handle error asynchronously
 			token := client.Publish(mqttTopic, 1, false, body)
 			if token.Error() != nil {
-				klog.Errorf("Error when publish Data to MQTTServer,%v", token.Error())
+				logger.Errorf("Error when publish Data to MQTTServer,%v", token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
 				return
 			}
 			if _, isMutexState := mutexInstructions[string(requestBody)]; isMutexState {
-				mutexBlocking = true
-				klog.Infof("Message %v is mutex, blocking.", mqttMessageStr)
+				mutexBlockingMap[mqttTopic] = true
+				logger.Infof("Message %v is mutex, blocking.", requestBody)
 			}
-			klog.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
+			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
 			return
 		} else {
 			http.Error(w, "must be GET or POST method", http.StatusBadRequest)

@@ -138,7 +138,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 		mockMQTTServer(stop)
 		wg.Done()
 	}()
-
+	
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", *unitest.ToPointer(unitTestServerAddress)))
 	opts.SetClientID("shifu-service")
@@ -166,7 +166,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.NotNil(t, r.Error()) // should be blocked
 	// reset mutex
-	MutexProcess(requestBody)
+	MutexProcess("test/test1", string(requestBody))
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error()) // not blocked
 
