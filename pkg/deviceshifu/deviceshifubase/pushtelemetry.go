@@ -136,6 +136,7 @@ func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) 
 		logger.Warn("empty telemetry service setting.")
 		return
 	}
+	// if the telemetry type is not HTTP, then we skip the injection
 	if ts.Spec.ServiceSettings.HTTPSetting == nil {
 		logger.Info("service setting is not HTTP, skip secret injection")
 		return
@@ -147,12 +148,14 @@ func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) 
 		return
 	}
 	var exist bool
+	// inject the password in secret
 	*ts.Spec.ServiceSettings.HTTPSetting.Password, exist = secret[PasswordSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
 	} else {
 		logger.Info("HTTPSetting.Password load from secret")
 	}
+	// inject the username in secret
 	*ts.Spec.ServiceSettings.HTTPSetting.Username, exist = secret[UsernameSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
