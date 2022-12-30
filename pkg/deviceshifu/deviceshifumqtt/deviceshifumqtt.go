@@ -182,7 +182,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
 			logger.Infof("the mutexInstructions is %v", mutexInstructions)
 			if mutexBlocking {
-				blockedMessage := fmt.Sprintf("Device is blocked by %v mutexInstruction!", mutexInstruction)
+				blockedMessage := fmt.Sprintf("Device is blocked by %v mutexInstruction now! %v", mutexInstruction, time.Now())
 				logger.Errorf(blockedMessage)
 				http.Error(w, blockedMessage, http.StatusConflict)
 				return
@@ -207,7 +207,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			if _, isMutexState := mutexInstructions[string(requestBody)]; isMutexState {
 				mutexBlocking = true
 				mutexInstruction = string(requestBody)
-				logger.Infof("Message %v is mutex, blocking.", requestBody)
+				logger.Infof("Message %s is mutex, blocking.", requestBody)
 			}
 			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
 			return
