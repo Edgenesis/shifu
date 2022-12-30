@@ -147,7 +147,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	opts.OnConnectionLost = connectLostHandler
 	client = mqtt.NewClient(opts)
 
-	requestBody := "abcd"
+	requestBody := "moving_the_device"
 
 	// test post method when MQTTServer not connected
 	r := dc.Post().Body([]byte(requestBody)).Do(context.TODO())
@@ -160,13 +160,13 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 		logger.Infof("Connect to %v success!", unitTestServerAddress)
 		defer client.Disconnect(0)
 	}
-	ConfigFiniteStateMachine(map[string]string{"abcd": ""})
+	ConfigFiniteStateMachine(map[string]string{"moving_the_device": "device_finish_moving"})
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error())
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.NotNil(t, r.Error()) // should be blocked
 	// reset mutex
-	MutexProcess("test/test1", string(requestBody))
+	MutexProcess("test/test1", "device_finish_moving")
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error()) // not blocked
 

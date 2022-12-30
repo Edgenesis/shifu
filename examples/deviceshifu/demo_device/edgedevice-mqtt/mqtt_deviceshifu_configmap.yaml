@@ -26,4 +26,4 @@ data:
       device_health:
         properties:
   mutexInstructions: |
-      testMutexInstruction: "to test"
+      moving_the_device: "device_finish_moving"
