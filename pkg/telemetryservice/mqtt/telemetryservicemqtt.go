@@ -8,11 +8,10 @@ import (
 	"net/http"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 )
-
-const PasswordSecretField = "password"
 
 func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 	body, err := io.ReadAll(r.Body)
@@ -94,9 +93,9 @@ func injectSecret(setting *v1alpha1.MQTTSetting) {
 		return
 	}
 	var exist bool
-	*setting.MQTTServerSecret, exist = secret[PasswordSecretField]
+	*setting.MQTTServerSecret, exist = secret[deviceshifubase.PasswordSecretField]
 	if !exist {
-		logger.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
+		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.PasswordSecretField)
 	} else {
 		logger.Info("MQTTServerSecret load from secret")
 	}

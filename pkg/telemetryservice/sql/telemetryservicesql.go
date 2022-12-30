@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
 	"io"
 	"net/http"
@@ -11,11 +12,6 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/tdengine"
-)
-
-const (
-	PasswordSecretField = "password"
-	UsernameSecretField = "username"
 )
 
 func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -66,15 +62,15 @@ func injectSecret(setting *v1alpha1.SQLConnectionSetting) {
 		return
 	}
 	var exist bool
-	*setting.Secret, exist = secret[PasswordSecretField]
+	*setting.Secret, exist = secret[deviceshifubase.PasswordSecretField]
 	if !exist {
-		logger.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
+		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.PasswordSecretField)
 	} else {
 		logger.Info("SQLSetting.Secret load from secret")
 	}
-	*setting.UserName, exist = secret[UsernameSecretField]
+	*setting.UserName, exist = secret[deviceshifubase.UsernameSecretField]
 	if !exist {
-		logger.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
+		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.UsernameSecretField)
 	} else {
 		logger.Info("SQLSetting.UserName load from secret")
 	}
