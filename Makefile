@@ -11,7 +11,6 @@ vet: ## Run go vet against code.
 
 .PHONY: shifuctl
 shifuctl:
-	go build ${PROJECT_ROOT}/cmd/shifuctl
 	go install ${PROJECT_ROOT}/cmd/shifuctl
 
 .PHONY: test
