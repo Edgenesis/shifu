@@ -5,15 +5,23 @@ data:
     driverExecution: python mock_driver.py
   instructions: |
     instructions:
-      get_reading:
-      get_status:
+      get_topicmsg1:
+        protocolPropertyList:
+          MQTTTopic: "/test/test1"
+      get_topicmsg2:
+        protocolPropertyList:
+          MQTTTopic: "/test/test2"
       set_reading:
         argumentPropertyList:
         - valueType: "Int32"
           readWrite: "W"
           defaultValue: null
-      start:
-      stop:
+      get_topicmsg3:
+        protocolPropertyList:
+          MQTTTopic: "/test/test3"
+      get_topicmsg4:
+        protocolPropertyList:
+          MQTTTopic: "/test/test4"
   telemetries: |
     telemetrySettings:
       telemetryUpdateIntervalInMilliseconds: 1000

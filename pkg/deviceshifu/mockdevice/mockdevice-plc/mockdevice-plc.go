@@ -7,8 +7,9 @@ import (
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
+	"github.com/edgenesis/shifu/pkg/logger"
+
 	"k8s.io/apimachinery/pkg/util/rand"
-	"k8s.io/klog/v2"
 )
 
 var (
@@ -40,13 +41,13 @@ func main() {
 
 func instructionHandler(functionName string) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		klog.Infof("Handling: %v", functionName)
+		logger.Infof("Handling: %v", functionName)
 		switch functionName {
 		case "getcontent":
 			query := r.URL.Query()
 			rootaddress := query.Get(rootAddress)
 			if _, ok := dataStorage[rootaddress]; !ok {
-				klog.Warningf("Nonexistent memory area: %v", rootaddress)
+				logger.Warnf("Nonexistent memory area: %v", rootaddress)
 				w.WriteHeader(http.StatusBadRequest)
 				fmt.Fprintf(w, "Nonexistent memory area")
 				return
@@ -59,16 +60,16 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			rootaddress := query.Get(rootAddress)
 			addressValue, err := strconv.Atoi(query.Get(address))
 			if err != nil {
-				klog.Fatalf("%v", err)
+				logger.Fatalf("%v", err)
 			}
 
 			digitsValue, err := strconv.Atoi(query.Get(digit))
 			if err != nil {
-				klog.Fatalf("%v", err)
+				logger.Fatalf("%v", err)
 			}
 
 			if _, ok := dataStorage[rootaddress]; !ok {
-				klog.Warningf("Nonexistent memory area: %v", rootaddress)
+				logger.Warnf("Nonexistent memory area: %v", rootaddress)
 				w.WriteHeader(http.StatusBadRequest)
 				fmt.Fprintf(w, "Nonexistent memory area")
 				return
@@ -80,7 +81,7 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			responseValue[len(dataStorage[rootaddress])-1-
 				addressValue-digitsValue] = valueModifier[0]
 			dataStorage[rootaddress] = string(responseValue)
-			klog.Infof("%v", responseValue)
+			logger.Infof("%v", responseValue)
 			w.WriteHeader(http.StatusOK)
 			fmt.Fprintf(w, dataStorage[rootaddress])
 		case "get_status":

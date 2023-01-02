@@ -4,14 +4,16 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-	"k8s.io/klog/v2"
 	"net/http"
+	"os"
 	"path"
 	"time"
 
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/gopcua/opcua"
 	"github.com/gopcua/opcua/ua"
 )
@@ -33,6 +35,7 @@ type HandlerMetaData struct {
 // DeviceConfigmapCertificatePath default cert path
 const (
 	DeviceConfigmapCertificatePath string = "/etc/edgedevice/certificate"
+	DeviceSecretPasswordPath       string = "/etc/edgedevice/secret/password"
 )
 
 // New This function creates a new Device Shifu based on the configuration
@@ -50,6 +53,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if err != nil {
 		return nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
+
 	var opcuaClient *opcua.Client
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
@@ -66,13 +70,13 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				ctx := context.Background()
 				endpoints, err := opcua.GetEndpoints(ctx, *base.EdgeDevice.Spec.Address)
 				if err != nil {
-					klog.Fatal("Cannot Get EndPoint Description")
+					logger.Fatal("Cannot Get EndPoint Description")
 					return nil, err
 				}
 
 				ep := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeNone)
 				if ep == nil {
-					klog.Fatal("Failed to find suitable endpoint")
+					logger.Fatal("Failed to find suitable endpoint")
 				}
 
 				var options = make([]opcua.Option, 0)
@@ -80,6 +84,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				options = append(options,
 					opcua.SecurityPolicy(ua.SecurityPolicyURINone),
 					opcua.SecurityMode(ua.MessageSecurityModeNone),
+					opcua.AutoReconnect(false),
 				)
 
 				var setting = *base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting
@@ -91,7 +96,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 					var certificateFileName = path.Join(DeviceConfigmapCertificatePath, *setting.CertificateFileName)
 					cert, err := tls.LoadX509KeyPair(certificateFileName, privateKeyFileName)
 					if err != nil {
-						klog.Fatalf("X509 Certificate Or PrivateKey load Default")
+						logger.Fatalf("X509 Certificate Or PrivateKey load Default")
 					}
 					options = append(options,
 						opcua.CertificateFile(certificateFileName),
@@ -99,12 +104,20 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 						opcua.AuthCertificate(cert.Certificate[0]),
 					)
 				case ua.UserTokenTypeUserName:
-					options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
+					passwordByte, err := os.ReadFile(DeviceSecretPasswordPath)
+					// secret will overwrite the password in edge device
+					if err != nil {
+						logger.Infof("secret load error: %v, password will be loaded from OPCUASetting.Password", err)
+						options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
+					} else {
+						logger.Infof("password loaded from secret")
+						options = append(options, opcua.AuthUsername(*setting.Username, string(passwordByte)))
+					}
 				case ua.UserTokenTypeAnonymous:
 					fallthrough
 				default:
 					if *setting.AuthenticationMode != "Anonymous" {
-						klog.Errorf("Could not parse your input, you are in Anonymous Mode default")
+						logger.Errorf("Could not parse your input, you are in Anonymous Mode default")
 					}
 
 					options = append(options, opcua.AuthAnonymous())
@@ -113,7 +126,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*setting.AuthenticationMode)))
 				opcuaClient = opcua.NewClient(*base.EdgeDevice.Spec.Address, options...)
 				if err := opcuaClient.Connect(ctx); err != nil {
-					klog.Fatalf("Unable to connect to OPC UA server, error: %v", err)
+					logger.Fatalf("Unable to connect to OPC UA server, error: %v", err)
 				}
 
 				var handler DeviceCommandHandlerOPCUA
@@ -152,11 +165,11 @@ type DeviceCommandHandlerOPCUA struct {
 func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		nodeID := handler.HandlerMetaData.properties.OPCUANodeID
-		klog.Infof("Requesting NodeID: %v", nodeID)
+		logger.Infof("Requesting NodeID: %v", nodeID)
 
 		id, err := ua.ParseNodeID(nodeID)
 		if err != nil {
-			klog.Fatalf("invalid node id: %v", err)
+			logger.Fatalf("invalid node id: %v", err)
 		}
 
 		req := &ua.ReadRequest{
@@ -176,17 +189,17 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 
 		if err != nil {
 			http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
-			klog.Errorf("Read failed: %s", err)
+			logger.Errorf("Read failed: %s", err)
 			return
 		}
 
 		if resp.Results[0].Status != ua.StatusOK {
 			http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(resp.Results[0].Status), http.StatusBadRequest)
-			klog.Errorf("Status not OK: %v", resp.Results[0].Status)
+			logger.Errorf("Status not OK: %v", resp.Results[0].Status)
 			return
 		}
 
-		klog.Infof("%#v", resp.Results[0].Value.Value())
+		logger.Infof("%#v", resp.Results[0].Value.Value())
 
 		w.WriteHeader(http.StatusOK)
 		// TODO: Should handle different type of return values and return JSON/other data
@@ -194,11 +207,11 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 		rawRespBody := resp.Results[0].Value.Value()
 		rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
 		respString := rawRespBodyString
-		_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
-		klog.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+		instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+		logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 		if shouldUsePythonCustomProcessing {
-			klog.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-			respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, handlerInstruction, rawRespBodyString, deviceshifubase.PythonScriptDir)
+			logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+			respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
 		}
 		fmt.Fprintf(w, "%v", respString)
 	}
@@ -215,7 +228,7 @@ func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string)
 func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 	id, err := ua.ParseNodeID(nodeID)
 	if err != nil {
-		klog.Fatalf("invalid node id: %v", err)
+		logger.Fatalf("invalid node id: %v", err)
 	}
 
 	req := &ua.ReadRequest{
@@ -232,16 +245,16 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 
 	resp, err := ds.opcuaClient.ReadWithContext(ctx, req)
 	if err != nil {
-		klog.Errorf("Failed to read message from Server, error: %v " + err.Error())
+		logger.Errorf("Failed to read message from Server, error: %v " + err.Error())
 		return err
 	}
 
 	if resp.Results[0].Status != ua.StatusOK {
-		klog.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
+		logger.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
 		return err
 	}
 
-	klog.Infof("%#v", resp.Results[0].Value.Value())
+	logger.Infof("%#v", resp.Results[0].Value.Value())
 
 	return nil
 }
@@ -263,18 +276,18 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				nodeID, err := ds.getOPCUANodeIDFromInstructionName(instruction)
 				if err != nil {
-					klog.Errorf("%v", err.Error())
+					logger.Errorf("%v", err.Error())
 					return false, err
 				}
 
 				if err = ds.requestOPCUANodeID(nodeID); err != nil {
-					klog.Errorf("error checking telemetry: %v, error: %v", telemetry, err.Error())
+					logger.Errorf("error checking telemetry: %v, error: %v", telemetry, err.Error())
 					return false, err
 				}
 
 			}
 		default:
-			klog.Warningf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
+			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
 			return false, nil
 		}
 	}

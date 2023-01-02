@@ -6,9 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	"k8s.io/klog/v2"
-
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/edgenesis/shifu/pkg/logger"
 
 	"k8s.io/client-go/rest"
 )
@@ -88,8 +87,8 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 	client := &rest.RESTClient{}
 
 	CustomInstructionsPython = deviceShifuConfig.CustomInstructionsPython
-	klog.Infof("configured custom instruction: %v\n", deviceShifuConfig.CustomInstructionsPython)
-	klog.Infof("read custom instruction: %v\n", CustomInstructionsPython)
+	logger.Infof("configured custom instruction: %v\n", deviceShifuConfig.CustomInstructionsPython)
+	logger.Infof("read custom instruction: %v\n", CustomInstructionsPython)
 
 	if deviceShifuMetadata.KubeConfigPath != DeviceKubeconfigDoNotLoadStr {
 		edgeDeviceConfig := &EdgeDeviceConfig{
@@ -100,7 +99,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 
 		edgeDevice, client, err = NewEdgeDevice(edgeDeviceConfig)
 		if err != nil {
-			klog.Errorf("Error retrieving EdgeDevice")
+			logger.Errorf("Error retrieving EdgeDevice")
 			return nil, nil, err
 		}
 	}
@@ -131,13 +130,13 @@ func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {
-	klog.Errorf("Error: Device instruction does not exist!")
+	logger.Errorf("Error: Device instruction does not exist!")
 	http.Error(w, "Error: Device instruction does not exist!", http.StatusNotFound)
 }
 
 // UpdateEdgeDeviceResourcePhase Update device status
 func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDevicePhase) {
-	klog.Infof("updating device %v status to: %v", ds.Name, edPhase)
+	logger.Infof("updating device %v status to: %v", ds.Name, edPhase)
 	currEdgeDevice := &v1alpha1.EdgeDevice{}
 	err := ds.RestClient.Get().
 		Namespace(ds.EdgeDevice.Namespace).
@@ -147,7 +146,7 @@ func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDe
 		Into(currEdgeDevice)
 
 	if err != nil {
-		klog.Errorf("Unable to update status, error: %v", err.Error())
+		logger.Errorf("Unable to update status, error: %v", err.Error())
 		return
 	}
 
@@ -168,16 +167,16 @@ func (ds *DeviceShifuBase) UpdateEdgeDeviceResourcePhase(edPhase v1alpha1.EdgeDe
 		Into(putResult)
 
 	if err != nil {
-		klog.Errorf("Unable to update status, error: %v", err)
+		logger.Errorf("Unable to update status, error: %v", err)
 	}
 }
 
 func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {
 	telemetryOK := true
 	status, err := fn()
-	klog.Infof("Status is: %v", status)
+	logger.Infof("Status is: %v", status)
 	if err != nil {
-		klog.Errorf("Error is: %v", err.Error())
+		logger.Errorf("Error is: %v", err.Error())
 		telemetryOK = false
 	}
 
@@ -196,7 +195,7 @@ func (ds *DeviceShifuBase) telemetryCollection(fn collectTelemetry) error {
 
 // StartTelemetryCollection Start TelemetryCollection
 func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
-	klog.Infof("Wait 5 seconds before updating status")
+	logger.Infof("Wait 5 seconds before updating status")
 	time.Sleep(5 * time.Second)
 	telemetryUpdateIntervalInMilliseconds := DeviceDefaultTelemetryUpdateIntervalInMS
 	var err error
@@ -224,7 +223,7 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	for {
 		err := ds.telemetryCollection(fn)
 		if err != nil {
-			klog.Errorf("error when telemetry collection, error: %v", err)
+			logger.Errorf("error when telemetry collection, error: %v", err)
 			return err
 		}
 		time.Sleep(time.Duration(telemetryUpdateIntervalInMilliseconds) * time.Millisecond)
@@ -232,24 +231,24 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 }
 
 func (ds *DeviceShifuBase) startHTTPServer(stopCh <-chan struct{}) error {
-	klog.Infof("deviceshifu %s's http server started", ds.Name)
+	logger.Infof("deviceshifu %s's http server started", ds.Name)
 	return ds.Server.ListenAndServe()
 }
 
 // Start HTTP server and telemetryCollection
 func (ds *DeviceShifuBase) Start(stopCh <-chan struct{}, fn collectTelemetry) error {
-	klog.Infof("deviceshifu %s started", ds.Name)
+	logger.Infof("deviceshifu %s started", ds.Name)
 
 	go func() {
 		err := ds.startHTTPServer(stopCh)
 		if err != nil {
-			klog.Errorf("error during Http Server is up, error: %v", err)
+			logger.Errorf("error during Http Server is up, error: %v", err)
 		}
 	}()
 	go func() {
 		err := ds.StartTelemetryCollection(fn)
 		if err != nil {
-			klog.Errorf("error during Telemetry is running, error: %v", err)
+			logger.Errorf("error during Telemetry is running, error: %v", err)
 		}
 	}()
 	return nil
@@ -261,6 +260,6 @@ func (ds *DeviceShifuBase) Stop() error {
 		return err
 	}
 
-	klog.Infof("deviceshifu %s's http server stopped", ds.Name)
+	logger.Infof("deviceshifu %s's http server stopped", ds.Name)
 	return nil
 }
