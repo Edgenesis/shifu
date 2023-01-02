@@ -16,7 +16,7 @@ shifuctl:
 	cd ${PROJECT_ROOT}/cmd/shifuctl; go build
 
 clean:
-	rm ${PROJECT_ROOT}/cmd/shifuctl/shifuctl
+	rm -f ${PROJECT_ROOT}/cmd/shifuctl/shifuctl
 
 .PHONY: test
 test: fmt envtest ## Run tests.
