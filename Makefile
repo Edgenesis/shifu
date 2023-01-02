@@ -9,6 +9,11 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
+.PHONY: shifuctl
+shifuctl:
+	go build ${PROJECT_ROOT}/cmd/shifuctl
+	go install ${PROJECT_ROOT}/cmd/shifuctl
+
 .PHONY: test
 test: fmt envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test -v -race -coverprofile=coverage.out -covermode=atomic $(shell go list ./... | grep -v -E '/cmd|/mockdevice')
