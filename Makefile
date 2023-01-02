@@ -9,13 +9,15 @@ fmt: ## Run go fmt against code.
 vet: ## Run go vet against code.
 	go vet ./...
 
-.PHONY: install
 install: shifuctl
 	go install ${PROJECT_ROOT}/cmd/shifuctl
 
-.PHONY: shifuctl
 shifuctl:
-	go build ${PROJECT_ROOT}/cmd/shifuctl
+	cd ${PROJECT_ROOT}/cmd/shifuctl; go build
+
+clean:
+	rm ${PROJECT_ROOT}/cmd/shifuctl/shifuctl
+
 
 .PHONY: test
 test: fmt envtest ## Run tests.
