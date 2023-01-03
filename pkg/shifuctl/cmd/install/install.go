@@ -6,7 +6,9 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"time"
 
+	"github.com/briandowns/spinner"
 	"github.com/spf13/cobra"
 )
 
@@ -20,6 +22,12 @@ var InstallCmd = &cobra.Command{
 
 // install installs shifu and its dependencies.
 func install() {
+	// start a spinner
+	s := spinner.New(spinner.CharSets[35], 200*time.Millisecond)
+	s.Prefix = "\033[1;33mChecking Shifu prerequisites...\033[0m"
+	s.Suffix = "\n"
+	s.Start()
+
 	prompt := ""
 	prompt = prompt + verifyDockerInstallation()
 	prompt = prompt + verifyDockerHubConnection()
@@ -31,6 +39,8 @@ func install() {
 		prompt = "\033[1;32mPrerequisite met, automatically installing Shifu!\033[0m\n"
 	}
 	fmt.Println(prompt)
+
+	s.Stop()
 
 	if err := installShifu(); err != nil {
 		fmt.Println("\033[1;31mError installing Shifu\033[0m, Error: ", err)
@@ -111,6 +121,10 @@ func verifyKubernetesCluster() string {
 }
 
 func installShifu() error {
+	// start a spinner
+	s := spinner.New(spinner.CharSets[35], 200*time.Millisecond)
+	s.Start()
+
 	//read version.txt
 	versionFilePath := filepath.Join(os.Getenv("SHIFU_ROOT_DIR"), "version.txt")
 	versionFile, err := os.Open(versionFilePath)
@@ -146,6 +160,8 @@ func installShifu() error {
 		"--timeout=600s",
 		"deployment/shifu-crd-controller-manager",
 	).Output()
+
+	s.Stop()
 
 	return err
 }
