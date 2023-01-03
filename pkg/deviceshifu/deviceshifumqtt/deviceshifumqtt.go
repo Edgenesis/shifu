@@ -42,7 +42,7 @@ var (
 	mqttMessageReceiveTimestampMap = map[string]time.Time{}
 	mutexBlocking                  bool
 	mutexInstructions              map[string]string
-	mutexInstruction               string
+	currentInstruction             string
 )
 
 // New new MQTT Deviceshifu
@@ -142,10 +142,10 @@ func receiver(client mqtt.Client, msg mqtt.Message) {
 }
 
 func MutexProcess(topic string, message string) {
-	if mutexBlocking && strings.Contains(message, mutexInstructions[mutexInstruction]) {
+	if mutexBlocking && strings.Contains(message, mutexInstructions[currentInstruction]) {
 		logger.Infof("Resetting mutex")
 		mutexBlocking = false
-		mutexInstruction = ""
+		currentInstruction = ""
 	}
 }
 
@@ -182,7 +182,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
 			logger.Infof("the mutexInstructions is %v", mutexInstructions)
 			if mutexBlocking {
-				blockedMessage := fmt.Sprintf("Device is blocked by %v mutexInstruction now! %v", mutexInstruction, time.Now())
+				blockedMessage := fmt.Sprintf("Device is blocked by %v mutexInstruction now! %v", currentInstruction, time.Now())
 				logger.Errorf(blockedMessage)
 				http.Error(w, blockedMessage, http.StatusConflict)
 				return
@@ -206,7 +206,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			}
 			if _, isMutexState := mutexInstructions[string(requestBody)]; isMutexState {
 				mutexBlocking = true
-				mutexInstruction = string(requestBody)
+				currentInstruction = string(requestBody)
 				logger.Infof("Message %s is mutex, blocking.", requestBody)
 			}
 			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
