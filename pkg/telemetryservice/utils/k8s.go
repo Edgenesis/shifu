@@ -5,11 +5,12 @@ import (
 	"github.com/edgenesis/shifu/pkg/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	testclient "k8s.io/client-go/kubernetes/fake"
 	"k8s.io/client-go/rest"
 	"os"
 )
 
-var clientSet *kubernetes.Clientset
+var clientSet kubernetes.Interface
 var ns string
 
 func initClient() error {
@@ -42,4 +43,10 @@ func GetSecret(name string) (map[string]string, error) {
 		res[k] = string(v)
 	}
 	return res, nil
+}
+
+// SetClient for test
+func SetClient(cs *testclient.Clientset, namespace string) {
+	clientSet = cs
+	ns = namespace
 }

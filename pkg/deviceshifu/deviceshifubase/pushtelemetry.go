@@ -147,19 +147,20 @@ func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) 
 		logger.Errorf("unable to get secret for telemetry %v, error: %v, use plaintext password from telemetry setting", ts.Name, err)
 		return
 	}
-	var exist bool
 	// inject the password in secret
-	*ts.Spec.ServiceSettings.HTTPSetting.Password, exist = secret[PasswordSecretField]
+	pwd, exist := secret[PasswordSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
 	} else {
+		*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
 		logger.Info("HTTPSetting.Password load from secret")
 	}
 	// inject the username in secret
-	*ts.Spec.ServiceSettings.HTTPSetting.Username, exist = secret[UsernameSecretField]
+	username, exist := secret[UsernameSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
 	} else {
+		*ts.Spec.ServiceSettings.HTTPSetting.Username = username
 		logger.Info("HTTPSetting.Username load from secret")
 	}
 }

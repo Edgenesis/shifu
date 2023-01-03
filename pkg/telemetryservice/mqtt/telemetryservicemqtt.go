@@ -92,11 +92,11 @@ func injectSecret(setting *v1alpha1.MQTTSetting) {
 		logger.Errorf("unable to get secret for telemetry %v, error: %v", *setting.MQTTServerSecret, err)
 		return
 	}
-	var exist bool
-	*setting.MQTTServerSecret, exist = secret[deviceshifubase.PasswordSecretField]
+	pwd, exist := secret[deviceshifubase.PasswordSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.PasswordSecretField)
 	} else {
+		*setting.MQTTServerSecret = pwd
 		logger.Info("MQTTServerSecret load from secret")
 	}
 }

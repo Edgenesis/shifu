@@ -61,17 +61,18 @@ func injectSecret(setting *v1alpha1.SQLConnectionSetting) {
 		logger.Errorf("unable to get secret for telemetry %v, error: %v", *setting.Secret, err)
 		return
 	}
-	var exist bool
-	*setting.Secret, exist = secret[deviceshifubase.PasswordSecretField]
+	pwd, exist := secret[deviceshifubase.PasswordSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.PasswordSecretField)
 	} else {
+		*setting.Secret = pwd
 		logger.Info("SQLSetting.Secret load from secret")
 	}
-	*setting.UserName, exist = secret[deviceshifubase.UsernameSecretField]
+	username, exist := secret[deviceshifubase.UsernameSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.UsernameSecretField)
 	} else {
+		*setting.UserName = username
 		logger.Info("SQLSetting.UserName load from secret")
 	}
 }

@@ -25,6 +25,7 @@ require (
 )
 
 require (
+	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
