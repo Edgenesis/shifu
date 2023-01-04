@@ -56,9 +56,9 @@ generate-controller-yaml: kustomize manifests generate fmt vet
 generate-install-yaml:
 	cat install/config_default.yaml > install/shifu_install.yml
 	echo "---" >> install/shifu_install.yml
-	cat install/config_sa.yaml >> install/shifu_install.yml
-	echo "---" >> install/shifu_install.yml
 	cat install/config_service.yaml >> install/shifu_install.yml
+	echo "---" >> install/shifu_install.yml
+	cat install/config_sa.yaml >> install/shifu_install.yml
 
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="../..." output:crd:artifacts:config=config/edgedevice/bases
