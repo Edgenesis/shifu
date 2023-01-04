@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
 	"io"
 	"net/http"
 
@@ -30,6 +32,8 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	injectSecret(request.SQLConnectionSetting)
+
 	switch *request.SQLConnectionSetting.DBType {
 	case v1alpha1.DBTypeTDengine:
 		err = tdengine.SendToTDengine(context.TODO(), request.RawData, request.SQLConnectionSetting)
@@ -40,5 +44,35 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		logger.Errorf("Error to Send to SQL Server, error: %s", err.Error())
 		http.Error(w, "Error to send to server", http.StatusBadRequest)
+	}
+}
+
+func injectSecret(setting *v1alpha1.SQLConnectionSetting) {
+	if setting == nil {
+		logger.Warn("empty telemetry service setting.")
+		return
+	}
+	if setting.Secret == nil {
+		logger.Warn("empty secret setting.")
+		return
+	}
+	secret, err := utils.GetSecret(*setting.Secret)
+	if err != nil {
+		logger.Errorf("unable to get secret for telemetry %v, error: %v", *setting.Secret, err)
+		return
+	}
+	pwd, exist := secret[deviceshifubase.PasswordSecretField]
+	if !exist {
+		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.PasswordSecretField)
+	} else {
+		*setting.Secret = pwd
+		logger.Info("SQLSetting.Secret load from secret")
+	}
+	username, exist := secret[deviceshifubase.UsernameSecretField]
+	if !exist {
+		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.UsernameSecretField)
+	} else {
+		*setting.UserName = username
+		logger.Info("SQLSetting.UserName load from secret")
 	}
 }

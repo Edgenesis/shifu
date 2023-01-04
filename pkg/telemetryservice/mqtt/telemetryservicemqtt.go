@@ -3,10 +3,12 @@ package mqtt
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
 	"io"
 	"net/http"
 
 	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 )
@@ -28,6 +30,8 @@ func BindMQTTServicehandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "unexpected end of JSON input", http.StatusBadRequest)
 		return
 	}
+
+	injectSecret(request.MQTTSetting)
 
 	client, err := connectToMQTT(request.MQTTSetting)
 	if err != nil {
@@ -72,4 +76,27 @@ var connectHandler mqtt.OnConnectHandler = func(client mqtt.Client) {
 
 var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err error) {
 	logger.Infof("Connect lost: %v", err)
+}
+
+func injectSecret(setting *v1alpha1.MQTTSetting) {
+	if setting == nil {
+		logger.Warn("empty telemetry service setting.")
+		return
+	}
+	if setting.MQTTServerSecret == nil {
+		logger.Warn("empty secret setting.")
+		return
+	}
+	secret, err := utils.GetSecret(*setting.MQTTServerSecret)
+	if err != nil {
+		logger.Errorf("unable to get secret for telemetry %v, error: %v", *setting.MQTTServerSecret, err)
+		return
+	}
+	pwd, exist := secret[deviceshifubase.PasswordSecretField]
+	if !exist {
+		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.PasswordSecretField)
+	} else {
+		*setting.MQTTServerSecret = pwd
+		logger.Info("MQTTServerSecret load from secret")
+	}
 }
