@@ -2,7 +2,7 @@
 
 ## New Features 🎉
 
-* Deviceshifu can load password of Telemetry from secret if it exists @FFFFFaraway in https://github.com/Edgenesis/shifu/pull/421
+* Deviceshifu can load password of Telemetry from secret if it exists by @FFFFFaraway in https://github.com/Edgenesis/shifu/pull/421
 
 ## Bug fixes
 
