@@ -28,7 +28,7 @@ spec:
 ```
 edgedevices_type.go
 
-Add a new protocaltype ProtocalTCP
+Add a new protocoltype ProtocolTCP
 ### Testing Plan
 
 - forward TCP protocol: using mock tcp server and try to connect to the server with deviceShifu-TCP
