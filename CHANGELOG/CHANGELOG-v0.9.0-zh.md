@@ -1,5 +1,9 @@
 # 自 [v0.8.0](https://github.com/Edgenesis/shifu/releases/tag/v0.8.0) 以来的变更
 
+## 新功能 🎉
+
+* Deviceshifu可以从secret中加载遥测密码（如果存在）by @FFFFFaraway in https://github.com/Edgenesis/shifu/pull/421
+
 ## Bug 修复
 
 * <BugFix>修复不能正常使用自定义deviceshifu的问题 by @Twpeak in https://github.com/Edgenesis/shifu/pull/369

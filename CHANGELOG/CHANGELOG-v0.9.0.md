@@ -1,5 +1,9 @@
 # Changelog since [v0.8.0](https://github.com/Edgenesis/shifu/releases/tag/v0.8.0)
 
+## New Features 🎉
+
+* Deviceshifu can load password of Telemetry from secret if it exists @FFFFFaraway in https://github.com/Edgenesis/shifu/pull/421
+
 ## Bug fixes
 
 * <BugFix>Solved Unable to use customize deviceshifu normally by @Twpeak in https://github.com/Edgenesis/shifu/pull/369
