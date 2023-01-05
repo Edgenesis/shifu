@@ -3,7 +3,11 @@ package mqtt
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
 	"io"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	testclient "k8s.io/client-go/kubernetes/fake"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -157,4 +161,48 @@ func TestBindMQTTServicehandler(t *testing.T) {
 		})
 	}
 
+}
+
+func TestInjectSecret(t *testing.T) {
+	testNamespace := "test-namespace"
+	testCases := []struct {
+		name         string
+		client       *testclient.Clientset
+		ns           string
+		setting      *v1alpha1.MQTTSetting
+		specPassword string
+	}{
+		{
+			name:   "case0 no secrets found",
+			client: testclient.NewSimpleClientset(),
+			ns:     testNamespace,
+			setting: &v1alpha1.MQTTSetting{
+				MQTTServerSecret: unitest.ToPointer("test-secret"),
+			},
+			specPassword: "test-secret",
+		},
+		{
+			name: "case2 have HTTP password secret",
+			client: testclient.NewSimpleClientset(&v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-secret",
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{
+					"password": []byte("overwrite"),
+				},
+			}),
+			ns: testNamespace,
+			setting: &v1alpha1.MQTTSetting{
+				MQTTServerSecret: unitest.ToPointer("test-secret"),
+			},
+			specPassword: "overwrite",
+		},
+	}
+
+	for _, c := range testCases {
+		utils.SetClient(c.client, c.ns)
+		injectSecret(c.setting)
+		assert.Equal(t, c.specPassword, *c.setting.MQTTServerSecret)
+	}
 }

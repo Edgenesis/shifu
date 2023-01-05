@@ -6,12 +6,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/rest"
 	"net/http"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
+)
+
+const (
+	PasswordSecretField = "password"
+	UsernameSecretField = "username"
+	SecretResource      = "secrets"
 )
 
 func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {
@@ -41,7 +49,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 		request := &v1alpha1.TelemetryRequest{
 			SQLConnectionSetting: tss.ServiceSettings.SQLSetting,
 		}
-		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMQTT
+		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURISQL
 		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
@@ -110,6 +118,53 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 	return nil
 }
 
+func getSecret(c *rest.RESTClient, name, ns string) (map[string]string, error) {
+	secret := v1.Secret{}
+	secretPath := fmt.Sprintf("/api/v1/namespaces/%s/%s/%s", ns, SecretResource, name)
+	if err := c.Get().AbsPath(secretPath).Do(context.TODO()).Into(&secret); err != nil {
+		return nil, err
+	}
+	res := make(map[string]string)
+	for k, v := range secret.Data {
+		res[k] = string(v)
+	}
+	return res, nil
+}
+
+func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) {
+	if ts.Spec.ServiceSettings == nil {
+		logger.Warn("empty telemetry service setting.")
+		return
+	}
+	// if the telemetry type is not HTTP, then we skip the injection
+	if ts.Spec.ServiceSettings.HTTPSetting == nil {
+		logger.Info("service setting is not HTTP, skip secret injection")
+		return
+	}
+	// we use the telemetry name to find the secret
+	secret, err := getSecret(c, ts.Name, ns)
+	if err != nil {
+		logger.Errorf("unable to get secret for telemetry %v, error: %v, use plaintext password from telemetry setting", ts.Name, err)
+		return
+	}
+	// inject the password in secret
+	pwd, exist := secret[PasswordSecretField]
+	if !exist {
+		logger.Errorf("the %v field not found in telemetry secret", PasswordSecretField)
+	} else {
+		*ts.Spec.ServiceSettings.HTTPSetting.Password = pwd
+		logger.Info("HTTPSetting.Password load from secret")
+	}
+	// inject the username in secret
+	username, exist := secret[UsernameSecretField]
+	if !exist {
+		logger.Errorf("the %v field not found in telemetry secret", UsernameSecretField)
+	} else {
+		*ts.Spec.ServiceSettings.HTTPSetting.Username = username
+		logger.Info("HTTPSetting.Username load from secret")
+	}
+}
+
 func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.TelemetryServiceSpec, error) {
 	serviceAddressCache := make(map[string]v1alpha1.TelemetryServiceSpec)
 	res := make(map[string]v1alpha1.TelemetryServiceSpec)
@@ -150,7 +205,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 			Into(&telemetryService); err != nil {
 			logger.Errorf("unable to get telemetry service %v, error: %v", defaultTelemetryCollectionService, err)
 		}
-
+		injectSecret(ds.RestClient, &telemetryService, ds.EdgeDevice.Namespace)
 		serviceAddressCache[defaultTelemetryCollectionService] = telemetryService.Spec
 	}
 
@@ -188,7 +243,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 				logger.Errorf("unable to get telemetry service %v, error: %v", *pushSettings.DeviceShifuTelemetryCollectionService, err)
 				continue
 			}
-
+			injectSecret(ds.RestClient, &telemetryService, ds.EdgeDevice.Namespace)
 			serviceAddressCache[*pushSettings.DeviceShifuTelemetryCollectionService] = telemetryService.Spec
 			res[telemetryName] = telemetryService.Spec
 			continue
