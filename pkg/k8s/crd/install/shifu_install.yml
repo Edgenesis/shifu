@@ -472,7 +472,7 @@ spec:
         - --source=default
         command:
         - /manager
-        image: edgehub/shifu-controller:nightly
+        image: edgehub/shifu-controller:v0.9.0-rc2
         livenessProbe:
           httpGet:
             path: /healthz
@@ -503,17 +503,17 @@ spec:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: shifu-service
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: devices
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: deviceshifu
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: shifu-service
 ---
 apiVersion: v1
 kind: ServiceAccount
