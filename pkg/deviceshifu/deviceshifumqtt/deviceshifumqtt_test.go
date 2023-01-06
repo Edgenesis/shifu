@@ -153,12 +153,18 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
 	// test post method when MQTTServer connected
-	if token := client.Connect(); token.Wait() && token.Error() != nil {
-		logger.Errorf("Error when connect to server error: %v", token.Error())
-	} else {
-		logger.Infof("Connect to %v success!", unitTestServerAddress)
-		defer client.Disconnect(0)
+	var token mqtt.Token
+	// try to connect to MQTT server three times
+	for i := 0; i < 3; i++ {
+		if token = client.Connect(); token.Wait() && token.Error() == nil {
+			logger.Infof("Connected to %v MQTT server suceess!", unitTestServerAddress)
+			defer client.Disconnect(0)
+			break
+		}
+		logger.Errorf("Error when connect to server for the %dth thime: %v", i+1, token.Error())
+		time.Sleep(100 * time.Millisecond)
 	}
+	assert.Nil(t, token.Error())
 
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error())
