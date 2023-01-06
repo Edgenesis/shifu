@@ -23,7 +23,7 @@ func TestRegister(t *testing.T) {
 				Password:      "HikVQDRQL",
 				ServerAddress: "bj-hikcamera-01.saifai.cn:39999/capture",
 				Recoding:      true,
-				OutputPath:    "/Users/faraway/Downloads/output.mp4",
+				OutputPath:    "output.mp4",
 			},
 		},
 	}
