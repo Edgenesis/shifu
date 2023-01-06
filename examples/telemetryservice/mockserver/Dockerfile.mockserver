@@ -18,7 +18,7 @@ WORKDIR /
 COPY --from=builder /output/mockserver mockserver
 
 ENV MQTT_SERVER_ADDRESS=localhost:1883  
-ENV HTTP_SRVER_ADDRESS=:17773
+ENV HTTP_SERVER_ADDRESS=:17773
 
 EXPOSE 17773
 
