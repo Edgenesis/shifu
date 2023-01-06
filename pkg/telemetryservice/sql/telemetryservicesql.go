@@ -75,8 +75,7 @@ func injectSecret(setting *v1alpha1.SQLConnectionSetting) {
 			setting.UserName = new(string)
 		}
 	} else {
-		// get pointer of string
-		setting.UserName = struct{ str *string }{str: &username}.str
+		setting.UserName = &username
 		logger.Info("SQLSetting.UserName load from secret")
 	}
 }

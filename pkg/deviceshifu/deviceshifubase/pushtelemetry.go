@@ -163,8 +163,7 @@ func injectSecret(c *rest.RESTClient, ts *v1alpha1.TelemetryService, ns string) 
 			ts.Spec.ServiceSettings.HTTPSetting.Username = new(string)
 		}
 	} else {
-		// get pointer of string
-		ts.Spec.ServiceSettings.HTTPSetting.Username = struct{ str *string }{str: &username}.str
+		ts.Spec.ServiceSettings.HTTPSetting.Username = &username
 		logger.Info("HTTPSetting.Username load from secret")
 	}
 }
