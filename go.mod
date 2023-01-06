@@ -19,16 +19,20 @@ require (
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	github.com/taosdata/driver-go/v3 v3.0.4
+	github.com/u2takey/ffmpeg-go v0.4.1
 	golang.org/x/crypto v0.4.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
 	sigs.k8s.io/controller-runtime v0.14.1
 )
 
 require (
+	github.com/aws/aws-sdk-go v1.38.20 // indirect
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/xid v1.4.0 // indirect
+	github.com/u2takey/go-utils v0.3.1 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 )
 
