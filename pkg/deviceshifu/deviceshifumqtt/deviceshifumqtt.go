@@ -41,8 +41,8 @@ var (
 	mqttMessageInstructionMap      = map[string]string{}
 	mqttMessageReceiveTimestampMap = map[string]time.Time{}
 	mutexBlocking                  bool
-	mutexInstructions              map[string]string
-	currentInstruction             string
+	controlMsgs                    map[string]string  // The key is controlMsg, the value is completion Msg returned by the device
+	currentControlMsg              string
 )
 
 // New new MQTT Deviceshifu
@@ -57,7 +57,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
-			ConfigFiniteStateMachine(base.DeviceShifuConfig.MutexInstructions)
+			ConfigFiniteStateMachine(base.DeviceShifuConfig.ControlMsgs)
 			mqttProtocolSetting := base.EdgeDevice.Spec.ProtocolSettings
 			if mqttProtocolSetting != nil {
 				if mqttProtocolSetting.MQTTSetting != nil && mqttProtocolSetting.MQTTSetting.MQTTServerSecret != nil {
@@ -142,15 +142,15 @@ func receiver(client mqtt.Client, msg mqtt.Message) {
 }
 
 func MutexProcess(topic string, message string) {
-	if mutexBlocking && strings.Contains(message, mutexInstructions[currentInstruction]) {
+	if mutexBlocking && strings.Contains(message, controlMsgs[currentControlMsg]) {
 		logger.Infof("Resetting mutex")
 		mutexBlocking = false
-		currentInstruction = ""
+		currentControlMsg = ""
 	}
 }
 
 func ConfigFiniteStateMachine(minsts map[string]string) {
-	mutexInstructions = minsts
+	controlMsgs = minsts
 }
 
 // DeviceCommandHandlerMQTT handler for Mqtt
@@ -180,9 +180,9 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			}
 		} else if reqType == http.MethodPost {
 			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
-			logger.Infof("the mutexInstructions is %v", mutexInstructions)
+			logger.Infof("the controlMsgs is %v", controlMsgs)
 			if mutexBlocking {
-				blockedMessage := fmt.Sprintf("Device is blocked by %v mutexInstruction now! %v", currentInstruction, time.Now())
+				blockedMessage := fmt.Sprintf("Device is blocked by %v controlMsg now! %v", currentControlMsg, time.Now())
 				logger.Errorf(blockedMessage)
 				http.Error(w, blockedMessage, http.StatusConflict)
 				return
@@ -204,9 +204,9 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
 				return
 			}
-			if _, isMutexState := mutexInstructions[string(requestBody)]; isMutexState {
+			if _, isMutexState := controlMsgs[string(requestBody)]; isMutexState {
 				mutexBlocking = true
-				currentInstruction = string(requestBody)
+				currentControlMsg = string(requestBody)
 				logger.Infof("Message %s is mutex, blocking.", requestBody)
 			}
 			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)

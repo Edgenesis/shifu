@@ -25,5 +25,5 @@ data:
     telemetries:
       device_health:
         properties:
-  mutexInstructions: |
+  controlMsgs: |
       moving_the_device: "device_finish_moving"
