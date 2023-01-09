@@ -1,71 +1,16 @@
 package rtspRecord
 
 import (
-	"encoding/json"
 	"fmt"
 	"github.com/edgenesis/shifu/pkg/logger"
 	ffmpeg "github.com/u2takey/ffmpeg-go"
-	"io"
 	"net/http"
+	"path/filepath"
+	"strconv"
 	"sync"
-	"syscall"
 )
 
 var m sync.Map
-
-func trans[T Request](r *http.Request) (T, error) {
-	body, err := io.ReadAll(r.Body)
-	if err != nil {
-		return nil, err
-	}
-	var request T
-	err = json.Unmarshal(body, &request)
-	if err != nil {
-		return nil, err
-	}
-	logger.Infof("request: %v", request)
-	return request, nil
-}
-
-func startRecord(name string) {
-	di, exist := m.Load(name)
-	if !exist {
-		logger.Errorf("device %v not found.", name)
-		return
-	}
-	d := di.(*Device)
-	if d.running {
-		logger.Warnf("try to start a already started device :%v", name)
-		return
-	}
-	d.running = true
-	go func() {
-		err := d.cmd.Run()
-		if err != nil {
-			logger.Error(err)
-			return
-		}
-	}()
-}
-
-func stopRecord(name string) {
-	di, exist := m.Load(name)
-	if !exist {
-		logger.Error("device %v not found.")
-		return
-	}
-	d := di.(*Device)
-	if !d.running {
-		logger.Warnf("try to stop a already stopped device :%v", name)
-		return
-	}
-	d.running = false
-	err := d.cmd.Process.Signal(syscall.SIGINT)
-	if err != nil {
-		logger.Errorf("Can't stop the process: ", err)
-		return
-	}
-}
 
 func Register(w http.ResponseWriter, r *http.Request) {
 	request, err := trans[RegisterRequest](r)
@@ -74,17 +19,21 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to Unmarshal request body", http.StatusBadRequest)
 		return
 	}
-	cmd := ffmpeg.Input(fmt.Sprintf("rtsp://%v:%v@%v", request.Username, request.Password, request.ServerAddress),
-		ffmpeg.KwArgs{"rtsp_transport": "tcp"}).
-		Output(request.OutputPath, ffmpeg.KwArgs{"c": "copy"}).
-		OverWriteOutput().ErrorToStdOut().Compile()
-	m.Store(request.DeviceName, &Device{
-		cmd:     cmd,
+	d := &Device{
+		in:      fmt.Sprintf("rtsp://%v:%v@%v", request.Username, request.Password, request.ServerAddress),
+		outDir:  request.OutDir,
 		running: false,
-	})
-	if request.Recoding {
-		startRecord(request.DeviceName)
+		clip:    0,
 	}
+	out := filepath.Join(d.outDir, request.DeviceName+"_"+strconv.Itoa(d.clip)+".mp4")
+	d.cmd = ffmpeg.Input(d.in, ffmpeg.KwArgs{"rtsp_transport": "tcp"}).
+		Output(out, ffmpeg.KwArgs{"c": "copy"}).
+		OverWriteOutput().ErrorToStdOut().Compile()
+	if request.Recoding {
+		startRecord(d)
+		d.clip += 1
+	}
+	m.Store(request.DeviceName, d)
 }
 
 func Unregister(w http.ResponseWriter, r *http.Request) {
@@ -94,7 +43,22 @@ func Unregister(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to Unmarshal request body", http.StatusBadRequest)
 		return
 	}
-	stopRecord(request.DeviceName)
+	di, exist := m.Load(request.DeviceName)
+	if !exist {
+		logger.Error("device %v not found", request.DeviceName)
+		http.Error(w, "device not found", http.StatusBadRequest)
+		return
+	}
+	d := di.(*Device)
+	d.mu.Lock()
+	err = stopRecord(d)
+	if err != nil {
+		logger.Errorf("can't stop record of device %v: %v", request.DeviceName, err)
+		http.Error(w, "can't stop record", http.StatusBadRequest)
+		d.mu.Unlock()
+		return
+	}
+	d.mu.Unlock()
 	m.Delete(request.DeviceName)
 }
 
@@ -105,9 +69,36 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to Unmarshal request body", http.StatusBadRequest)
 		return
 	}
+	di, exist := m.Load(request.DeviceName)
+	if !exist {
+		logger.Error("device %v not found", request.DeviceName)
+		http.Error(w, "device not found", http.StatusBadRequest)
+		return
+	}
+	d := di.(*Device)
+	d.mu.Lock()
+	defer d.mu.Unlock()
 	if request.Record {
-		startRecord(request.DeviceName)
+		if d.running {
+			logger.Warnf("try to start a already started device %v", request.DeviceName)
+			return
+		}
+		out := filepath.Join(d.outDir, request.DeviceName+"_"+strconv.Itoa(d.clip)+".mp4")
+		d.cmd = ffmpeg.Input(d.in, ffmpeg.KwArgs{"rtsp_transport": "tcp"}).
+			Output(out, ffmpeg.KwArgs{"c": "copy"}).
+			OverWriteOutput().ErrorToStdOut().Compile()
+		startRecord(d)
+		d.clip += 1
 	} else {
-		stopRecord(request.DeviceName)
+		if !d.running {
+			logger.Warnf("try to stop a already stopped device %v", request.DeviceName)
+			return
+		}
+		err := stopRecord(d)
+		if err != nil {
+			logger.Errorf("can't stop record of device %v: %v", request.DeviceName, err)
+			http.Error(w, "can't stop record", http.StatusBadRequest)
+			return
+		}
 	}
 }

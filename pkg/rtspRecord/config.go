@@ -1,6 +1,9 @@
 package rtspRecord
 
-import "os/exec"
+import (
+	"os/exec"
+	"sync"
+)
 
 type Request interface {
 	RegisterRequest | UnregisterRequest | UpdateRequest
@@ -13,7 +16,7 @@ type RegisterRequest struct {
 	Password      string `json:"password"`
 	ServerAddress string `json:"serverAddress"`
 	Recoding      bool   `json:"recoding"`
-	OutputPath    string `json:"outputPath"`
+	OutDir        string `json:"outDir"`
 }
 
 type UnregisterRequest struct {
@@ -26,6 +29,10 @@ type UpdateRequest struct {
 }
 
 type Device struct {
+	mu      sync.Mutex
+	in      string
+	outDir  string
 	cmd     *exec.Cmd
 	running bool
+	clip    int
 }
