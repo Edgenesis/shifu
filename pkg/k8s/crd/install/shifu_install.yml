@@ -503,17 +503,17 @@ spec:
 apiVersion: v1
 kind: Namespace
 metadata:
+  name: shifu-service
+---
+apiVersion: v1
+kind: Namespace
+metadata:
   name: devices
 ---
 apiVersion: v1
 kind: Namespace
 metadata:
   name: deviceshifu
----
-apiVersion: v1
-kind: Namespace
-metadata:
-  name: shifu-service
 ---
 apiVersion: v1
 kind: ServiceAccount
