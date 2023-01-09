@@ -71,8 +71,11 @@ func injectSecret(setting *v1alpha1.SQLConnectionSetting) {
 	username, exist := secret[deviceshifubase.UsernameSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.UsernameSecretField)
+		if setting.UserName == nil {
+			setting.UserName = new(string)
+		}
 	} else {
-		*setting.UserName = username
+		setting.UserName = &username
 		logger.Info("SQLSetting.UserName load from secret")
 	}
 }
