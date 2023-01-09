@@ -12,8 +12,6 @@ type Request interface {
 type RegisterRequest struct {
 	DeviceName    string `json:"deviceName"`
 	SecretName    string `json:"secretName"`
-	Username      string `json:"username"`
-	Password      string `json:"password"`
 	ServerAddress string `json:"serverAddress"`
 	Recoding      bool   `json:"recoding"`
 	OutDir        string `json:"outDir"`

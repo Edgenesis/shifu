@@ -3,7 +3,11 @@ package rtspRecord
 import (
 	"bytes"
 	"encoding/json"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
 	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	testclient "k8s.io/client-go/kubernetes/fake"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -11,6 +15,18 @@ import (
 )
 
 func TestRecord(t *testing.T) {
+	const testNamespace = "shifu-app"
+	client := testclient.NewSimpleClientset(&v1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "test-secret",
+			Namespace: testNamespace,
+		},
+		Data: map[string][]byte{
+			"username": []byte("admin"),
+			"password": []byte("HikVQDRQL"),
+		},
+	})
+	utils.SetClient(client, testNamespace)
 	testCases := []struct {
 		desc          string
 		requestBodies []any
@@ -21,9 +37,7 @@ func TestRecord(t *testing.T) {
 			requestBodies: []any{
 				&RegisterRequest{
 					DeviceName: "test",
-					SecretName: "no",
-					Username:   "admin",
-					Password:   "HikVQDRQL",
+					SecretName: "test-secret",
 					// TODO: need to change the url to mock device
 					ServerAddress: "bj-hikcamera-01.saifai.cn:39999/capture",
 					Recoding:      true,
@@ -40,9 +54,7 @@ func TestRecord(t *testing.T) {
 			requestBodies: []any{
 				&RegisterRequest{
 					DeviceName:    "test",
-					SecretName:    "no",
-					Username:      "admin",
-					Password:      "HikVQDRQL",
+					SecretName:    "test-secret",
 					ServerAddress: "bj-hikcamera-01.saifai.cn:39999/capture",
 					Recoding:      true,
 					OutDir:        "/tmp",
@@ -66,9 +78,7 @@ func TestRecord(t *testing.T) {
 			requestBodies: []any{
 				&RegisterRequest{
 					DeviceName:    "test",
-					SecretName:    "no",
-					Username:      "admin",
-					Password:      "HikVQDRQL",
+					SecretName:    "test-secret",
 					ServerAddress: "bj-hikcamera-01.saifai.cn:39999/capture",
 					Recoding:      true,
 					OutDir:        "/tmp",

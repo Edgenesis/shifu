@@ -19,8 +19,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to Unmarshal request body", http.StatusBadRequest)
 		return
 	}
+	username, password, err := getCredential(request.SecretName)
+	if err != nil {
+		logger.Errorf("unable to get username and password, error: %v", err)
+		http.Error(w, "unable to get username and password", http.StatusBadRequest)
+		return
+	}
 	d := &Device{
-		in:      fmt.Sprintf("rtsp://%v:%v@%v", request.Username, request.Password, request.ServerAddress),
+		in:      fmt.Sprintf("rtsp://%v:%v@%v", username, password, request.ServerAddress),
 		outDir:  request.OutDir,
 		running: false,
 		clip:    0,
