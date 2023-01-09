@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rtsp-record-deployment
+  name: rtsp-record-deployment
+  namespace: shifu-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rtsp-record-deployment
+  template:
+    metadata:
+      labels:
+        app: rtsp-record-deployment
+    spec:
+      containers:
+      - image: edgehub/rtsp-record:nightly
+        name: deviceshifu-rtsp-record
+        ports:
+        - containerPort: 8080
+        env:
+        - name: SERVER_LISTEN_PORT
+          value: :8080
+        - name: EDGEDEVICE_NAMESPACE
+          value: shifu-app
+      serviceAccountName: rtsp-record-sa

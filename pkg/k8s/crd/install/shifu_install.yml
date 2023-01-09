@@ -516,6 +516,11 @@ metadata:
   name: deviceshifu
 ---
 apiVersion: v1
+kind: Namespace
+metadata:
+  name: shifu-app
+---
+apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: edgedevice-sa
@@ -624,3 +629,22 @@ subjects:
   - kind: ServiceAccount
     name: edgedevice-sa
     namespace: deviceshifu
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: rtsp-record-sa
+  namespace: shifu-app
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: rtsp-record-secret-view-clusterrolebinding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: secret-view
+subjects:
+  - kind: ServiceAccount
+    name: rtsp-record-sa
+    namespace: shifu-app

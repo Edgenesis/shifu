@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/edgenesis/shifu/pkg/rtspRecord"
 	"net/http"
 	"os"
@@ -14,7 +15,9 @@ func main() {
 	mux.HandleFunc("/unregister", rtspRecord.Unregister)
 	mux.HandleFunc("/update", rtspRecord.Update)
 	err := http.ListenAndServe(serverListenPort, mux)
+	logger.Infof("Listening at %#v", serverListenPort)
 	if err != nil {
+		logger.Error(err)
 		return
 	}
 }
