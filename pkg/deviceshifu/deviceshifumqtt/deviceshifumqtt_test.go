@@ -161,7 +161,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 			defer client.Disconnect(0)
 			break
 		}
-		logger.Errorf("Error when connect to server for the %dth thime: %v", i+1, token.Error())
+		logger.Errorf("Error when connect to server for the %d time: %v", i+1, token.Error())
 		time.Sleep(100 * time.Millisecond)
 	}
 	assert.Nil(t, token.Error())
