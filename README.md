@@ -30,7 +30,7 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT d
     &nbsp;
     <a href="https://twitter.com/ShifuFramework"><img src="https://img.shields.io/badge/-Twitter-red?style=social&logo=twitter" height=25></a>
     &nbsp;
-    <a href="https://medium.com/@xiangliedgenesis"><img src="https://img.shields.io/badge/-Medium-red?style=social&logo=medium" height=25></a>
+    <a href="https://www.linkedin.com/company/76257633/admin/"><img src="https://img.shields.io/badge/-Linkedin-red?style=social&logo=linkedin" height=25></a>
      &nbsp;
     <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height=25></a>
 </div>
@@ -42,15 +42,15 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT d
 
 **Protocol agnostic** — HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA...The microservice architecture of Shifu enables it to quickly adapt to new protocols.
 <div align="center">
-<img width="500px" src="./img/shifu-before-and-after.png"></img>
+<img width="800px" src="./img/shifu-before-and-after.png"></img>
 </div>
 
 # How to connect a private-protocol camera with five lines of code
 <div align="center">
 
-<img width="500px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
+<img width="800px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
 
-<img width="500px" src="./img/star.gif"></img>
+<img width="800px" src="./img/star.gif"></img>
 </div>
 
 # Community

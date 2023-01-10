@@ -1,6 +1,6 @@
 <div align="right">
 
-中文(README-zh.md) | [English](README.md)
+中文 | [English](README.md)
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Edgenesis/shifu)](https://goreportcard.com/report/github.com/Edgenesis/shifu)
@@ -30,7 +30,7 @@ Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放
     &nbsp;
     <a href="https://twitter.com/ShifuFramework"><img src="https://img.shields.io/badge/-Twitter-red?style=social&logo=twitter" height=25></a>
     &nbsp;
-    <a href="https://medium.com/@xiangliedgenesis"><img src="https://img.shields.io/badge/-Medium-red?style=social&logo=medium" height=25></a>
+    <a href="https://www.linkedin.com/company/76257633/admin/"><img src="https://img.shields.io/badge/-Linkedin-red?style=social&logo=linkedin" height=25></a>
      &nbsp;
     <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height=25></a>
 </div>
@@ -42,15 +42,15 @@ Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放
 
 **多协议设备接入** — HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA...从公有协议到私有协议，Shifu的微服务架构让我们能够快速整合接入新的协议。
 <div align="center">
-<img width="500px" src="./img/shifu-before-and-after.png"></img>
+<img width="800px" src="./img/shifu-before-and-after.png"></img>
 </div>
 
 # 如何用五行代码连接一个使用私有协议的摄像头
 <div align="center">
 
-<img width="500px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
+<img width="800px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
 
-<img width="500px" src="./img/star.gif"></img>
+<img width="800px" src="./img/star.gif"></img>
 </div>
 
 # 社区
