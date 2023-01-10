@@ -38,14 +38,14 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT d
 # Features
 **Kubernetes native** — developing your application while managing your devices, spare the need for maintaining an additional O&M infrastructure
 
-**Open Platform**— avoide vendor lock-in, you can easily deploy Shifu on public, private and hybrid cloud. 
+**Open Platform**— No vendor lock-in. You can easily deploy Shifu on the edge(from RaspberryPi to edge clusters) or on the cloud(public, private and hybrid cloud are all supported).
 
 **Protocol agnostic** — HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA...The microservice architecture of Shifu enables it to quickly adapt to new protocols.
 <div align="center">
 <img width="900px" src="./img/shifu-before-and-after.png"></img>
 </div>
 
-# How to connect a private-protocol camera with five lines of code
+# How to connect a proprietary-protocol camera with five lines of code
 <div align="center">
 
 <img width="900px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>

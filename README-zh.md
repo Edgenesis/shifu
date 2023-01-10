@@ -17,7 +17,7 @@
 
 <h1 style="border-bottom: none">
 <br>
-    谷歌云物联网核心的开源替代
+    Google IoT Core的开源替代
     <br />
 </h1>
 Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放的物联网开发平台。
