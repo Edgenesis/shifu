@@ -13,49 +13,47 @@
 <div align="center">
 
 <img width="200px" src="./img/shifu-logo.svg"></img>
-
-
-Shifu is a Kubernetes-native IoT development framework that 
-
-greatly improves the efficiency, quality and reusability of IoT application development.
-
-
-|Feature|Description |
-|---|---|
-|🔌 Fast Device integration &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|Compatible with almost all protocols and drivers.|
-|👨‍💻 Efficient Application development|Shifu structually virtualizes each device and expose its capabilities in the form of APIs.|
-|👨‍🔧 Easy Operation & Maintenance|Kubernetes-native framework, sparing the need for maintaining an additional O&M infrastructure.|
-</div>
-<br/><br/>
-
-# 🪄 Demo
 <div align="center">
-<img width="900px" src="./img/demo-camera.gif"></img>
-<img width="900px" src="./img/demo-plc.gif"></img>
+
+<h1 style="border-bottom: none">
+<br>
+    Open Source Alternative to GCP IoT Core
+    <br />
+</h1>
+Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT development framework.
+</div>
 </div>
 <br/><br/>
 
-# 🔧 Install
+<div align="center">
+    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/-Discord-424549?style=social&logo=discord" height=25></a>
+    &nbsp;
+    <a href="https://twitter.com/ShifuFramework"><img src="https://img.shields.io/badge/-Twitter-red?style=social&logo=twitter" height=25></a>
+    &nbsp;
+    <a href="https://medium.com/@xiangliedgenesis"><img src="https://img.shields.io/badge/-Medium-red?style=social&logo=medium" height=25></a>
+     &nbsp;
+    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height=25></a>
+</div>
 
-- If you have a running Kubernetes cluster: Please use the command `kubectl apply` to install Shifu in your cluster:
+# Features
+**Kubernetes native** — developing your application while managing your devices, spare the need for maintaining an additional O&M infrastructure
 
-    ```sh
-    cd shifu
-    kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
-    ```
+**Open Platform**— avoide vendor lock-in, you can easily deploy Shifu on public, private and hybrid cloud. 
 
-- If you don't have a running Kubernetes cluster: Please follow the following steps to try our demo.
-  - Download and Install Docker
-  
-    [Mac](https://docs.docker.com/desktop/install/mac-install/) | [Windows(WSL)](https://docs.docker.com/desktop/install/windows-install/) | [Linux](https://docs.docker.com/desktop/install/linux-install/)
-  - Download and Install Shifu Demo with a single command
-    ```sh
-    curl -sfL https://raw.githubusercontent.com/Edgenesis/shifu/main/test/scripts/shifu-demo-install.sh | sudo sh -
-    ```
+**Protocol agnostic** — HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA...The microservice architecture of Shifu enables it to quickly adapt to new protocols.
+<div align="center">
+<img width="500px" src="./img/shifu-before-and-after.png"></img>
+</div>
 
-- Now that you have installed Shifu, please visit our🗒️[documentation](https://shifu.run/docs/) to🔌[connect a device](https://shifu.run/docs/guides/cases/) and 👨‍💻[develop your own application](https://shifu.run/docs/guides/application/)!
+# How to connect a private-protocol camera with five lines of code
+<div align="center">
 
-# 💖 Community
+<img width="500px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
+
+<img width="500px" src="./img/star.gif"></img>
+</div>
+
+# Community
 
 Welcome to the Shifu community to share your thoughts and ideas! Any suggestion will be deeply valued.
 We couldn't be more excited to have you.
@@ -65,13 +63,17 @@ We couldn't be more excited to have you.
 [![Reddit](https://img.shields.io/badge/Reddit-post-orange)](https://www.reddit.com/r/Shifu/)
 [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
 
-
-# ✍️ Contributing
+# Get Started
+Welcome to check 🗒️[Shifu Documentation](https://shifu.run/) for detailed information on:
+- 🔧[Install](https://shifu.run/docs/guides/install/install-shifu-dev)
+- 🔌[Conenct devices](https://shifu.run/docs/guides/cases/)
+- 👨‍💻[Application Development](https://shifu.run/docs/guides/application/)
+# Contributing
 Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
 
 We will forever be grateful to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors)🥰.
 
-# 🌟 Stargazers over time
+# Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
 
