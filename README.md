@@ -9,7 +9,7 @@
 [![golangci-lint](https://github.com/Edgenesis/shifu/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Edgenesis/shifu/actions/workflows/golangci-lint.yml)
 
 </div>
-
+ 
 <div align="center">
 
 <img width="200px" src="./img/shifu-logo.svg"></img>
