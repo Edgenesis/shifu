@@ -12,7 +12,7 @@
  
 <div align="center">
 
-<img width="200px" src="./img/shifu-logo.svg"></img>
+<img width="300px" src="./img/shifu-logo.svg"></img>
 <div align="center">
 
 <h1 style="border-bottom: none">
@@ -42,15 +42,15 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT d
 
 **Protocol agnostic** — HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA...The microservice architecture of Shifu enables it to quickly adapt to new protocols.
 <div align="center">
-<img width="800px" src="./img/shifu-before-and-after.png"></img>
+<img width="900px" src="./img/shifu-before-and-after.png"></img>
 </div>
 
 # How to connect a private-protocol camera with five lines of code
 <div align="center">
 
-<img width="800px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
+<img width="900px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
 
-<img width="800px" src="./img/star.gif"></img>
+<img width="900px" src="./img/star.gif"></img>
 </div>
 
 # Community

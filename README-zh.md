@@ -12,7 +12,7 @@
 
 <div align="center">
 
-<img width="200px" src="./img/shifu-logo.svg"></img>
+<img width="300px" src="./img/shifu-logo.svg"></img>
 <div align="center">
 
 <h1 style="border-bottom: none">
@@ -42,15 +42,15 @@ Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放
 
 **多协议设备接入** — HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA...从公有协议到私有协议，Shifu的微服务架构让我们能够快速整合接入新的协议。
 <div align="center">
-<img width="800px" src="./img/shifu-before-and-after.png"></img>
+<img width="900px" src="./img/shifu-before-and-after.png"></img>
 </div>
 
 # 如何用五行代码连接一个使用私有协议的摄像头
 <div align="center">
 
-<img width="800px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
+<img width="900px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
 
-<img width="800px" src="./img/star.gif"></img>
+<img width="900px" src="./img/star.gif"></img>
 </div>
 
 # 社区
