@@ -17,7 +17,7 @@ import (
 
 var (
 	serverAddress = os.Getenv("MQTT_SERVER_ADDRESS")
-	clientAddress = os.Getenv("HTTP_SRVER_ADDRESS")
+	clientAddress = os.Getenv("HTTP_SERVER_ADDRESS")
 	tmpMessage    string
 )
 

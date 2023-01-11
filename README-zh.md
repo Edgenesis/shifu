@@ -12,63 +12,72 @@
 
 <div align="center">
 
-<img width="200px" src="./img/shifu-logo.svg"></img>
-
-Shifu是一个Kubernetes原生的物联网开发框架，大大提高了物联网开发的效率、质量及可复用性。
-
-
-|特点|描述  |
-|---|---|
-|🔌 极速设备接入 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;|可兼容各类协议及设备|
-|👨‍💻 高效应用开发|Shifu将每一个设备进行结构化虚拟，并将其能力以API的形式开放出来|
-|👨‍🔧 超低运维成本|Shifu使用Kubernetes原生框架，您无需再构建额外的运维基础设施|
-</div>
-<br/><br/>
-
-# 🪄 Demo
+<img width="300px" src="./img/shifu-logo.svg"></img>
 <div align="center">
-<img width="900px" src="./img/demo-camera.gif"></img>
-<img width="900px" src="./img/demo-plc.gif"></img>
+
+<h1 style="border-bottom: none">
+<br>
+    Google IoT Core的开源替代
+    <br />
+</h1>
+Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放的物联网开发平台。
+</div>
 </div>
 <br/><br/>
 
-# 🔧 安装
+<div align="center">
+    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/-Discord-424549?style=social&logo=discord" height=25></a>
+    &nbsp;
+    <a href="https://twitter.com/ShifuFramework"><img src="https://img.shields.io/badge/-Twitter-red?style=social&logo=twitter" height=25></a>
+    &nbsp;
+    <a href="https://www.linkedin.com/company/76257633/admin/"><img src="https://img.shields.io/badge/-Linkedin-red?style=social&logo=linkedin" height=25></a>
+     &nbsp;
+    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height=25></a>
+</div>
 
-- 如果你有Kubernetes集群，可以使用 `kubectl apply` 命令将Shifu安装到您的集群上：
+# 特点
+**Kubernetes原生** — 应用开发的同时进行设备管理，无需再构建额外的运维基础设施
 
-    ```sh
-    cd shifu
-    kubectl apply -f pkg/k8s/crd/install/shifu_install.yml
-    ```
+**开放平台**— 避免供应商锁定，你可以轻松地将Shifu部署在公有云、私有云或混合云上。Shifu将Kubernetes带入到物联网边缘计算场景中，助力实现物联网应用程序的可扩展性和高可用性。
 
-- 如果您没有Kubernetes集群也完全没有关系，您可以下载我们的demo来进行试玩
-  - 下载并安装Docker
-  
-    [Mac](https://docs.docker.com/desktop/install/mac-install/) | [Windows(WSL)](https://docs.docker.com/desktop/install/windows-install/) | [Linux](https://docs.docker.com/desktop/install/linux-install/)
-  - 下载并安装Shifu Demo
-    ```sh
-    curl -sfL https://raw.githubusercontent.com/Edgenesis/shifu/main/test/scripts/shifu-demo-install.sh | sudo sh -
-    ```
+**多协议设备接入** — HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA...从公有协议到私有协议，Shifu的微服务架构让我们能够快速整合接入新的协议。
+<div align="center">
+<img width="900px" src="./img/shifu-before-and-after.png"></img>
+</div>
 
-- 现在您已经成功安装了Shifu，请参照我们的🗒️[文档](https://shifu.run/zh-Hans/docs/) 来尝试🔌[接入设备](https://shifu.run/zh-Hans/docs/guides/cases/) 以及 👨‍💻[应用开发](https://shifu.run/zh-Hans/docs/guides/application/)吧！
+# 如何用五行代码连接一个使用私有协议的摄像头
+<div align="center">
 
-# 💖 加入社区
+<img width="900px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
+
+<img width="900px" src="./img/star.gif"></img>
+</div>
+
+# 社区
 
 欢迎加入Shifu社区，分享您的思考与想法，
 
-您的意见对我们来说无比宝贵。
-我们无比欢迎您的到来！
+您的意见对我们来说无比宝贵。 我们无比欢迎您的到来！
 
-[Discord](https://discord.com/channels/1024601454306136074/1039472165399052339) | [Github discussion](https://github.com/Edgenesis/shifu/discussions) | [Twitter](https://twitter.com/ShifuFramework)
+[![Discord](https://img.shields.io/badge/Discord-join-brightgreen)](https://discord.gg/CkRwsJ7raw)
+[![Twitter](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
+[![Reddit](https://img.shields.io/badge/Reddit-post-orange)](https://www.reddit.com/r/Shifu/)
+[![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
 
-# ✍️ 贡献
-欢迎向我们[提交issue](https://github.com/Edgenesis/shifu/issues/new/choose)或者 [提交pull request](https://github.com/Edgenesis/shifu/pulls)!
+# 开始上手
+欢迎参考🗒️[Shifu技术文档](https://shifu.run/)获取更详细的信息:
+- 🔧[安装Shifu](https://shifu.run/zh-Hans/docs/guides/install/install-shifu-dev)
+- 🔌[设备连接](https://shifu.run/zh-Hans/docs/guides/cases/)
+- 👨‍💻[应用开发](https://shifu.run/zh-Hans/docs/guides/application/)
+# 贡献 
+欢迎向我们[提交issue](https://github.com/Edgenesis/shifu/issues/new/choose) 或者[提交PR](https://github.com/Edgenesis/shifu/pulls)!
 
-我们对[贡献者](https://github.com/Edgenesis/shifu/graphs/contributors)满怀感激🥰。
+我们对[贡献者们](https://github.com/Edgenesis/shifu/graphs/contributors)心怀感激🥰.
 
+# Github Star数量
 
-
-# 🌟 GitHub Star 数量
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
+
 # 许可证
-This project is Apache License 2.0.
+该项目使用Apache2.0许可证。
+
