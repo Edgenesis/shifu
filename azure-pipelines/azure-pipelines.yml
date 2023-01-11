@@ -59,6 +59,9 @@ stages:
           sudo apt-get install libpcap-dev
         displayName: "Install pcap"
       - script: |
+          sudo apt install ffmpeg -y
+        displayName: "Install ffmpeg"
+      - script: |
           make test
         displayName: "Go test"
       - task: Go@0

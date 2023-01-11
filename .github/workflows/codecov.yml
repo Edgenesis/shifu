@@ -18,6 +18,8 @@ jobs:
           go-version: '1.19.2'
       - name: Install pcap
         run: sudo apt-get install libpcap-dev
+      - name: Install ffmpeg
+        run: sudo apt install ffmpeg -y
       - name: Run coverage
         run: make test
       - name: Codecov
