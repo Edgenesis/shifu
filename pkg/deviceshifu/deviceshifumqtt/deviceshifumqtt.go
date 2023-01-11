@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
@@ -38,6 +40,9 @@ var (
 	MQTTTopic                      string
 	mqttMessageInstructionMap      = map[string]string{}
 	mqttMessageReceiveTimestampMap = map[string]time.Time{}
+	mutexBlocking                  bool
+	controlMsgs                    map[string]string  // The key is controlMsg, the value is completion Msg returned by the device
+	currentControlMsg              string
 )
 
 // New new MQTT Deviceshifu
@@ -52,6 +57,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
+			ConfigFiniteStateMachine(base.DeviceShifuConfig.ControlMsgs)
 			mqttProtocolSetting := base.EdgeDevice.Spec.ProtocolSettings
 			if mqttProtocolSetting != nil {
 				if mqttProtocolSetting.MQTTSetting != nil && mqttProtocolSetting.MQTTSetting.MQTTServerSecret != nil {
@@ -122,9 +128,29 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 
 func sub(client mqtt.Client, topic string) {
 	// topic := "topic/test"
-	token := client.Subscribe(topic, 1, nil)
+	token := client.Subscribe(topic, 1, receiver)
 	token.Wait()
 	logger.Infof("Subscribed to topic: %s", topic)
+}
+
+func receiver(client mqtt.Client, msg mqtt.Message) {
+	msg.Ack()
+	messagePubHandler(client, msg)
+	message := string(msg.Payload())
+	MutexProcess(msg.Topic(), message)
+	logger.Infof("Received message:{id:%v, message:%v}", strconv.Itoa(int(msg.MessageID())), message)
+}
+
+func MutexProcess(topic string, message string) {
+	if mutexBlocking && strings.Contains(message, controlMsgs[currentControlMsg]) {
+		logger.Infof("Resetting mutex")
+		mutexBlocking = false
+		currentControlMsg = ""
+	}
+}
+
+func ConfigFiniteStateMachine(minsts map[string]string) {
+	controlMsgs = minsts
 }
 
 // DeviceCommandHandlerMQTT handler for Mqtt
@@ -153,6 +179,14 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 		} else if reqType == http.MethodPost {
+			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
+			logger.Infof("the controlMsgs is %v", controlMsgs)
+			if mutexBlocking {
+				blockedMessage := fmt.Sprintf("Device is blocked by %v controlMsg now! %v", currentControlMsg, time.Now())
+				logger.Errorf(blockedMessage)
+				http.Error(w, blockedMessage, http.StatusConflict)
+				return
+			}
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				logger.Errorf("Error when Read Data From Body, error: %v", err)
@@ -160,7 +194,6 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
-			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
 			requestBody := RequestBody(body)
 			logger.Infof("requestBody: %v", requestBody)
 
@@ -170,6 +203,11 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				logger.Errorf("Error when publish Data to MQTTServer,%v", token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
 				return
+			}
+			if _, isMutexState := controlMsgs[string(requestBody)]; isMutexState {
+				mutexBlocking = true
+				currentControlMsg = string(requestBody)
+				logger.Infof("Message %s is mutex, blocking.", requestBody)
 			}
 			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
 			return
