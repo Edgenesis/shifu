@@ -9,7 +9,7 @@ sleep 1s
 curl --header "Content-Type: application/json" \
 --request POST --data '{"deviceName":"xyz", "record":true}' \
 rtsp-record.shifu-app.svc.cluster.local/update
-#sleep 5s
-#curl --header "Content-Type: application/json" \
-#--request POST --data '{"deviceName":"xyz"}' \
-#rtsp-record.shifu-app.svc.cluster.local/unregister
+sleep 5s
+curl --header "Content-Type: application/json" \
+--request POST --data '{"deviceName":"xyz"}' \
+rtsp-record.shifu-app.svc.cluster.local/unregister
