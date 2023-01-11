@@ -57,7 +57,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*MetaData, e
 
 				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Protocal")
 			}
-			listener, err := net.Listen("tcp", ":40080")//default port
+			ListenAddress := ":" + *base.EdgeDevice.Spec.ProtocolSettings.TCPSetting.ListenPort
+			Listener, err := net.Listen("tcp", ListenAddress)
 			if err != nil {
 				return nil, fmt.Errorf("Listen error")
 			}
