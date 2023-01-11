@@ -1,9 +1,5 @@
 package rtspRecord
 
-import (
-	"os/exec"
-)
-
 type Request interface {
 	RegisterRequest | UnregisterRequest | UpdateRequest
 }
@@ -12,7 +8,7 @@ type RegisterRequest struct {
 	DeviceName    string `json:"deviceName"`
 	SecretName    string `json:"secretName"`
 	ServerAddress string `json:"serverAddress"`
-	Recoding      bool   `json:"recoding"`
+	Record        bool   `json:"record"`
 }
 
 type UnregisterRequest struct {
@@ -22,11 +18,4 @@ type UnregisterRequest struct {
 type UpdateRequest struct {
 	DeviceName string `json:"deviceName"`
 	Record     bool   `json:"record"`
-}
-
-type Device struct {
-	in      string
-	cmd     *exec.Cmd
-	running bool
-	clip    int
 }

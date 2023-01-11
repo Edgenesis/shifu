@@ -43,13 +43,13 @@ func TestRecord(t *testing.T) {
 					DeviceName:    "test",
 					SecretName:    "test-secret",
 					ServerAddress: "address:12345/capture",
-					Recoding:      true,
+					Record:        true,
 				},
 				&UnregisterRequest{
 					DeviceName: "test",
 				},
 			},
-			specCodes: []int{http.StatusOK, http.StatusBadRequest},
+			specCodes: []int{http.StatusOK, http.StatusOK},
 		},
 		{
 			desc: "testCase1 valid request with update but no rtsp server",
@@ -58,7 +58,7 @@ func TestRecord(t *testing.T) {
 					DeviceName:    "test",
 					SecretName:    "test-secret",
 					ServerAddress: "address:12345/capture",
-					Recoding:      true,
+					Record:        true,
 				},
 				&UpdateRequest{
 					DeviceName: "test",
@@ -72,7 +72,7 @@ func TestRecord(t *testing.T) {
 					DeviceName: "test",
 				},
 			},
-			specCodes: []int{http.StatusOK, http.StatusBadRequest, http.StatusOK, http.StatusBadRequest},
+			specCodes: []int{http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
 		},
 		{
 			desc: "testCase2 device not found",
@@ -81,7 +81,7 @@ func TestRecord(t *testing.T) {
 					DeviceName:    "test",
 					SecretName:    "test-secret",
 					ServerAddress: "address:12345/capture",
-					Recoding:      true,
+					Record:        true,
 				},
 				&UnregisterRequest{
 					DeviceName: "test-2",
@@ -90,7 +90,7 @@ func TestRecord(t *testing.T) {
 					DeviceName: "test",
 				},
 			},
-			specCodes: []int{http.StatusOK, http.StatusBadRequest, http.StatusBadRequest},
+			specCodes: []int{http.StatusOK, http.StatusBadRequest, http.StatusOK},
 		},
 	}
 	for _, tC := range testCases {

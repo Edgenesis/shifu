@@ -34,6 +34,12 @@ func InitPersistMap(filename string) {
 		logger.Errorf("can't load map from file: %v", err)
 		return
 	}
+	// restart all device that expected running
+	for _, d := range store.m {
+		if d.Running {
+			d.startRecord()
+		}
+	}
 }
 
 func (store *PersistMap) load() error {

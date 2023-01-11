@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: curl
+  namespace: shifu-app
+spec:
+  containers:
+    - image: ellerbrock/alpine-bash-curl-ssl
+      command: [ "/bin/bash" ]
+      args: [ "-c", "sleep 365d" ]
+      name: curl

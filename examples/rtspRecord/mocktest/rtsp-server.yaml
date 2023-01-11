@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: rtsp-server
+  name: rtsp-server
+  namespace: shifu-app
+spec:
+  ports:
+    - port: 8554
+      protocol: TCP
+      targetPort: 8554
+  selector:
+    app: rtsp-server
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: rtsp-server
+  name: rtsp-server
+  namespace: shifu-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: rtsp-server
+  template:
+    metadata:
+      labels:
+        app: rtsp-server
+    spec:
+      containers:
+        - image: aler9/rtsp-simple-server:v0.21.1
+          name: server
+          ports:
+            - containerPort: 8554
+          env:
+            - name: RTSP_PROTOCOLS
+              value: tcp

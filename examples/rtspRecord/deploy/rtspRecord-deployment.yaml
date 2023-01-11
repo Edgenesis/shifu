@@ -16,13 +16,23 @@ spec:
         app: rtsp-record-deployment
     spec:
       containers:
-      - image: edgehub/rtsp-record:nightly
-        name: deviceshifu-rtsp-record
-        ports:
-        - containerPort: 8080
-        env:
-        - name: SERVER_LISTEN_PORT
-          value: :8080
-        - name: EDGEDEVICE_NAMESPACE
-          value: shifu-app
+        - image: edgehub/rtsp-record:nightly
+          name: deviceshifu-rtsp-record
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SERVER_LISTEN_PORT
+              value: :8080
+            - name: EDGEDEVICE_NAMESPACE
+              value: shifu-app
+          volumeMounts:
+            - name: storage-pv
+              mountPath: /data
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+      volumes:
+        - name: storage-pv
+          persistentVolumeClaim:
+            claimName: rtsp-pvc
       serviceAccountName: rtsp-record-sa
