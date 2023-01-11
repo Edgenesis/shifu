@@ -56,6 +56,17 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 		}
 	}
 
+	if tss.ServiceSettings.MinIOSetting != nil {
+		request := &v1alpha1.TelemetryRequest{
+			MinIOSetting: tss.ServiceSettings.MinIOSetting,
+		}
+		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMinIO
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
