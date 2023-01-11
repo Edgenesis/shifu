@@ -79,4 +79,5 @@ Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
 
 # 许可证
-This project is distributed under Apache 2.0 License.
+该项目使用Apache2.0许可证。
+
