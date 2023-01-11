@@ -9,7 +9,12 @@ import (
 
 var serverListenPort = os.Getenv("SERVER_LISTEN_PORT")
 
+const storePersistPath = "/data/mapStore"
+const videoPersistPath = "/data/video"
+
 func main() {
+	rtspRecord.InitPersistMap(storePersistPath)
+	rtspRecord.VideoSavePath = videoPersistPath
 	mux := http.NewServeMux()
 	mux.HandleFunc("/register", rtspRecord.Register)
 	mux.HandleFunc("/unregister", rtspRecord.Unregister)

@@ -14,7 +14,11 @@ import (
 	"time"
 )
 
+// no mock rtsp server
 func TestRecord(t *testing.T) {
+	// won't persist the map
+	InitPersistMap("")
+	VideoSavePath = "/tmp"
 	const testNamespace = "shifu-app"
 	client := testclient.NewSimpleClientset(&v1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
@@ -23,7 +27,7 @@ func TestRecord(t *testing.T) {
 		},
 		Data: map[string][]byte{
 			"username": []byte("admin"),
-			"password": []byte("HikVQDRQL"),
+			"password": []byte("password"),
 		},
 	})
 	utils.SetClient(client, testNamespace)
@@ -33,31 +37,28 @@ func TestRecord(t *testing.T) {
 		specCodes     []int
 	}{
 		{
-			desc: "testCase0 valid request",
+			desc: "testCase0 valid request but no rtsp server",
 			requestBodies: []any{
 				&RegisterRequest{
-					DeviceName: "test",
-					SecretName: "test-secret",
-					// TODO: need to change the url to mock device
-					ServerAddress: "bj-hikcamera-01.saifai.cn:39999/capture",
+					DeviceName:    "test",
+					SecretName:    "test-secret",
+					ServerAddress: "address:12345/capture",
 					Recoding:      true,
-					OutDir:        "/tmp",
 				},
 				&UnregisterRequest{
 					DeviceName: "test",
 				},
 			},
-			specCodes: []int{http.StatusOK, http.StatusOK},
+			specCodes: []int{http.StatusOK, http.StatusBadRequest},
 		},
 		{
-			desc: "testCase1 valid request with update",
+			desc: "testCase1 valid request with update but no rtsp server",
 			requestBodies: []any{
 				&RegisterRequest{
 					DeviceName:    "test",
 					SecretName:    "test-secret",
-					ServerAddress: "bj-hikcamera-01.saifai.cn:39999/capture",
+					ServerAddress: "address:12345/capture",
 					Recoding:      true,
-					OutDir:        "/tmp",
 				},
 				&UpdateRequest{
 					DeviceName: "test",
@@ -71,7 +72,7 @@ func TestRecord(t *testing.T) {
 					DeviceName: "test",
 				},
 			},
-			specCodes: []int{http.StatusOK, http.StatusOK, http.StatusOK, http.StatusOK},
+			specCodes: []int{http.StatusOK, http.StatusBadRequest, http.StatusOK, http.StatusBadRequest},
 		},
 		{
 			desc: "testCase2 device not found",
@@ -79,9 +80,8 @@ func TestRecord(t *testing.T) {
 				&RegisterRequest{
 					DeviceName:    "test",
 					SecretName:    "test-secret",
-					ServerAddress: "bj-hikcamera-01.saifai.cn:39999/capture",
+					ServerAddress: "address:12345/capture",
 					Recoding:      true,
-					OutDir:        "/tmp",
 				},
 				&UnregisterRequest{
 					DeviceName: "test-2",
@@ -90,7 +90,7 @@ func TestRecord(t *testing.T) {
 					DeviceName: "test",
 				},
 			},
-			specCodes: []int{http.StatusOK, http.StatusBadRequest, http.StatusOK},
+			specCodes: []int{http.StatusOK, http.StatusBadRequest, http.StatusBadRequest},
 		},
 	}
 	for _, tC := range testCases {

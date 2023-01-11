@@ -7,10 +7,9 @@ import (
 	"net/http"
 	"path/filepath"
 	"strconv"
-	"sync"
 )
 
-var m sync.Map
+var VideoSavePath string
 
 func Register(w http.ResponseWriter, r *http.Request) {
 	request, err := trans[RegisterRequest](r)
@@ -27,11 +26,10 @@ func Register(w http.ResponseWriter, r *http.Request) {
 	}
 	d := &Device{
 		in:      fmt.Sprintf("rtsp://%v:%v@%v", username, password, request.ServerAddress),
-		outDir:  request.OutDir,
 		running: false,
 		clip:    0,
 	}
-	out := filepath.Join(d.outDir, request.DeviceName+"_"+strconv.Itoa(d.clip)+".mp4")
+	out := filepath.Join(VideoSavePath, request.DeviceName+"_"+strconv.Itoa(d.clip)+".mp4")
 	d.cmd = ffmpeg.Input(d.in, ffmpeg.KwArgs{"rtsp_transport": "tcp"}).
 		Output(out, ffmpeg.KwArgs{"c": "copy"}).
 		OverWriteOutput().ErrorToStdOut().Compile()
@@ -39,7 +37,14 @@ func Register(w http.ResponseWriter, r *http.Request) {
 		startRecord(d)
 		d.clip += 1
 	}
-	m.Store(request.DeviceName, d)
+	store.mu.Lock()
+	defer store.mu.Unlock()
+	store.m[request.DeviceName] = d
+	err = store.save()
+	if err != nil {
+		logger.Errorf("can't save map: %v", err)
+		return
+	}
 }
 
 func Unregister(w http.ResponseWriter, r *http.Request) {
@@ -49,23 +54,26 @@ func Unregister(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to Unmarshal request body", http.StatusBadRequest)
 		return
 	}
-	di, exist := m.Load(request.DeviceName)
+	store.mu.Lock()
+	defer store.mu.Unlock()
+	d, exist := store.m[request.DeviceName]
 	if !exist {
 		logger.Error("device %v not found", request.DeviceName)
 		http.Error(w, "device not found", http.StatusBadRequest)
 		return
 	}
-	d := di.(*Device)
-	d.mu.Lock()
 	err = stopRecord(d)
 	if err != nil {
 		logger.Errorf("can't stop record of device %v: %v", request.DeviceName, err)
 		http.Error(w, "can't stop record", http.StatusBadRequest)
-		d.mu.Unlock()
 		return
 	}
-	d.mu.Unlock()
-	m.Delete(request.DeviceName)
+	delete(store.m, request.DeviceName)
+	err = store.save()
+	if err != nil {
+		logger.Errorf("can't save map: %v", err)
+		return
+	}
 }
 
 func Update(w http.ResponseWriter, r *http.Request) {
@@ -75,21 +83,20 @@ func Update(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Error to Unmarshal request body", http.StatusBadRequest)
 		return
 	}
-	di, exist := m.Load(request.DeviceName)
+	store.mu.Lock()
+	defer store.mu.Unlock()
+	d, exist := store.m[request.DeviceName]
 	if !exist {
 		logger.Error("device %v not found", request.DeviceName)
 		http.Error(w, "device not found", http.StatusBadRequest)
 		return
 	}
-	d := di.(*Device)
-	d.mu.Lock()
-	defer d.mu.Unlock()
 	if request.Record {
 		if d.running {
 			logger.Warnf("try to start a already started device %v", request.DeviceName)
 			return
 		}
-		out := filepath.Join(d.outDir, request.DeviceName+"_"+strconv.Itoa(d.clip)+".mp4")
+		out := filepath.Join(VideoSavePath, request.DeviceName+"_"+strconv.Itoa(d.clip)+".mp4")
 		d.cmd = ffmpeg.Input(d.in, ffmpeg.KwArgs{"rtsp_transport": "tcp"}).
 			Output(out, ffmpeg.KwArgs{"c": "copy"}).
 			OverWriteOutput().ErrorToStdOut().Compile()
@@ -106,5 +113,10 @@ func Update(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "can't stop record", http.StatusBadRequest)
 			return
 		}
+	}
+	err = store.save()
+	if err != nil {
+		logger.Errorf("can't save map: %v", err)
+		return
 	}
 }

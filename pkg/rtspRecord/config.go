@@ -2,7 +2,6 @@ package rtspRecord
 
 import (
 	"os/exec"
-	"sync"
 )
 
 type Request interface {
@@ -14,7 +13,6 @@ type RegisterRequest struct {
 	SecretName    string `json:"secretName"`
 	ServerAddress string `json:"serverAddress"`
 	Recoding      bool   `json:"recoding"`
-	OutDir        string `json:"outDir"`
 }
 
 type UnregisterRequest struct {
@@ -27,9 +25,7 @@ type UpdateRequest struct {
 }
 
 type Device struct {
-	mu      sync.Mutex
 	in      string
-	outDir  string
 	cmd     *exec.Cmd
 	running bool
 	clip    int
