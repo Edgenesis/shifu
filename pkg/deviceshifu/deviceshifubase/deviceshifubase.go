@@ -59,6 +59,7 @@ const (
 	PowerShellStubTimeoutTolerationStr    string = "stub_toleration"
 	PythonHandlersModuleName                     = "customized_handlers"
 	PythonScriptDir                              = "pythoncustomizedhandlers"
+	ControlMsgsConfigStr                         = "controlMsgs"
 )
 
 var (
