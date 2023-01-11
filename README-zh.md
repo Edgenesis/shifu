@@ -20,7 +20,7 @@
     Google IoT Core的开源替代
     <br />
 </h1>
-Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放的物联网开发平台。
+Shifu是一个k8s原生的， 生产级的，支持多协议设备接入的，开放物联网开发平台。
 </div>
 </div>
 <br/><br/>
@@ -79,4 +79,4 @@ Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
 
 # 许可证
-This project is distributed under Apache 2.0 License.
+该项目使用Apache2.0许可证。
