@@ -54,6 +54,10 @@ func (store *PersistMap) save() error {
 	if !needPersist {
 		return nil
 	}
+	_, err := store.file.Seek(0, 0)
+	if err != nil {
+		return err
+	}
 	e := gob.NewEncoder(store.file)
 	return e.Encode(store.m)
 }
