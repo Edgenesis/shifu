@@ -33,7 +33,7 @@ class VideoGet:
     """
 
     def __init__(self, ip, rtsp_port, username, password):
-        self.stream = cv2.VideoCapture("rtsp://{}:{}@{}:{}".format(CAMERA_USERNAME, CAMERA_PASSWORD, ip, rtsp_port))
+        self.stream = cv2.VideoCapture("rtsp://{}:{}@{}{}".format(CAMERA_USERNAME, CAMERA_PASSWORD, ip, rtsp_port))
         (self.grabbed, self.frame) = self.stream.read()
         self.stopped = False
 
@@ -99,11 +99,11 @@ def getCameraInfoWithAuth(s, ip, http_port, auth):
     result = None
     s.auth = auth
     try:
-        r = s.get('http://' + ip + ':' + http_port + '/PSIA/System/deviceInfo')
+        r = s.get('http://' + ip + http_port + '/PSIA/System/deviceInfo')
         if r.ok:
             result = r.content
         else:
-            r = s.get('http://' + ip + ':' + http_port + '/ISAPI/System/deviceInfo')
+            r = s.get('http://' + ip + http_port + '/ISAPI/System/deviceInfo')
             if r.ok:
                 result = r.content
             else:
@@ -122,10 +122,10 @@ def moveCameraWithAuth(s, ip, http_port, auth, direction):
         # send request once to avoid send put request error
         getCameraInfoWithAuth(s,ip,http_port,auth)
         headers = {'Content-Type': 'application/xml'}
-        r = s.put('http://' + ip + ':' + http_port + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_DICT[direction], headers=headers)
+        r = s.put('http://' + ip + http_port + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_DICT[direction], headers=headers)
         if r.ok:
             time.sleep(0.2)
-            r = s.put('http://' + ip + ':' + http_port + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_STOP, headers=headers)
+            r = s.put('http://' + ip + http_port + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_STOP, headers=headers)
             result = r.content
         else:
             print("{} failed, message: {}".format(type(auth), r.content))
@@ -197,5 +197,12 @@ def move_camera(direction=None):
 
 
 if __name__ == "__main__":
+    # Customize port
+    if http_port:
+        http_port = ':' + http_port
+
+    if rtsp_port:
+        rtsp_port = ':' + rtsp_port
+
     video_getter = VideoGet(ip, rtsp_port, CAMERA_USERNAME, CAMERA_PASSWORD).start()
     app.run(host="0.0.0.0", port=port)
