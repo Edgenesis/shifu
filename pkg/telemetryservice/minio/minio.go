@@ -1,6 +1,7 @@
 package minio
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -12,7 +13,6 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"io"
 	"net/http"
-	"os"
 )
 
 func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -46,6 +46,7 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Fail to create client", http.StatusBadRequest)
 		return
 	}
+
 	// Upload file to MinIO
 	err = uploadObject(client, *request.MinIOSetting.Bucket, *request.MinIOSetting.FileName, request.RawData)
 	if err != nil {
@@ -86,31 +87,11 @@ func injectSecret(setting *v1alpha1.MinIOSetting) {
 }
 
 func uploadObject(client *minio.Client, bucket string, fileName string, content []byte) error {
-	file, err := os.CreateTemp("", fileName)
-	if err != nil {
-		return errors.New("Fail to create temp file:" + err.Error())
-	}
-	// Close and remove temp file
-	defer func(name string) {
-		if file.Close() != nil {
-			logger.Warn("Close MinIO temp file fail, err:", err.Error())
-		}
-		if os.Remove(name) != nil {
-			logger.Warn("Remove MinIO temp file fail, err:" + err.Error())
-		}
-	}(fileName)
-	// Write file content
-	_, err = file.Write(content)
-	if err != nil {
-		return errors.New("Fail to load file content:" + err.Error())
-	}
-	fileStat, err := file.Stat()
-	if err != nil {
-		return errors.New("Fail to get file stat" + err.Error())
-	}
-	// Upload file to server
-	_, err = client.PutObject(context.Background(),
-		bucket, fileName, file, fileStat.Size(),
+	// Read file's content
+	reader := bytes.NewReader(content)
+	// Upload file
+	_, err := client.PutObject(context.Background(),
+		bucket, fileName, reader, reader.Size(),
 		minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
 		return errors.New("Upload object error:" + err.Error())
