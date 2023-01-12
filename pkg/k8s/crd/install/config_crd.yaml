@@ -204,6 +204,17 @@ spec:
                       username:
                         type: string
                     type: object
+                  MinIOSetting:
+                    properties:
+                      Bucket:
+                        type: string
+                      FileName:
+                        type: string
+                      EndPoint:
+                        type: string
+                      Secret:
+                        type: string
+                    type: object
                 type: object
               telemetrySeriveEndpoint:
                 type: string

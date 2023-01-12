@@ -37,12 +37,12 @@ type HTTPSetting struct {
 }
 
 type MinIOSetting struct {
-	APIId    *string `json:"api_key,omitempty"`
-	APIKey   *string `json:"api_secret,omitempty"`
-	Bucket   *string `json:"bucket,omitempty"`
-	FileName *string `json:"file_name,omitempty"`
-	EndPoint *string `json:"end_point,omitempty"`
-	Secret   *string `json:"secret,omitempty"`
+	APIId    *string `json:"APIId,omitempty"`
+	APIKey   *string `json:"APIKey,omitempty"`
+	Bucket   *string `json:"Bucket,omitempty"`
+	FileName *string `json:"FileName,omitempty"`
+	EndPoint *string `json:"EndPoint,omitempty"`
+	Secret   *string `json:"Secret,omitempty"`
 }
 
 // ServiceSettings defines service settings on telemetry
