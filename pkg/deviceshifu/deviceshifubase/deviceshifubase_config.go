@@ -23,6 +23,7 @@ type DeviceShifuConfig struct {
 	Instructions             DeviceShifuInstructions
 	Telemetries              *DeviceShifuTelemetries
 	CustomInstructionsPython map[string]string `yaml:"customInstructionsPython"`
+	ControlMsgs              map[string]string `yaml:"controlMsgs,omitempty"`
 }
 
 // DeviceShifuDriverProperties properties of deviceshifuDriver
@@ -151,6 +152,14 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 		err = yaml.Unmarshal([]byte(customInstructionsPython), &dsc.CustomInstructionsPython)
 		if err != nil {
 			logger.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapCustomizedInstructionsStr, err)
+			return nil, err
+		}
+	}
+
+	if controlMsgs, ok := cfg[ControlMsgsConfigStr]; ok {
+		err = yaml.Unmarshal([]byte(controlMsgs), &dsc.ControlMsgs)
+		if err != nil {
+			logger.Errorf("Error parsing %v from ConfigMap, error: %v", ControlMsgsConfigStr, err)
 			return nil, err
 		}
 	}

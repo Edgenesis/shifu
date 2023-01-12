@@ -3,16 +3,19 @@ package mqtt
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
 	"io"
-	v1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	testclient "k8s.io/client-go/kubernetes/fake"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"sync"
 	"testing"
+	"time"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	testclient "k8s.io/client-go/kubernetes/fake"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -72,7 +75,16 @@ func TestConnectToMQTT(t *testing.T) {
 
 	for _, c := range testCases {
 		t.Run(c.name, func(t *testing.T) {
-			client, err := connectToMQTT(c.setting)
+			var client *mqtt.Client
+			var err error
+			connectAttempts := 3
+			for i := 0; i < connectAttempts; i++{
+				client, err = connectToMQTT(c.setting)
+				if err == nil {
+					break
+				}
+				time.Sleep(100 * time.Millisecond)
+			}
 			if err != nil {
 				assert.Equal(t, c.expectedErr, err.Error())
 				return

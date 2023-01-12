@@ -6,6 +6,8 @@ from threading import Thread
 app = Flask(__name__)
 
 ip = os.environ.get("IP_CAMERA_ADDRESS")
+http_port = os.environ.get("IP_CAMERA_HTTP_PORT")
+rtsp_port = os.environ.get("IP_CAMERA_RTSP_PORT")
 CAMERA_USERNAME = os.environ.get("IP_CAMERA_USERNAME")
 CAMERA_PASSWORD = os.environ.get("IP_CAMERA_PASSWORD")
 port = os.environ.get("IP_CAMERA_CONTAINER_PORT")
@@ -30,8 +32,8 @@ class VideoGet:
     with a dedicated thread.
     """
 
-    def __init__(self, ip, username, password):
-        self.stream = cv2.VideoCapture("rtsp://{}:{}@{}".format(CAMERA_USERNAME, CAMERA_PASSWORD, ip))
+    def __init__(self, ip, rtsp_port, username, password):
+        self.stream = cv2.VideoCapture("rtsp://{}:{}@{}{}".format(CAMERA_USERNAME, CAMERA_PASSWORD, ip, rtsp_port))
         (self.grabbed, self.frame) = self.stream.read()
         self.stopped = False
 
@@ -58,7 +60,7 @@ def capture():
         global video_getter
         if not video_getter.grabbed:
             video_getter.stop()
-            video_getter = VideoGet(ip, CAMERA_USERNAME, CAMERA_PASSWORD).start()
+            video_getter = VideoGet(ip, rtsp_port, CAMERA_USERNAME, CAMERA_PASSWORD).start()
         if not video_getter.stopped:
             ret, frame = video_getter.grabbed, video_getter.frame
             if ret:
@@ -93,15 +95,15 @@ def stream(ip, username, password):
         return False
 
 
-def getCameraInfoWithAuth(s, ip, auth):
+def getCameraInfoWithAuth(s, ip, http_port, auth):
     result = None
     s.auth = auth
     try:
-        r = s.get('http://' + ip + '/PSIA/System/deviceInfo')
+        r = s.get('http://' + ip + http_port + '/PSIA/System/deviceInfo')
         if r.ok:
             result = r.content
         else:
-            r = s.get('http://' + ip + '/ISAPI/System/deviceInfo')
+            r = s.get('http://' + ip + http_port + '/ISAPI/System/deviceInfo')
             if r.ok:
                 result = r.content
             else:
@@ -113,17 +115,17 @@ def getCameraInfoWithAuth(s, ip, auth):
     return result
 
 
-def moveCameraWithAuth(s, ip, auth, direction):
+def moveCameraWithAuth(s, ip, http_port, auth, direction):
     result = None
     s.auth = auth
     try:
         # send request once to avoid send put request error
-        getCameraInfoWithAuth(s,ip,auth)
+        getCameraInfoWithAuth(s,ip,http_port,auth)
         headers = {'Content-Type': 'application/xml'}
-        r = s.put('http://' + ip + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_DICT[direction], headers=headers)
+        r = s.put('http://' + ip + http_port + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_DICT[direction], headers=headers)
         if r.ok:
             time.sleep(0.2)
-            r = s.put('http://' + ip + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_STOP, headers=headers)
+            r = s.put('http://' + ip + http_port + '/ISAPI/PTZCtrl/channels/1/continuous', data=CAMERA_CTRL_MOVE_STOP, headers=headers)
             result = r.content
         else:
             print("{} failed, message: {}".format(type(auth), r.content))
@@ -139,12 +141,12 @@ def moveCamera(direction):
         result = None
         print("try HTTPDigestAuth")
         auth = HTTPDigestAuth(CAMERA_USERNAME, CAMERA_PASSWORD)
-        result = moveCameraWithAuth(s, ip, auth, direction)
+        result = moveCameraWithAuth(s, ip, http_port, auth, direction)
 
         if result is None:
             print("try HTTPBasicAuth")
             auth = HTTPBasicAuth(CAMERA_USERNAME, CAMERA_PASSWORD)
-            result = moveCameraWithAuth(s, ip, auth, direction)
+            result = moveCameraWithAuth(s, ip, http_port, auth, direction)
             if result is None:
                 print("all authentication failed for device")
                 return False
@@ -158,12 +160,12 @@ def getCameraInfo():
         result = None
         print("try HTTPDigestAuth")
         auth = HTTPDigestAuth(CAMERA_USERNAME, CAMERA_PASSWORD)
-        result = getCameraInfoWithAuth(s, ip, auth)
+        result = getCameraInfoWithAuth(s, ip, http_port, auth)
 
         if result is None:
             print("try HTTPBasicAuth")
             auth = HTTPBasicAuth(CAMERA_USERNAME, CAMERA_PASSWORD)
-            result = getCameraInfoWithAuth(s, ip, auth)
+            result = getCameraInfoWithAuth(s, ip, http_port, auth)
 
         if result is None:
             print("all authentication failed for device")
@@ -178,7 +180,7 @@ def video_feed():
     global video_getter
     if not video_getter.grabbed:
         video_getter.stop()
-        video_getter = VideoGet(ip, CAMERA_USERNAME, CAMERA_PASSWORD).start()
+        video_getter = VideoGet(ip, rtsp_port, CAMERA_USERNAME, CAMERA_PASSWORD).start()
     return Response(stream(ip, CAMERA_USERNAME, CAMERA_PASSWORD), mimetype='multipart/x-mixed-replace; boundary=frame')
 
 
@@ -195,5 +197,12 @@ def move_camera(direction=None):
 
 
 if __name__ == "__main__":
-    video_getter = VideoGet(ip, CAMERA_USERNAME, CAMERA_PASSWORD).start()
+    # Customize port
+    if http_port:
+        http_port = ':' + http_port
+
+    if rtsp_port:
+        rtsp_port = ':' + rtsp_port
+
+    video_getter = VideoGet(ip, rtsp_port, CAMERA_USERNAME, CAMERA_PASSWORD).start()
     app.run(host="0.0.0.0", port=port)
