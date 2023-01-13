@@ -66,7 +66,7 @@ We couldn't be more excited to have you.
 # Get Started
 Welcome to check 🗒️[Shifu Documentation](https://shifu.run/) for detailed information on:
 - 🔧[Install](https://shifu.run/docs/guides/install/install-shifu-dev)
-- 🔌[Conenct devices](https://shifu.run/docs/guides/cases/)
+- 🔌[Connect devices](https://shifu.run/docs/guides/cases/)
 - 👨‍💻[Application Development](https://shifu.run/docs/guides/application/)
 # Contributing
 Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
