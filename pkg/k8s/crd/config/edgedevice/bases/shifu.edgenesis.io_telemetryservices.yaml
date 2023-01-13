@@ -62,6 +62,21 @@ spec:
                       MQTTTopic:
                         type: string
                     type: object
+                  MinIOSetting:
+                    properties:
+                      APIId:
+                        type: string
+                      APIKey:
+                        type: string
+                      Bucket:
+                        type: string
+                      EndPoint:
+                        type: string
+                      FileExtension:
+                        type: string
+                      Secret:
+                        type: string
+                    type: object
                   SQLSetting:
                     properties:
                       dbName:
