@@ -1,0 +1,14 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: TelemetryService
+metadata:
+  name: push-file-txt
+  namespace: devices
+spec:
+  telemetrySeriveEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
+  serviceSettings:
+    MinIOSetting:
+      Bucket: test-bucket
+      FileExtension: test.txt
+      # Dont add "http://" prefix
+      EndPoint: minio-1673509481.data.svc.cluster.local:9000
+      Secret: minio-secret
