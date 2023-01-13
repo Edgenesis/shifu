@@ -12,6 +12,11 @@ import (
 	_ "github.com/taosdata/driver-go/v3/taosRestful"
 )
 
+const (
+	DeviceNameHeaderField = "device_name"
+	EventTagHeaderField   = "event_tag"
+)
+
 type DBHelper struct {
 	DB       *sql.DB
 	Settings *v1alpha1.SQLConnectionSetting
@@ -39,12 +44,12 @@ func SendToTDengine(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConn
 	}
 
 	deviceInfo := &DeviceInfo{}
-	if name, exists := header["device_name"]; exists {
+	if name, exists := header[DeviceNameHeaderField]; exists {
 		deviceInfo.Name = name[0]
 	} else {
 		logger.Errorf("Error to get device name from http header")
 	}
-	if tag, exists := header["device_tag"]; exists {
+	if tag, exists := header[EventTagHeaderField]; exists {
 		deviceInfo.Tag = tag[0]
 	} else {
 		logger.Errorf("Error to get device tag from http header")
