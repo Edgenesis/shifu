@@ -96,7 +96,7 @@ func TestInsertDataToDB(t *testing.T) {
 
 			sm.ExpectExec(tC.expectSQL).WillReturnResult(tC.expectResult)
 			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
-			err = helper.insertDataToDB(context.TODO(), tC.rawData)
+			err = helper.insertDataToDB(context.TODO(), tC.rawData, &DeviceInfo{Name: "device_1", Tag: "open device"})
 			if tC.expectErr == "" {
 				assert.Nil(t, err)
 			} else {
@@ -130,6 +130,6 @@ func TestSendToTDengine(t *testing.T) {
 		DBTable:       unitest.ToPointer("testTable"),
 	}
 	expectErr := "invalid DSN: network address not terminated (missing closing brace)"
-	err := SendToTDengine(context.TODO(), []byte("test"), settings)
+	err := SendToTDengine(context.TODO(), []byte("test"), settings, nil)
 	assert.Equal(t, expectErr, err.Error())
 }

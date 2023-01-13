@@ -36,7 +36,7 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 	switch *request.SQLConnectionSetting.DBType {
 	case v1alpha1.DBTypeTDengine:
-		err = tdengine.SendToTDengine(context.TODO(), request.RawData, request.SQLConnectionSetting)
+		err = tdengine.SendToTDengine(context.TODO(), request.RawData, request.SQLConnectionSetting, map[string][]string(r.Header))
 	default:
 		err = fmt.Errorf("UnSupport DB Type")
 	}
