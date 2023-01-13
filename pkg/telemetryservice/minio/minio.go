@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
@@ -13,6 +14,7 @@ import (
 	"github.com/minio/minio-go/v7/pkg/credentials"
 	"io"
 	"net/http"
+	"time"
 )
 
 func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
@@ -24,7 +26,6 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	logger.Infof("requestBody: %s", string(body))
 	request := v1alpha1.TelemetryRequest{}
 
 	err = json.Unmarshal(body, &request)
@@ -42,16 +43,23 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 		Creds: credentials.NewStaticV4(*request.MinIOSetting.APIId, *request.MinIOSetting.APIKey, ""),
 	})
 	if err != nil {
-		logger.Errorf("Fail to create MinIO client")
+		logger.Errorf("Fail to create MinIO client, error:" + err.Error())
 		http.Error(w, "Fail to create client", http.StatusBadRequest)
 		return
 	}
 
-	// Upload file to MinIO
-	err = uploadObject(client, *request.MinIOSetting.Bucket, *request.MinIOSetting.FileName, request.RawData)
-	if err != nil {
-		logger.Errorf(err.Error())
-		http.Error(w, err.Error(), http.StatusBadRequest)
+	// Get device name, build file path ([device_name]/[time].[fileExtension])
+	if deviceName, ok := r.Header["device_name"]; ok {
+		fileName := fmt.Sprintf("%v/%v.%v", deviceName, time.Now().Format(time.RFC3339), *request.MinIOSetting.FileExtension)
+		// Upload file to MinIO
+		err = uploadObject(client, *request.MinIOSetting.Bucket, fileName, request.RawData)
+		if err != nil {
+			logger.Errorf(err.Error())
+			http.Error(w, err.Error(), http.StatusBadRequest)
+		}
+	} else {
+		logger.Errorf("Fail to get device name from header")
+		http.Error(w, "Fail to get device name from header", http.StatusBadRequest)
 	}
 }
 

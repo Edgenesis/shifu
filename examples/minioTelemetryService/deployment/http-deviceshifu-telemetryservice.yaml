@@ -8,7 +8,7 @@ spec:
   serviceSettings:
     MinIOSetting:
       Bucket: test-bucket
-      FileExtension: test.txt
+      FileExtension: txt
       # Dont add "http://" prefix
-      EndPoint: minio-1673509481.data.svc.cluster.local:9000
+      EndPoint: minio-1673579889.data.svc.cluster.local:9000
       Secret: minio-secret
