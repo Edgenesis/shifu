@@ -39,7 +39,7 @@ func SendToTDengine(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConn
 
 	err := db.connectToTDengine(ctx)
 	if err != nil {
-		logger.Errorf("Error to Connect to tdengine, error %v", err.Error())
+		logger.Errorf("Error to Connect to tdengine, error %s", err.Error())
 		return err
 	}
 
@@ -47,17 +47,19 @@ func SendToTDengine(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConn
 	if name, exists := header[DeviceNameHeaderField]; exists {
 		deviceInfo.Name = name[0]
 	} else {
-		logger.Errorf("Error to get device name from http header")
+		logger.Infof("Error to get device name from http header")
+		deviceInfo.Name = "default_device_name"
 	}
 	if tag, exists := header[EventTagHeaderField]; exists {
 		deviceInfo.Tag = tag[0]
 	} else {
-		logger.Errorf("Error to get device tag from http header")
+		logger.Infof("Error to get device tag from http header")
+		deviceInfo.Tag = "default_event_tag"
 	}
 
 	err = db.post(ctx, rawData, deviceInfo)
 	if err != nil {
-		logger.Errorf("Error to Insert rawData to DB, errror: %v", err.Error())
+		logger.Errorf("Error to Insert rawData to DB, error: %s", err.Error())
 		return err
 	}
 
