@@ -204,6 +204,9 @@ spec:
                       Secret:
                         type: string
                     type: object
+                  RequestTimeout:
+                    format: int64
+                    type: integer
                   SQLSetting:
                     properties:
                       dbName:

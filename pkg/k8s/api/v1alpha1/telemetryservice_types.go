@@ -47,10 +47,11 @@ type MinIOSetting struct {
 
 // ServiceSettings defines service settings on telemetry
 type ServiceSettings struct {
-	HTTPSetting  *HTTPSetting          `json:"HTTPSetting,omitempty"`
-	MQTTSetting  *MQTTSetting          `json:"MQTTSetting,omitempty"`
-	SQLSetting   *SQLConnectionSetting `json:"SQLSetting,omitempty"`
-	MinIOSetting *MinIOSetting         `json:"MinIOSetting,omitempty"`
+	RequestTimeout *int64                `json:"RequestTimeout,omitempty"`
+	HTTPSetting    *HTTPSetting          `json:"HTTPSetting,omitempty"`
+	MQTTSetting    *MQTTSetting          `json:"MQTTSetting,omitempty"`
+	SQLSetting     *SQLConnectionSetting `json:"SQLSetting,omitempty"`
+	MinIOSetting   *MinIOSetting         `json:"MinIOSetting,omitempty"`
 }
 
 // TelemetryServiceSpec defines the desired state of TelemetryService
