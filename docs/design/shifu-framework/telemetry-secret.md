@@ -44,8 +44,8 @@ Deviceshifu -->|Settings| TelemetryService
 ## Design Details
 
 1. Telemetry Service
-   1. Create k8s client at the begining.
-      ```Go
+   1. Create k8s client at the beginning.
+      ```go
       func init() {
         config, err := rest.InClusterConfig()
         ...
@@ -55,7 +55,7 @@ Deviceshifu -->|Settings| TelemetryService
       ```
    
    2. When receiving a request, load the credential from the `Secret` and write it to the setting.
-      ```Go
+      ```go
       func InjectSecret(setting *v1alpha1.SQLConnectionSetting) {
         ...
         // for SQL

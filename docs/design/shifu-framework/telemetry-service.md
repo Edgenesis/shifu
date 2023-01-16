@@ -9,7 +9,7 @@
 
 ### Design non-goals
 
-#### 100% Compatiblility
+#### 100% Compatibility
 
 A `TelemetryService` object should be able to describe most existing service endpoints such as `MySQL`, `HTTP` servers, `MQTT` endpoints and etc. But it should not be able to describe and compatible with 100% of the existing service endpoints.
 

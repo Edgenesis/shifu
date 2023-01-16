@@ -1,0 +1,1 @@
+# Telemetry Service MinIO Endpoint Design

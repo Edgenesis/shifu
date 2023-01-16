@@ -49,8 +49,9 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Get device name, build file path ([device_name]/[time].[fileExtension])
-	if deviceName, ok := r.Header["device_name"]; ok {
-		fileName := fmt.Sprintf("%v/%v.%v", deviceName, time.Now().Format(time.RFC3339), *request.MinIOSetting.FileExtension)
+	r.Header["device_name"] = []string{"test"}
+	if deviceName, ok := r.Header["device_name"]; ok && len(deviceName) == 1 {
+		fileName := fmt.Sprintf("%v/%v.%v", deviceName[0], time.Now().Format(time.RFC3339), *request.MinIOSetting.FileExtension)
 		// Upload file to MinIO
 		err = uploadObject(client, *request.MinIOSetting.Bucket, fileName, request.RawData)
 		if err != nil {

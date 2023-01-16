@@ -34,7 +34,7 @@ TelemetryService -->|RawData| MQTTEndpoint;
 
 ```
 
-TelemtryService would have 2 methods, one extract rawData and endpoint settings, the other push the rawData to the endpoint according to the settings extracted from the first one.
+TelemetryService would have 2 methods, one extract rawData and endpoint settings, the other push the rawData to the endpoint according to the settings extracted from the first one.
 
 ```go
 func HandleTelemtryRequest(request *TelemetryRequest) err {

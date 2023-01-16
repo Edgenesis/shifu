@@ -7,7 +7,7 @@ Create a deviceShifu-PLC4X type using PLC4X library and allow user to connect PL
 
 ## General Design
 
-deviceShifu-PLC4X will receive RESTful style request like other, then transfer the request into valid PLC4X method calls and send it to connected devices.
+deviceShifu-PLC4X will receive RESTFul style request like other, then transfer the request into valid PLC4X method calls and send it to connected devices.
 
 ## Detailed Design
 
@@ -67,7 +67,7 @@ For write:
 http://device-plc/write?${field1}=${value1}?${field2}=${value2}
 e.g: http://device-plc/write?holding-register:26:REAL=2.7182818284?holding-register:3:REAL=3.141592657
 ```
-The `read` , `write` after `http://device-plc/` will be served as a instruction router.
+The `read` , `write` after `http://device-plc/` will be served as an instruction router.
 `?` would be served as query delimiter, whatever comes between `?` will be seen as the query.
 
 For `read`, the query would only contain the fields requests reading from. 

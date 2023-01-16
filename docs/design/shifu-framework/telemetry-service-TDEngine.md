@@ -11,7 +11,7 @@ Let telemetry service support all timeseriesDB endpoint
 
 
 ## Design Details
-In order to add `TDengine` as a endpoint, we need to add connection related settings telemetry service's CRD, just like  what we did for `MQTT` 
+In order to add `TDengine` as an endpoint, we need to add connection related settings telemetry service's CRD, just like  what we did for `MQTT` 
 
 ```ymal
 SQLConnectionSetting:
@@ -54,7 +54,7 @@ type TelemetryRequest struct {
 }
 ```
 
-We use the name `SQLConnection` instead of `TDengineConnection` because we want to it to be a generic DB connection setting for scalability concerns. We want to use it to conenct to various DBs instead of TDengine alone.
+We use the name `SQLConnection` instead of `TDengineConnection` because we want to it to be a generic DB connection setting for scalability concerns. We want to use it to connect to various DBs instead of TDengine alone.
 
 Telemetry Service will push the data to TDengine:
 ```mermaid
