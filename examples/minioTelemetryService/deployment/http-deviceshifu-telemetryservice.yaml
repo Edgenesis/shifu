@@ -1,14 +1,14 @@
 apiVersion: shifu.edgenesis.io/v1alpha1
 kind: TelemetryService
 metadata:
-  name: push-file-txt
+  name: push-file-mp4
   namespace: devices
 spec:
   telemetrySeriveEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
   serviceSettings:
+    RequestTimeout: 20000
     MinIOSetting:
       Bucket: test-bucket
-      FileExtension: txt
-      # Dont add "http://" prefix
+      FileExtension: mp4
       EndPoint: minio-1673579889.data.svc.cluster.local:9000
       Secret: minio-secret

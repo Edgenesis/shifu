@@ -12,11 +12,11 @@ data:
       status:
   telemetries: |
     telemetrySettings:
-      telemetryUpdateIntervalInMilliseconds: 6000
-      telemetryTimeoutInMilliseconds: 3000
+      telemetryUpdateIntervalInMilliseconds: 10000
+      telemetryTimeoutInMilliseconds: 20000
     telemetries:
-      device_health1:
+      push_file:
         properties:
           instruction: get_file
           pushSettings:
-            telemetryCollectionService: push-file-txt
+            telemetryCollectionService: push-file-mp4
