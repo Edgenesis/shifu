@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"testing"
+	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -36,19 +37,50 @@ func TestConstructTDengineUri(t *testing.T) {
 	}
 }
 
-func TestInsertDataToDB(t *testing.T) {
+func TestCreateDBAndTable(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		dbHelper *DBHelper
+	}{
+		{
+			desc: "test",
+			dbHelper: &DBHelper{
+				Settings: &v1alpha1.SQLConnectionSetting{
+					DBName:  unitest.ToPointer("testDB"),
+					DBTable: unitest.ToPointer("testTable"),
+				},
+			},
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			db, sm, err := sqlmock.New()
+			assert.Nil(t, err)
+
+			sm.ExpectExec("CREATE DATABASE IF NOT EXISTS").WillReturnResult(sqlmock.NewResult(0, 0))
+			sm.ExpectExec("CREATE STABLE IF NOT EXISTS").WillReturnResult(sqlmock.NewResult(0, 0))
+			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
+			err = helper.createDBAndTable(context.Background())
+			assert.Nil(t, err)
+		})
+	}
+}
+
+// The SQL supported by TDengine has some differences from classic SQL, so we cannot use sqlmock for testing
+func TestPost(t *testing.T) {
 	testCases := []struct {
 		desc         string
-		expectSQL    string
 		rawData      []byte
+		deviceInfo   *DeviceInfo
 		dbHelper     *DBHelper
+		expectSQL    string
 		expectResult sql.Result
 		expectErr    string
 		preCloseDB   bool
 	}{
 		{
 			desc:      "testCases 1 insert Successfully",
-			expectSQL: "Insert Into testTable",
+			expectSQL: "INSERT INTO testDB.device_no_1 USING testDB.testTable",
 			rawData:   []byte("testData"),
 			dbHelper: &DBHelper{
 				Settings: &v1alpha1.SQLConnectionSetting{
@@ -57,6 +89,10 @@ func TestInsertDataToDB(t *testing.T) {
 				},
 			},
 			expectResult: sqlmock.NewResult(1, 1),
+			deviceInfo: &DeviceInfo{
+				Name: "device_no_1",
+				Tag:  "open device",
+			},
 		},
 		{
 			desc:    "testCases2 without DBName",
@@ -69,10 +105,14 @@ func TestInsertDataToDB(t *testing.T) {
 			},
 			preCloseDB: true,
 			expectErr:  "sql: database is closed",
+			deviceInfo: &DeviceInfo{
+				Name: "device_no_2",
+				Tag:  "close device",
+			},
 		},
 		{
 			desc:      "testCases 3 LastInsertId = 0",
-			expectSQL: "Insert Into testTable",
+			expectSQL: "INSERT INTO testDB.device_no_3 USING testDB.testTable",
 			rawData:   []byte("testData"),
 			dbHelper: &DBHelper{
 				Settings: &v1alpha1.SQLConnectionSetting{
@@ -82,6 +122,10 @@ func TestInsertDataToDB(t *testing.T) {
 			},
 			expectResult: sqlmock.NewResult(0, 0),
 			expectErr:    "insert Failed",
+			deviceInfo: &DeviceInfo{
+				Name: "device_no_3",
+				Tag:  "restart device",
+			},
 		},
 	}
 	for _, tC := range testCases {
@@ -94,9 +138,11 @@ func TestInsertDataToDB(t *testing.T) {
 				defer db.Close()
 			}
 
+			sm.ExpectExec("CREATE DATABASE IF NOT EXISTS").WillReturnResult(sqlmock.NewResult(0, 0))
+			sm.ExpectExec("CREATE STABLE IF NOT EXISTS").WillReturnResult(sqlmock.NewResult(0, 0))
 			sm.ExpectExec(tC.expectSQL).WillReturnResult(tC.expectResult)
 			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
-			err = helper.insertDataToDB(context.TODO(), tC.rawData, &DeviceInfo{Name: "device_1", Tag: "open device"})
+			err = helper.post(context.TODO(), tC.rawData, tC.deviceInfo)
 			if tC.expectErr == "" {
 				assert.Nil(t, err)
 			} else {
@@ -132,4 +178,156 @@ func TestSendToTDengine(t *testing.T) {
 	expectErr := "invalid DSN: network address not terminated (missing closing brace)"
 	err := SendToTDengine(context.TODO(), []byte("test"), settings, nil)
 	assert.Equal(t, expectErr, err.Error())
+}
+
+func TestQuery(t *testing.T) {
+	testCases := []struct {
+		desc     string
+		dbHelper *DBHelper
+		query    string
+	}{
+		{
+			desc: "query successfully",
+			dbHelper: &DBHelper{
+				Settings: &v1alpha1.SQLConnectionSetting{
+					DBName:  unitest.ToPointer("testDB"),
+					DBTable: unitest.ToPointer("testTable"),
+				},
+			},
+			query: "SELECT ts, data, tg, devicename FROM testDB.testTable WHERE devicename='device_1'",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			db, sm, err := sqlmock.New()
+			assert.Nil(t, err)
+
+			sm.ExpectQuery("SELECT ts, data, tg, devicename").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
+			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
+			_, err = helper.query(tC.query)
+			assert.Nil(t, err)
+		})
+	}
+}
+
+func TestQueryFromDeviceName(t *testing.T) {
+	testCases := []struct {
+		desc        string
+		dbHelper    *DBHelper
+		deviceName  string
+		expectedErr string
+	}{
+		{
+			desc: "query successfully",
+			dbHelper: &DBHelper{
+				Settings: &v1alpha1.SQLConnectionSetting{
+					DBName:  unitest.ToPointer("testDB"),
+					DBTable: unitest.ToPointer("testTable"),
+				},
+			},
+			deviceName: "device_no_1",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			db, sm, err := sqlmock.New()
+			assert.Nil(t, err)
+
+			sm.ExpectQuery("SELECT ts, data, tg, devicename FROM testDB.testTable WHERE devicename=").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
+			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
+			_, err = helper.queryFromDeviceName(tC.deviceName)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+func TestQueryFromTag(t *testing.T) {
+	testCases := []struct {
+		desc        string
+		dbHelper    *DBHelper
+		Tag         string
+		expectedErr string
+	}{
+		{
+			desc: "query successfully",
+			dbHelper: &DBHelper{
+				Settings: &v1alpha1.SQLConnectionSetting{
+					DBName:  unitest.ToPointer("testDB"),
+					DBTable: unitest.ToPointer("testTable"),
+				},
+			},
+			Tag: "open service",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			db, sm, err := sqlmock.New()
+			assert.Nil(t, err)
+
+			sm.ExpectQuery("SELECT ts, data, tg, devicename FROM testDB.testTable WHERE tg").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
+			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
+			_, err = helper.queryFromTag(tC.Tag)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
+}
+
+func TestQueryFromTime(t *testing.T) {
+	testCases := []struct {
+		desc        string
+		dbHelper    *DBHelper
+		startTime   time.Time
+		endTime     time.Time
+		expectedErr string
+	}{
+		{
+			desc: "query successfully",
+			dbHelper: &DBHelper{
+				Settings: &v1alpha1.SQLConnectionSetting{
+					DBName:  unitest.ToPointer("testDB"),
+					DBTable: unitest.ToPointer("testTable"),
+				},
+			},
+			startTime: time.Now().Add(-3 * time.Hour),
+			endTime:   time.Now().Add(-time.Hour),
+		},
+		{
+			desc: "query failed",
+			dbHelper: &DBHelper{
+				Settings: &v1alpha1.SQLConnectionSetting{
+					DBName:  unitest.ToPointer("testDB"),
+					DBTable: unitest.ToPointer("testTable"),
+				},
+			},
+			startTime:   time.Now().Add(-time.Hour),
+			endTime:     time.Now().Add(-2 * time.Hour),
+			expectedErr: "start time is after the end time",
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.desc, func(t *testing.T) {
+			db, sm, err := sqlmock.New()
+			assert.Nil(t, err)
+
+			sm.ExpectQuery("SELECT ts, data, tg, devicename FROM testDB.testTable WHERE ts").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
+			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
+			_, err = helper.queryFromTime(tC.startTime, tC.endTime)
+			if tC.expectedErr == "" {
+				assert.Nil(t, err)
+			} else {
+				assert.NotNil(t, err)
+				assert.Equal(t, tC.expectedErr, err.Error())
+			}
+		})
+	}
 }
