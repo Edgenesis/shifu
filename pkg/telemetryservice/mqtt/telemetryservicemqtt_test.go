@@ -9,6 +9,13 @@ import (
 	"os"
 	"sync"
 	"testing"
+	"time"
+
+	mqtt "github.com/eclipse/paho.mqtt.golang"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
+	v1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	testclient "k8s.io/client-go/kubernetes/fake"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -68,7 +75,16 @@ func TestConnectToMQTT(t *testing.T) {
 
 	for _, c := range testCases {
 		t.Run(c.name, func(t *testing.T) {
-			client, err := connectToMQTT(c.setting)
+			var client *mqtt.Client
+			var err error
+			connectAttempts := 3
+			for i := 0; i < connectAttempts; i++{
+				client, err = connectToMQTT(c.setting)
+				if err == nil {
+					break
+				}
+				time.Sleep(100 * time.Millisecond)
+			}
 			if err != nil {
 				assert.Equal(t, c.expectedErr, err.Error())
 				return
@@ -157,4 +173,48 @@ func TestBindMQTTServicehandler(t *testing.T) {
 		})
 	}
 
+}
+
+func TestInjectSecret(t *testing.T) {
+	testNamespace := "test-namespace"
+	testCases := []struct {
+		name         string
+		client       *testclient.Clientset
+		ns           string
+		setting      *v1alpha1.MQTTSetting
+		specPassword string
+	}{
+		{
+			name:   "case0 no secrets found",
+			client: testclient.NewSimpleClientset(),
+			ns:     testNamespace,
+			setting: &v1alpha1.MQTTSetting{
+				MQTTServerSecret: unitest.ToPointer("test-secret"),
+			},
+			specPassword: "test-secret",
+		},
+		{
+			name: "case2 have HTTP password secret",
+			client: testclient.NewSimpleClientset(&v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-secret",
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{
+					"password": []byte("overwrite"),
+				},
+			}),
+			ns: testNamespace,
+			setting: &v1alpha1.MQTTSetting{
+				MQTTServerSecret: unitest.ToPointer("test-secret"),
+			},
+			specPassword: "overwrite",
+		},
+	}
+
+	for _, c := range testCases {
+		utils.SetClient(c.client, c.ns)
+		injectSecret(c.setting)
+		assert.Equal(t, c.specPassword, *c.setting.MQTTServerSecret)
+	}
 }

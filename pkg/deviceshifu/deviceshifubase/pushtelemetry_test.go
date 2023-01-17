@@ -2,21 +2,20 @@ package deviceshifubase
 
 import (
 	"bytes"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/stretchr/testify/assert"
 	"io"
+	v1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
-
-	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"github.com/stretchr/testify/assert"
-	v1 "k8s.io/api/apps/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 
 	utiltesting "k8s.io/client-go/util/testing"
 )
@@ -477,5 +476,134 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 		if err != nil {
 			assert.Equal(t, err.Error(), c.expectedErr)
 		}
+	}
+}
+
+func TestInjectSecret(t *testing.T) {
+	testCases := []struct {
+		name         string
+		client       *rest.RESTClient
+		ts           *v1alpha1.TelemetryService
+		ns           string
+		specUsername string
+		specPassword string
+	}{
+		{
+			name:   "case0 no secrets found",
+			client: mockRestClientFor("", t),
+			ts: &v1alpha1.TelemetryService{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-ts",
+				},
+				Spec: v1alpha1.TelemetryServiceSpec{
+					ServiceSettings: &v1alpha1.ServiceSettings{
+						HTTPSetting: &v1alpha1.HTTPSetting{
+							Username: unitest.ToPointer("origin-username"),
+							Password: unitest.ToPointer("origin-password"),
+						},
+					},
+				},
+			},
+			ns:           "test",
+			specUsername: "origin-username",
+			specPassword: "origin-password",
+		},
+		{
+			name: "case1 have HTTP username secret",
+			client: mockRestClientFor(`{
+  "data": {
+    "username": "b3ZlcndyaXRl"
+  },
+  "kind": "Secret",
+  "metadata": {
+    "name": "taosdata",
+    "namespace": "devices"
+  },
+  "type": "Opaque"
+}`, t),
+			ts: &v1alpha1.TelemetryService{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-ts",
+				},
+				Spec: v1alpha1.TelemetryServiceSpec{
+					ServiceSettings: &v1alpha1.ServiceSettings{
+						HTTPSetting: &v1alpha1.HTTPSetting{
+							Username: unitest.ToPointer("origin-username"),
+							Password: unitest.ToPointer("origin-password"),
+						},
+					},
+				},
+			},
+			ns:           "test",
+			specUsername: "overwrite",
+			specPassword: "origin-password",
+		},
+		{
+			name: "case2 have HTTP password secret",
+			client: mockRestClientFor(`{
+  "data": {
+    "password": "b3ZlcndyaXRl"
+  },
+  "kind": "Secret",
+  "metadata": {
+    "name": "taosdata",
+    "namespace": "devices"
+  },
+  "type": "Opaque"
+}`, t),
+			ts: &v1alpha1.TelemetryService{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-ts",
+				},
+				Spec: v1alpha1.TelemetryServiceSpec{
+					ServiceSettings: &v1alpha1.ServiceSettings{
+						HTTPSetting: &v1alpha1.HTTPSetting{
+							Username: unitest.ToPointer("origin-username"),
+							Password: unitest.ToPointer("origin-password"),
+						},
+					},
+				},
+			},
+			ns:           "test",
+			specUsername: "origin-username",
+			specPassword: "overwrite",
+		},
+		{
+			name: "case3 have HTTP both secrets",
+			client: mockRestClientFor(`{
+  "data": {
+    "username": "b3ZlcndyaXRl",
+    "password": "b3ZlcndyaXRl"
+  },
+  "kind": "Secret",
+  "metadata": {
+    "name": "taosdata",
+    "namespace": "devices"
+  },
+  "type": "Opaque"
+}`, t),
+			ts: &v1alpha1.TelemetryService{
+				ObjectMeta: metav1.ObjectMeta{
+					Name: "test-ts",
+				},
+				Spec: v1alpha1.TelemetryServiceSpec{
+					ServiceSettings: &v1alpha1.ServiceSettings{
+						HTTPSetting: &v1alpha1.HTTPSetting{
+							Username: unitest.ToPointer("origin-username"),
+							Password: unitest.ToPointer("origin-password"),
+						},
+					},
+				},
+			},
+			ns:           "test",
+			specUsername: "overwrite",
+			specPassword: "overwrite",
+		},
+	}
+
+	for _, c := range testCases {
+		injectSecret(c.client, c.ts, c.ns)
+		assert.Equal(t, c.specUsername, *c.ts.Spec.ServiceSettings.HTTPSetting.Username)
+		assert.Equal(t, c.specPassword, *c.ts.Spec.ServiceSettings.HTTPSetting.Password)
 	}
 }

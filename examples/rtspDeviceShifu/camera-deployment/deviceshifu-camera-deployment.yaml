@@ -44,6 +44,10 @@ spec:
           value: "devices"
         - name: IP_CAMERA_ADDRESS
           value: "192.168.14.254"
+        - name: IP_CAMERA_HTTP_PORT
+          value: ""
+        - name: IP_CAMERA_RTSP_PORT
+          value: ""
         - name: IP_CAMERA_USERNAME
           value: "admin"
         - name: IP_CAMERA_PASSWORD
