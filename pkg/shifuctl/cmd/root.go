@@ -1,9 +1,9 @@
 package cmd
 
 import (
-	"github.com/spf13/cobra"
-
 	"github.com/edgenesis/shifu/pkg/shifuctl/cmd/add"
+	"github.com/edgenesis/shifu/pkg/shifuctl/cmd/install"
+	"github.com/spf13/cobra"
 )
 
 var (
@@ -22,4 +22,5 @@ func Execute() error {
 func init() {
 	rootCmd.AddCommand(versionCmd)
 	rootCmd.AddCommand(add.AddCmd)
+	rootCmd.AddCommand(install.InstallCmd)
 }
