@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/apache/plc4x/plc4go v0.0.0-20220929155823-14e7d8450c87
 	github.com/eclipse/paho.mqtt.golang v1.4.2
-	github.com/gopcua/opcua v0.3.8
+	github.com/gopcua/opcua v0.3.9
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.26.0
 	k8s.io/client-go v0.26.0
@@ -19,7 +19,7 @@ require (
 	github.com/onsi/gomega v1.24.2
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
-	github.com/taosdata/driver-go/v3 v3.0.4
+	github.com/taosdata/driver-go/v3 v3.1.0
 	golang.org/x/crypto v0.5.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
 	sigs.k8s.io/controller-runtime v0.14.1
