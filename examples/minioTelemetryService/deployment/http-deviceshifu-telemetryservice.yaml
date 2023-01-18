@@ -11,4 +11,5 @@ spec:
       Bucket: test-bucket
       FileExtension: mp4
       EndPoint: minio-1673579889.data.svc.cluster.local:9000
+      # or you can specify APIId and APIKey
       Secret: minio-secret

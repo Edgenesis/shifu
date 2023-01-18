@@ -34,9 +34,18 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unexpected end of JSON input", http.StatusBadRequest)
 		return
 	}
-
+	if request.MinIOSetting.Bucket == nil || request.MinIOSetting.EndPoint == nil || request.MinIOSetting.FileExtension == nil {
+		logger.Errorf("Bucket or EndPoint or FileExtension cant be nil")
+		http.Error(w, "Bucket or EndPoint or FileExtension cant be nil", http.StatusBadRequest)
+		return
+	}
 	// Read MinIo APIId & APIKey
 	injectSecret(request.MinIOSetting)
+	if request.MinIOSetting.APIId == nil || request.MinIOSetting.APIKey == nil {
+		logger.Errorf("Fail to get APIId or APIKey")
+		http.Error(w, "Fail to get APIId or APIKey", http.StatusBadRequest)
+		return
+	}
 
 	// Create MinIO Client
 	client, err := minio.New(*request.MinIOSetting.EndPoint, &minio.Options{
@@ -44,13 +53,12 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 	})
 	if err != nil {
 		logger.Errorf("Fail to create MinIO client, error:" + err.Error())
-		http.Error(w, "Fail to create client", http.StatusBadRequest)
+		http.Error(w, "Fail to create MinIO client", http.StatusBadRequest)
 		return
 	}
-
+	// todo:device name field
 	// Get device name, build file path ([device_name]/[time].[fileExtension])
-	r.Header["device_name"] = []string{"test"}
-	if deviceName, ok := r.Header["device_name"]; ok && len(deviceName) == 1 {
+	if deviceName, ok := r.Header["device_name"]; ok && len(deviceName) > 0 {
 		fileName := fmt.Sprintf("%v/%v.%v", deviceName[0], time.Now().Format(time.RFC3339), *request.MinIOSetting.FileExtension)
 		// Upload file to MinIO
 		err = uploadObject(client, *request.MinIOSetting.Bucket, fileName, request.RawData)
