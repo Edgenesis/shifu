@@ -478,7 +478,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 								Body: io.NopCloser(strings.NewReader(respBodyString)),
 							}
 						}
-						
+
 						telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
 						if exist && *telemetryCollectionService.TelemetrySeriveEndpoint != "" {
 							err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, resp)
@@ -486,6 +486,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 								return false, err
 							}
 						}
+
 						telemetryCollectionResult = true
 						continue
 					}
