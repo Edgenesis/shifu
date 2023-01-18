@@ -7,12 +7,12 @@
 ## Bug 修复
 
 * <BugFix>修复环境变量名 by @Vacant2333 in https://github.com/Edgenesis/shifu/pull/449
-* <BugFix>修复mqtt中的flaky测试 by @hdy8200 in https://github.com/Edgenesis/shifu/pull/450
+* <BugFix>修复mqtt中的不稳定测试 by @hdy8200 in https://github.com/Edgenesis/shifu/pull/450
 
 ## 改进
 
 * 在 shifuctl 中添加 "shifuctl install" by @saiyan86 in https://github.com/Edgenesis/shifu/pull/442
-* 变更 v0.9.0版本 by @hdy8200 in https://github.com/Edgenesis/shifu/pull/453
+* 将v0.9.0中的修复合并 by @hdy8200 in https://github.com/Edgenesis/shifu/pull/453
 * 添加最新的readme by @rachelzhang0922 in https://github.com/Edgenesis/shifu/pull/455
 * 在rtspDeviceshifu中添加自定义端口 by @hdy8200 in https://github.com/Edgenesis/shifu/pull/457
 
