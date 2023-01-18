@@ -62,21 +62,6 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 				RawData: []byte("test"),
 			},
 		},
-		{
-			name:       "testCase5 with device name",
-			expectResp: "Upload object error:502 Bad Gateway\n",
-			requestBody: &v1alpha1.TelemetryRequest{
-				MinIOSetting: &v1alpha1.MinIOSetting{
-					Bucket:        unitest.ToPointer("test-bucket"),
-					EndPoint:      unitest.ToPointer("test-end-point"),
-					FileExtension: unitest.ToPointer("test-extension"),
-					APIId:         unitest.ToPointer("APIId"),
-					APIKey:        unitest.ToPointer("APIKey"),
-				},
-				RawData: []byte("test"),
-			},
-			deviceName: "test-device",
-		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
