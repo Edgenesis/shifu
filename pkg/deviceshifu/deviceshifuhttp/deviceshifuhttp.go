@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"strconv"
 	"strings"
@@ -466,34 +465,23 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				if resp != nil {
 					if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 						instructionFuncName, pythonCustomExist := deviceshifubase.CustomInstructionsPython[instruction]
-						if !pythonCustomExist {
-							telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
-							if exist && *telemetryCollectionService.TelemetrySeriveEndpoint != "" {
-								err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, resp)
-								if err != nil {
-									return false, err
-								}
+						if pythonCustomExist {
+							respBody, readErr := io.ReadAll(resp.Body)
+							if readErr != nil {
+								logger.Errorf("error when read requestBody from responseBody, err: %v", readErr)
 							}
-							telemetryCollectionResult = true
-							continue
-						}
 
-						respBody, readErr := io.ReadAll(resp.Body)
-						if readErr != nil {
-							logger.Errorf("error when read requestBody from responseBody, err: %v", readErr)
+							rawRespBodyString := string(respBody)
+							logger.Infof("Instruction %v is custom: %v, has a python customized handler configured.\n", instruction, pythonCustomExist)
+							respBodyString := utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
+							resp = &http.Response{
+								Body: io.NopCloser(strings.NewReader(respBodyString)),
+							}
 						}
-
-						rawRespBodyString := string(respBody)
-						respBodyString := rawRespBodyString
-						logger.Infof("Instruction %v is custom: %v", instruction, pythonCustomExist)
-						logger.Infof("Instruction %v has a python customized handler configured.\n", instruction)
-						respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
-						respon := &http.Response{
-							Body: ioutil.NopCloser(strings.NewReader(respBodyString)),
-						}
+						
 						telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
 						if exist && *telemetryCollectionService.TelemetrySeriveEndpoint != "" {
-							err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, respon)
+							err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, resp)
 							if err != nil {
 								return false, err
 							}
