@@ -1,0 +1,137 @@
+package deviceshifutcp
+
+import (
+	"fmt"
+	"github.com/edgenesis/shifu/pkg/logger"
+	"io"
+	"net"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+)
+
+type DeviceShifu struct {
+	base          *deviceshifubase.DeviceShifuBase
+	TcpConnection *ConnectMetaData
+}
+
+type ConnectMetaData struct {
+	ForwardAddress string
+	Ln             net.Listener
+}
+
+func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
+	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
+	if err != nil {
+		return nil, err
+	}
+	var cm *ConnectMetaData
+	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
+		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
+		case v1alpha1.ProtocolTCP:
+			connectionType := base.EdgeDevice.Spec.ProtocolSettings.TCPSetting.NetworkType
+			if connectionType == nil || *connectionType != "tcp" {
+				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
+			}
+			ListenAddress := ":" + *base.EdgeDevice.Spec.ProtocolSettings.TCPSetting.ListenPort
+			Listener, err := net.Listen("tcp", ListenAddress)
+			if err != nil {
+				return nil, fmt.Errorf("Listen error")
+			}
+			cm = &ConnectMetaData{
+				ForwardAddress: *base.EdgeDevice.Spec.Address,
+				Ln:             Listener,
+			}
+		}
+	}
+	ds := DeviceShifu{base: base, TcpConnection: cm}
+	deviceshifubase.BindDefaultHandler(mux)
+	return &ds, nil
+}
+
+func (m *ConnectMetaData) handleTCPConnection(conn net.Conn) {
+	defer conn.Close()
+	// Forward the TCP connection to the destination
+	forwardConn, err := net.Dial("tcp", m.ForwardAddress)
+	if err != nil {
+		logger.Errorf(err.Error())
+		return
+	}
+	defer forwardConn.Close()
+	// Copy data between bidirectional connections.
+	done := make(chan struct{})
+	go func() {
+		_, err := io.Copy(forwardConn, conn)
+		if err != nil {
+			logger.Errorf(err.Error())
+		}
+		done <- struct{}{}
+	}()
+	go func() {
+		_, err := io.Copy(conn, forwardConn)
+		if err != nil {
+			logger.Errorf(err.Error())
+		}
+		done <- struct{}{}
+	}()
+	<-done
+	<-done
+}
+
+func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
+	if ds.base.EdgeDevice.Spec.Address == nil {
+		return false, fmt.Errorf("device %v does not have an address", ds.base.Name)
+	}
+
+	if ds.base.EdgeDevice.Spec.Protocol != nil {
+		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
+		case v1alpha1.ProtocolTCP:
+			conn, err := net.Dial("tcp", *ds.base.EdgeDevice.Spec.Address)
+			if err != nil {
+				logger.Errorf("error checking telemetry: error: %v", err.Error())
+				return false, err
+			}
+
+			defer conn.Close()
+			return true, nil
+		default:
+			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
+			return false, nil
+		}
+	}
+	return true, nil
+}
+
+func (m *ConnectMetaData) Start(stopCh <-chan struct{}) error {
+	for {
+		select {
+		case <-stopCh:
+			return nil
+		default:
+		}
+		conn, err := m.Ln.Accept()
+		if err != nil {
+			return err
+		}
+		// create a new goroutine
+		go m.handleTCPConnection(conn)
+	}
+}
+
+func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
+	err := ds.base.Start(stopCh, ds.collectSocketTelemetry)
+	if err != nil {
+		return err
+	}
+	go func() {
+		err := ds.TcpConnection.Start(stopCh)
+		if err != nil {
+			logger.Errorf("Error starting deviceshifu: %v", err)
+		}
+	}()
+	return nil
+}
+
+func (ds *DeviceShifu) Stop() error {
+	return ds.base.Stop()
+}

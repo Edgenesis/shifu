@@ -84,6 +84,11 @@ buildx-build-image-deviceshifu-http-plc4x:
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --load
 
+buildx-build-image-deviceshifu-tcp-tcp:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuTcp\
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-tcp-tcp:${IMAGE_VERSION} --load
+
 buildx-build-image-deviceshifu: \
 	buildx-build-image-deviceshifu-http-http \
 	buildx-build-image-deviceshifu-http-mqtt \
