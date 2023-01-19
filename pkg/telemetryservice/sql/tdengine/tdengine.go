@@ -13,8 +13,10 @@ import (
 )
 
 const (
-	DeviceNameHeaderField = "device_name"
-	EventTagHeaderField   = "event_tag"
+	DeviceNameHeaderField        = "device_name"
+	EventTagHeaderField          = "event_tag"
+	DefaultDeviceNameHeaderField = "default_device_name"
+	DefaultEventTagHeaderField   = "default_event_tag"
 )
 
 type DBHelper struct {
@@ -28,9 +30,9 @@ type DeviceInfo struct {
 }
 
 type StructureData struct {
-	Timestamp  time.Time `json:"ts"`         // event time stamp
-	Data       string    `json:"data"`       // event content
-	Tag        string    `json:"tg"`         // event categories
+	Timestamp time.Time `json:"ts"`   // event time stamp
+	Data      string    `json:"data"` // event content
+	Tag       string    `json:"tg"`   // event categories
 }
 
 func SendToTDengine(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConnectionSetting, header map[string][]string) error {
@@ -43,17 +45,17 @@ func SendToTDengine(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConn
 	}
 
 	deviceInfo := &DeviceInfo{}
-	if name, exists := header[DeviceNameHeaderField]; exists {
+	if name, exists := header[DeviceNameHeaderField]; exists && len(name) > 0 {
 		deviceInfo.Name = name[0]
 	} else {
-		logger.Infof("Error to get device name from http header")
-		deviceInfo.Name = "default_device_name"
+		logger.Infof("empty device name from http header")
+		deviceInfo.Name = DefaultDeviceNameHeaderField
 	}
-	if tag, exists := header[EventTagHeaderField]; exists {
+	if tag, exists := header[EventTagHeaderField]; exists && len(tag) > 0 {
 		deviceInfo.Tag = tag[0]
 	} else {
-		logger.Infof("Error to get device tag from http header")
-		deviceInfo.Tag = "default_event_tag"
+		logger.Infof("empty event tag from http header")
+		deviceInfo.Tag = DefaultEventTagHeaderField
 	}
 
 	err = db.post(ctx, rawData, deviceInfo)
@@ -119,10 +121,10 @@ func constructTDengineUri(sqlcs *v1alpha1.SQLConnectionSetting) string {
 }
 
 func (db *DBHelper) query(querySql string) ([]*StructureData, error) {
-	StructureDatas := make([]*StructureData, 0)
+	dataRecords := make([]*StructureData, 0)
 	rows, err := db.DB.Query(querySql)
 	if err != nil {
-		logger.Errorf("Error to query data from tdengine, sql code: %s", querySql)
+		logger.Errorf("Error to query data from tdengine, sql: %s, error: %s", querySql, err)
 		return nil, err
 	}
 	for rows.Next() {
@@ -132,9 +134,9 @@ func (db *DBHelper) query(querySql string) ([]*StructureData, error) {
 			logger.Errorf("Error to scan result into structureData")
 			return nil, err
 		}
-		StructureDatas = append(StructureDatas, s)
+		dataRecords = append(dataRecords, s)
 	}
-	return StructureDatas, nil
+	return dataRecords, nil
 }
 
 func (db *DBHelper) queryFromDeviceName(devicename string) ([]*StructureData, error) {
