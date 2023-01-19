@@ -6,6 +6,8 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
+	"github.com/minio/minio-go/v7"
+	"github.com/minio/minio-go/v7/pkg/credentials"
 	"github.com/stretchr/testify/assert"
 	"io"
 	v1 "k8s.io/api/core/v1"
@@ -62,6 +64,21 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 				RawData: []byte("test"),
 			},
 		},
+		{
+			name:       "testCase5 with device name",
+			expectResp: "upload object fail\n",
+			requestBody: &v1alpha1.TelemetryRequest{
+				MinIOSetting: &v1alpha1.MinIOSetting{
+					Bucket:        unitest.ToPointer("test-bucket"),
+					EndPoint:      unitest.ToPointer("test-end-point"),
+					FileExtension: unitest.ToPointer("test-extension"),
+					APIId:         unitest.ToPointer("APIId"),
+					APIKey:        unitest.ToPointer("APIKey"),
+				},
+				RawData: []byte("test"),
+			},
+			deviceName: "test-device",
+		},
 	}
 	for _, testCase := range testCases {
 		t.Run(testCase.name, func(t *testing.T) {
@@ -97,7 +114,13 @@ func TestInjectSecret(t *testing.T) {
 		expectKey *string
 	}{
 		{
-			name:   "case0 no secrets found",
+			name:    "case0 no secret",
+			client:  testclient.NewSimpleClientset(),
+			ns:      testNamespace,
+			setting: &v1alpha1.MinIOSetting{},
+		},
+		{
+			name:   "case1 no secrets found",
 			client: testclient.NewSimpleClientset(),
 			ns:     testNamespace,
 			setting: &v1alpha1.MinIOSetting{
@@ -105,7 +128,21 @@ func TestInjectSecret(t *testing.T) {
 			},
 		},
 		{
-			name: "case1 have secretId",
+			name: "case2 with secret but no data",
+			client: testclient.NewSimpleClientset(&v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-secret",
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{},
+			}),
+			ns: testNamespace,
+			setting: &v1alpha1.MinIOSetting{
+				Secret: unitest.ToPointer("test-secret"),
+			},
+		},
+		{
+			name: "case3 have secretId",
 			client: testclient.NewSimpleClientset(&v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-secret",
@@ -122,7 +159,7 @@ func TestInjectSecret(t *testing.T) {
 			expectId: unitest.ToPointer("overwrite"),
 		},
 		{
-			name: "case2 have id and key",
+			name: "case4 have id and key",
 			client: testclient.NewSimpleClientset(&v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-secret",
@@ -148,4 +185,15 @@ func TestInjectSecret(t *testing.T) {
 		assert.Equal(t, c.expectId, c.setting.APIId)
 		assert.Equal(t, c.expectKey, c.setting.APIKey)
 	}
+}
+
+func TestUploadObject(t *testing.T) {
+	client, err := minio.New("test-end-point", &minio.Options{
+		Creds: credentials.NewStaticV4("test-api-id", "test-api-key", ""),
+	})
+	if err != nil {
+		t.Error("Fail to create test client")
+	}
+	err = uploadObject(client, "test-bucket", "test-file-name", []byte{})
+	assert.Equal(t, "upload object fail", err.Error())
 }

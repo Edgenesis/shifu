@@ -455,7 +455,19 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 			},
 			expectedErr: "",
 		}, {
-			name: "case4 OtherProtocol",
+			name: "case4 MinIO",
+			spec: &v1alpha1.TelemetryServiceSpec{
+				ServiceSettings: &v1alpha1.ServiceSettings{
+					MinIOSetting: &v1alpha1.MinIOSetting{},
+				},
+				TelemetrySeriveEndpoint: unitest.ToPointer(address),
+			},
+			message: &http.Response{
+				Body: io.NopCloser(bytes.NewBufferString("test")),
+			},
+			expectedErr: "",
+		}, {
+			name: "case5 OtherProtocol",
 			spec: &v1alpha1.TelemetryServiceSpec{
 				ServiceSettings: &v1alpha1.ServiceSettings{
 					MQTTSetting: &v1alpha1.MQTTSetting{

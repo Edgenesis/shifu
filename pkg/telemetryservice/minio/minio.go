@@ -111,7 +111,8 @@ func uploadObject(client *minio.Client, bucket string, fileName string, content 
 		bucket, fileName, reader, reader.Size(),
 		minio.PutObjectOptions{ContentType: "application/octet-stream"})
 	if err != nil {
-		return errors.New("Upload object error:" + err.Error())
+		logger.Error("Upload object error:" + err.Error())
+		return errors.New("upload object fail")
 	}
 	logger.Infof("Upload file success, fileName:%v", fileName)
 	return nil
