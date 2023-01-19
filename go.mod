@@ -7,7 +7,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.4.2
 	github.com/gopcua/opcua v0.3.9
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/apimachinery v0.26.0
+	k8s.io/apimachinery v0.26.1
 	k8s.io/client-go v0.26.0
 )
 
