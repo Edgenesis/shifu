@@ -78,7 +78,7 @@ func (m *ConnectMetaData) handleTCPConnection(conn net.Conn) {
 	<-done
 }
 
-func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
+func (ds *DeviceShifu) collectTcpTelemetry() (bool, error) {
 	if ds.base.EdgeDevice.Spec.Address == nil {
 		return false, fmt.Errorf("device %v does not have an address", ds.base.Name)
 	}
@@ -119,7 +119,7 @@ func (m *ConnectMetaData) Start(stopCh <-chan struct{}) error {
 }
 
 func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
-	err := ds.base.Start(stopCh, ds.collectSocketTelemetry)
+	err := ds.base.Start(stopCh, ds.collectTcpTelemetry)
 	if err != nil {
 		return err
 	}

@@ -151,7 +151,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
-			ok, err := c.deviceShifu.collectSocketTelemetry()
+			ok, err := c.deviceShifu.collectTcpTelemetry()
 
 			assert.Equal(t, c.expected, ok)
 			if err != nil {
