@@ -28,7 +28,6 @@ type DeviceInfo struct {
 }
 
 type StructureData struct {
-	DeviceName string    `json:"devicename"` // device name
 	Timestamp  time.Time `json:"ts"`         // event time stamp
 	Data       string    `json:"data"`       // event content
 	Tag        string    `json:"tg"`         // event categories
@@ -128,7 +127,7 @@ func (db *DBHelper) query(querySql string) ([]*StructureData, error) {
 	}
 	for rows.Next() {
 		s := &StructureData{}
-		err := rows.Scan(s.Timestamp, s.Data, s.Tag, s.DeviceName)
+		err := rows.Scan(s.Timestamp, s.Data, s.Tag)
 		if err != nil {
 			logger.Errorf("Error to scan result into structureData")
 			return nil, err
@@ -139,12 +138,12 @@ func (db *DBHelper) query(querySql string) ([]*StructureData, error) {
 }
 
 func (db *DBHelper) queryFromDeviceName(devicename string) ([]*StructureData, error) {
-	querySql := fmt.Sprintf("SELECT ts, data, tg, devicename FROM %s.%s WHERE devicename='%s'", *db.Settings.DBName, *db.Settings.DBTable, devicename)
+	querySql := fmt.Sprintf("SELECT ts, data, tg FROM %s.%s WHERE devicename='%s'", *db.Settings.DBName, *db.Settings.DBTable, devicename)
 	return db.query(querySql)
 }
 
 func (db *DBHelper) queryFromTag(tag string) ([]*StructureData, error) {
-	querySql := fmt.Sprintf("SELECT ts, data, tg, devicename FROM %s.%s WHERE tg='%s'", *db.Settings.DBName, *db.Settings.DBTable, tag)
+	querySql := fmt.Sprintf("SELECT ts, data, tg FROM %s.%s WHERE tg='%s'", *db.Settings.DBName, *db.Settings.DBTable, tag)
 	return db.query(querySql)
 }
 
@@ -152,6 +151,6 @@ func (db *DBHelper) queryFromTime(start, end time.Time) ([]*StructureData, error
 	if start.After(end) {
 		return nil, errors.New("start time is after the end time")
 	}
-	querySql := fmt.Sprintf("SELECT ts, data, tg, devicename FROM %s.%s WHERE ts>'%s' AND ts<'%s'", *db.Settings.DBName, *db.Settings.DBTable, start.Format("2006-01-02 15:04:05"), end.Format("2006-01-02 15:04:05"))
+	querySql := fmt.Sprintf("SELECT ts, data, tg FROM %s.%s WHERE ts>'%s' AND ts<'%s'", *db.Settings.DBName, *db.Settings.DBTable, start.Format("2006-01-02 15:04:05"), end.Format("2006-01-02 15:04:05"))
 	return db.query(querySql)
 }
