@@ -233,7 +233,7 @@ func TestQueryFromDeviceName(t *testing.T) {
 			db, sm, err := sqlmock.New()
 			assert.Nil(t, err)
 
-			sm.ExpectQuery("SELECT ts, data, tg, devicename FROM testDB.testTable WHERE devicename=").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
+			sm.ExpectQuery("SELECT ts, data, tg FROM testDB.testTable WHERE devicename=").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
 			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
 			_, err = helper.queryFromDeviceName(tC.deviceName)
 			if tC.expectedErr == "" {
@@ -269,7 +269,7 @@ func TestQueryFromTag(t *testing.T) {
 			db, sm, err := sqlmock.New()
 			assert.Nil(t, err)
 
-			sm.ExpectQuery("SELECT ts, data, tg, devicename FROM testDB.testTable WHERE tg").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
+			sm.ExpectQuery("SELECT ts, data, tg FROM testDB.testTable WHERE tg").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
 			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
 			_, err = helper.queryFromTag(tC.Tag)
 			if tC.expectedErr == "" {
@@ -319,7 +319,7 @@ func TestQueryFromTime(t *testing.T) {
 			db, sm, err := sqlmock.New()
 			assert.Nil(t, err)
 
-			sm.ExpectQuery("SELECT ts, data, tg, devicename FROM testDB.testTable WHERE ts").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
+			sm.ExpectQuery("SELECT ts, data, tg FROM testDB.testTable WHERE ts").WillReturnRows(sqlmock.NewRows([]string{"ts", "data", "tg", "devicename"}))
 			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
 			_, err = helper.queryFromTime(tC.startTime, tC.endTime)
 			if tC.expectedErr == "" {
