@@ -215,7 +215,10 @@ func TestHandleTCPConnection(t *testing.T) {
 		return
 	}
 	if cw, ok := clientConn.(*net.TCPConn); ok {
-		cw.CloseWrite()
+		err := cw.CloseWrite()
+		if err != nil {
+			logger.Fatalf("can't close write of conn")
+		}
 	} else {
 		logger.Fatalf("no implement CloseWrite in conn")
 	}
