@@ -13,4 +13,3 @@ spec:
   selector:
     app: deviceshifu-tcp-deployment
   type: LoadBalancer
-  

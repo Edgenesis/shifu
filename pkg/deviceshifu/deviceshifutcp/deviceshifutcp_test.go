@@ -7,14 +7,13 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/stretchr/testify/assert"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"net"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
-
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func TestMain(m *testing.M) {
@@ -29,7 +28,26 @@ func TestMain(m *testing.M) {
 		logger.Fatalf("Cannot Listen at %v due to: %v", UnitTestAddress, err.Error())
 	}
 	go func() {
-		_, _ = listener.Accept()
+		for {
+			conn, err := listener.Accept()
+			if err != nil {
+				logger.Error(err)
+				continue
+			}
+			go func(conn net.Conn) {
+				buf := make([]byte, 32)
+				n, err := conn.Read(buf)
+				if err != nil {
+					logger.Error(err)
+				}
+				logger.Infof(string(buf[:n]))
+				_, err = conn.Write(buf)
+				if err != nil {
+					logger.Error(err)
+				}
+				conn.Close()
+			}(conn)
+		}
 	}()
 	defer listener.Close()
 	m.Run()
@@ -61,7 +79,7 @@ func TestStart(t *testing.T) {
 	}
 }
 
-func TestCollectSocketTelemetry(t *testing.T) {
+func TestCollectTCPTelemetry(t *testing.T) {
 	protocolTCP := v1alpha1.ProtocolTCP
 	protocolOPCUA := v1alpha1.ProtocolOPCUA
 	address := UnitTestAddress
@@ -163,6 +181,50 @@ func TestCollectSocketTelemetry(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestHandleTCPConnection(t *testing.T) {
+	Listener, err := net.Listen("tcp", UnitTestProxyAddress)
+	if err != nil {
+		logger.Fatalf("Cannot Listen at %v due to: %v", UnitTestProxyAddress, err.Error())
+	}
+	cm := ConnectMetaData{
+		ForwardAddress: UnitTestAddress,
+		Ln:             Listener,
+	}
+	// start the proxy server
+	go func() {
+		err := cm.Start(wait.NeverStop)
+		if err != nil {
+			logger.Errorf("Error starting deviceshifu: %v", err)
+		}
+	}()
+
+	clientConn, err := net.Dial("tcp", UnitTestProxyAddress)
+	if err != nil {
+		logger.Fatalf("Cannot Dial to proxy due to: %v", err.Error())
+		return
+	}
+
+	writeByte := []byte("something")
+	readByte := make([]byte, len(writeByte))
+
+	_, err = clientConn.Write(writeByte)
+	if err != nil {
+		logger.Fatalf("Cannot Write due to: %v", err.Error())
+		return
+	}
+	if cw, ok := clientConn.(*net.TCPConn); ok {
+		cw.CloseWrite()
+	} else {
+		logger.Fatalf("no implement CloseWrite in conn")
+	}
+	_, err = clientConn.Read(readByte)
+	if err != nil {
+		logger.Fatalf("Cannot Read due to: %v", err.Error())
+	}
+	clientConn.Close()
+	assert.Equal(t, readByte, writeByte)
 }
 
 func mockHttpServer(t *testing.T) *httptest.Server {

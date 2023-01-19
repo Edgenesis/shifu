@@ -50,7 +50,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 }
 
 func (m *ConnectMetaData) handleTCPConnection(conn net.Conn) {
-	defer conn.Close()
 	// Forward the TCP connection to the destination
 	forwardConn, err := net.Dial("tcp", m.ForwardAddress)
 	if err != nil {
@@ -91,7 +90,6 @@ func (ds *DeviceShifu) collectTcpTelemetry() (bool, error) {
 				logger.Errorf("error checking telemetry: error: %v", err.Error())
 				return false, err
 			}
-
 			defer conn.Close()
 			return true, nil
 		default:
@@ -104,11 +102,6 @@ func (ds *DeviceShifu) collectTcpTelemetry() (bool, error) {
 
 func (m *ConnectMetaData) Start(stopCh <-chan struct{}) error {
 	for {
-		select {
-		case <-stopCh:
-			return nil
-		default:
-		}
 		conn, err := m.Ln.Accept()
 		if err != nil {
 			return err
