@@ -114,13 +114,19 @@ func TestInjectSecret(t *testing.T) {
 		expectKey *string
 	}{
 		{
-			name:    "case0 no secret",
+			name:    "case0 no setting",
+			client:  testclient.NewSimpleClientset(),
+			ns:      testNamespace,
+			setting: nil,
+		},
+		{
+			name:    "case1 no secret",
 			client:  testclient.NewSimpleClientset(),
 			ns:      testNamespace,
 			setting: &v1alpha1.MinIOSetting{},
 		},
 		{
-			name:   "case1 no secrets found",
+			name:   "case2 no secrets found",
 			client: testclient.NewSimpleClientset(),
 			ns:     testNamespace,
 			setting: &v1alpha1.MinIOSetting{
@@ -128,7 +134,7 @@ func TestInjectSecret(t *testing.T) {
 			},
 		},
 		{
-			name: "case2 with secret but no data",
+			name: "case3 with secret but no data",
 			client: testclient.NewSimpleClientset(&v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-secret",
@@ -142,7 +148,7 @@ func TestInjectSecret(t *testing.T) {
 			},
 		},
 		{
-			name: "case3 have secretId",
+			name: "case4 have secretId",
 			client: testclient.NewSimpleClientset(&v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-secret",
@@ -159,7 +165,7 @@ func TestInjectSecret(t *testing.T) {
 			expectId: unitest.ToPointer("overwrite"),
 		},
 		{
-			name: "case4 have id and key",
+			name: "case5 have id and key",
 			client: testclient.NewSimpleClientset(&v1.Secret{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "test-secret",
@@ -182,8 +188,10 @@ func TestInjectSecret(t *testing.T) {
 	for _, c := range testCases {
 		utils.SetClient(c.client, c.ns)
 		injectSecret(c.setting)
-		assert.Equal(t, c.expectId, c.setting.APIId)
-		assert.Equal(t, c.expectKey, c.setting.APIKey)
+		if c.setting != nil {
+			assert.Equal(t, c.expectId, c.setting.APIId)
+			assert.Equal(t, c.expectKey, c.setting.APIKey)
+		}
 	}
 }
 
