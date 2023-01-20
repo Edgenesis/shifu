@@ -109,6 +109,15 @@ spec:
                       networkType:
                         type: string
                     type: object
+                  TCPSetting:
+                    description: TCPSetting defines TCP forward settings
+                    properties:
+                      ListenPort:
+                        type: string
+                      NetworkType:
+                        description: TCPServerAddress *string `json:"TCPServerAddress,omitempty"`
+                        type: string
+                    type: object
                 type: object
               sku:
                 description: Sku specifies the EdgeDevice's SKU.
