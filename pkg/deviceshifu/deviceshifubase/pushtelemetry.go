@@ -70,7 +70,7 @@ func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryColle
 	}
 
 	logger.Infof("pushing %v to %v", message.Body, telemetryCollectionService)
-	utils.CopyHeader(req.Header, req.Header)
+	utils.CopyHeader(req.Header, message.Header)
 	_, err = http.DefaultClient.Do(req)
 	if err != nil {
 		logger.Errorf("HTTP POST error for telemetry service %v, error: %v", telemetryCollectionService, err.Error())
@@ -103,6 +103,7 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 		return err
 	}
 
+	utils.CopyHeader(req.Header, message.Header)
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		logger.Errorf("Error when send request to Server, error: %v", err)
