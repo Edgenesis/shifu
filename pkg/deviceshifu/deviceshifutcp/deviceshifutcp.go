@@ -58,23 +58,20 @@ func (m *ConnectMetaData) handleTCPConnection(conn net.Conn) {
 	}
 	defer forwardConn.Close()
 	// Copy data between bidirectional connections.
-	done := make(chan struct{})
-	go func() {
-		_, err := io.Copy(forwardConn, conn)
+	done := make(chan string)
+	createCon := func(name string, dst io.Writer, src io.Reader) {
+		_, err := io.Copy(dst, src)
 		if err != nil {
 			logger.Errorf(err.Error())
 		}
-		done <- struct{}{}
-	}()
-	go func() {
-		_, err := io.Copy(conn, forwardConn)
-		if err != nil {
-			logger.Errorf(err.Error())
-		}
-		done <- struct{}{}
-	}()
-	<-done
-	<-done
+		done <- name
+	}
+	go createCon("client_to_forward", forwardConn, conn)
+	go createCon("forward_to_client", conn, forwardConn)
+	name := <-done
+	logger.Infof("connection %d is done", name)
+	name = <-done
+	logger.Infof("connection %d is done", name)
 }
 
 func (ds *DeviceShifu) collectTcpTelemetry() (bool, error) {
@@ -119,7 +116,7 @@ func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 	go func() {
 		err := ds.TcpConnection.Start(stopCh)
 		if err != nil {
-			logger.Errorf("Error starting deviceshifu: %v", err)
+			logger.Errorf("Error starting deviceshifuTCP: %v", err)
 		}
 	}()
 	return nil
