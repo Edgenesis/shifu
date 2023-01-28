@@ -69,9 +69,9 @@ func (m *ConnectMetaData) handleTCPConnection(conn net.Conn) {
 	go createCon("client_to_forward", forwardConn, conn)
 	go createCon("forward_to_client", conn, forwardConn)
 	name := <-done
-	logger.Infof("connection %d is done", name)
+	logger.Infof("connection %v is done", name)
 	name = <-done
-	logger.Infof("connection %d is done", name)
+	logger.Infof("connection %v is done", name)
 }
 
 func (ds *DeviceShifu) collectTcpTelemetry() (bool, error) {
