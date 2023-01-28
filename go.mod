@@ -5,10 +5,10 @@ go 1.19
 require (
 	github.com/apache/plc4x/plc4go v0.0.0-20220929155823-14e7d8450c87
 	github.com/eclipse/paho.mqtt.golang v1.4.2
-	github.com/gopcua/opcua v0.3.9
+	github.com/gopcua/opcua v0.3.10
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/apimachinery v0.26.0
-	k8s.io/client-go v0.26.0
+	k8s.io/apimachinery v0.26.1
+	k8s.io/client-go v0.26.1
 )
 
 require (
@@ -18,7 +18,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.46
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.7.0
-	github.com/onsi/gomega v1.24.2
+	github.com/onsi/gomega v1.26.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
 	github.com/taosdata/driver-go/v3 v3.1.0
@@ -109,7 +109,7 @@ require (
 	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	k8s.io/api v0.26.0
+	k8s.io/api v0.26.1
 	k8s.io/apiextensions-apiserver v0.26.0 // indirect
 	k8s.io/component-base v0.26.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20221012153701-172d655c2280 // indirect
