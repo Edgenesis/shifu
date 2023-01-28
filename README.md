@@ -17,7 +17,7 @@
 
 <h1 style="border-bottom: none">
 <br>
-    Open Source Alternative to GCP IoT Core
+    Kubernetes native IoT software development framework
     <br />
 </h1>
 Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT development framework.
