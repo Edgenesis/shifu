@@ -17,7 +17,7 @@
 
 <h1 style="border-bottom: none">
 <br>
-    Google IoT Core的开源替代
+    Kubernetes原生的物联网开发平台
     <br />
 </h1>
 Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放的物联网开发平台。
@@ -59,9 +59,10 @@ Shifu是一个k8s原生的, 生产级的,支持多协议设备接入的，开放
 
 您的意见对我们来说无比宝贵。 我们无比欢迎您的到来！
 
-[![Discord](https://img.shields.io/badge/Discord-join-brightgreen)](https://discord.gg/CkRwsJ7raw)
+[![Discord](https://img.shields.io/badge/WeChat-follow-brightgreen)](https://shifu.run/zh-Hans/subscribe)
+[![Discord](https://img.shields.io/badge/Discord-join-purple)](https://discord.gg/CkRwsJ7raw)
 [![Twitter](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
-[![Reddit](https://img.shields.io/badge/Reddit-post-orange)](https://www.reddit.com/r/Shifu/)
+[![Reddit](https://img.shields.io/badge/Reddit-post-red)](https://www.reddit.com/r/Shifu/)
 [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
 
 # 开始上手
