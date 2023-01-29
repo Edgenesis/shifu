@@ -45,7 +45,7 @@ var (
 )
 
 const (
-	DeviceNameHeaderField = "device_name"
+	DeviceNameHeaderField = "Device_Name"
 )
 
 // New This function creates a new Device Shifu based on the configuration
