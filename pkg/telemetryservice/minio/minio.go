@@ -57,7 +57,6 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Fail to create MinIO client", http.StatusBadRequest)
 		return
 	}
-	// todo:device name field
 	// Get device name, build file path ([device_name]/[time].[fileExtension])
 	if deviceName, ok := r.Header[deviceshifuhttp.DeviceNameHeaderField]; ok && len(deviceName) > 0 {
 		fileName := fmt.Sprintf("%v/%v.%v", deviceName[0], time.Now().Format(time.RFC3339), *request.MinIOSetting.FileExtension)
