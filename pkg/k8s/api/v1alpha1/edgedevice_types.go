@@ -25,9 +25,10 @@ import (
 
 // TCPSetting defines TCP forward settings
 type TCPSetting struct {
-	// TCPServerAddress *string `json:"TCPServerAddress,omitempty"`
+	// +kubebuilder:default="tcp"
 	NetworkType *string `json:"NetworkType,omitempty"`
-	ListenPort  *string `json:"ListenPort,omitempty"`
+	// +kubebuilder:default="8081"
+	ListenPort *string `json:"ListenPort,omitempty"`
 }
 
 // MQTTSetting defines MQTT specific settings when connecting to an EdgeDevice

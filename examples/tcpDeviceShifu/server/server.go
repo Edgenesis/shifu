@@ -1,3 +1,4 @@
+// start a TCP server, log all coming requests and echo back for test purpose
 package main
 
 import (

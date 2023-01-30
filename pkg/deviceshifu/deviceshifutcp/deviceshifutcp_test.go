@@ -121,7 +121,7 @@ func TestCollectTCPTelemetry(t *testing.T) {
 			expected:  false,
 			expErrStr: "device testDevice does not have an address",
 		}, {
-			Name: "case3 Protocol is not Socket",
+			Name: "case3 Protocol is not TCP",
 			deviceShifu: &DeviceShifu{
 				base: &deviceshifubase.DeviceShifuBase{
 					Name: "testDevice",
@@ -188,9 +188,9 @@ func TestHandleTCPConnection(t *testing.T) {
 	if err != nil {
 		logger.Fatalf("Cannot Listen at %v due to: %v", UnitTestProxyAddress, err.Error())
 	}
-	cm := ConnectMetaData{
+	cm := ConnectionMetaData{
 		ForwardAddress: UnitTestAddress,
-		Ln:             Listener,
+		NetListener:    Listener,
 	}
 	// start the proxy server
 	go func() {

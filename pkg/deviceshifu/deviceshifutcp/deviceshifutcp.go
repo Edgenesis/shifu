@@ -10,14 +10,19 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 )
 
+const (
+	TCPDefaultPortStr string = "8081"
+	ProtocolTCPStr           = "tcp"
+)
+
 type DeviceShifu struct {
 	base          *deviceshifubase.DeviceShifuBase
-	TcpConnection *ConnectMetaData
+	TcpConnection *ConnectionMetaData
 }
 
-type ConnectMetaData struct {
+type ConnectionMetaData struct {
 	ForwardAddress string
-	Ln             net.Listener
+	NetListener    net.Listener
 }
 
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu, error) {
@@ -25,22 +30,26 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if err != nil {
 		return nil, err
 	}
-	var cm *ConnectMetaData
+	var cm *ConnectionMetaData
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolTCP:
 			connectionType := base.EdgeDevice.Spec.ProtocolSettings.TCPSetting.NetworkType
 			if connectionType == nil || *connectionType != "tcp" {
-				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
+				return nil, fmt.Errorf(`connection type not specified or wrong connection type specified for deviceShifuTCP, should be "tcp"`)
 			}
-			ListenAddress := ":" + *base.EdgeDevice.Spec.ProtocolSettings.TCPSetting.ListenPort
-			Listener, err := net.Listen("tcp", ListenAddress)
+			listenPort := TCPDefaultPortStr
+			if base.EdgeDevice.Spec.ProtocolSettings.TCPSetting.ListenPort != nil {
+				listenPort = *base.EdgeDevice.Spec.ProtocolSettings.TCPSetting.ListenPort
+			}
+			ListenAddress := ":" + listenPort
+			Listener, err := net.Listen(ProtocolTCPStr, ListenAddress)
 			if err != nil {
 				return nil, fmt.Errorf("Listen error")
 			}
-			cm = &ConnectMetaData{
+			cm = &ConnectionMetaData{
 				ForwardAddress: *base.EdgeDevice.Spec.Address,
-				Ln:             Listener,
+				NetListener:    Listener,
 			}
 		}
 	}
@@ -49,7 +58,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	return &ds, nil
 }
 
-func (m *ConnectMetaData) handleTCPConnection(conn net.Conn) {
+func (m *ConnectionMetaData) handleTCPConnection(conn net.Conn) {
 	// Forward the TCP connection to the destination
 	forwardConn, err := net.Dial("tcp", m.ForwardAddress)
 	if err != nil {
@@ -57,7 +66,7 @@ func (m *ConnectMetaData) handleTCPConnection(conn net.Conn) {
 		return
 	}
 	defer forwardConn.Close()
-	// Copy data between bidirectional connections.
+	// Copy data between bi-directional connections.
 	done := make(chan string)
 	createCon := func(name string, dst io.Writer, src io.Reader) {
 		_, err := io.Copy(dst, src)
@@ -97,9 +106,9 @@ func (ds *DeviceShifu) collectTcpTelemetry() (bool, error) {
 	return true, nil
 }
 
-func (m *ConnectMetaData) Start(stopCh <-chan struct{}) error {
+func (m *ConnectionMetaData) Start(stopCh <-chan struct{}) error {
 	for {
-		conn, err := m.Ln.Accept()
+		conn, err := m.NetListener.Accept()
 		if err != nil {
 			return err
 		}
