@@ -114,7 +114,6 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 		logger.Errorf("Error when marshal request to []byte, error: %v", err)
 		return err
 	}
-	logger.Infof("requestBody is %s", string(requestBody))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, targetServerAddress, bytes.NewBuffer(requestBody))
 	if err != nil {
@@ -128,7 +127,7 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 		logger.Errorf("Error when send request to Server, error: %v", err)
 		return err
 	}
-	logger.Infof("successfully sent message %v to telemetry service address %v", string(rawData), targetServerAddress)
+	logger.Infof("successfully sent message to telemetry service address %v", targetServerAddress)
 	err = resp.Body.Close()
 	if err != nil {
 		logger.Errorf("Error when Close response Body, error: %v", err)
