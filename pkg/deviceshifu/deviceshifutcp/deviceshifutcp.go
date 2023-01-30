@@ -11,8 +11,8 @@ import (
 )
 
 const (
-	TCPDefaultPortStr string = "8081"
-	ProtocolTCPStr           = "tcp"
+	TCPDefaultPortStr = "8081"
+	ProtocolTCPStr    = "tcp"
 )
 
 type DeviceShifu struct {
