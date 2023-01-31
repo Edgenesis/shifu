@@ -8,7 +8,7 @@ func main() {
 	router := gin.Default()
 
 	router.GET("/get_file", func(context *gin.Context) {
-		//context.String(200, "test content")
+		// copy a file to here before run
 		context.File("test.mp4")
 	})
 

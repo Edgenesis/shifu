@@ -57,7 +57,7 @@ We use the name `SQLConnection` instead of `TDengineConnection` because we want 
 Telemetry Service will push the data to TDengine:
 ```mermaid
 graph LR;
-DeviceShifu -->|TelemetryRequest| TelemetryService;
+deviceShifu -->|TelemetryRequest| TelemetryService;
 TelemetryService -->|RawData| TDengine;
 
 ```

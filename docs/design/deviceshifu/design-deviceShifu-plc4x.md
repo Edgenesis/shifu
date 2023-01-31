@@ -7,7 +7,7 @@ Create a deviceShifu-PLC4X type using PLC4X library and allow user to connect PL
 
 ## General Design
 
-deviceShifu-PLC4X will receive RESTFul style request like other, then transfer the request into valid PLC4X method calls and send it to connected devices.
+deviceShifu-PLC4X will receive RESTful style request like other, then transfer the request into valid PLC4X method calls and send it to connected devices.
 
 ## Detailed Design
 

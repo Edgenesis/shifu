@@ -9,7 +9,7 @@ data:
     driverImage: http-device:v0.0.1
   instructions: |
     instructions:
-      status:
+      get_file:
   telemetries: |
     telemetrySettings:
       telemetryUpdateIntervalInMilliseconds: 10000

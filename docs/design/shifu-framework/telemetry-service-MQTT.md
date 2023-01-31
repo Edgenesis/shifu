@@ -12,7 +12,7 @@ Let telemetry service support pushing telemetries to MQTT endpoints.
 2. Let telemetry service serve as MQTT broker.
 
 ## Design Details
-Telemetry will be served as an HTTP server. DeviceShifu will push the telemetries collected from physical devices to telemetry service,
+Telemetry will be served as an HTTP server. deviceShifu will push the telemetries collected from physical devices to telemetry service,
 and telemetry service would then fan-out the telemetries to the endpoints specified by user.
 
 Request Struct:
@@ -27,7 +27,7 @@ For every push telemetry event, the telemetry service will fan-out raw-data to t
 
 ```mermaid
 graph LR;
-	DeviceShifu -->|TelemetryRequest| TelemetryService;
+	deviceShifu -->|TelemetryRequest| TelemetryService;
 	TelemetryService -->|RawData| MQTTEndpoint;
 
 ```
