@@ -480,6 +480,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 							logger.Infof("Instruction %v is custom: %v, has a python customized handler configured.\n", instruction, pythonCustomExist)
 							respBodyString := utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
 							resp = &http.Response{
+								Header: make(http.Header),
 								Body: io.NopCloser(strings.NewReader(respBodyString)),
 							}
 						}

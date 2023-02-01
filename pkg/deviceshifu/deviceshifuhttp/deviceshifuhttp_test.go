@@ -11,8 +11,6 @@ import (
 	"sort"
 	"strings"
 	"testing"
-	"fmt"
-	"path"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -370,8 +368,10 @@ func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
 func TestCollectHTTPTelemtries(t *testing.T) {
 	ms := mockTelemetryHandleServer(t)
 	defer ms.Close()
-	msaddr := strings.Split(ms.URL, "//")[1]
+	
 	makePythonCustomFile()
+	makePythonRawDataFile()
+	makePythonExpectDataFile()
 
 	ts := mockTelemetryServer(t)
 	addr := strings.Split(ts.URL, "//")[1]
@@ -384,7 +384,7 @@ func TestCollectHTTPTelemtries(t *testing.T) {
 	}
 	deviceshifubase.TelemetryCollectionServiceMap = map[string]v1alpha1.TelemetryServiceSpec{
 		"device_healthy": v1alpha1.TelemetryServiceSpec{
-			TelemetrySeriveEndpoint: &msaddr,
+			TelemetrySeriveEndpoint: &ms.URL,
 			ServiceSettings: &v1alpha1.ServiceSettings{
 				HTTPSetting: &v1alpha1.HTTPSetting{
 					Username: &username,
@@ -434,7 +434,10 @@ func TestCollectHTTPTelemtries(t *testing.T) {
 	res, err := mockDevice.collectHTTPTelemtries()
 	assert.Equal(t, true, res)
 	assert.Nil(t, err)
-
+    err = os.RemoveAll("pythoncustomizedhandlers")
+    if err != nil {
+        logger.Fatal(err)
+    }
 }
 
 func mockTelemetryServer(t *testing.T) *httptest.Server {
@@ -446,7 +449,8 @@ func mockTelemetryServer(t *testing.T) *httptest.Server {
 			logger.Info("telemetry detected.")
 			assert.Equal(t, "/telemetry_health", path)
 			w.Header().Add("Content-Type", "application/json")
-			w.Write([]byte("test no data cleaning"))
+			rawData, _ := os.ReadFile("pythoncustomizedhandlers/raw_data")
+			w.Write(rawData)
 			w.WriteHeader(http.StatusOK)
 		default:
 			w.WriteHeader(http.StatusOK)
@@ -458,16 +462,15 @@ func mockTelemetryServer(t *testing.T) *httptest.Server {
 }
 
 func makePythonCustomFile() {
-	folderPath := "../pythoncustomizedhandlers"
+	folderPath := "pythoncustomizedhandlers"
 	err := os.MkdirAll(folderPath, 0777)
 	if err != nil {
-		logger.Info("create folderpath error:", err)
+		logger.Errorf("create folderpath error:", err.Error())
 		return
 	}
-	filePath := path.Join(folderPath, "customized_handlers.py")
-	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, 0777)
+	file, err := os.Create("pythoncustomizedhandlers/customized_handlers.py")
 	if err != nil {
-		logger.Info("create python error:", err)
+		logger.Errorf("create file error:", err.Error())
 		return
 	}
 	defer file.Close()
@@ -478,7 +481,55 @@ func makePythonCustomFile() {
     `
 	_, err = file.WriteString(strings.TrimSpace(content))
 	if err != nil {
-		logger.Info("writestring error:", err)
+		logger.Errorf("writestring error:", err.Error())
+		return
+	}
+}
+
+func makePythonRawDataFile() {
+	file, err := os.Create("pythoncustomizedhandlers/raw_data")
+	if err != nil {
+		logger.Errorf("create file error:", err.Error())
+		return
+	}
+	defer file.Close()
+
+	content := `
+		{
+			"statusCode": "200",
+			"message":"success",
+			"entity":[{
+				"deviceId":"20990922009",
+				"datatime":"2022-06-30 07:55:51",
+				"eUnit":"Celsius",
+				"eValue":"37",
+				"eKey":"e3",
+				"eName":"atmosphere temperature",
+				"eNum":"101"
+			}]
+		}
+    `
+	_, err = file.WriteString(strings.TrimSpace(content))
+	if err != nil {
+		logger.Errorf("writestring error:", err.Error())
+		return
+	}
+}
+
+func makePythonExpectDataFile() {
+	file, err := os.Create("pythoncustomizedhandlers/expected_data")
+	if err != nil {
+		logger.Errorf("create file error:", err.Error())
+		return
+	}
+	defer file.Close()
+
+	content := `
+		test data cleaning
+    `
+	_, err = file.WriteString(strings.TrimSpace(content))
+	if err != nil {
+		logger.Errorf("writestring error:", err.Error())
 		return
 	}
 }
@@ -491,13 +542,12 @@ func mockTelemetryHandleServer(t *testing.T) *httptest.Server {
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
 			respBody, _ := io.ReadAll(r.Body)
-			fmt.Println(string(respBody))
-			assert.Equal(t, "/", path)
+			convertRespBody := strings.TrimRight(string(respBody), "\n")
+			expectedProcessed, _ := os.ReadFile("pythoncustomizedhandlers/expected_data")
+			assert.Equal(t, string(expectedProcessed), string(convertRespBody))
 			logger.Info("handler get the instruction and executed.")
 		default:
 			w.WriteHeader(http.StatusOK)
-			respBody, _ := io.ReadAll(r.Body)
-			fmt.Println(string(respBody))
 			logger.Info("hs get default request, path:", path)
 		}
 
