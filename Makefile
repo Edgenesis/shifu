@@ -65,7 +65,7 @@ buildx-push-image-deviceshifu-http-plc4x:
 buildx-push-image-deviceshifu-tcp-tcp:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuTCP\
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
-		-t edgehub/deviceshifu-tcp-tcp:${IMAGE_VERSION} # --push
+		-t edgehub/deviceshifu-tcp-tcp:${IMAGE_VERSION} --push
 
 buildx-push-image-shifu-controller:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f $(PROJECT_ROOT)/pkg/k8s/crd/Dockerfile \
@@ -109,7 +109,7 @@ buildx-push-image-mockdevice-socket:
           -t edgehub/mockdevice-socket:$(IMAGE_VERSION) --push
 
 buildx-push-image-mockdevice-opcua:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+	docker buildx build --platform=linux/amd64,linux/arm64 \
           -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
           --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
           -t edgehub/mockdevice-opcua:$(IMAGE_VERSION) --push
