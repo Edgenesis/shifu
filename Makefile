@@ -126,7 +126,7 @@ buildx-push-image-deviceshifu: \
 buildx-push-image-telemetry-service:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
-		-t edgehub/telemetryService:${IMAGE_VERSION} --push
+		-t edgehub/telemetryservice:${IMAGE_VERSION} --push
 
 buildx-build-image-deviceshifu-http-http:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuHTTP \
