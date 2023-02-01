@@ -11,6 +11,8 @@ import (
 	"sort"
 	"strings"
 	"testing"
+	"fmt"
+	"path"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
@@ -366,10 +368,32 @@ func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
 }
 
 func TestCollectHTTPTelemtries(t *testing.T) {
+	ms := mockTelemetryHandleServer(t)
+	defer ms.Close()
+	msaddr := strings.Split(ms.URL, "//")[1]
+	makePythonCustomFile()
+
 	ts := mockTelemetryServer(t)
 	addr := strings.Split(ts.URL, "//")[1]
 	_, err := unitest.RetryAndGetHTTP(ts.URL, 10)
 	assert.Nil(t, err)
+	var username = "test"
+	var password = "test"
+	deviceshifubase.CustomInstructionsPython = map[string]string{
+		"telemetry_health": "dataclean",
+	}
+	deviceshifubase.TelemetryCollectionServiceMap = map[string]v1alpha1.TelemetryServiceSpec{
+		"device_healthy": v1alpha1.TelemetryServiceSpec{
+			TelemetrySeriveEndpoint: &msaddr,
+			ServiceSettings: &v1alpha1.ServiceSettings{
+				HTTPSetting: &v1alpha1.HTTPSetting{
+					Username: &username,
+					Password: &password,
+				},
+			},
+		},
+	}
+
 	mockDevice := &DeviceShifuHTTP{
 		base: &deviceshifubase.DeviceShifuBase{
 			Name: "test",
@@ -422,10 +446,59 @@ func mockTelemetryServer(t *testing.T) *httptest.Server {
 			logger.Info("telemetry detected.")
 			assert.Equal(t, "/telemetry_health", path)
 			w.Header().Add("Content-Type", "application/json")
+			w.Write([]byte("test no data cleaning"))
 			w.WriteHeader(http.StatusOK)
 		default:
 			w.WriteHeader(http.StatusOK)
 			logger.Info("ts get default request, path:", path)
+		}
+
+	}))
+	return server
+}
+
+func makePythonCustomFile() {
+	folderPath := "../pythoncustomizedhandlers"
+	err := os.MkdirAll(folderPath, 0777)
+	if err != nil {
+		logger.Info("create folderpath error:", err)
+		return
+	}
+	filePath := path.Join(folderPath, "customized_handlers.py")
+	file, err := os.OpenFile(filePath, os.O_CREATE|os.O_RDWR, 0777)
+	if err != nil {
+		logger.Info("create python error:", err)
+		return
+	}
+	defer file.Close()
+
+	content := `
+    def dataclean(data):
+        return "test data cleaning"
+    `
+	_, err = file.WriteString(strings.TrimSpace(content))
+	if err != nil {
+		logger.Info("writestring error:", err)
+		return
+	}
+}
+
+func mockTelemetryHandleServer(t *testing.T) *httptest.Server {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch path {
+		case "/":
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			respBody, _ := io.ReadAll(r.Body)
+			fmt.Println(string(respBody))
+			assert.Equal(t, "/", path)
+			logger.Info("handler get the instruction and executed.")
+		default:
+			w.WriteHeader(http.StatusOK)
+			respBody, _ := io.ReadAll(r.Body)
+			fmt.Println(string(respBody))
+			logger.Info("hs get default request, path:", path)
 		}
 
 	}))
