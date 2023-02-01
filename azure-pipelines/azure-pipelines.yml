@@ -52,6 +52,7 @@ stages:
         inputs:
           command: 'get'
           arguments: '-d'
+          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/deviceshifuhttp'
       - script: |
           sudo apt-get install libpcap-dev
         displayName: "Install pcap"
