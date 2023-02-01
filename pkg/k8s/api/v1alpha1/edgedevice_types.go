@@ -23,6 +23,14 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// TCPSetting defines TCP forward settings
+type TCPSetting struct {
+	// +kubebuilder:default="tcp"
+	NetworkType *string `json:"NetworkType,omitempty"`
+	// +kubebuilder:default="8081"
+	ListenPort *string `json:"ListenPort,omitempty"`
+}
+
 // MQTTSetting defines MQTT specific settings when connecting to an EdgeDevice
 type MQTTSetting struct {
 	MQTTTopic         *string `json:"MQTTTopic,omitempty"`
@@ -78,6 +86,7 @@ type ProtocolSettings struct {
 	OPCUASetting  *OPCUASetting  `json:"OPCUASetting,omitempty"`
 	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
 	PLC4XSetting  *PLC4XSetting  `json:"PLC4XSetting,omitempty"`
+	TCPSetting    *TCPSetting    `json:"TCPSetting,omitempty"`
 }
 
 // EdgeDeviceSpec defines the desired state of EdgeDevice
@@ -132,6 +141,7 @@ const (
 	ProtocolSocket          Protocol = "Socket"
 	ProtocolPLC4X           Protocol = "PLC4X"
 	ProtocolUSB             Protocol = "USB"
+	ProtocolTCP             Protocol = "TCP"
 )
 
 type Encoding string
