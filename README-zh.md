@@ -64,7 +64,6 @@ Shifu是一个K8s原生的、生产级、支持多协议设备接入、开放的
 [![WeChat](https://img.shields.io/badge/WeChat-follow-brightgreen)](https://shifu.run/zh-Hans/subscribe)
 [![Discord](https://img.shields.io/badge/Discord-join-purple)](https://discord.gg/CkRwsJ7raw)
 [![Twitter](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
-[![Reddit](https://img.shields.io/badge/Reddit-post-red)](https://www.reddit.com/r/Shifu/)
 [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
 
 ## 开始上手
