@@ -15,6 +15,8 @@
 * 更新 README-zh.md by @rachelzhang0922 in https://github.com/Edgenesis/shifu/pull/477
 * 更新 README by @QingZ11 in https://github.com/Edgenesis/shifu/pull/478
 * 更新 README 的缩进 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/481
+* 将 TCP deviceShifu 添加到 build pipeline 中 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/483
+* 修复 telemetryService 镜像标签的拼写错误 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/485
 
 ## 新的贡献者 🌟
 

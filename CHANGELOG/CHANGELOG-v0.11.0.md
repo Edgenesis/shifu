@@ -15,6 +15,8 @@
 * Update README-zh.md by @rachelzhang0922 in https://github.com/Edgenesis/shifu/pull/477
 * update README: capitalization by @QingZ11 in https://github.com/Edgenesis/shifu/pull/478
 * update indentation for README by @tomqin93 in https://github.com/Edgenesis/shifu/pull/481
+* add TCP deviceShifu into build pipeline by @tomqin93 in https://github.com/Edgenesis/shifu/pull/483
+* fix a typo for telemetryService's image tag by @tomqin93 in https://github.com/Edgenesis/shifu/pull/485
 
 ## New Contributors 🌟
 
