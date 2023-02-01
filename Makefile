@@ -120,6 +120,7 @@ buildx-push-image-deviceshifu: \
 	buildx-push-image-deviceshifu-http-mqtt \
 	buildx-push-image-deviceshifu-http-socket \
 	buildx-push-image-deviceshifu-http-opcua \
+	buildx-push-image-deviceshifu-http-plc4x \
 	buildx-push-image-deviceshifu-tcp-tcp
 
 buildx-push-image-telemetry-service:
