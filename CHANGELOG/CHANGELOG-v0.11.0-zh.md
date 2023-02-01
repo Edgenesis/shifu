@@ -11,7 +11,7 @@
 ## 改进
 
 * 将设备名称添加到 http 头部 by @geraldkohn in https://github.com/Edgenesis/shifu/pull/470
-* 将v0.11.0中的修复合并进主分支 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/473
+* 将v0.10.0中的修复合并进主分支 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/473
 * 更新 README-zh.md by @rachelzhang0922 in https://github.com/Edgenesis/shifu/pull/477
 * 更新 README by @QingZ11 in https://github.com/Edgenesis/shifu/pull/478
 * 更新 README 的缩进 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/481
