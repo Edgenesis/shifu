@@ -120,9 +120,10 @@ spec:
                     description: TCPSetting defines TCP forward settings
                     properties:
                       ListenPort:
+                        default: "8081"
                         type: string
                       NetworkType:
-                        description: TCPServerAddress *string `json:"TCPServerAddress,omitempty"`
+                        default: tcp
                         type: string
                     type: object
                 type: object
@@ -481,7 +482,7 @@ spec:
         - --source=default
         command:
         - /manager
-        image: edgehub/shifu-controller:nightly
+        image: edgehub/shifu-controller:v0.11.0-rc1
         livenessProbe:
           httpGet:
             path: /healthz
