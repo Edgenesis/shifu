@@ -543,7 +543,7 @@ stages:
         displayName: configure multi-arch and buildx
       - script: |
           make buildx-push-image-deviceshifu-tcp-tcp
-        displayName: build deviceshifu-http-plc4x
+        displayName: build deviceshifu-tcp-tcp
 
   - job: docker_push_shifu_controller
     steps: 
