@@ -4,10 +4,10 @@
 Telemetry Service is a standalone service that takes telemetry data collected by `deviceShifu` and fan-out it to designated endpoints for future process.
 
 ## Design-Goal
-Let telemetry service support pushing telemetries to MinIO endpoints.
+- Let telemetry service support pushing telemetries to MinIO endpoints.
 
 ## Design Non-Goal
-Let telemetry service support get/list objects.
+- Let telemetry service support get/list objects.
 
 ## Design Details
 Telemetry will be served as an HTTP server. deviceShifu get the file content from physical devices, then send the content to telemetry service, telemetry service will upload file to MinIO, file would name like `{device-name}/{time(RFC3339)}.{file-extension}`, file-extension and bucket will be set by MinIOSetting.

@@ -5,7 +5,7 @@
 ## Design goals and non-goals
 
 ### Design goals
-`TelemetryService` should be able to read telemetry from devices and push to dedicated endpoints(e.g, HTTP, MQTT, MySQL, MinIO)
+- `TelemetryService` should be able to read telemetry from devices and push to dedicated endpoints(e.g, HTTP, MQTT, MySQL, MinIO)
 
 ### Design non-goals
 

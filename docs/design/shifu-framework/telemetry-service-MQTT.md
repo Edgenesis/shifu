@@ -5,11 +5,11 @@ Telemetry Service is a standalone service that takes telemetry data collected by
 This doc aims to provide a design on how to fan-out telemetry to MQTT endpoints.
 
 ## Design-Goal
-Let telemetry service support pushing telemetries to MQTT endpoints.
+- Let telemetry service support pushing telemetries to MQTT endpoints.
 
 ## Design Non-Goal
-1. Let telemetry service support any random endpoints
-2. Let telemetry service serve as MQTT broker.
+- Let telemetry service support any random endpoints
+- Let telemetry service serve as MQTT broker.
 
 ## Design Details
 Telemetry will be served as an HTTP server. deviceShifu will push the telemetries collected from physical devices to telemetry service,

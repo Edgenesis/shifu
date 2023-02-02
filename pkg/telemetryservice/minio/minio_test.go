@@ -90,7 +90,6 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 				req = httptest.NewRequest(http.MethodPost, "test:123", bytes.NewBuffer(requestBody))
 			}
 			if testCase.deviceName != "" {
-				// todo:device name field
 				req.Header = map[string][]string{
 					deviceshifuhttp.DeviceNameHeaderField: {testCase.deviceName},
 				}

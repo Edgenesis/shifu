@@ -4,7 +4,7 @@ deviceShifu-TCP allows Shifu connect to any server which protocol based tcp and 
 
 ## Goal
 
-deviceShifu-TCP can forward all data from target to support all protocol base tcp.
+- deviceShifu-TCP can forward all data from target to support all protocol base tcp.
 
 ## General Design
 

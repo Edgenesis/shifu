@@ -4,10 +4,10 @@
 Telemetry Service is a standalone service that allow `deviceShifu` send its collected telemetry to designated endpoints. This design aims to add `TDengine` endpoint support to current Telemetry Service.
 
 ## Design-Goal
-Let telemetry service support pushing telemetries to TDengine endpoints.
+- Let telemetry service support pushing telemetries to TDengine endpoints.
 
 ## Design Non-Goal
-Let telemetry service support all timeseriesDB endpoint.
+- Let telemetry service support all timeseriesDB endpoint.
 
 ## Design Details
 In order to add `TDengine` as an endpoint, we need to add connection related settings telemetry service's CRD, just like  what we did for `MQTT`.
