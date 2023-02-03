@@ -452,8 +452,16 @@ func mockTelemetryServer(t *testing.T) *httptest.Server {
 			logger.Info("telemetry detected.")
 			assert.Equal(t, "/telemetry_health", path)
 			w.Header().Add("Content-Type", "application/json")
-			rawData, _ := os.ReadFile("pythoncustomizedhandlers/raw_data")
-			w.Write(rawData)
+			rawData, err := os.ReadFile("pythoncustomizedhandlers/raw_data")
+			if err != nil {
+				logger.Errorf("readfile error:", err.Error())
+				return
+			}
+			_, err = w.Write(rawData)
+			if err != nil {
+				logger.Errorf("write data error:", err.Error())
+				return
+			}
 			w.WriteHeader(http.StatusOK)
 		default:
 			w.WriteHeader(http.StatusOK)
@@ -554,10 +562,18 @@ func checkCustomizedTelemetryOutput(t *testing.T) *httptest.Server {
 		case "/":
 			w.Header().Add("Content-Type", "application/json")
 			w.WriteHeader(http.StatusOK)
-			respBody, _ := io.ReadAll(r.Body)
+			respBody, err := io.ReadAll(r.Body)
+			if err != nil {
+				logger.Errorf("read data error:", err.Error())
+				return
+			}
 			convertRespBody := strings.TrimRight(string(respBody), "\n")
 			//read the data from this file and compare it with the cleaned data
-			expectedProcessed, _ := os.ReadFile("pythoncustomizedhandlers/expected_data")
+			expectedProcessed, err := os.ReadFile("pythoncustomizedhandlers/expected_data")
+			if err != nil {
+				logger.Errorf("readfile error:", err.Error())
+				return
+			}
 			assert.Equal(t, string(expectedProcessed), string(convertRespBody))
 			logger.Info("handler get the instruction and executed.")
 		default:
