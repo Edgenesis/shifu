@@ -366,16 +366,19 @@ func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
 }
 
 func TestCollectHTTPTelemtries(t *testing.T) {
-	ms := mockTelemetryHandleServer(t)
+	ms := checkCustomizedTelemetryOutput(t)
 	defer ms.Close()
 	
-	makePythonCustomFile()
-	makePythonRawDataFile()
-	makePythonExpectDataFile()
+	err := makePythonCustomFile()
+	assert.Nil(t, err)
+	err = makePythonRawDataFile()
+	assert.Nil(t, err)
+	err = makePythonExpectDataFile()
+	assert.Nil(t, err)
 
 	ts := mockTelemetryServer(t)
 	addr := strings.Split(ts.URL, "//")[1]
-	_, err := unitest.RetryAndGetHTTP(ts.URL, 10)
+	_, err = unitest.RetryAndGetHTTP(ts.URL, 10)
 	assert.Nil(t, err)
 	var username = "test"
 	var password = "test"
@@ -461,20 +464,22 @@ func mockTelemetryServer(t *testing.T) *httptest.Server {
 	return server
 }
 
-func makePythonCustomFile() {
+func makePythonCustomFile() error {
+	//create a python file for data cleaning
 	folderPath := "pythoncustomizedhandlers"
 	err := os.MkdirAll(folderPath, 0777)
 	if err != nil {
 		logger.Errorf("create folderpath error:", err.Error())
-		return
+		return err
 	}
 	file, err := os.Create("pythoncustomizedhandlers/customized_handlers.py")
 	if err != nil {
 		logger.Errorf("create file error:", err.Error())
-		return
+		return err
 	}
 	defer file.Close()
 
+	//data cleaning function
 	content := `
     def dataclean(data):
         return "test data cleaning"
@@ -482,15 +487,18 @@ func makePythonCustomFile() {
 	_, err = file.WriteString(strings.TrimSpace(content))
 	if err != nil {
 		logger.Errorf("writestring error:", err.Error())
-		return
+		return err
 	}
+	return nil
 }
 
-func makePythonRawDataFile() {
+func makePythonRawDataFile() error {
+	//mock data source
+	//read data from this file and perform data cleaning
 	file, err := os.Create("pythoncustomizedhandlers/raw_data")
 	if err != nil {
 		logger.Errorf("create file error:", err.Error())
-		return
+		return err
 	}
 	defer file.Close()
 
@@ -512,15 +520,18 @@ func makePythonRawDataFile() {
 	_, err = file.WriteString(strings.TrimSpace(content))
 	if err != nil {
 		logger.Errorf("writestring error:", err.Error())
-		return
+		return err
 	}
+	return nil
 }
 
-func makePythonExpectDataFile() {
+func makePythonExpectDataFile() error {
+	//the data expected to be returned
+	//read the data from this file and compare it with the cleaned data
 	file, err := os.Create("pythoncustomizedhandlers/expected_data")
 	if err != nil {
 		logger.Errorf("create file error:", err.Error())
-		return
+		return err
 	}
 	defer file.Close()
 
@@ -530,11 +541,13 @@ func makePythonExpectDataFile() {
 	_, err = file.WriteString(strings.TrimSpace(content))
 	if err != nil {
 		logger.Errorf("writestring error:", err.Error())
-		return
+		return err
 	}
+	return nil
 }
 
-func mockTelemetryHandleServer(t *testing.T) *httptest.Server {
+func checkCustomizedTelemetryOutput(t *testing.T) *httptest.Server {
+	//mock a server, telemetryservice sends the cleaned data to this server
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		path := r.URL.Path
 		switch path {
@@ -543,6 +556,7 @@ func mockTelemetryHandleServer(t *testing.T) *httptest.Server {
 			w.WriteHeader(http.StatusOK)
 			respBody, _ := io.ReadAll(r.Body)
 			convertRespBody := strings.TrimRight(string(respBody), "\n")
+			//read the data from this file and compare it with the cleaned data
 			expectedProcessed, _ := os.ReadFile("pythoncustomizedhandlers/expected_data")
 			assert.Equal(t, string(expectedProcessed), string(convertRespBody))
 			logger.Info("handler get the instruction and executed.")
