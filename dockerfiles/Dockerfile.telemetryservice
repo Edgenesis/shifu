@@ -16,7 +16,7 @@ COPY pkg/deviceshifu/deviceshifubase pkg/deviceshifu/deviceshifubase
 COPY pkg/deviceshifu/deviceshifuhttp pkg/deviceshifu/deviceshifuhttp
 COPY pkg/deviceshifu/utils pkg/deviceshifu/utils
 
-RUN go mod download -x
+RUN go mod download
 
 # Build the Go app
 ARG TARGETOS

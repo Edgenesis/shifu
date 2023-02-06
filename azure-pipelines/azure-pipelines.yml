@@ -57,58 +57,9 @@ stages:
           sudo apt-get install libpcap-dev
         displayName: "Install pcap"
       - script: |
+          make build
           make test
-        displayName: "Go test"
-      - task: Go@0
-        displayName: "go build deviceshifuHTTP"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdhttp'
-      - task: Go@0
-        displayName: "go build deviceshifuSocket"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdsocket'
-      - task: Go@0
-        displayName: "go build deviceshifuMQTT"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdmqtt'
-      - task: Go@0
-        displayName: "go build deviceshifuOPCUA"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/deviceshifu/cmdopcua'
-      - task: Go@0
-        displayName: "go build mockdevice agv"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-agv'
-      - task: Go@0
-        displayName: "go build mockdevice plate reader"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-plate-reader'
-      - task: Go@0
-        displayName: "go build mockdevice plc"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-plc'
-      - task: Go@0
-        displayName: "go build mockdevice robot arm"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-robot-arm'
-      - task: Go@0
-        displayName: "go build mockdevice thermometer"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/pkg/deviceshifu/mockdevice/mockdevice-thermometer'
-      - task: Go@0
-        displayName: "go build http to ssh stub"
-        inputs:
-          command: 'build'
-          workingDirectory: '$(System.DefaultWorkingDirectory)/cmd/httpstub/sshstub'
+        displayName: "Go build and test"
 
   - job: go_build_and_test_windows
     pool:
@@ -516,10 +467,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuHTTP \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/deviceshifu-http-http:$(release_tag) --push
+          make buildx-push-image-deviceshifu-http-http
         displayName: build edgehub/deviceshifu-http-http
 
   - job: docker_push_deviceshifu_http_socket
@@ -534,10 +482,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuSocket \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/deviceshifu-http-socket:$(release_tag) --push
+          make buildx-push-image-deviceshifu-http-socket
         displayName: build edgehub/deviceshifu-http-socket
 
   - job: docker_push_deviceshifu_http_mqtt
@@ -552,10 +497,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuMQTT \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/deviceshifu-http-mqtt:$(release_tag) --push
+          make buildx-push-image-deviceshifu-http-mqtt
         displayName: build edgehub/deviceshifu-http-mqtt
 
   - job: docker_push_deviceshifu_http_opcua
@@ -570,10 +512,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuOPCUA \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/deviceshifu-http-opcua:$(release_tag) --push
+          make buildx-push-image-deviceshifu-http-opcua
         displayName: build deviceshifu-http-opcua
 
   - job: docker_push_deviceshifu_http_plc4x
@@ -588,11 +527,23 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64 \
-          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.deviceshifuPLC4X \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/deviceshifu-http-plc4x:$(release_tag) --push
+          make buildx-push-image-deviceshifu-http-plc4x
         displayName: build deviceshifu-http-plc4x
+
+  - job: docker_push_deviceshifu_tcp_tcp
+    steps: 
+      - task: Docker@2
+        displayName: Login to DockerHub
+        inputs:
+          command: login
+          containerRegistry: dockerhub-connection
+      - script: |
+          docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+          docker buildx create --use
+        displayName: configure multi-arch and buildx
+      - script: |
+          make buildx-push-image-deviceshifu-tcp-tcp
+        displayName: build deviceshifu-tcp-tcp
 
   - job: docker_push_shifu_controller
     steps: 
@@ -606,10 +557,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/Dockerfile \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/shifu-controller:$(release_tag) --push
+          make buildx-push-image-shifu-controller
         displayName: build edgehub/shifu-controller
 
   - job: docker_push_mockdevice_thermometer
@@ -624,10 +572,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/mockdevice-thermometer:$(release_tag) --push
+          make buildx-push-image-mockdevice-thermometer
         displayName: build edgehub/mockdevice-thermometer
 
   - job: docker_push_mockdevice_robot_arm
@@ -642,10 +587,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/mockdevice-robot-arm:$(release_tag) --push
+          make buildx-push-image-mockdevice-robot-arm
         displayName: build edgehub/mockdevice-robot-arm
 
   - job: docker_push_mockdevice_plate_reader
@@ -660,10 +602,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/mockdevice-plate-reader:$(release_tag) --push
+          make buildx-push-image-mockdevice-plate-reader
         displayName: build edgehub/mockdevice-plate-reader
 
   - job: docker_push_mockdevice_agv
@@ -678,10 +617,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/mockdevice-agv:$(release_tag) --push
+          make buildx-push-image-mockdevice-agv
         displayName: build edgehub/mockdevice-agv
 
   - job: docker_push_mockdevice_plc
@@ -696,10 +632,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/plc/Dockerfile.mockdevice-plc \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/mockdevice-plc:$(release_tag) --push
+          make buildx-push-image-mockdevice-plc
         displayName: build edgehub/mockdevice-plc
 
   - job: docker_push_mockdevice_socket
@@ -714,10 +647,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/mockdevice-socket:$(release_tag) --push
+          make buildx-push-image-mockdevice-socket
         displayName: build edgehub/mockdevice-socket
 
   - job: docker_push_mockdevice_opcua
@@ -732,10 +662,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64 \
-          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/mockdevice-opcua:$(release_tag) --push
+          make buildx-push-image-mockdevice-opcua
         displayName: build edgehub/mockdevice-opcua
 
   - job: docker_push_telemetry_service
@@ -750,10 +677,7 @@ stages:
           docker buildx create --use
         displayName: configure multi-arch and buildx
       - script: |
-          docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
-          -f $(System.DefaultWorkingDirectory)/dockerfiles/Dockerfile.telemetryservice \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
-          -t edgehub/telemetryservice:$(release_tag) --push
+          make buildx-push-image-telemetry-service
         displayName: push edgehub/telemetryservice
 
 - stage: docker_build_shifu_demo_push

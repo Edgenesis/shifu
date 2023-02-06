@@ -3,6 +3,13 @@ IMAGE_VERSION = $(shell cat version.txt)
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = 1.25.2
 
+DEVICESHIFU_CMDS := deviceshifu/cmdhttp deviceshifu/cmdmqtt deviceshifu/cmdopcua deviceshifu/cmdplc4x deviceshifu/cmdsocket
+HTTPSTUB_CMDS := httpstub/powershellstub httpstub/sshstub
+SHIFUCTL_CMD := shifuctl
+TELEMETRYSERVICE_CMD := telemetryservice
+CONTROLLER_CMD := pkg/k8s/crd
+BUILD_TARGETS := $(DEVICESHIFU_CMDS) $(HTTPSTUB_CMDS) $(SHIFUCTL_CMD) $(TELEMETRYSERVICE_CMD)
+
 fmt: ## Run go fmt against code.
 	go fmt ./...
 
@@ -17,6 +24,14 @@ shifuctl:
 
 clean:
 	rm -f ${PROJECT_ROOT}/cmd/shifuctl/shifuctl
+
+build:
+	for target in $(BUILD_TARGETS); do \
+		go build -o bin/$$target  ./cmd/$$target; \
+		echo "finished building $$target"; \
+	done
+	echo "building controller"
+	cd $(CONTROLLER_CMD) && go build -o bin/shifu-controller main.go
 
 .PHONY: test
 test: fmt envtest ## Run tests.
@@ -43,21 +58,75 @@ buildx-push-image-deviceshifu-http-opcua:
 		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --push
 
 buildx-push-image-deviceshifu-http-plc4x:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X \
+	docker buildx build --platform=linux/amd64,linux/arm64 -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --push
+
+buildx-push-image-deviceshifu-tcp-tcp:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuTCP\
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-tcp-tcp:${IMAGE_VERSION} --push
+
+buildx-push-image-shifu-controller:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f $(PROJECT_ROOT)/pkg/k8s/crd/Dockerfile \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/shifu-controller:$(IMAGE_VERSION) --push
+
+buildx-push-image-mockdevice-thermometer:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-thermometer:$(IMAGE_VERSION) --push
+
+buildx-push-image-mockdevice-robot-arm:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-robot-arm:$(IMAGE_VERSION) --push
+
+buildx-push-image-mockdevice-plate-reader:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-plate-reader:$(IMAGE_VERSION) --push
+
+buildx-push-image-mockdevice-agv:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-agv:$(IMAGE_VERSION) --push
+
+buildx-push-image-mockdevice-plc:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/plc/Dockerfile.mockdevice-plc \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-plc:$(IMAGE_VERSION) --push
+
+buildx-push-image-mockdevice-socket:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-socket:$(IMAGE_VERSION) --push
+
+buildx-push-image-mockdevice-opcua:
+	docker buildx build --platform=linux/amd64,linux/arm64 \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-opcua:$(IMAGE_VERSION) --push
 
 .PHONY: buildx-push-image-deviceshifu
 buildx-push-image-deviceshifu: \
 	buildx-push-image-deviceshifu-http-http \
 	buildx-push-image-deviceshifu-http-mqtt \
 	buildx-push-image-deviceshifu-http-socket \
-	buildx-push-image-deviceshifu-http-opcua
+	buildx-push-image-deviceshifu-http-opcua \
+	buildx-push-image-deviceshifu-http-plc4x \
+	buildx-push-image-deviceshifu-tcp-tcp
 
 buildx-push-image-telemetry-service:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
-		-t edgehub/telemetryService:${IMAGE_VERSION} --push
+		-t edgehub/telemetryservice:${IMAGE_VERSION} --push
 
 buildx-build-image-deviceshifu-http-http:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuHTTP \
@@ -84,12 +153,18 @@ buildx-build-image-deviceshifu-http-plc4x:
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --load
 
+buildx-build-image-deviceshifu-tcp-tcp:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuTcp\
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-tcp-tcp:${IMAGE_VERSION} --load
+
 buildx-build-image-deviceshifu: \
 	buildx-build-image-deviceshifu-http-http \
 	buildx-build-image-deviceshifu-http-mqtt \
 	buildx-build-image-deviceshifu-http-socket \
 	buildx-build-image-deviceshifu-http-opcua \
-	buildx-build-image-deviceshifu-http-plc4x 
+	buildx-build-image-deviceshifu-http-plc4x \
+	buildx-build-image-deviceshifu-tcp-tcp
 
 buildx-build-image-telemetry-service:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice\
