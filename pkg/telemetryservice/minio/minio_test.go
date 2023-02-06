@@ -31,7 +31,12 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 			expectResp: "Unexpected end of JSON input\n",
 		},
 		{
-			name:       "testCase2 missing parameter",
+			name:        "testCase2 MinIOSetting is nil",
+			expectResp:  "MinIOSetting cant be nil\n",
+			requestBody: &v1alpha1.TelemetryRequest{},
+		},
+		{
+			name:       "testCase3 missing parameter",
 			expectResp: "Bucket or EndPoint or FileExtension cant be nil\n",
 			requestBody: &v1alpha1.TelemetryRequest{
 				MinIOSetting: &v1alpha1.MinIOSetting{
@@ -40,7 +45,7 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 			},
 		},
 		{
-			name:       "testCase3 no secret",
+			name:       "testCase4 no secret",
 			expectResp: "Fail to get APIId or APIKey\n",
 			requestBody: &v1alpha1.TelemetryRequest{
 				MinIOSetting: &v1alpha1.MinIOSetting{
@@ -52,7 +57,7 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 			},
 		},
 		{
-			name:       "testCase4 no device name",
+			name:       "testCase5 no device name",
 			expectResp: "Fail to get device name from header\n",
 			requestBody: &v1alpha1.TelemetryRequest{
 				MinIOSetting: &v1alpha1.MinIOSetting{
@@ -66,7 +71,7 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 			},
 		},
 		{
-			name:       "testCase5 with device name",
+			name:       "testCase6 with device name",
 			expectResp: "upload object fail\n",
 			requestBody: &v1alpha1.TelemetryRequest{
 				MinIOSetting: &v1alpha1.MinIOSetting{

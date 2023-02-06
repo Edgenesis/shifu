@@ -35,6 +35,11 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unexpected end of JSON input", http.StatusBadRequest)
 		return
 	}
+	if request.MinIOSetting == nil {
+		logger.Errorf("MinIOSetting cant be nil")
+		http.Error(w, "MinIOSetting cant be nil", http.StatusBadRequest)
+		return
+	}
 	if request.MinIOSetting.Bucket == nil || request.MinIOSetting.EndPoint == nil || request.MinIOSetting.FileExtension == nil {
 		logger.Errorf("Bucket or EndPoint or FileExtension cant be nil")
 		http.Error(w, "Bucket or EndPoint or FileExtension cant be nil", http.StatusBadRequest)
