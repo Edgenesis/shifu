@@ -28,7 +28,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 	}
 
 	if tss.ServiceSettings.HTTPSetting != nil {
-		err := pushToHTTPTelemetryCollectionService(message, *tss.TelemetrySeriveEndpoint, tss.ServiceSettings.RequestTimeout)
+		err := pushToHTTPTelemetryCollectionService(message, *tss.TelemetrySeriveEndpoint, tss.ServiceSettings.ConnectionSetting)
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 			MQTTSetting: tss.ServiceSettings.MQTTSetting,
 		}
 		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMQTT
-		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath, tss.ServiceSettings.RequestTimeout)
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath, tss.ServiceSettings.ConnectionSetting)
 		if err != nil {
 			return err
 		}
@@ -50,7 +50,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 			SQLConnectionSetting: tss.ServiceSettings.SQLSetting,
 		}
 		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURISQL
-		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath, tss.ServiceSettings.RequestTimeout)
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath, tss.ServiceSettings.ConnectionSetting)
 		if err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 			MinIOSetting: tss.ServiceSettings.MinIOSetting,
 		}
 		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMinIO
-		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath, tss.ServiceSettings.RequestTimeout)
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath, tss.ServiceSettings.ConnectionSetting)
 		if err != nil {
 			return err
 		}
@@ -71,10 +71,10 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 }
 
 // PushToHTTPTelemetryCollectionService push telemetry data to Collection Service
-func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryCollectionService string, timeout *int64) error {
+func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryCollectionService string, connectionSetting *v1alpha1.ConnectionSetting) error {
 	ctxTimeout := DeviceTelemetryTimeoutInMS
-	if timeout != nil {
-		ctxTimeout = *timeout
+	if connectionSetting != nil && connectionSetting.RequestTimeout != nil {
+		ctxTimeout = *connectionSetting.RequestTimeout
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(ctxTimeout)*time.Millisecond)
 	defer cancel()
@@ -94,10 +94,10 @@ func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryColle
 	return nil
 }
 
-func pushToShifuTelemetryCollectionService(message *http.Response, request *v1alpha1.TelemetryRequest, targetServerAddress string, timeout *int64) error {
+func pushToShifuTelemetryCollectionService(message *http.Response, request *v1alpha1.TelemetryRequest, targetServerAddress string, connectionSetting *v1alpha1.ConnectionSetting) error {
 	ctxTimeout := DeviceTelemetryTimeoutInMS
-	if timeout != nil {
-		ctxTimeout = *timeout
+	if connectionSetting != nil && connectionSetting.RequestTimeout != nil {
+		ctxTimeout = *connectionSetting.RequestTimeout
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(ctxTimeout)*time.Millisecond)
 	defer cancel()

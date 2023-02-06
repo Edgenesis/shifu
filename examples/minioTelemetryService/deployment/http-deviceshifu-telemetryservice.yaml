@@ -6,7 +6,8 @@ metadata:
 spec:
   telemetrySeriveEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
   serviceSettings:
-    RequestTimeout: 20000
+    ConnectionSetting:
+      RequestTimeout: 20000
     MinIOSetting:
       Bucket: test-bucket
       FileExtension: mp4

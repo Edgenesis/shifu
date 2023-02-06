@@ -42,6 +42,12 @@ spec:
               serviceSettings:
                 description: ServiceSettings defines service settings on telemetry
                 properties:
+                  ConnectionSetting:
+                    properties:
+                      RequestTimeout:
+                        format: int64
+                        type: integer
+                    type: object
                   HTTPSetting:
                     description: HTTPSetting defines HTTP specific settings when connecting
                       to an EdgeDevice
@@ -77,9 +83,6 @@ spec:
                       Secret:
                         type: string
                     type: object
-                  RequestTimeout:
-                    format: int64
-                    type: integer
                   SQLSetting:
                     properties:
                       dbName:

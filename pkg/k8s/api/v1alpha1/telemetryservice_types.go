@@ -50,11 +50,16 @@ type MinIOSetting struct {
 
 // ServiceSettings defines service settings on telemetry
 type ServiceSettings struct {
-	RequestTimeout *int64                `json:"RequestTimeout,omitempty"`
-	HTTPSetting    *HTTPSetting          `json:"HTTPSetting,omitempty"`
-	MQTTSetting    *MQTTSetting          `json:"MQTTSetting,omitempty"`
-	SQLSetting     *SQLConnectionSetting `json:"SQLSetting,omitempty"`
-	MinIOSetting   *MinIOSetting         `json:"MinIOSetting,omitempty"`
+	ConnectionSetting *ConnectionSetting    `json:"ConnectionSetting,omitempty"`
+	HTTPSetting       *HTTPSetting          `json:"HTTPSetting,omitempty"`
+	MQTTSetting       *MQTTSetting          `json:"MQTTSetting,omitempty"`
+	SQLSetting        *SQLConnectionSetting `json:"SQLSetting,omitempty"`
+	MinIOSetting      *MinIOSetting         `json:"MinIOSetting,omitempty"`
+}
+
+// ConnectionSetting defines the connection's setting when deviceShifu send to TelemetryService endpoint
+type ConnectionSetting struct {
+	RequestTimeout *int64 `json:"RequestTimeout,omitempty"`
 }
 
 // TelemetryServiceSpec defines the desired state of TelemetryService
