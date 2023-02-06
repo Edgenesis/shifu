@@ -46,7 +46,7 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 		},
 		{
 			name:       "testCase4 no secret",
-			expectResp: "Fail to get APIId or APIKey\n",
+			expectResp: "Fail to get APIId/username or APIKey/password\n",
 			requestBody: &v1alpha1.TelemetryRequest{
 				MinIOSetting: &v1alpha1.MinIOSetting{
 					Bucket:        unitest.ToPointer("test-bucket"),
@@ -118,12 +118,6 @@ func TestInjectSecret(t *testing.T) {
 		expectId  *string
 		expectKey *string
 	}{
-		{
-			name:    "case0 no setting",
-			client:  testclient.NewSimpleClientset(),
-			ns:      testNamespace,
-			setting: nil,
-		},
 		{
 			name:    "case1 no secret",
 			client:  testclient.NewSimpleClientset(),

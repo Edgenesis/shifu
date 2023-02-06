@@ -45,11 +45,11 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Bucket or EndPoint or FileExtension cant be nil", http.StatusBadRequest)
 		return
 	}
-	// Read MinIo APIId & APIKey
+	// Read MinIo APIId/username & APIKey/password
 	injectSecret(request.MinIOSetting)
 	if request.MinIOSetting.APIId == nil || request.MinIOSetting.APIKey == nil {
-		logger.Errorf("Fail to get APIId or APIKey")
-		http.Error(w, "Fail to get APIId or APIKey", http.StatusBadRequest)
+		logger.Errorf("Fail to get APIId/username or APIKey/password")
+		http.Error(w, "Fail to get APIId/username or APIKey/password", http.StatusBadRequest)
 		return
 	}
 
@@ -78,10 +78,6 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func injectSecret(setting *v1alpha1.MinIOSetting) {
-	if setting == nil {
-		logger.Warn("Empty MinIO service setting")
-		return
-	}
 	if setting.Secret == nil {
 		logger.Warn("Empty MinIO secret setting")
 		return
@@ -95,13 +91,13 @@ func injectSecret(setting *v1alpha1.MinIOSetting) {
 	if id, exist := secret[deviceshifubase.UsernameSecretField]; exist {
 		setting.APIId = &id
 	} else {
-		logger.Errorf("Fail to get APIId from secret")
+		logger.Errorf("Fail to get APIId or username from secret")
 		return
 	}
 	if key, exist := secret[deviceshifubase.PasswordSecretField]; exist {
 		setting.APIKey = &key
 	} else {
-		logger.Errorf("Fail to get APIKey from secret")
+		logger.Errorf("Fail to get APIKey or password from secret")
 		return
 	}
 
