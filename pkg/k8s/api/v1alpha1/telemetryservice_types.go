@@ -37,12 +37,15 @@ type HTTPSetting struct {
 }
 
 type MinIOSetting struct {
-	APIId         *string `json:"APIId,omitempty"`
-	APIKey        *string `json:"APIKey,omitempty"`
-	Bucket        *string `json:"Bucket,omitempty"`
+	APIId  *string `json:"APIId,omitempty"`
+	APIKey *string `json:"APIKey,omitempty"`
+	//+kubebuilder:validation:Required
+	Bucket *string `json:"Bucket,omitempty"`
+	//+kubebuilder:validation:Required
 	FileExtension *string `json:"FileExtension,omitempty"`
-	EndPoint      *string `json:"EndPoint,omitempty"`
-	Secret        *string `json:"Secret,omitempty"`
+	//+kubebuilder:validation:Required
+	EndPoint *string `json:"EndPoint,omitempty"`
+	Secret   *string `json:"Secret,omitempty"`
 }
 
 // ServiceSettings defines service settings on telemetry
