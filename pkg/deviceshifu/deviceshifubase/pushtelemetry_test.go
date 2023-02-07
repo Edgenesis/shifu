@@ -338,7 +338,7 @@ func TestPushToHTTPTelemetryCollectionService(t *testing.T) {
 		Body: io.NopCloser(strings.NewReader("Hello,World")),
 	}
 
-	err := pushToHTTPTelemetryCollectionService(resp, "localhost", nil)
+	err := pushToHTTPTelemetryCollectionService(resp, "localhost")
 	assert.NotNil(t, err)
 }
 
@@ -380,7 +380,7 @@ func TestPushToShifuTelemetryCollectionService(t *testing.T) {
 		},
 	}
 	for _, c := range testCases {
-		err := pushToShifuTelemetryCollectionService(c.message, c.request, c.address, nil)
+		err := pushToShifuTelemetryCollectionService(c.message, c.request, c.address)
 		if err != nil {
 			assert.Equal(t, err.Error(), c.expectedErr)
 		} else {
