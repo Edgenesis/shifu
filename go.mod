@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/apache/plc4x/plc4go v0.0.0-20220929155823-14e7d8450c87
 	github.com/eclipse/paho.mqtt.golang v1.4.2
-	github.com/gopcua/opcua v0.3.10
+	github.com/gopcua/opcua v0.3.11
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.26.1
 	k8s.io/client-go v0.26.1
@@ -16,8 +16,9 @@ require (
 	github.com/briandowns/spinner v1.20.0
 	github.com/gin-gonic/gin v1.8.2
 	github.com/minio/minio-go/v7 v7.0.46
+	github.com/briandowns/spinner v1.21.0
 	github.com/mochi-co/mqtt v1.3.2
-	github.com/onsi/ginkgo/v2 v2.7.0
+	github.com/onsi/ginkgo/v2 v2.8.0
 	github.com/onsi/gomega v1.26.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
