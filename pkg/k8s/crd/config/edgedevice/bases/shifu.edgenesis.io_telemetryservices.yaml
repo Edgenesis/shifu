@@ -42,12 +42,6 @@ spec:
               serviceSettings:
                 description: ServiceSettings defines service settings on telemetry
                 properties:
-                  ConnectionSetting:
-                    properties:
-                      RequestTimeout:
-                        format: int64
-                        type: integer
-                    type: object
                   HTTPSetting:
                     description: HTTPSetting defines HTTP specific settings when connecting
                       to an EdgeDevice
@@ -70,17 +64,20 @@ spec:
                     type: object
                   MinIOSetting:
                     properties:
-                      APIId:
-                        type: string
-                      APIKey:
+                      AccessKey:
                         type: string
                       Bucket:
                         type: string
-                      EndPoint:
-                        type: string
                       FileExtension:
                         type: string
+                      RequestTimeoutMS:
+                        format: int64
+                        type: integer
                       Secret:
+                        type: string
+                      SecretKey:
+                        type: string
+                      ServerAddress:
                         type: string
                     type: object
                   SQLSetting:

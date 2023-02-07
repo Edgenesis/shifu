@@ -7,7 +7,7 @@ import (
 func main() {
 	router := gin.Default()
 
-	router.GET("/get_file", func(context *gin.Context) {
+	router.GET("/get_file_mp4", func(context *gin.Context) {
 		// copy a file to here before run
 		context.File("test.mp4")
 	})

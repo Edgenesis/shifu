@@ -46,11 +46,11 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 		},
 		{
 			name:       "testCase4 no secret",
-			expectResp: "Fail to get APIId/username or APIKey/password\n",
+			expectResp: "Fail to get AccessKey/username or SecretKey/password\n",
 			requestBody: &v1alpha1.TelemetryRequest{
 				MinIOSetting: &v1alpha1.MinIOSetting{
 					Bucket:        unitest.ToPointer("test-bucket"),
-					EndPoint:      unitest.ToPointer("test-end-point"),
+					ServerAddress: unitest.ToPointer("test-end-point"),
 					FileExtension: unitest.ToPointer("test-extension"),
 				},
 				RawData: []byte("test"),
@@ -62,10 +62,10 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 			requestBody: &v1alpha1.TelemetryRequest{
 				MinIOSetting: &v1alpha1.MinIOSetting{
 					Bucket:        unitest.ToPointer("test-bucket"),
-					EndPoint:      unitest.ToPointer("test-end-point"),
+					ServerAddress: unitest.ToPointer("test-end-point"),
 					FileExtension: unitest.ToPointer("test-extension"),
-					APIId:         unitest.ToPointer("APIId"),
-					APIKey:        unitest.ToPointer("APIKey"),
+					AccessKey:     unitest.ToPointer("AccessKey"),
+					SecretKey:     unitest.ToPointer("SecretKey"),
 				},
 				RawData: []byte("test"),
 			},
@@ -76,10 +76,10 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 			requestBody: &v1alpha1.TelemetryRequest{
 				MinIOSetting: &v1alpha1.MinIOSetting{
 					Bucket:        unitest.ToPointer("test-bucket"),
-					EndPoint:      unitest.ToPointer("test-end-point"),
+					ServerAddress: unitest.ToPointer("test-end-point"),
 					FileExtension: unitest.ToPointer("test-extension"),
-					APIId:         unitest.ToPointer("APIId"),
-					APIKey:        unitest.ToPointer("APIKey"),
+					AccessKey:     unitest.ToPointer("AccessKey"),
+					SecretKey:     unitest.ToPointer("SecretKey"),
 				},
 				RawData: []byte("test"),
 			},
@@ -111,12 +111,12 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 func TestInjectSecret(t *testing.T) {
 	testNamespace := "test-namespace"
 	testCases := []struct {
-		name      string
-		client    *testclient.Clientset
-		ns        string
-		setting   *v1alpha1.MinIOSetting
-		expectId  *string
-		expectKey *string
+		name            string
+		client          *testclient.Clientset
+		ns              string
+		setting         *v1alpha1.MinIOSetting
+		expectAccessKey *string
+		expectSecretKey *string
 	}{
 		{
 			name:    "case1 no secret",
@@ -161,7 +161,7 @@ func TestInjectSecret(t *testing.T) {
 			setting: &v1alpha1.MinIOSetting{
 				Secret: unitest.ToPointer("test-secret"),
 			},
-			expectId: unitest.ToPointer("overwrite"),
+			expectAccessKey: unitest.ToPointer("overwrite"),
 		},
 		{
 			name: "case5 have id and key",
@@ -179,8 +179,8 @@ func TestInjectSecret(t *testing.T) {
 			setting: &v1alpha1.MinIOSetting{
 				Secret: unitest.ToPointer("test-secret"),
 			},
-			expectId:  unitest.ToPointer("overwrite"),
-			expectKey: unitest.ToPointer("overwrite"),
+			expectAccessKey: unitest.ToPointer("overwrite"),
+			expectSecretKey: unitest.ToPointer("overwrite"),
 		},
 	}
 
@@ -188,8 +188,8 @@ func TestInjectSecret(t *testing.T) {
 		utils.SetClient(c.client, c.ns)
 		injectSecret(c.setting)
 		if c.setting != nil {
-			assert.Equal(t, c.expectId, c.setting.APIId)
-			assert.Equal(t, c.expectKey, c.setting.APIKey)
+			assert.Equal(t, c.expectAccessKey, c.setting.AccessKey)
+			assert.Equal(t, c.expectSecretKey, c.setting.SecretKey)
 		}
 	}
 }

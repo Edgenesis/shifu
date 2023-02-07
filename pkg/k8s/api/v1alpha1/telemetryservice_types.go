@@ -37,29 +37,24 @@ type HTTPSetting struct {
 }
 
 type MinIOSetting struct {
-	APIId  *string `json:"APIId,omitempty"`
-	APIKey *string `json:"APIKey,omitempty"`
+	Secret           *string `json:"Secret,omitempty"`
+	AccessKey        *string `json:"AccessKey,omitempty"`
+	SecretKey        *string `json:"SecretKey,omitempty"`
+	RequestTimeoutMS *int64  `json:"RequestTimeoutMS,omitempty"`
 	//+kubebuilder:validation:Required
 	Bucket *string `json:"Bucket,omitempty"`
 	//+kubebuilder:validation:Required
 	FileExtension *string `json:"FileExtension,omitempty"`
 	//+kubebuilder:validation:Required
-	EndPoint *string `json:"EndPoint,omitempty"`
-	Secret   *string `json:"Secret,omitempty"`
+	ServerAddress *string `json:"ServerAddress,omitempty"`
 }
 
 // ServiceSettings defines service settings on telemetry
 type ServiceSettings struct {
-	ConnectionSetting *ConnectionSetting    `json:"ConnectionSetting,omitempty"`
-	HTTPSetting       *HTTPSetting          `json:"HTTPSetting,omitempty"`
-	MQTTSetting       *MQTTSetting          `json:"MQTTSetting,omitempty"`
-	SQLSetting        *SQLConnectionSetting `json:"SQLSetting,omitempty"`
-	MinIOSetting      *MinIOSetting         `json:"MinIOSetting,omitempty"`
-}
-
-// ConnectionSetting defines the connection's setting when deviceShifu send to TelemetryService endpoint
-type ConnectionSetting struct {
-	RequestTimeout *int64 `json:"RequestTimeout,omitempty"`
+	HTTPSetting  *HTTPSetting          `json:"HTTPSetting,omitempty"`
+	MQTTSetting  *MQTTSetting          `json:"MQTTSetting,omitempty"`
+	SQLSetting   *SQLConnectionSetting `json:"SQLSetting,omitempty"`
+	MinIOSetting *MinIOSetting         `json:"MinIOSetting,omitempty"`
 }
 
 // TelemetryServiceSpec defines the desired state of TelemetryService

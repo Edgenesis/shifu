@@ -28,7 +28,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 	}
 
 	if tss.ServiceSettings.HTTPSetting != nil {
-		err := pushToHTTPTelemetryCollectionService(message, *tss.TelemetrySeriveEndpoint, tss.ServiceSettings.ConnectionSetting)
+		err := pushToHTTPTelemetryCollectionService(message, *tss.TelemetrySeriveEndpoint)
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 			MQTTSetting: tss.ServiceSettings.MQTTSetting,
 		}
 		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMQTT
-		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath, tss.ServiceSettings.ConnectionSetting)
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
 		}
@@ -50,7 +50,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 			SQLConnectionSetting: tss.ServiceSettings.SQLSetting,
 		}
 		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURISQL
-		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath, tss.ServiceSettings.ConnectionSetting)
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
 		}
@@ -61,7 +61,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 			MinIOSetting: tss.ServiceSettings.MinIOSetting,
 		}
 		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMinIO
-		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath, tss.ServiceSettings.ConnectionSetting)
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
 		}
@@ -71,11 +71,8 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 }
 
 // PushToHTTPTelemetryCollectionService push telemetry data to Collection Service
-func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryCollectionService string, connectionSetting *v1alpha1.ConnectionSetting) error {
+func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryCollectionService string) error {
 	ctxTimeout := DeviceTelemetryTimeoutInMS
-	if connectionSetting != nil && connectionSetting.RequestTimeout != nil {
-		ctxTimeout = *connectionSetting.RequestTimeout
-	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(ctxTimeout)*time.Millisecond)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, telemetryCollectionService, message.Body)
@@ -94,10 +91,11 @@ func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryColle
 	return nil
 }
 
-func pushToShifuTelemetryCollectionService(message *http.Response, request *v1alpha1.TelemetryRequest, targetServerAddress string, connectionSetting *v1alpha1.ConnectionSetting) error {
+func pushToShifuTelemetryCollectionService(message *http.Response, request *v1alpha1.TelemetryRequest, targetServerAddress string) error {
 	ctxTimeout := DeviceTelemetryTimeoutInMS
-	if connectionSetting != nil && connectionSetting.RequestTimeout != nil {
-		ctxTimeout = *connectionSetting.RequestTimeout
+	// get MinIO request's timeout
+	if request.MinIOSetting != nil && request.MinIOSetting.RequestTimeoutMS != nil {
+		ctxTimeout = *request.MinIOSetting.RequestTimeoutMS
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(ctxTimeout)*time.Millisecond)
 	defer cancel()
@@ -127,7 +125,7 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 		logger.Errorf("Error when send request to Server, error: %v", err)
 		return err
 	}
-	logger.Infof("successfully sent message to telemetry service address %v", targetServerAddress)
+	logger.Infof("successfully sent message to telemetry service address %s", targetServerAddress)
 	err = resp.Body.Close()
 	if err != nil {
 		logger.Errorf("Error when Close response Body, error: %v", err)

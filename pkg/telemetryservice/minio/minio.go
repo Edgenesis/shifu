@@ -40,22 +40,22 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "MinIOSetting cant be nil", http.StatusBadRequest)
 		return
 	}
-	if request.MinIOSetting.Bucket == nil || request.MinIOSetting.EndPoint == nil || request.MinIOSetting.FileExtension == nil {
+	if request.MinIOSetting.Bucket == nil || request.MinIOSetting.ServerAddress == nil || request.MinIOSetting.FileExtension == nil {
 		logger.Errorf("Bucket or EndPoint or FileExtension cant be nil")
 		http.Error(w, "Bucket or EndPoint or FileExtension cant be nil", http.StatusBadRequest)
 		return
 	}
-	// Read MinIo APIId/username & APIKey/password
+	// Read MinIo AccessKey/username & SecretKey/password
 	injectSecret(request.MinIOSetting)
-	if request.MinIOSetting.APIId == nil || request.MinIOSetting.APIKey == nil {
-		logger.Errorf("Fail to get APIId/username or APIKey/password")
-		http.Error(w, "Fail to get APIId/username or APIKey/password", http.StatusBadRequest)
+	if request.MinIOSetting.AccessKey == nil || request.MinIOSetting.SecretKey == nil {
+		logger.Errorf("Fail to get AccessKey/username or SecretKey/password")
+		http.Error(w, "Fail to get AccessKey/username or SecretKey/password", http.StatusBadRequest)
 		return
 	}
 
 	// Create MinIO Client
-	client, err := minio.New(*request.MinIOSetting.EndPoint, &minio.Options{
-		Creds: credentials.NewStaticV4(*request.MinIOSetting.APIId, *request.MinIOSetting.APIKey, ""),
+	client, err := minio.New(*request.MinIOSetting.ServerAddress, &minio.Options{
+		Creds: credentials.NewStaticV4(*request.MinIOSetting.AccessKey, *request.MinIOSetting.SecretKey, ""),
 	})
 	if err != nil {
 		logger.Errorf("Fail to create MinIO client, error:" + err.Error())
@@ -87,21 +87,21 @@ func injectSecret(setting *v1alpha1.MinIOSetting) {
 		logger.Errorf("Fail to get secret of %v, error: %v", *setting.Secret, err)
 		return
 	}
-	// Load APIId & APIKey from secret
+	// Load AccessKey & SecretKey from secret
 	if id, exist := secret[deviceshifubase.UsernameSecretField]; exist {
-		setting.APIId = &id
+		setting.AccessKey = &id
 	} else {
-		logger.Errorf("Fail to get APIId or username from secret")
+		logger.Errorf("Fail to get AccessKey or username from secret")
 		return
 	}
 	if key, exist := secret[deviceshifubase.PasswordSecretField]; exist {
-		setting.APIKey = &key
+		setting.SecretKey = &key
 	} else {
-		logger.Errorf("Fail to get APIKey or password from secret")
+		logger.Errorf("Fail to get SecretKey or password from secret")
 		return
 	}
 
-	logger.Infof("MinIo loaded APIId & APIKey from secret")
+	logger.Infof("MinIo loaded AccessKey & SecretKey from secret")
 }
 
 func uploadObject(client *minio.Client, bucket string, fileName string, content []byte) error {

@@ -19,12 +19,13 @@ type TelemetryRequest struct {
     MinIOSetting   *MinIOSetting     `json:"minIOSetting,omitempty"`
 }
 type MinIOSetting struct {
-    APIId         *string    `json:"APIId,omitempty"`
-    APIKey        *string    `json:"APIKey,omitempty"`
-    Bucket        *string    `json:"Bucket,omitempty"`
-    FileExtension *string    `json:"FileExtension,omitempty"`
-    EndPoint      *string    `json:"EndPoint,omitempty"`
-    Secret        *string    `json:"Secret,omitempty"`
+    Secret           *string    `json:"Secret,omitempty"`
+    AccessKey        *string    `json:"AccessKey,omitempty"`
+    SecretKey        *string    `json:"SecretKey,omitempty"`
+    RequestTimeoutMS *int64     `json:"RequestTimeoutMS,omitempty"`
+    Bucket           *string    `json:"Bucket,omitempty"`
+    FileExtension    *string    `json:"FileExtension,omitempty"`
+    ServerAddress    *string    `json:"ServerAddress,omitempty"`
 }
 ```
 
@@ -37,4 +38,4 @@ graph TD
     TelemetryService -->|Save file| MinIO
 ```
 
-If you want to upload a big file(like 2~200mb), you need set a larger timeout, you can set telemetryTimeoutInMilliseconds(when deviceShifu get file from Device) at configmap.yaml, then you should set RequestTimeout at telemetryservice.yaml. There is an example in `examples/minioTelemetryService/deployment/`.
+If you want to upload a big file(like 2~200mb), you need set a larger timeout, you can set telemetryTimeoutInMilliseconds(when deviceShifu get file from Device) at configmap.yaml, then you should set RequestTimeoutMS at telemetryservice.yaml. There is an example in `examples/minioTelemetryService/deployment/`.

@@ -19,7 +19,7 @@ A `TelemetryService` object should be able to describe most existing service end
 graph LR;
 device -->|Telemetries HTTP/OPCUA| deviceShifuA;
 deviceShifuA -->|HTTP| TelemetryService;
-TelemetryService -->|HTTP/MQTT/MySQL/MinIO| EndPoint
+TelemetryService -->|HTTP/MQTT/MySQL/TDengine/MinIO| EndPoint
 
 ```
 
@@ -37,7 +37,7 @@ A `TelemetryService` object consists following configuration:
 
 ### serviceSettings
 
-`serviceSettings` is settings related to the specific service. `RequestTimeout` means the timeout when TelemetryService send request to endpoints.
+`serviceSettings` is settings related to the specific service.
 
 #### Example
 
@@ -51,7 +51,6 @@ spec:
   type: HTTP
   address: 1.2.3.4:1234/api1
   serviceSettings:
-    RequestTimeout: 2000
     HTTPSetting:
       username: admin
       password: password
@@ -77,4 +76,4 @@ type TelemetryServiceRequest struct {
 When `TelemetryService` receives such request, it will use `EndpointSpec` to connect to required telemetry endpoint and send raw telemetry data over. 
 How to deal with telemetry raw data would be determined by the user.
 
-Currently, `TelemetryService` support HTTP, MySQL, MQTT, MinIO endpoints, and we plan to support more protocols.
+Currently, `TelemetryService` support HTTP, MySQL, TDengine, MQTT, MinIO endpoints, and we plan to support more protocols.

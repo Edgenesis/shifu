@@ -6,11 +6,10 @@ metadata:
 spec:
   telemetrySeriveEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
   serviceSettings:
-    ConnectionSetting:
-      RequestTimeout: 20000
     MinIOSetting:
+      # or you can specify AccessKey and SecretKey
+      Secret: minio-secret
+      RequestTimeoutMS: 2500
       Bucket: test-bucket
       FileExtension: mp4
-      EndPoint: minio.data.svc.cluster.local:9000
-      # or you can specify APIId and APIKey
-      Secret: minio-secret
+      ServerAddress: minio.data.svc.cluster.local:9000
