@@ -13,10 +13,9 @@ require (
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
-	github.com/briandowns/spinner v1.20.0
+	github.com/briandowns/spinner v1.21.0
 	github.com/gin-gonic/gin v1.8.2
 	github.com/minio/minio-go/v7 v7.0.46
-	github.com/briandowns/spinner v1.21.0
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.8.0
 	github.com/onsi/gomega v1.26.0
