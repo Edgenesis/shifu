@@ -21,14 +21,14 @@ need to create new deviceShifu, we only need to focus on the protocol specific p
 
 ### Design goals
 
-1. Factor out the common parts of current existing ***shifuDevices*** and configs into a common ***base-shifuDevice*** struct to 
+- Factor out the common parts of current existing ***shifuDevices*** and configs into a common ***base-shifuDevice*** struct to 
 reduce duplicate codes and decouple some common device creation logic to the ***base-shifuDevice*** struct and config from each 
 specific shifuDevice.
-2. Create a ***deviceShifu*** interface as the guideline for adding new ***deviceShifu*** and let current main.go use the 
+- Create a ***deviceShifu*** interface as the guideline for adding new ***deviceShifu*** and let current main.go use the 
 general ***deviceShifu*** interface to perform the actions needed to start a ***deviceShifu***.
 
 ### Non-Goal
-Create a general universal ***deviceShifu*** to represent every edge device.
+- Create a general universal ***deviceShifu*** to represent every edge device.
 
 
 ### Components

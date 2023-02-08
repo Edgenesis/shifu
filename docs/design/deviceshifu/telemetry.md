@@ -20,7 +20,7 @@ Telemetry should be protocol-independent, each protocol specific ***deviceShifu*
 
 ## Architecture
 
-Telemetry consistes of telemetry settings, telemetries and telemetry properties.
+Telemetry consists of telemetry settings, telemetries and telemetry properties.
 
 ### Telemetry Settings
 
@@ -29,7 +29,7 @@ Telemetry Settings should consist the following configurable options:
 1. `telemetryUpdateIntervalInMilliseconds` (optional, default to `3000`ms)  
   This specifies the update interval for all configured telemetries in milliseconds.
 
-2. `telemetryTimeoutInMilliseconds` (optionalm, default to `3000`ms)  
+2. `telemetryTimeoutInMilliseconds` (optional, default to `3000`ms)
   This specifies the default timeout for all configured telemetries in milliseconds.
 
 3. `defaultPushToServer` (optional, default to `false`)  
@@ -48,7 +48,7 @@ Telemetries are configured method used by ***deviceShifu*** to query its connect
 
 ### Telemetry properties
 
-Telemetry properties are configurable property for each telemetry, it should consists the following:
+Telemetry properties are configurable property for each telemetry, it should consist the following:
 
 1. `pushToServer` (optional if you would like to use `defaultPushToServer` and its , else it will post the specified telemetry's result to the configured endpoint)  
 

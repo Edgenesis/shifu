@@ -56,12 +56,24 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 		}
 	}
 
+	if tss.ServiceSettings.MinIOSetting != nil {
+		request := &v1alpha1.TelemetryRequest{
+			MinIOSetting: tss.ServiceSettings.MinIOSetting,
+		}
+		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMinIO
+		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
 // PushToHTTPTelemetryCollectionService push telemetry data to Collection Service
 func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryCollectionService string) error {
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(DeviceTelemetryTimeoutInMS)*time.Millisecond)
+	ctxTimeout := DeviceTelemetryTimeoutInMS
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(ctxTimeout)*time.Millisecond)
 	defer cancel()
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, telemetryCollectionService, message.Body)
 	if err != nil {
@@ -80,7 +92,12 @@ func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryColle
 }
 
 func pushToShifuTelemetryCollectionService(message *http.Response, request *v1alpha1.TelemetryRequest, targetServerAddress string) error {
-	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(DeviceTelemetryTimeoutInMS)*time.Millisecond)
+	ctxTimeout := DeviceTelemetryTimeoutInMS
+	if request.MinIOSetting != nil && request.MinIOSetting.RequestTimeoutMS != nil {
+		// if this request is a MinIO TelemetryService request, and there is a timeout in setting
+		ctxTimeout = *request.MinIOSetting.RequestTimeoutMS
+	}
+	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(ctxTimeout)*time.Millisecond)
 	defer cancel()
 
 	rawData, err := io.ReadAll(message.Body)
@@ -95,7 +112,6 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 		logger.Errorf("Error when marshal request to []byte, error: %v", err)
 		return err
 	}
-	logger.Infof("requestBody is %s", string(requestBody))
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, targetServerAddress, bytes.NewBuffer(requestBody))
 	if err != nil {
@@ -109,7 +125,7 @@ func pushToShifuTelemetryCollectionService(message *http.Response, request *v1al
 		logger.Errorf("Error when send request to Server, error: %v", err)
 		return err
 	}
-	logger.Infof("successfully sent message %v to telemetry service address %v", string(rawData), targetServerAddress)
+	logger.Infof("successfully sent message to telemetry service address %s", targetServerAddress)
 	err = resp.Body.Close()
 	if err != nil {
 		logger.Errorf("Error when Close response Body, error: %v", err)

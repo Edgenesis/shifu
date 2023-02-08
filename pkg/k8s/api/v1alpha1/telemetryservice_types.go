@@ -25,8 +25,9 @@ import (
 
 // telemetry Service handler
 const (
-	TelemetryServiceURIMQTT = "/mqtt"
-	TelemetryServiceURISQL  = "/sql"
+	TelemetryServiceURIMQTT  = "/mqtt"
+	TelemetryServiceURISQL   = "/sql"
+	TelemetryServiceURIMinIO = "/minio"
 )
 
 // HTTPSetting defines HTTP specific settings when connecting to an EdgeDevice
@@ -35,11 +36,25 @@ type HTTPSetting struct {
 	Password *string `json:"password,omitempty"`
 }
 
+type MinIOSetting struct {
+	Secret           *string `json:"Secret,omitempty"`
+	AccessKey        *string `json:"AccessKey,omitempty"`
+	SecretKey        *string `json:"SecretKey,omitempty"`
+	RequestTimeoutMS *int64  `json:"RequestTimeoutMS,omitempty"`
+	//+kubebuilder:validation:Required
+	Bucket *string `json:"Bucket,omitempty"`
+	//+kubebuilder:validation:Required
+	FileExtension *string `json:"FileExtension,omitempty"`
+	//+kubebuilder:validation:Required
+	ServerAddress *string `json:"ServerAddress,omitempty"`
+}
+
 // ServiceSettings defines service settings on telemetry
 type ServiceSettings struct {
-	HTTPSetting *HTTPSetting          `json:"HTTPSetting,omitempty"`
-	MQTTSetting *MQTTSetting          `json:"MQTTSetting,omitempty"`
-	SQLSetting  *SQLConnectionSetting `json:"SQLSetting,omitempty"`
+	HTTPSetting  *HTTPSetting          `json:"HTTPSetting,omitempty"`
+	MQTTSetting  *MQTTSetting          `json:"MQTTSetting,omitempty"`
+	SQLSetting   *SQLConnectionSetting `json:"SQLSetting,omitempty"`
+	MinIOSetting *MinIOSetting         `json:"MinIOSetting,omitempty"`
 }
 
 // TelemetryServiceSpec defines the desired state of TelemetryService
@@ -58,6 +73,7 @@ type TelemetryRequest struct {
 	RawData              []byte                `json:"rawData,omitempty"`
 	MQTTSetting          *MQTTSetting          `json:"mqttSetting,omitempty"`
 	SQLConnectionSetting *SQLConnectionSetting `json:"sqlConnectionSetting,omitempty"`
+	MinIOSetting         *MinIOSetting         `json:"minIOSetting,omitempty"`
 }
 
 // TelemetryServiceStatus defines the observed state of TelemetryService
