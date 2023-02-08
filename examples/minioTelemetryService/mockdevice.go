@@ -1,16 +1,16 @@
 package main
 
 import (
-	"github.com/gin-gonic/gin"
+	"net/http"
+	"os"
 )
 
 func main() {
-	router := gin.Default()
-
-	router.GET("/get_file_mp4", func(context *gin.Context) {
-		// copy a file to here before run
-		context.File("test.mp4")
+	http.HandleFunc("/get_file_mp4", func(w http.ResponseWriter, r *http.Request) {
+		// you need copy a mp4 file to here first
+		fileContent, _ := os.ReadFile("test.mp4")
+		w.Write(fileContent)
 	})
 
-	router.Run("0.0.0.0:12345")
+	http.ListenAndServe(":12345", nil)
 }
