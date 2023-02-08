@@ -93,8 +93,8 @@ func pushToHTTPTelemetryCollectionService(message *http.Response, telemetryColle
 
 func pushToShifuTelemetryCollectionService(message *http.Response, request *v1alpha1.TelemetryRequest, targetServerAddress string) error {
 	ctxTimeout := DeviceTelemetryTimeoutInMS
-	// get MinIO request's timeout
 	if request.MinIOSetting != nil && request.MinIOSetting.RequestTimeoutMS != nil {
+		// if this request is a MinIO TelemetryService request, and there is a timeout in setting
 		ctxTimeout = *request.MinIOSetting.RequestTimeoutMS
 	}
 	ctx, cancel := context.WithTimeout(context.TODO(), time.Duration(ctxTimeout)*time.Millisecond)
