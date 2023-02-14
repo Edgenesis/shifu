@@ -16,7 +16,7 @@ require (
 	github.com/briandowns/spinner v1.21.0
 	github.com/minio/minio-go/v7 v7.0.47
 	github.com/mochi-co/mqtt v1.3.2
-	github.com/onsi/ginkgo/v2 v2.8.0
+	github.com/onsi/ginkgo/v2 v2.8.1
 	github.com/onsi/gomega v1.26.0
 	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.1
