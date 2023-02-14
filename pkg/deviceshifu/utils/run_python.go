@@ -15,8 +15,8 @@ const (
 func ProcessInstruction(moduleName string, funcName string, rawData string, scriptDir string) string {
 	cmdString := fmt.Sprintf("import %s; print(%s.%s(%s))", moduleName, moduleName, funcName, rawData)
 	cmd := exec.Command(PYTHON, CMDARG, cmdString)
+	fmt.Println("cmd", cmd.String())
 	cmd.Dir = scriptDir
-
 	processed, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Errorf("Failed process command %v\n, error:%v", cmdString, err.Error())

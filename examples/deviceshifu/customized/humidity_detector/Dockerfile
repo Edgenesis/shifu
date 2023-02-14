@@ -7,5 +7,6 @@ RUN CGO_ENABLED=0 go build -o main
 
 FROM gcr.io/distroless/static-debian11:latest
 WORKDIR /humidity-detector
+COPY raw_data raw_data
 COPY --from=builder /humidity-detector/main main
 CMD [ "./main" ]

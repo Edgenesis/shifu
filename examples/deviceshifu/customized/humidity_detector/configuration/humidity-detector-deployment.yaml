@@ -16,7 +16,7 @@ spec:
         app: humidity-detector
     spec:
       containers:
-        - image: humidity-detector
+        - image: humidity-detector:nightly
           imagePullPolicy: Never
           name: humidity-detector
           ports:

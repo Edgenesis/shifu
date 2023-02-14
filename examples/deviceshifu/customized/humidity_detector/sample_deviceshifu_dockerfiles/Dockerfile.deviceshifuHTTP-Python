@@ -11,6 +11,7 @@ COPY go.sum go.sum
 COPY pkg/k8s pkg/k8s
 COPY cmd/deviceshifu/cmdhttp cmd/deviceshifu/cmdhttp
 COPY pkg/deviceshifu pkg/deviceshifu
+COPY pkg/logger pkg/logger
 
 RUN go mod download
 
@@ -20,15 +21,12 @@ ARG TARGETARCH
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/deviceshifu cmd/deviceshifu/cmdhttp/main.go
 
-FROM python:3.6-slim-stretch
-CMD ["/bin/python"]
 
-FROM gcr.io/distroless/python3-debian11
+FROM python:3.6-slim-stretch
 
 WORKDIR /
 COPY --from=builder /output/deviceshifu deviceshifu
-COPY --from=builder /shifu/pkg/deviceshifu/pythoncustomizedhandlers/ pythoncustomizedhandlers/
-
+COPY examples/deviceshifu/customized/humidity_detector/pythoncustomizedhandlers/ pythoncustomizedhandlers/
 # Command to run the executable
 USER 65532:65532
 ENTRYPOINT ["/deviceshifu"]

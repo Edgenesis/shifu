@@ -6,11 +6,11 @@ metadata:
 data:
 #    device name and image address
   driverProperties: |
-    driverSku: HumidityDector
-    driverImage: humidity-detector:v0.0.1
+    driverSku: HumidityDetector
+    driverImage: humidity-detector:nightly
 
   customInstructionsPython: |
-    humidity:
+    humidity: humidity
 #    available instructions
   instructions: |
     instructionSettings:
@@ -24,7 +24,7 @@ data:
       telemetryTimeoutInMilliseconds: 3000
       telemetryInitialDelayInMilliseconds: 7000
     telemetries:
-      device_health:
+      humidity-detector:
         properties:
           instruction: humidity
           initialDelayMs: 1000
