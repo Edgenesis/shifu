@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-humidity-detector-deployment
     spec:
       containers:
-        - image: deviceshifu-http-http-python:nightly
+        - image: edgehub/deviceshifu-http-http-python:nightly
           name: deviceshifu-http
           imagePullPolicy: Never
           ports:

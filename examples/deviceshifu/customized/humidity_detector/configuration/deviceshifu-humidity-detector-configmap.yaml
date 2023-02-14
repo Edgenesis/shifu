@@ -7,7 +7,7 @@ data:
 #    device name and image address
   driverProperties: |
     driverSku: HumidityDetector
-    driverImage: humidity-detector:nightly
+    driverImage: edgehub/humidity-detector:nightly
 
   customInstructionsPython: |
     humidity: humidity

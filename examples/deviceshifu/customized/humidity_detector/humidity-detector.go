@@ -9,7 +9,7 @@ import (
 func getHumidity(w http.ResponseWriter, req *http.Request) {
 	dat, _ := os.ReadFile("raw_data")
 	fmt.Print(string(dat))
-	fmt.Fprintln(w, string(dat))
+	fmt.Fprint(w, string(dat))
 }
 
 func main() {
