@@ -4,8 +4,8 @@
 
 If you haven't done so, please take a look at the following documents first:
 
-1. [contribution guide](../../contribution/contributing.md)
-2. [deviceshifu design](../../design/design-deviceShifu.md)
+1. [contribution guide](../contribution/contributing.md)
+2. [deviceshifu design](../design/design-deviceShifu.md)
 
 ## Introduction
 
