@@ -459,7 +459,7 @@ stages:
       - script: |
           docker buildx build --platform=linux/amd64 \
           -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/mockserver/Dockerfile \
-          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/mockserver\
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/mockserver \
           -t edgehub/mockserver:$(tag) --load
         displayName: build edgehub/mockserver
       - script: |
