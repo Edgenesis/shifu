@@ -2,7 +2,7 @@
 
 ## 新功能 🎉
 
-* 添加 telemetryservice 对 MinIo by @Vacant2333 in https://github.com/Edgenesis/shifu/pull/458
+* 添加 telemetryservice 对 MinIo 的支持 by @Vacant2333 in https://github.com/Edgenesis/shifu/pull/458
 
 ## Bug 修复
 

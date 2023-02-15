@@ -2,7 +2,7 @@
 
 ## New Features 🎉
 
-* Add MinIO to telemetryservice by @Vacant2333 in https://github.com/Edgenesis/shifu/pull/458
+* Add MinIO support to telemetryservice by @Vacant2333 in https://github.com/Edgenesis/shifu/pull/458
 
 ## Bug fixes
 
