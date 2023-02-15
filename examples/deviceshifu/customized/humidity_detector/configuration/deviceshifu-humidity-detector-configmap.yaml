@@ -30,3 +30,5 @@ data:
           instruction: humidity_custom
           initialDelayMs: 1000
           intervalMs: 1000
+          pushSettings:
+            telemetryCollectionService: push-custom-data

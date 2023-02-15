@@ -457,11 +457,18 @@ stages:
           -t edgehub/deviceshifu-http-http-python:$(tag) --load
         displayName: build edgehub/deviceshifu-http-http-python
       - script: |
+          docker buildx build --platform=linux/amd64 \
+          -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/mockserver/Dockerfile \
+          --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/mockserver\
+          -t edgehub/mockserver:$(tag) --load
+        displayName: build edgehub/mockserver
+      - script: |
           set -e
           kind --version
           kind delete cluster && kind create cluster
           kind load docker-image edgehub/humidity-detector:$(tag)  
           kind load docker-image edgehub/deviceshifu-http-http-python:$(tag)
+          kind load docker-image edgehub/mockserver:$(tag)
           kubectl version
           kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
           kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
@@ -472,6 +479,7 @@ stages:
           kubectl apply -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/configuration
           kubectl wait --for=condition=Available deploy/humidity-detector -n devices --timeout=150s
           kubectl wait --for=condition=Available deploy/deviceshifu-humidity-detector-deployment -n deviceshifu --timeout=150s
+          kubectl wait --for=condition=Available deploy/mockserver -n devices --timeout=150s
           kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
           cd $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector && bash checkout.sh && cd -
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/configuration

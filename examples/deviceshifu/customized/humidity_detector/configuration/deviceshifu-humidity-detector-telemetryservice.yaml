@@ -1,0 +1,11 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: TelemetryService
+metadata:
+  name: push-custom-data
+  namespace: devices
+spec:
+  telemetrySeriveEndpoint: http://mockserver.devices.svc.cluster.local:11111/save_data
+  serviceSettings:
+    HTTPSetting:
+      username:
+      password:
