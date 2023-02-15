@@ -1,8 +1,8 @@
 FROM golang:1.19.2-alpine AS builder
 WORKDIR /humidity-detector
-COPY *.go ./
+COPY humidity-detector.go ./
 RUN go mod init humidity-detector
-COPY * ./
+COPY raw_data ./
 RUN CGO_ENABLED=0 go build -o main
 
 FROM gcr.io/distroless/static-debian11:latest
