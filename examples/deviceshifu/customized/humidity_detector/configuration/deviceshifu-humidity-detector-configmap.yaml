@@ -10,13 +10,14 @@ data:
     driverImage: edgehub/humidity-detector:nightly
 
   customInstructionsPython: |
-    humidity: humidity
+    humidity_custom: humidity_raw_data
 #    available instructions
   instructions: |
     instructionSettings:
       defaultTimeoutSeconds: 8
     instructions:
       humidity:
+      humidity_custom:
 #    telemetry retrieval methods
   telemetries: |
     telemetrySettings:
@@ -24,8 +25,8 @@ data:
       telemetryTimeoutInMilliseconds: 3000
       telemetryInitialDelayInMilliseconds: 7000
     telemetries:
-      humidity-detector:
+      humidity-detector-custom:
         properties:
-          instruction: humidity
+          instruction: humidity_custom
           initialDelayMs: 1000
           intervalMs: 1000

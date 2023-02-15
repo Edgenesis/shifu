@@ -6,33 +6,33 @@ raw_data="$(cat raw_data)"
 for i in {1..5}
 do
     # deviceshifu return the cleaned data
-    deviceshifu_output=$(kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" -s deviceshifu-humidity-detector-service.deviceshifu.svc.cluster.local:80/humidity --connect-timeout 5)
-    device_output=$(kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" -s humidity-detector.devices.svc.cluster.local:11111/humidity --connect-timeout 5)
+    humidity_custom_output=$(kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" -s deviceshifu-humidity-detector-service.deviceshifu.svc.cluster.local:80/humidity_custom --connect-timeout 5)
+    humidity_output=$(kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" -s deviceshifu-humidity-detector-service.deviceshifu.svc.cluster.local:80/humidity --connect-timeout 5)
 
-    device_output_check="$(diff <(echo "$device_output") <(echo "$raw_data") -b)"
-    if [[ $device_output == "" ]]
+    humidity_check="$(diff <(echo "$humidity_output") <(echo "$raw_data") -b)"
+    if [[ $humidity_output == "" ]]
     then
-        echo "empty device_output reply"
+        echo "empty humidity reply"
         exit 1
-    elif [[ $device_output_check == "" ]]
+    elif [[ $humidity_check == "" ]]
     then
-        echo "equal device_output reply"
+        echo "equal humidity reply"
     else
-        echo "wrong device_output reply"
-        echo "$device_output_check"
+        echo "wrong humidity reply"
+        echo "$humidity_check"
         exit 1
     fi
-    deviceshifu_output_check="$(diff <(echo "$deviceshifu_output") <(echo "$cleaned_raw_data") -b)"
-    if [[ $deviceshifu_output == "" ]]
+    humidity_custom_check="$(diff <(echo "$humidity_custom_output") <(echo "$cleaned_raw_data") -b)"
+    if [[ $humidity_custom_output == "" ]]
     then
-        echo "empty deviceshifu_output reply"
+        echo "empty humidity_custom reply"
         exit 1
-    elif [[ $deviceshifu_output_check == "" ]]
+    elif [[ $humidity_custom_check == "" ]]
     then
-        echo "equal deviceshifu_output reply"
+        echo "equal humidity_custom reply"
     else
-        echo "wrong deviceshifu_output reply"
-        echo "$deviceshifu_output_check"
+        echo "wrong humidity_custom reply"
+        echo "$humidity_custom_check"
         exit 1
     fi
 done
