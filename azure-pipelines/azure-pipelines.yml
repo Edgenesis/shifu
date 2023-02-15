@@ -475,7 +475,8 @@ stages:
           kubectl wait --for=condition=Available deploy/deviceshifu-humidity-detector-deployment -n deviceshifu --timeout=150s
           kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
           
-          bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/checkout.sh
+          cd $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector && bash checkout.sh
+          cd -
           kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/configuration
         displayName: "Shifu demo humidity_detector deviceshifu E2E test"
 

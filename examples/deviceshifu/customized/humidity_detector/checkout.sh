@@ -13,27 +13,27 @@ do
     if [[ $device_output == "" ]]
     then
         echo "empty device_output reply"
-        exit 0
+        exit 1
     elif [[ $device_output_check == "" ]]
     then
         echo "equal device_output reply"
     else
         echo "wrong device_output reply"
         echo "$device_output_check"
-        exit 0
+        exit 1
     fi
     deviceshifu_output_check="$(diff <(echo "$deviceshifu_output") <(echo "$cleaned_raw_data") -b)"
     if [[ $deviceshifu_output == "" ]]
     then
         echo "empty deviceshifu_output reply"
-        exit 0
+        exit 1
     elif [[ $deviceshifu_output_check == "" ]]
     then
         echo "equal deviceshifu_output reply"
     else
         echo "wrong deviceshifu_output reply"
         echo "$deviceshifu_output_check"
-        exit 0
+        exit 1
     fi
 done
-exit 1
+exit 0
