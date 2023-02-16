@@ -3,7 +3,7 @@
 cleaned_raw_data="$(cat cleaned_raw_data)"
 raw_data="$(cat raw_data)"
 
-sleep 3
+sleep 5
 
 for i in {1..5}
 do
@@ -36,8 +36,24 @@ do
         echo "$humidity_custom_check"
         exit 1
     fi
-    telemetryservice_output=$(kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" -s mockserver.devices.svc.cluster.local:11111/read_data --connect-timeout 5)
-    telemetryservice_check="$(diff <(echo "$telemetryservice_output") <(echo "$cleaned_raw_data") -b)"
+    # check the telemetryservice get the cleaned data
+    telemetryservice_custom_output=$(kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" -s mockserver.devices.svc.cluster.local:11111/custom_data/read --connect-timeout 5)
+    telemetryservice_custom_check="$(diff <(echo "$telemetryservice_custom_output") <(echo "$cleaned_raw_data") -b)"
+    if [[ $telemetryservice_custom_output == "" ]]
+    then
+        echo "empty telemetryservice_custom_output reply"
+        exit 1
+    elif [[ $telemetryservice_custom_check == "" ]]
+    then
+        echo "equal telemetryservice_custom_output reply"
+    else
+        echo "wrong telemetryservice_custom_output reply"
+        echo "$telemetryservice_custom_check"
+        exit 1
+    fi
+    # check telemetryservice get the rawdata
+    telemetryservice_output=$(kubectl exec -it -n deviceshifu nginx -- curl -XPOST -H "Content-Type:application/json" -s mockserver.devices.svc.cluster.local:11111/data/read --connect-timeout 5)
+    telemetryservice_check="$(diff <(echo "$telemetryservice_output") <(echo "$raw_data") -b)"
     if [[ $telemetryservice_output == "" ]]
     then
         echo "empty telemetryservice_output reply"
