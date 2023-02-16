@@ -22,7 +22,7 @@ ARG TARGETARCH
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/deviceshifu cmd/deviceshifu/cmdhttp/main.go
 
 
-FROM python:3.6-slim-stretch
+FROM gcr.io/distroless/python3-debian11
 
 WORKDIR /
 COPY --from=builder /output/deviceshifu deviceshifu

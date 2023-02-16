@@ -13,4 +13,3 @@ spec:
   selector:
     app: mockserver
   type: LoadBalancer
-

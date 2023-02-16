@@ -35,4 +35,3 @@ spec:
           configMap:
             name: humidity-detector-configmap-0.0.1
       serviceAccountName: edgedevice-sa
-
