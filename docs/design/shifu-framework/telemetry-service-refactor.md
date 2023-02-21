@@ -2,14 +2,14 @@
 
 ## What is TelemetrySerice
 
-***deviceShifu*** Telemetry is part of the ***deviceShifu*** [Compute](docs/design/design-deviceShifu.md#compute) plugin. It periodically pulls device instructions defined in the telemetries section in ***deviceShifu*** ConfigMap.
+***deviceShifu*** Telemetry is part of the ***deviceShifu*** [Compute](https://github.com/Edgenesis/shifu/blob/main/docs/design/design-deviceShifu.md#compute) plugin. It periodically pulls device instructions defined in the telemetries section in ***deviceShifu*** ConfigMap.
 
 The result for each telemetry should update `EdgeDevice`'s status accordingly.
 
 ## Why need to refactor TelemetryService?
 
-- Currently, telemetryServices' connection settings are read from deviceShifu, which will send all connection settings to telemetryService, so telemetryService strongly depends on deviceShifu.
-- telemetryService's connection settings may include some private information, such as secrets read from deviceShifu, so that deviceShifu will have more access to read this information from the kubernetes API, which will make users feel scared.
+- Currently, telemetryServices' connection settings are read by deviceShifu, which will send all connection settings to telemetryService, so telemetryService strongly depends on deviceShifu.
+- telemetryService's connection settings may include some private information, such as secrets read from deviceShifu, so that deviceShifu will have more access to read this information from the kubernetes API, which is a bad RBAC practice.
 - The installation yaml file of Shifu needs to be separate from the yaml file of telemetryService.
 - telemetryService pushes to HTTP endpoints differently than other protocols, which makes it difficult to use.
 
@@ -63,7 +63,7 @@ Send data from deviceShifu to telemetryService, like
 ```go
 type TelemetryRequest struct {
 	RawData              []byte `json:"rawData,omitempty"`
-    TelemetryServiceName string `json:"tsName,omitempty"`
+    TelemetryServiceName string `json:"Name,omitempty"`
 }
 ```
 

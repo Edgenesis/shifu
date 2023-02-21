@@ -1,6 +1,6 @@
 # deviceShifu Telemetry design
 
-***deviceShifu*** Telemetry is part of the ***deviceShifu*** [Compute](docs/design/design-deviceShifu.md#compute) plugin. It periodically pulls device instructions defined in the telemetries section in ***deviceShifu*** ConfigMap.
+***deviceShifu*** Telemetry is part of the ***deviceShifu*** [Compute](https://github.com/Edgenesis/shifu/blob/main/docs/design/design-deviceShifu.md#compute) plugin. It periodically pulls device instructions defined in the telemetries section in ***deviceShifu*** ConfigMap.
 
 The result for each telemetry should update `EdgeDevice`'s status accordingly.
 
