@@ -2,22 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: humidity-detector
-  name: humidity-detector
+    app: mockserver
+  name: mockserver
   namespace: devices
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: humidity-detector
+      app: mockserver
   template:
     metadata:
       labels:
-        app: humidity-detector
+        app: mockserver
     spec:
       containers:
-        - image: edgehub/humidity-detector:nightly
+        - image: edgehub/mockserver:nightly
           imagePullPolicy: Never
-          name: humidity-detector
+          name: mockserver
           ports:
             - containerPort: 11111

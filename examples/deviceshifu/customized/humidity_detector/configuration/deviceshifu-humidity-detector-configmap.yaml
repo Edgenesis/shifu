@@ -6,17 +6,18 @@ metadata:
 data:
 #    device name and image address
   driverProperties: |
-    driverSku: HumidityDector
-    driverImage: humidity-detector:v0.0.1
+    driverSku: HumidityDetector
+    driverImage: edgehub/humidity-detector:nightly
 
   customInstructionsPython: |
-    humidity:
+    humidity_custom: humidity_raw_data
 #    available instructions
   instructions: |
     instructionSettings:
       defaultTimeoutSeconds: 8
     instructions:
       humidity:
+      humidity_custom:
 #    telemetry retrieval methods
   telemetries: |
     telemetrySettings:
@@ -24,8 +25,17 @@ data:
       telemetryTimeoutInMilliseconds: 3000
       telemetryInitialDelayInMilliseconds: 7000
     telemetries:
-      device_health:
+      humidity-detector-custom:
+        properties:
+          instruction: humidity_custom
+          initialDelayMs: 1000
+          intervalMs: 3000
+          pushSettings:
+            telemetryCollectionService: push-custom-data
+      humidity-detector:
         properties:
           instruction: humidity
           initialDelayMs: 1000
-          intervalMs: 1000
+          intervalMs: 3000
+          pushSettings:
+            telemetryCollectionService: push-data

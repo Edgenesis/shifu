@@ -16,8 +16,9 @@ spec:
         app: deviceshifu-humidity-detector-deployment
     spec:
       containers:
-        - image: edgehub/deviceshifu-http-http:v0.1.0
+        - image: edgehub/deviceshifu-http-http-python:nightly
           name: deviceshifu-http
+          imagePullPolicy: Never
           ports:
             - containerPort: 8080
           volumeMounts:
@@ -34,4 +35,3 @@ spec:
           configMap:
             name: humidity-detector-configmap-0.0.1
       serviceAccountName: edgedevice-sa
-

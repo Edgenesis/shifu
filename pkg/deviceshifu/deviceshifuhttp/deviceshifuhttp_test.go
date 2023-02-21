@@ -366,10 +366,37 @@ func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
 }
 
 func TestCollectHTTPTelemtries(t *testing.T) {
+	ms := checkCustomizedTelemetryOutput(t)
+	defer ms.Close()
+	
+	err := makePythonCustomFile()
+	assert.Nil(t, err)
+	err = makePythonRawDataFile()
+	assert.Nil(t, err)
+	err = makePythonExpectDataFile()
+	assert.Nil(t, err)
+
 	ts := mockTelemetryServer(t)
 	addr := strings.Split(ts.URL, "//")[1]
-	_, err := unitest.RetryAndGetHTTP(ts.URL, 10)
+	_, err = unitest.RetryAndGetHTTP(ts.URL, 10)
 	assert.Nil(t, err)
+	var username = "test"
+	var password = "test"
+	deviceshifubase.CustomInstructionsPython = map[string]string{
+		"telemetry_health": "dataclean",
+	}
+	deviceshifubase.TelemetryCollectionServiceMap = map[string]v1alpha1.TelemetryServiceSpec{
+		"device_healthy": v1alpha1.TelemetryServiceSpec{
+			TelemetrySeriveEndpoint: &ms.URL,
+			ServiceSettings: &v1alpha1.ServiceSettings{
+				HTTPSetting: &v1alpha1.HTTPSetting{
+					Username: &username,
+					Password: &password,
+				},
+			},
+		},
+	}
+
 	mockDevice := &DeviceShifuHTTP{
 		base: &deviceshifubase.DeviceShifuBase{
 			Name: "test",
@@ -410,7 +437,10 @@ func TestCollectHTTPTelemtries(t *testing.T) {
 	res, err := mockDevice.collectHTTPTelemtries()
 	assert.Equal(t, true, res)
 	assert.Nil(t, err)
-
+    err = os.RemoveAll("pythoncustomizedhandlers")
+    if err != nil {
+        logger.Fatal(err)
+    }
 }
 
 func mockTelemetryServer(t *testing.T) *httptest.Server {
@@ -422,10 +452,133 @@ func mockTelemetryServer(t *testing.T) *httptest.Server {
 			logger.Info("telemetry detected.")
 			assert.Equal(t, "/telemetry_health", path)
 			w.Header().Add("Content-Type", "application/json")
+			rawData, err := os.ReadFile("pythoncustomizedhandlers/raw_data")
+			if err != nil {
+				logger.Errorf("readfile error:", err.Error())
+				return
+			}
+			_, err = w.Write(rawData)
+			if err != nil {
+				logger.Errorf("write data error:", err.Error())
+				return
+			}
 			w.WriteHeader(http.StatusOK)
 		default:
 			w.WriteHeader(http.StatusOK)
 			logger.Info("ts get default request, path:", path)
+		}
+
+	}))
+	return server
+}
+
+func makePythonCustomFile() error {
+	//create a python file for data cleaning
+	folderPath := "pythoncustomizedhandlers"
+	err := os.MkdirAll(folderPath, 0777)
+	if err != nil {
+		logger.Errorf("create folderpath error:", err.Error())
+		return err
+	}
+	file, err := os.Create("pythoncustomizedhandlers/customized_handlers.py")
+	if err != nil {
+		logger.Errorf("create file error:", err.Error())
+		return err
+	}
+	defer file.Close()
+
+	//data cleaning function
+	content := `
+    def dataclean(data):
+        return "test data cleaning"
+    `
+	_, err = file.WriteString(strings.TrimSpace(content))
+	if err != nil {
+		logger.Errorf("writestring error:", err.Error())
+		return err
+	}
+	return nil
+}
+
+func makePythonRawDataFile() error {
+	//mock data source
+	//read data from this file and perform data cleaning
+	file, err := os.Create("pythoncustomizedhandlers/raw_data")
+	if err != nil {
+		logger.Errorf("create file error:", err.Error())
+		return err
+	}
+	defer file.Close()
+
+	content := `
+		{
+			"statusCode": "200",
+			"message":"success",
+			"entity":[{
+				"deviceId":"20990922009",
+				"datatime":"2022-06-30 07:55:51",
+				"eUnit":"Celsius",
+				"eValue":"37",
+				"eKey":"e3",
+				"eName":"atmosphere temperature",
+				"eNum":"101"
+			}]
+		}
+    `
+	_, err = file.WriteString(strings.TrimSpace(content))
+	if err != nil {
+		logger.Errorf("writestring error:", err.Error())
+		return err
+	}
+	return nil
+}
+
+func makePythonExpectDataFile() error {
+	//the data expected to be returned
+	//read the data from this file and compare it with the cleaned data
+	file, err := os.Create("pythoncustomizedhandlers/expected_data")
+	if err != nil {
+		logger.Errorf("create file error:", err.Error())
+		return err
+	}
+	defer file.Close()
+
+	content := `
+		test data cleaning
+    `
+	_, err = file.WriteString(strings.TrimSpace(content))
+	if err != nil {
+		logger.Errorf("writestring error:", err.Error())
+		return err
+	}
+	return nil
+}
+
+func checkCustomizedTelemetryOutput(t *testing.T) *httptest.Server {
+	//mock a server, telemetryservice sends the cleaned data to this server
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		path := r.URL.Path
+		switch path {
+		case "/":
+			w.Header().Add("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+			respBody, err := io.ReadAll(r.Body)
+			if err != nil {
+				logger.Errorf("read data error:", err.Error())
+				return
+			}
+			convertRespBody := strings.TrimRight(string(respBody), "\n")
+			//read the data from this file and compare it with the cleaned data
+			expectedProcessed, err := os.ReadFile("pythoncustomizedhandlers/expected_data")
+			if err != nil {
+				logger.Errorf("readfile error:", err.Error())
+				return
+			}
+			assert.Equal(t, string(expectedProcessed), string(convertRespBody))
+			logger.Info("handler get the instruction and executed.")
+		default:
+			w.WriteHeader(http.StatusOK)
+			logger.Info("hs get default request, path:", path)
 		}
 
 	}))

@@ -469,6 +469,22 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 
 				if resp != nil {
 					if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
+						instructionFuncName, pythonCustomExist := deviceshifubase.CustomInstructionsPython[instruction]
+						if pythonCustomExist {
+							respBody, readErr := io.ReadAll(resp.Body)
+							if readErr != nil {
+								logger.Errorf("error when read requestBody from responseBody, err: %v", readErr)
+							}
+
+							rawRespBodyString := string(respBody)
+							logger.Infof("Instruction %v is custom: %v, has a python customized handler configured.\n", instruction, pythonCustomExist)
+							respBodyString := utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
+							resp = &http.Response{
+								Header: make(http.Header),
+								Body: io.NopCloser(strings.NewReader(respBodyString)),
+							}
+						}
+
 						telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
 						if exist && *telemetryCollectionService.TelemetrySeriveEndpoint != "" {
 							resp.Header.Add(DeviceNameHeaderField, deviceName)

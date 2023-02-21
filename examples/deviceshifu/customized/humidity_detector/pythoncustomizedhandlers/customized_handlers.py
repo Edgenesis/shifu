@@ -16,7 +16,7 @@ def check_regular_measurement_exception(measurement_name, measurement_value):
     return exception_message
 
 
-def humidity(raw_data):
+def humidity_raw_data(raw_data):
     new_data = []
     # raw_loaded = json.load(raw_data)
     # translate the raw data to new data
