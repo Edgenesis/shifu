@@ -217,40 +217,36 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 		default:
 			http.Error(w, "not supported yet", http.StatusBadRequest)
-			logger.Errorf("Request type %v is not supported yet!", reqType)
+			logger.Errorf("Request type %s is not supported yet!", reqType)
 			return
 		}
 
 		if resp != nil {
-			utils.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
-
 			// Handling deviceshifu stuck when responseBody is a stream
-			_, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 			if !shouldUsePythonCustomProcessing {
+				utils.CopyHeader(w.Header(), resp.Header)
 				_, err := io.Copy(w, resp.Body)
 				if err != nil {
-					logger.Errorf("cannot copy requestBody from requestBody, error: %v", err)
+					logger.Errorf("cannot copy requestBody from requestBody, error: %s", err.Error())
 				}
 				return
 			}
 
 			respBody, readErr := io.ReadAll(resp.Body)
 			if readErr != nil {
-				logger.Errorf("error when read requestBody from responseBody, err: %v", readErr)
+				logger.Errorf("error when read requestBody from responseBody, err: %s", readErr.Error())
+				return
 			}
 
 			rawRespBodyString := string(respBody)
-			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
-			respBodyString := rawRespBodyString
-			logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
-			if shouldUsePythonCustomProcessing {
-				logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-				respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
-			}
-			_, writeErr := io.WriteString(w, respBodyString)
+			logger.Infof("Instruction %s is custom: %s", handlerInstruction, shouldUsePythonCustomProcessing)
+			w.Header().Set("Content-Type", "application/json")
+			rawRespBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
+			_, writeErr := io.WriteString(w, rawRespBodyString)
 			if writeErr != nil {
-				logger.Errorf("Failed to write response %v", respBodyString)
+				logger.Errorf("Failed to write response %s", rawRespBodyString)
 			}
 			return
 		}
@@ -259,7 +255,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		logger.Warnf("resp is nil")
 		_, err := w.Write([]byte(handlerInstruction))
 		if err != nil {
-			logger.Errorf("cannot write instruction into response's body, err: %v", err)
+			logger.Errorf("cannot write instruction into response's body, err: %s", err.Error())
 		}
 	}
 }
@@ -481,7 +477,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 							respBodyString := utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
 							resp = &http.Response{
 								Header: make(http.Header),
-								Body: io.NopCloser(strings.NewReader(respBodyString)),
+								Body:   io.NopCloser(strings.NewReader(respBodyString)),
 							}
 						}
 
