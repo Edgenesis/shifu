@@ -217,7 +217,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 		default:
 			http.Error(w, "not supported yet", http.StatusBadRequest)
-			logger.Errorf("Request type %sis not supported yet!", reqType)
+			logger.Errorf("Request type %s is not supported yet!", reqType)
 			return
 		}
 
