@@ -241,13 +241,12 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			}
 
 			rawRespBodyString := string(respBody)
-			respBodyString := rawRespBodyString
 			logger.Infof("Instruction %s is custom: %s", handlerInstruction, shouldUsePythonCustomProcessing)
 			w.Header().Set("Content-Type", "application/json")
-			respBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
-			_, writeErr := io.WriteString(w, respBodyString)
+			rawRespBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
+			_, writeErr := io.WriteString(w, rawRespBodyString)
 			if writeErr != nil {
-				logger.Errorf("Failed to write response %s", respBodyString)
+				logger.Errorf("Failed to write response %s", rawRespBodyString)
 			}
 			return
 		}
