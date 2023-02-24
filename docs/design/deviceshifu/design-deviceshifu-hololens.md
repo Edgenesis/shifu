@@ -56,3 +56,52 @@ For node dss, we can use the existing node dss server as our signal server, we d
 For nginx, we only need to configure it to route our requests to designated Node DSS or webRTC server and put it as a container to the same pod.
 
 
+### WebRTC Server
+For webRTC server, we already supported capture stream from we need to add more functionalities. 
+
+#### Image and Audio capture:
+We need to open up an api for video and audio capture so we can allow user to use them for AI analysis.
+
+```golang
+http.HandleFunc("/snapshot", snapshot)
+// We can reference: https://github.com/pion/example-webrtc-applications/blob/master/snapshot/main.go
+// for capture image snapshot
+// For audio we can just use different codec.
+```
+
+#### Stream playback
+WebRTC server currently can forward the stream from hololens end to web end, however it also need to stream the web's stream to hololens' end. It is not too hard to implement, we only need to do the reverse of the hololens->web end.
+
+```golang
+// current connectWeb.Start will return the peerConnection to web.
+webpc := connectWeb.Start(videoStreamData, audioStreamData, stop)
+// Create Track that we send web video back to hololens on
+videoTrack, err := webrtc.NewTrackLocalStaticRTP(webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeVP8}, "video", "video")
+if err != nil {
+	return err
+}
+
+audioTrack, err := webrtc.NewTrackLocalStaticRTP(webrtc.RTPCodecCapability{MimeType: webrtc.MimeTypeOpus}, "audio", "audio")
+if err != nil {
+	return err
+}
+
+rtpAudioSender, audioTrackErr := webpc.AddTrack(audioTrack)
+if audioTrackErr != nil {
+	anic(audioTrackErr)
+}
+// Add this newly created track to the PeerConnection
+rtpVideoSender, err := webpc.AddTrack(videoTrack)
+if err != nil {
+	panic(err)
+}
+// Write track back
+webpc.OnTrack(func(track *webrtc.TrackRemote, receiver *webrtc.RTPReceiver) {
+    // Write track back
+    // Refer to how we write the track to web on:
+    // https://github.com/Edgenesis/WebRTC/blob/main/client/connectWeb/connectWeb.go#L178-L225
+})
+```
+
+### Deployment.yaml
+We should include all the above module into a single `deployment.yaml` file. Along with necessary configs like `nginx` and newly built customized deviceShifuHTTP image.
