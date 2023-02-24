@@ -222,7 +222,6 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		}
 
 		if resp != nil {
-			w.WriteHeader(resp.StatusCode)
 			// Handling deviceshifu stuck when responseBody is a stream
 			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 			if !shouldUsePythonCustomProcessing {
