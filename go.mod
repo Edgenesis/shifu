@@ -19,7 +19,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.8.3
 	github.com/onsi/gomega v1.27.1
 	github.com/spf13/cobra v1.6.1
-	github.com/stretchr/testify v1.8.1
+	github.com/stretchr/testify v1.8.2
 	github.com/taosdata/driver-go/v3 v3.1.0
 	golang.org/x/crypto v0.6.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
