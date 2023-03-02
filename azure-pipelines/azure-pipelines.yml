@@ -417,12 +417,13 @@ stages:
           set -e
           kind --version
           kind delete cluster && kind create cluster
+          kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
           kind load docker-image edgehub/humidity-detector:$(tag)  
           kind load docker-image edgehub/deviceshifu-http-http-python:$(tag)
           kind load docker-image edgehub/mockserver:$(tag)
+
           kubectl version
-          kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
-          kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=300s
+          kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
         displayName: "setup Kind cluster and install Shifu"
       - script: |
           set -e 
