@@ -299,7 +299,7 @@ stages:
       - script: |
           set -e
           kind --version
-          kind delete cluster && kind create cluster 
+          kind delete cluster && kind create cluster
           kind load docker-image edgehub/shifu-controller:$(tag)
           kind load docker-image edgehub/deviceshifu-http-socket:$(tag)
           kind load docker-image edgehub/mockdevice-socket:$(tag)
