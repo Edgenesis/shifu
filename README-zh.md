@@ -35,6 +35,11 @@ Shifu是一个K8s原生的、生产级、支持多协议设备接入、开放的
     <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height=25></a>
 </div>
 
+## ✨招聘✨
+我们正在招聘！Shifu大家庭举双手欢迎爱折腾的你！！！
+
+[👉🙋‍♀️**职位点这里**👈🙋‍♂️](https://4g1tj81q9o.jobs.fbmms.cn/page/PSVAGacDW6xEEcT5qbbfRL0FR3)
+
 ## 特点
 
 * **Kubernetes原生** — 应用开发的同时进行设备管理，无需再构建额外的运维基础设施。
