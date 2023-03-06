@@ -501,7 +501,7 @@ stages:
         displayName: docker run tdengine and checkoutput
 
 - stage: docker_build_muiltiarch_and_push
-  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+  condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not(startsWith(variables['Build.SourceBranchName'],'release')))
   variables:
   - name: release_tag
     ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
