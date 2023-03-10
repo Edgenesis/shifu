@@ -252,7 +252,7 @@ stages:
           make buildx-build-image-shifu-controller
         displayName: build edgehub/shifu-controller
       - script: |
-          make buildx-build-image-deviceshifu-http-mqtt:
+          make buildx-build-image-deviceshifu-http-mqtt
         displayName: build edgehub/deviceshifu-http-mqtt
       - script: |
           set -e
