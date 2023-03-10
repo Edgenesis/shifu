@@ -2,7 +2,7 @@
 
 #### build humidity detector
 ```bash
-docker buildx build -t edgehub/humidity-detector:nightly .  
+docker buildx build -t edgehub/humidity-detector:nightly . --load
 kind load docker-image edgehub/humidity-detector:nightly
 
 docker buildx build -f sample_deviceshifu_dockerfiles/Dockerfile.deviceshifuHTTP-Python \
