@@ -128,6 +128,11 @@ buildx-push-image-telemetry-service:
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/telemetryservice:${IMAGE_VERSION} --push
 
+buildx-build-image-shifu-controller:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f $(PROJECT_ROOT)/pkg/k8s/crd/Dockerfile \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/shifu-controller:$(IMAGE_VERSION) --load
+
 buildx-build-image-deviceshifu-http-http:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuHTTP \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
@@ -157,6 +162,48 @@ buildx-build-image-deviceshifu-tcp-tcp:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuTcp\
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-tcp-tcp:${IMAGE_VERSION} --load
+
+buildx-build-image-mockdevice-thermometer:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/thermometer/Dockerfile.mockdevice-thermometer \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-thermometer:$(IMAGE_VERSION) --load
+
+buildx-build-image-mockdevice-robot-arm:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/robot-arm/Dockerfile.mockdevice-robot-arm \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-robot-arm:$(IMAGE_VERSION) --load
+
+buildx-build-image-mockdevice-plate-reader:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/plate-reader/Dockerfile.mockdevice-plate-reader \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-plate-reader:$(IMAGE_VERSION) --load
+
+buildx-build-image-mockdevice-agv:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/agv/Dockerfile.mockdevice-agv \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-agv:$(IMAGE_VERSION) --load
+
+buildx-build-image-mockdevice-plc:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/plc/Dockerfile.mockdevice-plc \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-plc:$(IMAGE_VERSION) --load
+
+buildx-build-image-mockdevice-socket:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/socket/Dockerfile.mockdevice-socket \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-socket:$(IMAGE_VERSION) --load
+
+buildx-build-image-mockdevice-opcua:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/examples/deviceshifu/mockdevice/opcua/Dockerfile.mockdevice-opcua \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-opcua:$(IMAGE_VERSION) --load
 
 buildx-build-image-deviceshifu: \
 	buildx-build-image-deviceshifu-http-http \
