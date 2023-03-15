@@ -1,4 +1,4 @@
-# 自 [v0.13.0](https://github.com/Edgenesis/shifu/releases/tag/v0.x13.0) 以来的变更
+# 自 [v0.13.0](https://github.com/Edgenesis/shifu/releases/tag/v0.13.0) 以来的变更
 
 ## 改进
 
