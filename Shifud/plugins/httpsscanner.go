@@ -1,7 +1,8 @@
-package plugins
+package main
 
 import (
 	"crypto/tls"
+	"example.com/Shifud/plugincommon"
 	"example.com/Shifud/shifud"
 	"net"
 	"strconv"
@@ -15,7 +16,7 @@ func (s *HttpsScanner) Scan() ([]shifud.DeviceConfig, error) {
 	endPort := 10000
 	timeout := 5 * time.Second
 	handler := httpsHandler
-	devices := WebScanner(startPort, endPort, timeout, handler)
+	devices := plugincommon.WebScanner(startPort, endPort, timeout, handler)
 	return devices, nil
 }
 

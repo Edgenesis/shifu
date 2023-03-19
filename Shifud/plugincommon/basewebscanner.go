@@ -1,8 +1,9 @@
-package plugins
+package plugincommon
 
 import (
 	"example.com/Shifud/shifud"
 	"fmt"
+	"log"
 	"sync"
 	"time"
 )
@@ -13,6 +14,7 @@ func WebScanner(startPort, endPort int, timeout time.Duration, handler ProtocolH
 	var devices []shifud.DeviceConfig
 	var wg sync.WaitGroup
 
+	log.Println("Launching our little scanner minions! 🚀")
 	for i := 1; i <= 254; i++ {
 		ip := fmt.Sprintf("192.168.1.%d", i)
 		wg.Add(1)
@@ -26,11 +28,13 @@ func WebScanner(startPort, endPort int, timeout time.Duration, handler ProtocolH
 						IP:   ip,
 						Port: port,
 					})
+					log.Printf("Minion found a device at %s:%d! High five! 🙌\n", ip, port)
 				}
 			}
 		}(ip)
 	}
 
 	wg.Wait()
+	log.Println("All minions have returned! Time to count our treasures! 💎")
 	return devices
 }
