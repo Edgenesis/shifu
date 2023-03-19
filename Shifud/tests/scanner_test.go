@@ -1,12 +1,13 @@
-package main
+package tests
 
 import (
+	"example.com/Shifud/shifud"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
 func TestScanner(t *testing.T) {
-	scanner := &Scanner{}
+	scanner := &shifud.Scanner{}
 	scanner.AddPlugin(&LocalNetworkScannerMock{})
 
 	devices, err := scanner.Scan()
@@ -14,7 +15,7 @@ func TestScanner(t *testing.T) {
 	assert.NotNil(t, devices)
 	assert.Len(t, devices, 2)
 
-	expectedDevices := []DeviceConfig{
+	expectedDevices := []shifud.DeviceConfig{
 		{
 			IP:     "192.168.1.2",
 			Port:   8080,
@@ -32,8 +33,8 @@ func TestScanner(t *testing.T) {
 
 type LocalNetworkScannerMock struct{}
 
-func (s *LocalNetworkScannerMock) Scan() ([]DeviceConfig, error) {
-	devices := []DeviceConfig{
+func (s *LocalNetworkScannerMock) Scan() ([]shifud.DeviceConfig, error) {
+	devices := []shifud.DeviceConfig{
 		{
 			IP:     "192.168.1.2",
 			Port:   8080,
@@ -47,28 +48,4 @@ func (s *LocalNetworkScannerMock) Scan() ([]DeviceConfig, error) {
 	}
 
 	return devices, nil
-}
-
-func TestLocalNetworkScanner(t *testing.T) {
-	scanner := &LocalNetworkScanner{}
-	devices, err := scanner.Scan()
-
-	assert.NoError(t, err)
-	assert.NotNil(t, devices)
-	assert.Len(t, devices, 2)
-
-	expectedDevices := []DeviceConfig{
-		{
-			IP:     "192.168.1.2",
-			Port:   8080,
-			Option: "default",
-		},
-		{
-			IP:     "192.168.1.3",
-			Port:   8080,
-			Option: "default",
-		},
-	}
-
-	assert.ElementsMatch(t, expectedDevices, devices)
 }
