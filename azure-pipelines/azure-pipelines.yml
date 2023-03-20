@@ -660,7 +660,7 @@ stages:
 
     - task: CopyFilesOverSSH@0
       condition: succeeded()
-      displayName: push demo file to shifu.dev mac
+      displayName: push demo file to shifu.dev
       inputs:
         sshEndpoint: 'shifu.dev'
         contents: |
@@ -760,7 +760,7 @@ stages:
   
     - task: CopyFilesOverSSH@0
       condition: succeeded()
-      displayName: push demo file to shifu.dev
+      displayName: push demo file to shifu.dev mac
       inputs:
         sshEndpoint: 'shifu.dev'
         contents: |
