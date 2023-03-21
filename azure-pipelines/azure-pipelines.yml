@@ -658,6 +658,25 @@ stages:
         inline: 'sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content'
         readyTimeout: '20000'
 
+    - task: CopyFilesOverSSH@0
+      condition: succeeded()
+      displayName: push demo file to shifu.dev
+      inputs:
+        sshEndpoint: 'shifu.dev'
+        contents: |
+          shifu_demo_aio_linux_amd64.tar
+          shifu_demo_aio_linux_arm64.tar
+        targetFolder: '/home/ubuntu/demo-files'
+        readyTimeout: '20000'
+        failOnEmptySource: true
+    - task: SSH@0
+      condition: succeeded()
+      inputs:
+        sshEndpoint: 'shifu.dev'
+        runOptions: 'inline'
+        inline: 'sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content'
+        readyTimeout: '20000'
+
   - job: docker_push_shifu_demo_mac
     pool: 
       vmImage: 'macOS-12'
@@ -735,6 +754,25 @@ stages:
       condition: succeeded()
       inputs:
         sshEndpoint: 'shifurun-ssh'
+        runOptions: 'inline'
+        inline: 'sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content'
+        readyTimeout: '20000'
+  
+    - task: CopyFilesOverSSH@0
+      condition: succeeded()
+      displayName: push demo file to shifu.dev mac
+      inputs:
+        sshEndpoint: 'shifu.dev'
+        contents: |
+          shifu_demo_aio_darwin_amd64.tar
+          shifu_demo_aio_darwin_arm64.tar
+        targetFolder: '/home/ubuntu/demo-files'
+        readyTimeout: '20000'
+        failOnEmptySource: true
+    - task: SSH@0
+      condition: succeeded()
+      inputs:
+        sshEndpoint: 'shifu.dev'
         runOptions: 'inline'
         inline: 'sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content'
         readyTimeout: '20000'
