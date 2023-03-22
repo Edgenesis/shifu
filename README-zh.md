@@ -74,6 +74,16 @@ Shifu是一个k8s原生的， 生产级的，支持多协议设备接入的，�
 
 我们对[贡献者们](https://github.com/Edgenesis/shifu/graphs/contributors)心怀感激🥰.
 
+# Shifu正式加入CNCF全景图
+
+<div align="center">
+<img width="900px" src="./img/cncf-logo.png"></img>
+</div>
+
+<div align="center">
+<img width="900px" src="./img/cncf.png"></img>
+</div>
+
 # Github Star数量
 
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)

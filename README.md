@@ -71,11 +71,21 @@ Welcome to check 🗒️[Shifu Documentation](https://shifu.run/) for detailed i
 # Contributing
 Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
 
-We will forever be grateful to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors)🥰.
+We will forever be grateful to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors).
 
 # Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
+
+# Shifu is officially a CNCF landscape project
+
+<div align="center">
+<img width="900px" src="./img/cncf-logo.png"></img>
+</div>
+
+<div align="center">
+<img width="900px" src="./img/cncf.png"></img>
+</div>
 
 # License
 This project is distributed under Apache 2.0 License.
