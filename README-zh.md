@@ -65,10 +65,10 @@ Shifu是一个k8s原生的， 生产级的，支持多协议设备接入的，�
 [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
 
 # 开始上手
-欢迎参考🗒️[Shifu技术文档](https://shifu.run/)获取更详细的信息:
-- 🔧[安装Shifu](https://shifu.run/zh-Hans/docs/guides/install/install-shifu-dev)
-- 🔌[设备连接](https://shifu.run/zh-Hans/docs/guides/cases/)
-- 👨‍💻[应用开发](https://shifu.run/zh-Hans/docs/guides/application/)
+欢迎参考🗒️[Shifu技术文档](https://shifu.dev/)获取更详细的信息:
+- 🔧[安装Shifu](https://shifu.dev/zh-Hans/docs/guides/install/install-shifu-dev)
+- 🔌[设备连接](https://shifu.dev/zh-Hans/docs/guides/cases/)
+- 👨‍💻[应用开发](https://shifu.dev/zh-Hans/docs/guides/application/)
 # 贡献 
 欢迎向我们[提交issue](https://github.com/Edgenesis/shifu/issues/new/choose) 或者[提交PR](https://github.com/Edgenesis/shifu/pulls)!
 

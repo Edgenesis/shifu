@@ -9,7 +9,7 @@
 [![golangci-lint](https://github.com/Edgenesis/shifu/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Edgenesis/shifu/actions/workflows/golangci-lint.yml)
 
 </div>
- 
+
 <div align="center">
 
 <img width="300px" src="./img/shifu-logo.svg"></img>
@@ -17,7 +17,7 @@
 
 <h1 style="border-bottom: none">
 <br>
-    Open Source Alternative to GCP IoT Core
+    Open Source Industrial Edge
     <br />
 </h1>
 Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT development framework.
@@ -64,18 +64,15 @@ We couldn't be more excited to have you.
 [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
 
 # Get Started
-Welcome to check 🗒️[Shifu Documentation](https://shifu.run/) for detailed information on:
-- 🔧[Install](https://shifu.run/docs/guides/install/install-shifu-dev)
-- 🔌[Conenct devices](https://shifu.run/docs/guides/cases/)
-- 👨‍💻[Application Development](https://shifu.run/docs/guides/application/)
+Welcome to check 🗒️[Shifu Documentation](https://shifu.dev/) for detailed information on:
+- 🔧[Install](https://shifu.dev/docs/guides/install/install-shifu-dev)
+- 🔌[Conenct devices](https://shifu.dev/docs/guides/cases/)
+- 👨‍💻[Application Development](https://shifu.dev/docs/guides/application/)
 # Contributing
 Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
 
 We will forever be grateful to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors).
 
-# Stargazers over time
-
-[![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
 
 # Shifu is officially a CNCF landscape project
 
@@ -86,6 +83,12 @@ We will forever be grateful to all the [contributors](https://github.com/Edgenes
 <div align="center">
 <img width="900px" src="./img/cncf.png"></img>
 </div>
+
+# Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
+
+
 
 # License
 This project is distributed under Apache 2.0 License.
