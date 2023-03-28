@@ -14,7 +14,7 @@ require (
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.0
 	github.com/briandowns/spinner v1.23.0
-	github.com/minio/minio-go/v7 v7.0.49
+	github.com/minio/minio-go/v7 v7.0.50
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.9.2
 	github.com/onsi/gomega v1.27.5
@@ -33,8 +33,8 @@ require (
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
 	github.com/inconshreveable/mousetrap v1.0.1 // indirect
-	github.com/klauspost/compress v1.15.15 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.3 // indirect
+	github.com/klauspost/compress v1.16.0 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/kr/pretty v0.3.0 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/minio/sha256-simd v1.0.0 // indirect
