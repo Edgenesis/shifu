@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"net/http"
-	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
 	"github.com/edgenesis/shifu/pkg/logger"
@@ -32,7 +31,6 @@ func instructionHandler(functionName string) http.HandlerFunc {
 				fmt.Fprintf(w, "\n")
 			}
 		case "get_status":
-			rand.Seed(time.Now().UnixNano())
 			fmt.Fprintf(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}
