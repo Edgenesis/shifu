@@ -1,0 +1,23 @@
+FROM --platform=$BUILDPLATFORM  golang:1.20.1-alpine as builder
+WORKDIR /app
+
+ARG TARGETOS
+ARG TARGETARCH
+
+COPY /pkg/deviceshifu/mockdevice/mockdevice-webrtc/mockdevice-webrtc.go /app/server.go
+COPY go.mod go.mod
+COPY go.sum go.sum
+COPY pkg/logger pkg/logger
+
+RUN go mod download -x
+
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /app/server/server
+
+FROM gcr.io/distroless/static-debian11
+
+WORKDIR /
+COPY --from=builder /app/server .
+COPY /pkg/deviceshifu/mockdevice/mockdevice-webrtc/images/ /images/
+
+EXPOSE 8080
+ENTRYPOINT ["/server"]

@@ -205,6 +205,12 @@ buildx-build-image-mockdevice-opcua:
           --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
           -t edgehub/mockdevice-opcua:$(IMAGE_VERSION) --load
 
+buildx-build-image-mockdevice-webrtc:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/examples//deviceshifu/mockdevice/webrtc/Dockerfile.webrtc \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/mockdevice-webrtc:$(IMAGE_VERSION) --load
+
 buildx-build-image-deviceshifu: \
 	buildx-build-image-deviceshifu-http-http \
 	buildx-build-image-deviceshifu-http-mqtt \
