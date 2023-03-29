@@ -223,7 +223,7 @@ The dockerfile, take `MQTT` as example, can be:
 
 ```dockerfile
 # Build the manager binary
-FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder
+FROM --platform=$BUILDPLATFORM golang:1.20.4 as builder
 
 WORKDIR /shifu
 
