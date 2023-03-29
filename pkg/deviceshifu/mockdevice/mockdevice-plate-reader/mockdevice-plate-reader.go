@@ -23,7 +23,6 @@ func instructionHandler(functionName string) http.HandlerFunc {
 		logger.Infof("Handling: %v", functionName)
 		switch functionName {
 		case "get_measurement":
-			rand.Seed(time.Now().UnixNano())
 			readingRange := float32(3.0)
 			for i := 0; i < 8; i++ {
 				for j := 0; j < 12; j++ {
