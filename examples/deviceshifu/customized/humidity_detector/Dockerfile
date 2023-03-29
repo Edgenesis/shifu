@@ -1,4 +1,4 @@
-FROM golang:1.19.2-alpine AS builder
+FROM golang:1.20.2-alpine AS builder
 WORKDIR /humidity-detector
 COPY humidity-detector.go ./
 RUN go mod init humidity-detector
