@@ -34,17 +34,17 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT d
     <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height=25></a>
 </div>
 
-# Features
+## Features
 **Kubernetes native** — developing your application while managing your devices, spare the need for maintaining an additional O&M infrastructure
 
-**Open Platform**— No vendor lock-in. You can easily deploy Shifu on the edge(from RaspberryPi to edge clusters) or on the cloud(public, private and hybrid cloud are all supported).
+**Open Platform** — No vendor lock-in. You can easily deploy Shifu on the edge(from RaspberryPi to edge clusters) or on the cloud(public, private and hybrid cloud are all supported).
 
 **Protocol agnostic** — HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA...The microservice architecture of Shifu enables it to quickly adapt to new protocols.
 <div align="center">
 <img width="900px" src="./img/shifu-before-and-after.png"></img>
 </div>
 
-# How to connect a proprietary-protocol camera with five lines of code
+## How to connect a proprietary-protocol camera with five lines of code
 <div align="center">
 
 <img width="900px" src="./img/five-lines-to-connect-to-a-camera.gif"></img>
@@ -52,7 +52,7 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT d
 <img width="900px" src="./img/star.gif"></img>
 </div>
 
-# Community
+## Community
 
 Welcome to the Shifu community to share your thoughts and ideas! Any suggestion will be deeply valued.
 We couldn't be more excited to have you.
@@ -61,18 +61,20 @@ We couldn't be more excited to have you.
 [![Twitter](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
 [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
 
-# Get Started
+## Get Started
+
 Welcome to check 🗒️[Shifu Documentation](https://shifu.dev/) for detailed information on:
 - 🔧[Install](https://shifu.dev/docs/guides/install/install-shifu-dev)
 - 🔌[Conenct devices](https://shifu.dev/docs/guides/cases/)
 - 👨‍💻[Application Development](https://shifu.dev/docs/guides/application/)
-# Contributing
+
+## Contributing
+
 Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/choose) or [submit a pull request](https://github.com/Edgenesis/shifu/pulls)!
 
 We will forever be grateful to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors).
 
-
-# Shifu is officially a CNCF landscape project
+## Shifu is officially a CNCF landscape project
 
 <div align="center">
 <img width="900px" src="./img/cncf-logo.png"></img>
@@ -82,11 +84,9 @@ We will forever be grateful to all the [contributors](https://github.com/Edgenes
 <img width="900px" src="./img/cncf.png"></img>
 </div>
 
-# Stargazers over time
+## Stargazers over time
 
 [![Stargazers over time](https://starchart.cc/Edgenesis/shifu.svg)](https://starchart.cc/Edgenesis/shifu)
 
-
-
-# License
+## License
 This project is distributed under Apache 2.0 License.
