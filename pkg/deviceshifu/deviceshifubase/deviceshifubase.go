@@ -205,20 +205,9 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 		return fmt.Errorf("error generating TelemetryCollectionServiceMap, error: %v", err.Error())
 	}
 
-	if ds.
-		DeviceShifuConfig.
-		Telemetries.
-		DeviceShifuTelemetrySettings != nil &&
-		ds.
-			DeviceShifuConfig.
-			Telemetries.
-			DeviceShifuTelemetrySettings.
-			DeviceShifuTelemetryUpdateIntervalInMilliseconds != nil {
-		telemetryUpdateIntervalInMilliseconds = *ds.
-			DeviceShifuConfig.
-			Telemetries.
-			DeviceShifuTelemetrySettings.
-			DeviceShifuTelemetryUpdateIntervalInMilliseconds
+	settings := ds.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
+	if settings != nil && settings.DeviceShifuTelemetryUpdateIntervalInMilliseconds != nil {
+		telemetryUpdateIntervalInMilliseconds = *settings.DeviceShifuTelemetryUpdateIntervalInMilliseconds
 	}
 
 	for {

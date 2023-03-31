@@ -5,13 +5,13 @@
 ## Design goals and non-goals
 
 ### Design goals
-`TelemetryService` should be able to read telemetry from devices and push to dedicated endpoints(e.g, HTTP, MQTT, MySQL)
+- `TelemetryService` should be able to read telemetry from devices and push to dedicated endpoints(e.g, HTTP, MQTT, MySQL, MinIO)
 
 ### Design non-goals
 
-#### 100% Compatiblility
+#### 100% Compatibility
 
-A `TelemetryService` object should be able to describe most existing service endpoints such as `MySQL`, `HTTP` servers, `MQTT` endpoints and etc. But it should not be able to describe and compatible with 100% of the existing service endpoints.
+A `TelemetryService` object should be able to describe most existing service endpoints such as `MySQL`, `HTTP` servers, `MQTT` endpoints, `MinIO` etc. But it should not be able to describe and compatible with 100% of the existing service endpoints.
 
 ## Architecture
 
@@ -19,7 +19,7 @@ A `TelemetryService` object should be able to describe most existing service end
 graph LR;
 device -->|Telemetries HTTP/OPCUA| deviceShifuA;
 deviceShifuA -->|HTTP| TelemetryService;
-TelemetryService -->|HTTP/MQTT/..| EndPoint
+TelemetryService -->|HTTP/MQTT/MySQL/TDengine/MinIO| EndPoint
 
 ```
 
@@ -76,4 +76,4 @@ type TelemetryServiceRequest struct {
 When `TelemetryService` receives such request, it will use `EndpointSpec` to connect to required telemetry endpoint and send raw telemetry data over. 
 How to deal with telemetry raw data would be determined by the user.
 
-Currently `TelemetryService` only support HTTP endpoints, but we plan to support more protocols such as MQTT, MySQL, etc...
+Currently, `TelemetryService` support HTTP, MySQL, TDengine, MQTT, MinIO endpoints, and we plan to support more protocols.

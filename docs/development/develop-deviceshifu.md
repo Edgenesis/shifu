@@ -4,8 +4,8 @@
 
 If you haven't done so, please take a look at the following documents first:
 
-1. [contribution guide](../../contribution/contributing.md)
-2. [deviceshifu design](../../design/design-deviceShifu.md)
+1. [contribution guide](../contribution/contributing.md)
+2. [deviceshifu design](../design/design-deviceShifu.md)
 
 ## Introduction
 
@@ -223,7 +223,7 @@ The dockerfile, take `MQTT` as example, can be:
 
 ```dockerfile
 # Build the manager binary
-FROM --platform=$BUILDPLATFORM golang:1.18.4 as builder
+FROM --platform=$BUILDPLATFORM golang:1.20.4 as builder
 
 WORKDIR /shifu
 

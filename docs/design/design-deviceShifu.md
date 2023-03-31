@@ -47,10 +47,10 @@ Since high concurrency connections will be handled by the broker between a devic
 Wait! Why there's no HA in ANY component's design goals? Relax, this is because ***deviceShifu*** is a Kubernetes pod under the hood.
 Kubernetes's Deployment creates multiple replicas for a pod to achieve HA. Therefore, ***Shifu*** users can create multiple replicas for each ***deviceShifu*** depending on the compute resources. This way, you can achieve unprecedented high availability! The table below demonstrates ***deviceShifu***'s replica # v.s. its availability.
 | ***deviceShifu*** replica # | availability |
-|--|--|
-| 1 | 99% |
-| 2 | 99.99% |
-| 3 | 99.9999% |
+| --------------------------- | ------------ |
+| 1                           | 99%          |
+| 2                           | 99.99%       |
+| 3                           | 99.9999%     |
 
 ### Architecture
 ***deviceShifu***'s achitecture consists of networking, storage and compute.

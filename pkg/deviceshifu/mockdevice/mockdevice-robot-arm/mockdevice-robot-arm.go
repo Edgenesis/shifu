@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
 	"github.com/edgenesis/shifu/pkg/logger"
@@ -24,7 +23,6 @@ func instructionHandler(functionName string) http.HandlerFunc {
 		logger.Infof("Handling: %v", functionName)
 		switch functionName {
 		case "get_coordinate":
-			rand.Seed(time.Now().UnixNano())
 			xrange := 100
 			yrange := 200
 			zrange := 300
@@ -33,7 +31,6 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			zpos := strconv.Itoa(rand.Intn(zrange))
 			fmt.Fprintf(w, "xpos: %v, ypos: %v, zpos: %v", xpos, ypos, zpos)
 		case "get_status":
-			rand.Seed(time.Now().UnixNano())
 			fmt.Fprintf(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}

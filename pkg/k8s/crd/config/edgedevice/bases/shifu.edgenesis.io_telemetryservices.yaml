@@ -62,6 +62,24 @@ spec:
                       MQTTTopic:
                         type: string
                     type: object
+                  MinIOSetting:
+                    properties:
+                      AccessKey:
+                        type: string
+                      Bucket:
+                        type: string
+                      FileExtension:
+                        type: string
+                      RequestTimeoutMS:
+                        format: int64
+                        type: integer
+                      Secret:
+                        type: string
+                      SecretKey:
+                        type: string
+                      ServerAddress:
+                        type: string
+                    type: object
                   SQLSetting:
                     properties:
                       dbName:

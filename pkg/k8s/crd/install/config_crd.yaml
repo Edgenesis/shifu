@@ -109,6 +109,16 @@ spec:
                       networkType:
                         type: string
                     type: object
+                  TCPSetting:
+                    description: TCPSetting defines TCP forward settings
+                    properties:
+                      ListenPort:
+                        default: "8081"
+                        type: string
+                      NetworkType:
+                        default: tcp
+                        type: string
+                    type: object
                 type: object
               sku:
                 description: Sku specifies the EdgeDevice's SKU.
@@ -187,6 +197,24 @@ spec:
                       MQTTServerSecret:
                         type: string
                       MQTTTopic:
+                        type: string
+                    type: object
+                  MinIOSetting:
+                    properties:
+                      AccessKey:
+                        type: string
+                      Bucket:
+                        type: string
+                      FileExtension:
+                        type: string
+                      RequestTimeoutMS:
+                        format: int64
+                        type: integer
+                      Secret:
+                        type: string
+                      SecretKey:
+                        type: string
+                      ServerAddress:
                         type: string
                     type: object
                   SQLSetting:

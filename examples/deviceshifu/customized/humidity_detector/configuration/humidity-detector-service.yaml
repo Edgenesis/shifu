@@ -13,4 +13,3 @@ spec:
   selector:
     app: humidity-detector
   type: LoadBalancer
-

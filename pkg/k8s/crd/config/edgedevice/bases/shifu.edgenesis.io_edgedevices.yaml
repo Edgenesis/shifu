@@ -110,6 +110,16 @@ spec:
                       networkType:
                         type: string
                     type: object
+                  TCPSetting:
+                    description: TCPSetting defines TCP forward settings
+                    properties:
+                      ListenPort:
+                        default: "8081"
+                        type: string
+                      NetworkType:
+                        default: tcp
+                        type: string
+                    type: object
                 type: object
               sku:
                 description: Sku specifies the EdgeDevice's SKU.

@@ -1,34 +1,33 @@
 # Telemetry Service TDengine Endpoint Design
 
 ## Introduction
-Telemetry Service is a standalone service that allow `deviceshifu` send its collected telemetry to designated endpoints. This design aims to add `TDengine` endpoint support to current Telemetry Service.
+Telemetry Service is a standalone service that allow `deviceShifu` send its collected telemetry to designated endpoints. This design aims to add `TDengine` endpoint support to current Telemetry Service.
 
 ## Design-Goal
-Let telemetry service support pushing telemetries to TDengine endpoints.
+- Let telemetry service support pushing telemetries to TDengine endpoints.
 
 ## Design Non-Goal
-Let telemetry service support all timeseriesDB endpoint
-
+- Let telemetry service support all timeseriesDB endpoint.
 
 ## Design Details
-In order to add `TDengine` as a endpoint, we need to add connection related settings telemetry service's CRD, just like  what we did for `MQTT` 
+In order to add `TDengine` as an endpoint, we need to add connection related settings telemetry service's CRD, just like  what we did for `MQTT`.
 
-```ymal
+```yaml
 SQLConnectionSetting:
     description: SQLConnectionSetting defines SQL specific settings when connecting to SQL endpoint
     properties:
         DBServerAddress:
-        type: string
+            type: string
         DBUserName:
-        type: string
+            type: string
         DBSecret:
-        type: string
+            type: string
         DBName:
-        type: string
+            type: string
         DBTable:
-        type: string
+            type: string
         DBType:
-        type: string
+            type: string
     type: object
 ```
 
@@ -48,18 +47,17 @@ type DBType string
 
 type TelemetryRequest struct {
 	RawData              []byte                `json:"rawData,omitempty"`
-	httpAddress          string                `json:"httpAddress,omitempty"`
 	MQTTSetting          *MQTTSetting          `json:"mqttSetting,omitempty"`
 	SQLConnectionSetting *SQLConnectionSetting `json:"sqlConnectionSetting,omitempty"`
 }
 ```
 
-We use the name `SQLConnection` instead of `TDengineConnection` because we want to it to be a generic DB connection setting for scalability concerns. We want to use it to conenct to various DBs instead of TDengine alone.
+We use the name `SQLConnection` instead of `TDengineConnection` because we want to it to be a generic DB connection setting for scalability concerns. We want to use it to connect to various DBs instead of TDengine alone.
 
 Telemetry Service will push the data to TDengine:
 ```mermaid
 graph LR;
-DeviceShifu -->|TelemetryRequest| TelemetryService;
+deviceShifu -->|TelemetryRequest| TelemetryService;
 TelemetryService -->|RawData| TDengine;
 
 ```

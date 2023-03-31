@@ -1,11 +1,12 @@
-# syntax=docker/dockerfile:1
+FROM golang:1.20.2-alpine AS builder
+WORKDIR /humidity-detector
+COPY humidity-detector.go ./
+RUN go mod init humidity-detector
+COPY raw_data ./
+RUN CGO_ENABLED=0 go build -o main
 
-FROM golang:1.19.2-alpine
-WORKDIR /app
-COPY go.mod ./
-RUN go mod download
-COPY *.go ./
-COPY * ./
-RUN go build -o /humidity-detector
-EXPOSE 11111
-CMD [ "/humidity-detector" ]
+FROM gcr.io/distroless/static-debian11:latest
+WORKDIR /humidity-detector
+COPY raw_data raw_data
+COPY --from=builder /humidity-detector/main main
+CMD [ "./main" ]

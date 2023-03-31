@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM --platform=$BUILDPLATFORM golang:1.19.2 as builder
+FROM --platform=$BUILDPLATFORM golang:1.20.2 as builder
 
 WORKDIR /shifu
 
@@ -9,8 +9,9 @@ ENV GOPRIVATE=github.com/Edgenesis
 COPY go.mod go.mod
 COPY go.sum go.sum
 COPY pkg/k8s pkg/k8s
-COPY cmd/deviceshifu/cmdsocket cmd/deviceshifu/cmdsocket
+COPY cmd/deviceshifu/cmdtcp cmd/deviceshifu/cmdtcp
 COPY pkg/deviceshifu pkg/deviceshifu
+COPY pkg/logger pkg/logger
 
 RUN go mod download
 
@@ -18,12 +19,9 @@ RUN go mod download
 ARG TARGETOS
 ARG TARGETARCH
 
-RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/deviceshifu cmd/deviceshifu/cmdsocket/main.go
+RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/deviceshifu cmd/deviceshifu/cmdtcp/main.go
 
-FROM python:3.6-slim-stretch
-CMD ["/bin/python"]
-
-FROM gcr.io/distroless/python3-debian11
+FROM gcr.io/distroless/static-debian11
 WORKDIR /
 COPY --from=builder /output/deviceshifu deviceshifu
 

@@ -4,7 +4,7 @@ deviceShifu-TCP allows Shifu connect to any server which protocol based tcp and 
 
 ## Goal
 
-deviceShifu-TCP can forward all data from target to support all protocol base tcp.
+- deviceShifu-TCP can forward all data from target to support all protocol base tcp.
 
 ## General Design
 
@@ -16,7 +16,7 @@ Create a deviceShifu-TCP forward the all data from target server, user can conne
 
 deviceShifu-TCP just forward all data from target server out, user can connect to deviceShifu-TCP like to connect the real device by tcp.
 
-deviceShifu-TCP not support Restful API
+deviceShifu-TCP not support RESTful API
 
 edgedevice.yaml
 ```yaml

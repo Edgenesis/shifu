@@ -28,6 +28,8 @@ func NewLogger() *zap.SugaredLogger {
 		atom.SetLevel(zap.WarnLevel)
 	case "error":
 		atom.SetLevel(zap.ErrorLevel)
+	case "fatal":
+		atom.SetLevel(zap.FatalLevel)
 	default:
 		atom.SetLevel(zap.InfoLevel)
 	}

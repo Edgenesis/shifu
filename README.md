@@ -9,7 +9,7 @@
 [![golangci-lint](https://github.com/Edgenesis/shifu/actions/workflows/golangci-lint.yml/badge.svg)](https://github.com/Edgenesis/shifu/actions/workflows/golangci-lint.yml)
 
 </div>
-
+ 
 <div align="center">
 
 <img width="300px" src="./img/shifu-logo.svg"></img>
@@ -23,7 +23,6 @@
 Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT development framework.
 </div>
 </div>
-<br/><br/>
 
 <div align="center">
     <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/-Discord-424549?style=social&logo=discord" height=25></a>
@@ -60,7 +59,6 @@ We couldn't be more excited to have you.
 
 [![Discord](https://img.shields.io/badge/Discord-join-brightgreen)](https://discord.gg/CkRwsJ7raw)
 [![Twitter](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
-[![Reddit](https://img.shields.io/badge/Reddit-post-orange)](https://www.reddit.com/r/Shifu/)
 [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
 
 # Get Started

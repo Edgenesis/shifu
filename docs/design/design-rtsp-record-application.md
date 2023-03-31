@@ -4,7 +4,7 @@ User can use this application to watch RTSP using ffmpeg or other third-party pa
 
 ## Goal
 
-application running in the kubernetes allow user to connect RTSP server, and record the RTSP stream into file like mp4 / flv and so on, user can export file out of kubernetes.
+- application running in the kubernetes allow user to connect RTSP server, and record the RTSP stream into file like mp4 / flv and so on, user can export file out of kubernetes.
 
 ## General Design
 

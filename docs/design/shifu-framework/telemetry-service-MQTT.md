@@ -5,23 +5,21 @@ Telemetry Service is a standalone service that takes telemetry data collected by
 This doc aims to provide a design on how to fan-out telemetry to MQTT endpoints.
 
 ## Design-Goal
-Let telemetry service support pushing telemetries to MQTT endpoints.
+- Let telemetry service support pushing telemetries to MQTT endpoints.
 
 ## Design Non-Goal
-1. Let telemetry service support any random endpoints
-2. let telemetry service serve as MQTT broker.
+- Let telemetry service support any random endpoints
+- Let telemetry service serve as MQTT broker.
 
 ## Design Details
-
-Telemetry will be served as an HTTP server. DeviceShifu will push the telemetries collected from physical devices to telemetry service,
+Telemetry will be served as an HTTP server. deviceShifu will push the telemetries collected from physical devices to telemetry service,
 and telemetry service would then fan-out the telemetries to the endpoints specified by user.
 
 Request Struct:
 ```go
 type TelemetryRequest struct {
-	rawData     string               `json:"raw_data,omitempty"`
-	mqttSetting v1alpha1.MQTTSetting `json:"mqtt_setting,omitempty"`
-	httpAddress string               `json:"http_address,omitempty"`
+	RawData     []byte               `json:"rawData,omitempty"`
+	MQTTSetting *MQTTSetting         `json:"mqttSetting,omitempty"`
 }
 ```
 
@@ -29,17 +27,17 @@ For every push telemetry event, the telemetry service will fan-out raw-data to t
 
 ```mermaid
 graph LR;
-DeviceShifu -->|TelemetryRequest| TelemetryService;
-TelemetryService -->|RawData| MQTTEndpoint;
+	deviceShifu -->|TelemetryRequest| TelemetryService;
+	TelemetryService -->|RawData| MQTTEndpoint;
 
 ```
 
-TelemtryService would have 2 methods, one extract rawData and endpoint settings, the other push the rawData to the endpoint according to the settings extracted from the first one.
+TelemetryService would have 2 methods, one extract rawData and endpoint settings, the other push the rawData to the endpoint according to the settings extracted from the first one.
 
 ```go
-func HandleTelemtryRequest(request *TelemetryRequest) err {
+func HandleTelemetryRequest(request *TelemetryRequest) err {
 	...
-	rawData, mqttSeting, err := parseTelemetryRequest()
+	rawData, mqttSetting, err := parseTelemetryRequest()
 	if err != nil {
 		return err
 	}
