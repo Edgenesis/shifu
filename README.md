@@ -74,7 +74,7 @@ Feel free to [create an issue](https://github.com/Edgenesis/shifu/issues/new/cho
 
 We will forever be grateful to all the [contributors](https://github.com/Edgenesis/shifu/graphs/contributors).
 
-## Shifu is officially a CNCF landscape project
+## Shifu is officially a [CNCF landscape project](https://landscape.cncf.io/card-mode?category=automation-configuration&grouping=category)
 
 <div align="center">
 <img width="900px" src="./img/cncf-logo.png"></img>
