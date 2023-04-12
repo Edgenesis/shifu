@@ -17,8 +17,8 @@ require (
 	github.com/minio/minio-go/v7 v7.0.50
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.9.2
-	github.com/onsi/gomega v1.27.5
-	github.com/spf13/cobra v1.7.0
+	github.com/onsi/gomega v1.27.6
+	github.com/spf13/cobra v1.6.1
 	github.com/stretchr/testify v1.8.2
 	github.com/taosdata/driver-go/v3 v3.1.0
 	golang.org/x/crypto v0.8.0
