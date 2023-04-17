@@ -7,7 +7,7 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-SHIFU_IMG_VERSION=v0.16.0-rc1
+SHIFU_IMG_VERSION=v0.16.0
 BUILD_DIR=build_dir
 IMG_DIR=images
 RUN_DIR=run_dir
@@ -33,7 +33,7 @@ SHIFU_IMG_LIST=(
 )
 
 KIND_IMG="kindest/node:v1.25.2"
-KIND_VERSION="v0.16.0-rc1"
+KIND_VERSION="v0.16.0"
 
 UTIL_IMG_LIST=(
     'bitnami/kube-rbac-proxy:0.14.1'
