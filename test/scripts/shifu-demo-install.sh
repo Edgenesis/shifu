@@ -29,7 +29,7 @@ setup_verify_os_and_arch() {
 
 setup_verify_os_and_arch
 
-curl -LO https://demo.shifu.run/demo-content/shifu_demo_aio_${OS}_${ARCH}.tar
+curl -LO https://demo.shifu.dev/demo-content/shifu_demo_aio_${OS}_${ARCH}.tar
 
 rm -rf testdir && mkdir testdir
 

@@ -131,14 +131,14 @@ if [ $1 = "build_demo" ]; then
 elif [[ $1 = "run_demo" ]]; then
     echo "running demo"
     IP_ADDRESS=$( curl cip.cc --connect-timeout 5 | head -n1 | cut -d ":" -f 2 | xargs)
-    curl -X POST https://telemetry.shifu.run/demo-stat/ \
+    curl -X POST https://telemetry.shifu.dev/demo-stat/ \
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"begin\"}" > /dev/null 2>&1 || true
     rm -rf $RUN_DIR
     mkdir -p $RUN_DIR
     tar -xzvf $aio_tar_gz_name -C $RUN_DIR
 
-    curl -X POST https://telemetry.shifu.run/demo-stat/ \
+    curl -X POST https://telemetry.shifu.dev/demo-stat/ \
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"after untar\"}" > /dev/null 2>&1 || true
 
@@ -147,7 +147,7 @@ elif [[ $1 = "run_demo" ]]; then
     (cd $RUN_DIR/$UTIL_DIR && chmod +x ./kubectl && mv ./kubectl ${BIN_DIR}/kubectl)
     (cd $RUN_DIR/$UTIL_DIR && ls -lh)
 
-    curl -X POST https://telemetry.shifu.run/demo-stat/ \
+    curl -X POST https://telemetry.shifu.dev/demo-stat/ \
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"after kind and kubectl install\"}" > /dev/null 2>&1 || true
 
@@ -156,7 +156,7 @@ elif [[ $1 = "run_demo" ]]; then
     ${BIN_DIR}/kind delete cluster
     ${BIN_DIR}/kind create cluster --image=$KIND_IMG
 
-    curl -X POST https://telemetry.shifu.run/demo-stat/ \
+    curl -X POST https://telemetry.shifu.dev/demo-stat/ \
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"after kind cluster create\"}" > /dev/null 2>&1 || true
 
@@ -165,7 +165,7 @@ elif [[ $1 = "run_demo" ]]; then
         ${BIN_DIR}/kind load docker-image $shifu_image:$SHIFU_IMG_VERSION
     done
 
-    curl -X POST https://telemetry.shifu.run/demo-stat/ \
+    curl -X POST https://telemetry.shifu.dev/demo-stat/ \
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"after kind load Shifu images\"}" > /dev/null 2>&1 || true
 
@@ -177,14 +177,14 @@ elif [[ $1 = "run_demo" ]]; then
         ${BIN_DIR}/kind load docker-image $util_image
     done
 
-    curl -X POST https://telemetry.shifu.run/demo-stat/ \
+    curl -X POST https://telemetry.shifu.dev/demo-stat/ \
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"after kind load Util images\"}" > /dev/null 2>&1 || true
 
     ${BIN_DIR}/kubectl apply -f $RUN_DIR/$SHIFU_DIR/shifu_install.yml
     ${BIN_DIR}/kubectl apply -f $RUN_DIR/$SHIFU_DIR/demo_device/edgedevice-agv
 
-    curl -X POST https://telemetry.shifu.run/demo-stat/ \
+    curl -X POST https://telemetry.shifu.dev/demo-stat/ \
         -H 'Content-Type: application/json' \
         -d "{\"ip\":\"$IP_ADDRESS\",\"source\":\"shifu_demo_installation_script\",\"task\":\"run_demo_script\",\"step\":\"after kubectl apply\"}" > /dev/null 2>&1 || true
 
