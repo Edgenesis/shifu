@@ -65,7 +65,7 @@ We couldn't be more excited to have you.
 
 Welcome to check 🗒️[Shifu Documentation](https://shifu.dev/) for detailed information on:
 - 🔧[Install](https://shifu.dev/docs/guides/install/install-shifu-dev)
-- 🔌[Conenct devices](https://shifu.dev/docs/guides/cases/)
+- 🔌[Connect devices](https://shifu.dev/docs/guides/cases/)
 - 👨‍💻[Application Development](https://shifu.dev/docs/guides/application/)
 
 ## Contributing
