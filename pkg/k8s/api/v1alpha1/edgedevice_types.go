@@ -174,7 +174,7 @@ type EdgeDevice struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
 
-	Spec   EdgeDeviceSpec   `json:"spec,omitempty"`
+	Spec   []EdgeDeviceSpec `json:"spec,omitempty"`
 	Status EdgeDeviceStatus `json:"status,omitempty"`
 }
 

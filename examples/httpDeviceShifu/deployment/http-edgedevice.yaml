@@ -4,7 +4,7 @@ metadata:
   name: edgedevice-http
   namespace: devices
 spec:
-  sku: "HTTP Device"
-  connection: Ethernet
-  address: 192.168.14.163:12345
-  protocol: HTTP
+  - sku: device1
+    connection: Ethernet
+    address: 192.168.11.16:12345
+    protocol: HTTP
