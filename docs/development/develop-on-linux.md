@@ -57,7 +57,7 @@ echo "export PATH=$PATH:/usr/local/go/bin" >> $HOME/.profile
 from [kind](https://kind.sigs.k8s.io/docs/user/quick-start/), install with:
 
 ```bash
-curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.16.0/kind-linux-amd64 \
+curl -Lo ./kind https://kind.sigs.k8s.io/dl/v0.18.0/kind-linux-amd64 \
 && chmod +x ./kind \
 && mv ./kind /usr/local/bin/kind
 ```
