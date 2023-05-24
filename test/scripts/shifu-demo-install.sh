@@ -31,10 +31,10 @@ setup_verify_os_and_arch
 
 curl -LO https://demo.shifu.dev/demo-content/shifu_demo_aio_${OS}_${ARCH}.tar
 
-rm -rf testdir && mkdir testdir
+rm -rf shifudemos && mkdir shifudemos
 
-tar -xvf shifu_demo_aio_${OS}_${ARCH}.tar -C testdir 
+tar -xvf shifu_demo_aio_${OS}_${ARCH}.tar -C shifudemos 
 
-cd testdir
+cd shifudemos
 
 chmod +x test/scripts/deviceshifu-demo-aio.sh && sudo ./test/scripts/deviceshifu-demo-aio.sh run_demo
