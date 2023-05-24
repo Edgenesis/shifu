@@ -32,8 +32,8 @@ SHIFU_IMG_LIST=(
     'edgehub/mockdevice-opcua'
 )
 
-KIND_IMG="kindest/node:v1.25.2"
-KIND_VERSION="v0.16.0"
+KIND_IMG="kindest/node:v1.27.1"
+KIND_VERSION="v0.19.0"
 
 UTIL_IMG_LIST=(
     'bitnami/kube-rbac-proxy:0.14.1'
