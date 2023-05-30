@@ -35,7 +35,7 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT d
 </div>
 
 ## Features
-**Kubernetes native** — developing your application while managing your devices, spare the need for maintaining an additional O&M infrastructure
+**Kubernetes native** — developing your application while managing your devices, spare the need for maintaining an additional O&M infrastructure.
 
 **Open Platform** — No vendor lock-in. You can easily deploy Shifu on the edge(from RaspberryPi to edge clusters) or on the cloud(public, private and hybrid cloud are all supported).
 
