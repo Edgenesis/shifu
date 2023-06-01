@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: deviceshifu-trafficlight-deployment
+  name: deviceshifu-trafficlight-service
+  namespace: deviceshifu
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: deviceshifu-trafficlight-deployment
+  type: LoadBalancer
