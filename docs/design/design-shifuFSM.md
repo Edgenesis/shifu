@@ -124,7 +124,7 @@ type DeviceShifuAction struct {
 ```
 We will add a new filed in `DeviceShifuConfig` called `FSM` to represent our finite state machine setup. We also created few new structs to represent state and actions.
 
-```yaml
+```golang
 // EdgeDeviceSpec defines the desired state of EdgeDevice
 type EdgeDeviceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of EdgeDevice
