@@ -1,12 +1,14 @@
 # Shifu FSM Design
-Shifu FSM stands for Shifu Finite State Machine. Shifu FSM stands for Shifu Finite State Machine. It is a workflow control system that allows users to control the behavior of the device based on different states.
+Shifu FSM stands for Shifu Finite State Machine. It is a workflow control system that allows users to control the behavior of the device based on different states.
 
 ## Control Flow
+A traffic light's FSM might look like this:
 ```mermaid
 flowchart LR
-stateA -->|action1| stateB
-stateA -->|action2| stateC
-stateC -->|action3| stateA
+green -->|caution| yellow
+yellow -->|go| green
+red -->|caution| yellow
+yellow -->|stop| red
 
 ```
 
@@ -16,7 +18,10 @@ A state is a condition or status of the system. It represents a specific moment 
 ### Action
 An action here is just an instruction in the configmap. Each state can define a set of instructions along with the next state the device will end up in when receiving the action. If a state receives an unsupported action, it will simply rejects the action.
 
-Take the above control flow as an example, `stateA` receives `action1` and transit to `stateB`. `stateA` receives `action2` and transit to `stateC`. `stateC` receives `action3` and transit back to `stateA`.
+Take the above control flow as an example, `green` receives `caution` and transit to `yellow`. `yellow` receives `stop` and transit to `red`. `red` receives `caution` and transit back to `yellow`, `yellow` receives `go` action and transit to `green`.
+
+### Forbid
+Forbid will be a list of actions that are not allowed to take in the given state. In the traffic light example, a `red` state would not allowed to take a `go` action directly.
 
 
 ## High level design
@@ -40,6 +45,14 @@ data:
       caution:
       stop:
       go:
+      status:
+  telemetries: |
+    telemetries:
+      device_health:
+        properties:
+          instruction: status
+          initialDelayMs: 1000
+          intervalMs: 1000
   fsm: |
     states:
       red: 
@@ -105,12 +118,12 @@ type DeviceShifuConfig struct {
 	Telemetries              *DeviceShifuTelemetries
 	CustomInstructionsPython map[string]string `yaml:"customInstructionsPython"`
 	ControlMsgs              map[string]string `yaml:"controlMsgs,omitempty"`
-	FSM                      DeviceShifuFSM
+	FSM                      *DeviceShifuFSM
 }
 
 type DeviceShifuFSM struct {
 	States        map[string]*DeviceShifuState `yaml:"states"`
-	StartingState string                       `yaml:"startingState"`
+	StartingState *string                       `yaml:"startingState"`
 }
 
 type DeviceShifuState struct {
@@ -147,6 +160,7 @@ We will handle the FSM transition in `commandHandleFunc` inside each deviceShifu
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
         // Get associated instruction and current state
+        // Check if we have fsm enabled.
         state := fsm.States[state]
         // instruction is a transit action
         if val, ok := state.Actions[instruction]; ok {
