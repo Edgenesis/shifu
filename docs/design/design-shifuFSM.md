@@ -7,8 +7,7 @@ A traffic light's FSM might look like this:
 ```mermaid
 flowchart LR
 green -->|caution| yellow
-yellow -->|go| green
-red -->|caution| yellow
+red -->|go| green
 yellow -->|stop| red
 
 ```
@@ -19,7 +18,7 @@ A state is a condition or status of the system. It represents a specific moment 
 ### Action
 An action here is just an instruction in the configmap. Each state can define a set of instructions along with the next state the device will end up in when receiving the action. If a state receives an unsupported action, it will simply rejects the action.
 
-Take the above control flow as an example, `green` receives `caution` and transit to `yellow`. `yellow` receives `stop` and transit to `red`. `red` receives `caution` and transit back to `yellow`, `yellow` receives `go` action and transit to `green`.
+Take the above control flow as an example, `green` receives `caution` and transit to `yellow`. `yellow` receives `stop` and transit to `red`. `red` receives `go` and transit back to `green`.
 
 ### Forbid
 Forbid will be a list of actions that are not allowed to take in the given state. In the traffic light example, a `red` state would not allowed to take a `go` action directly.
@@ -56,10 +55,10 @@ data:
     states:
       red: 
         actions:
-          caution:
-            next_state: yellow
+          go:
+            next_state: green
         forbid:
-          go:    
+          caution:    
       green:
         actions:
           caution:
@@ -68,15 +67,13 @@ data:
           stop:
       yellow:
         actions:
-          go:
-            next_state: green
           stop:
             next_state: red     
     startingState: red
 ```
 `states` contain the states of the FSM. Each `state` contains a set of actions it can take, and a forbid list for the actions it not allowed to take. 
 
-Take the above traffic light FSM as an example. The FSM has 3 states, `red`, `yellow` and `green`. If the device is in `green` state, it will take an caution action to become `yellow` state and it will reject `stop` action. `yellow` state will transit to `green` state on `go` action and to `red` state on `stop` action. 
+Take the above traffic light FSM as an example. The FSM has 3 states, `red`, `yellow` and `green`. If the device is in `green` state, it will take an caution action to become `yellow` state and it will reject `stop` action. `yellow` state will transit to `red` state on `stop` action. 
 For any state, when received instructions listed in instruction sessions but not either in actions or in forbid list, it will stay in the same after receive the action.
 The FSM section will also include a `startingState` field, which indicates which state the FSM should be starting with.
 
