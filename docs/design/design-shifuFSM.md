@@ -1,7 +1,8 @@
 # Shifu FSM Design
 Shifu FSM stands for Shifu Finite State Machine. It is a workflow control system that allows users to control the behavior of the device based on different states.
 
-## Control Flow
+## High level design
+### Control Flow
 A traffic light's FSM might look like this:
 ```mermaid
 flowchart LR
@@ -23,8 +24,6 @@ Take the above control flow as an example, `green` receives `caution` and transi
 ### Forbid
 Forbid will be a list of actions that are not allowed to take in the given state. In the traffic light example, a `red` state would not allowed to take a `go` action directly.
 
-
-## High level design
 We can reuse a lot of existing design and implementations to achieve the FSM functionality. We can embed the entire FSM as part of our configmap, along with instructions and telemetries. 
 We can add a state field inside `edgedeivce` to represent current state of the device, and since edgedevice is stored in `etcd`, it's also good for fail-recovery.
 
@@ -108,7 +107,7 @@ spec:
 ```
 We will add a new filed `state` in `edgeDevice` spec to represent current state of the device.
 
-### Code
+### Implementation
 
 ```golang
 // DeviceShifuConfig data under Configmap, Settings of deviceShifu
