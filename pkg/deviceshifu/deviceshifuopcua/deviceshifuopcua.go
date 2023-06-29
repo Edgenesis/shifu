@@ -54,6 +54,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, fmt.Errorf("error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
+	if deviceShifuMetadata.KubeConfigPath == deviceshifubase.DeviceKubeconfigDoNotLoadStr {
+		return nil, nil
+	}
+
 	ctx := context.Background()
 	opcuaClient, err := establishOPCUAConnection(ctx, *base.EdgeDevice.Spec.Address, base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting)
 	if err != nil {
