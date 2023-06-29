@@ -59,7 +59,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 
 		ctx := context.Background()
-		opcuaClient, err := establishOPCUAConnection(ctx, *base.EdgeDevice.Spec.Address, base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting)
+		opcuaClient, err = establishOPCUAConnection(ctx, *base.EdgeDevice.Spec.Address, base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting)
 		if err != nil {
 			return nil, err
 		}
