@@ -54,37 +54,38 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, fmt.Errorf("error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
-	if deviceShifuMetadata.KubeConfigPath == deviceshifubase.DeviceKubeconfigDoNotLoadStr {
-		return nil, nil
-	}
-
-	ctx := context.Background()
-	opcuaClient, err := establishOPCUAConnection(ctx, *base.EdgeDevice.Spec.Address, base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting)
-	if err != nil {
-		return nil, err
-	}
+	var opcuaClient *opcua.Client
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
-		// switch for different Shifu Protocols
-		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
-		case v1alpha1.ProtocolOPCUA:
-			for instruction, properties := range opcuaInstructions.Instructions {
-				HandlerMetaData := &HandlerMetaData{
-					base.EdgeDevice.Spec,
-					instruction,
-					properties.OPCUAInstructionProperty,
-				}
 
-				var handler DeviceCommandHandlerOPCUA
-				if base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds == nil {
-					timeout := deviceshifubase.DeviceDefaultConnectionTimeoutInMS
-					handler = DeviceCommandHandlerOPCUA{opcuaClient, &timeout, HandlerMetaData}
-				} else {
-					timeout := base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds
-					handler = DeviceCommandHandlerOPCUA{opcuaClient, timeout, HandlerMetaData}
-				}
+		ctx := context.Background()
+		opcuaClient, err := establishOPCUAConnection(ctx, *base.EdgeDevice.Spec.Address, base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting)
+		if err != nil {
+			return nil, err
+		}
 
-				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
+		if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
+			// switch for different Shifu Protocols
+			switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
+			case v1alpha1.ProtocolOPCUA:
+				for instruction, properties := range opcuaInstructions.Instructions {
+					HandlerMetaData := &HandlerMetaData{
+						base.EdgeDevice.Spec,
+						instruction,
+						properties.OPCUAInstructionProperty,
+					}
+
+					var handler DeviceCommandHandlerOPCUA
+					if base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds == nil {
+						timeout := deviceshifubase.DeviceDefaultConnectionTimeoutInMS
+						handler = DeviceCommandHandlerOPCUA{opcuaClient, &timeout, HandlerMetaData}
+					} else {
+						timeout := base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting.ConnectionTimeoutInMilliseconds
+						handler = DeviceCommandHandlerOPCUA{opcuaClient, timeout, HandlerMetaData}
+					}
+
+					mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
+				}
 			}
 		}
 	}
