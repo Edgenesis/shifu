@@ -100,13 +100,14 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 func establishOPCUAConnection(ctx context.Context, address string, setting *v1alpha1.OPCUASetting) (*opcua.Client, error) {
 	endpoints, err := opcua.GetEndpoints(ctx, address)
 	if err != nil {
-		logger.Fatal("Cannot Get EndPoint Description")
+		logger.Error("Cannot Get EndPoint Description")
 		return nil, err
 	}
 
 	ep := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeNone)
 	if ep == nil {
-		logger.Fatal("Failed to find suitable endpoint")
+		logger.Error("Failed to find suitable endpoint")
+		return nil, err
 	}
 
 	var options = make([]opcua.Option, 0)
@@ -125,7 +126,8 @@ func establishOPCUAConnection(ctx context.Context, address string, setting *v1al
 		var certificateFileName = path.Join(DeviceConfigmapCertificatePath, *setting.CertificateFileName)
 		cert, err := tls.LoadX509KeyPair(certificateFileName, privateKeyFileName)
 		if err != nil {
-			logger.Fatalf("X509 Certificate Or PrivateKey load Default")
+			logger.Errorf("X509 Certificate Or PrivateKey load Default")
+			return nil, err
 		}
 		options = append(options,
 			opcua.CertificateFile(certificateFileName),
@@ -155,7 +157,8 @@ func establishOPCUAConnection(ctx context.Context, address string, setting *v1al
 	options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*setting.AuthenticationMode)))
 	opcuaClient := opcua.NewClient(address, options...)
 	if err := opcuaClient.Connect(ctx); err != nil {
-		logger.Fatalf("Unable to connect to OPC UA server, error: %v", err)
+		logger.Errorf("Unable to connect to OPC UA server, error: %v", err)
+		return nil, err
 	}
 	return opcuaClient, nil
 }
