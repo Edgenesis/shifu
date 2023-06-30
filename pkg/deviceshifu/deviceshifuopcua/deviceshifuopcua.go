@@ -57,17 +57,17 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	var opcuaClient *opcua.Client
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
-
-		ctx := context.Background()
-		opcuaClient, err = establishOPCUAConnection(ctx, *base.EdgeDevice.Spec.Address, base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting)
-		if err != nil {
-			return nil, err
-		}
-
 		if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 			// switch for different Shifu Protocols
 			switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 			case v1alpha1.ProtocolOPCUA:
+
+				ctx := context.Background()
+				opcuaClient, err = establishOPCUAConnection(ctx, *base.EdgeDevice.Spec.Address, base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting)
+				if err != nil {
+					return nil, err
+				}
+
 				for instruction, properties := range opcuaInstructions.Instructions {
 					HandlerMetaData := &HandlerMetaData{
 						base.EdgeDevice.Spec,
@@ -109,6 +109,7 @@ func establishOPCUAConnection(ctx context.Context, address string, setting *v1al
 		return nil, err
 	}
 
+	// TODO implement other option here
 	ep := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeNone)
 	if ep == nil {
 		logger.Error("Failed to find suitable endpoint")
@@ -131,7 +132,7 @@ func establishOPCUAConnection(ctx context.Context, address string, setting *v1al
 		var certificateFileName = path.Join(DeviceConfigmapCertificatePath, *setting.CertificateFileName)
 		cert, err := tls.LoadX509KeyPair(certificateFileName, privateKeyFileName)
 		if err != nil {
-			logger.Errorf("X509 Certificate Or PrivateKey load Default")
+			logger.Errorf("X509 Certificate Or PrivateKey load failed")
 			return nil, err
 		}
 		options = append(options,
