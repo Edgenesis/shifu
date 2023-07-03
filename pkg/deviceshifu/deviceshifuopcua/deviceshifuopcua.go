@@ -51,7 +51,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 	opcuaInstructions := CreateOPCUAInstructions(&base.DeviceShifuConfig.Instructions)
 	if err != nil {
-		return nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
+		return nil, fmt.Errorf("error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
 	var opcuaClient *opcua.Client
@@ -60,73 +60,18 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		// switch for different Shifu Protocols
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolOPCUA:
+
+			ctx := context.Background()
+			opcuaClient, err = establishOPCUAConnection(ctx, *base.EdgeDevice.Spec.Address, base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting)
+			if err != nil {
+				return nil, err
+			}
+
 			for instruction, properties := range opcuaInstructions.Instructions {
 				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
 					properties.OPCUAInstructionProperty,
-				}
-
-				ctx := context.Background()
-				endpoints, err := opcua.GetEndpoints(ctx, *base.EdgeDevice.Spec.Address)
-				if err != nil {
-					logger.Fatal("Cannot Get EndPoint Description")
-					return nil, err
-				}
-
-				ep := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeNone)
-				if ep == nil {
-					logger.Fatal("Failed to find suitable endpoint")
-				}
-
-				var options = make([]opcua.Option, 0)
-				// TODO  implement different messageSecurityModes
-				options = append(options,
-					opcua.SecurityPolicy(ua.SecurityPolicyURINone),
-					opcua.SecurityMode(ua.MessageSecurityModeNone),
-					opcua.AutoReconnect(false),
-				)
-
-				var setting = *base.EdgeDevice.Spec.ProtocolSettings.OPCUASetting
-				switch ua.UserTokenTypeFromString(*setting.AuthenticationMode) {
-				case ua.UserTokenTypeIssuedToken:
-					options = append(options, opcua.AuthIssuedToken([]byte(*setting.IssuedToken)))
-				case ua.UserTokenTypeCertificate:
-					var privateKeyFileName = path.Join(DeviceConfigmapCertificatePath, *setting.PrivateKeyFileName)
-					var certificateFileName = path.Join(DeviceConfigmapCertificatePath, *setting.CertificateFileName)
-					cert, err := tls.LoadX509KeyPair(certificateFileName, privateKeyFileName)
-					if err != nil {
-						logger.Fatalf("X509 Certificate Or PrivateKey load Default")
-					}
-					options = append(options,
-						opcua.CertificateFile(certificateFileName),
-						opcua.PrivateKeyFile(privateKeyFileName),
-						opcua.AuthCertificate(cert.Certificate[0]),
-					)
-				case ua.UserTokenTypeUserName:
-					passwordByte, err := os.ReadFile(DeviceSecretPasswordPath)
-					// secret will overwrite the password in edge device
-					if err != nil {
-						logger.Infof("secret load error: %v, password will be loaded from OPCUASetting.Password", err)
-						options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
-					} else {
-						logger.Infof("password loaded from secret")
-						options = append(options, opcua.AuthUsername(*setting.Username, string(passwordByte)))
-					}
-				case ua.UserTokenTypeAnonymous:
-					fallthrough
-				default:
-					if *setting.AuthenticationMode != "Anonymous" {
-						logger.Errorf("Could not parse your input, you are in Anonymous Mode default")
-					}
-
-					options = append(options, opcua.AuthAnonymous())
-				}
-
-				options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*setting.AuthenticationMode)))
-				opcuaClient = opcua.NewClient(*base.EdgeDevice.Spec.Address, options...)
-				if err := opcuaClient.Connect(ctx); err != nil {
-					logger.Fatalf("Unable to connect to OPC UA server, error: %v", err)
 				}
 
 				var handler DeviceCommandHandlerOPCUA
@@ -153,6 +98,73 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil
+}
+
+func establishOPCUAConnection(ctx context.Context, address string, setting *v1alpha1.OPCUASetting) (*opcua.Client, error) {
+	endpoints, err := opcua.GetEndpoints(ctx, address)
+	if err != nil {
+		logger.Error("Cannot Get EndPoint Description")
+		return nil, err
+	}
+
+	// TODO implement other option here
+	ep := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeNone)
+	if ep == nil {
+		logger.Error("Failed to find suitable endpoint")
+		return nil, err
+	}
+
+	var options = make([]opcua.Option, 0)
+	// TODO  implement different messageSecurityModes
+	options = append(options,
+		opcua.SecurityPolicy(ua.SecurityPolicyURINone),
+		opcua.SecurityMode(ua.MessageSecurityModeNone),
+		opcua.AutoReconnect(true),
+	)
+
+	switch ua.UserTokenTypeFromString(*setting.AuthenticationMode) {
+	case ua.UserTokenTypeIssuedToken:
+		options = append(options, opcua.AuthIssuedToken([]byte(*setting.IssuedToken)))
+	case ua.UserTokenTypeCertificate:
+		var privateKeyFileName = path.Join(DeviceConfigmapCertificatePath, *setting.PrivateKeyFileName)
+		var certificateFileName = path.Join(DeviceConfigmapCertificatePath, *setting.CertificateFileName)
+		cert, err := tls.LoadX509KeyPair(certificateFileName, privateKeyFileName)
+		if err != nil {
+			logger.Errorf("X509 Certificate Or PrivateKey load failed")
+			return nil, err
+		}
+		options = append(options,
+			opcua.CertificateFile(certificateFileName),
+			opcua.PrivateKeyFile(privateKeyFileName),
+			opcua.AuthCertificate(cert.Certificate[0]),
+		)
+	case ua.UserTokenTypeUserName:
+		passwordByte, err := os.ReadFile(DeviceSecretPasswordPath)
+		// secret will overwrite the password in edge device
+		if err != nil {
+			logger.Infof("secret load error: %v, password will be loaded from OPCUASetting.Password", err)
+			options = append(options, opcua.AuthUsername(*setting.Username, *setting.Password))
+		} else {
+			logger.Infof("password loaded from secret")
+			options = append(options, opcua.AuthUsername(*setting.Username, string(passwordByte)))
+		}
+	case ua.UserTokenTypeAnonymous:
+		fallthrough
+	default:
+		if *setting.AuthenticationMode != "Anonymous" {
+			logger.Errorf("Could not parse your input, you are in Anonymous Mode default")
+		}
+
+		options = append(options, opcua.AuthAnonymous())
+	}
+
+	options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*setting.AuthenticationMode)))
+	opcuaClient := opcua.NewClient(address, options...)
+	if err := opcuaClient.Connect(ctx); err != nil {
+		logger.Errorf("Unable to connect to OPC UA server, error: %v", err)
+		return nil, err
+	}
+	return opcuaClient, nil
 }
 
 // DeviceCommandHandlerOPCUA handler for opcua
