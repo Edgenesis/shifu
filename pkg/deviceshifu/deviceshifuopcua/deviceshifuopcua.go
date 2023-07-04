@@ -181,7 +181,7 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 
 func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Request) {
 	nodeID := handler.HandlerMetaData.properties.OPCUANodeID
-	logger.Infof("Requesting NodeID: %v", nodeID)
+	logger.Infof("Writing to NodeID: %v", nodeID)
 
 	id, err := ua.ParseNodeID(nodeID)
 	if err != nil {
@@ -246,6 +246,7 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 	if err != nil {
 		logger.Errorf("invalid node id: %v", err)
 		http.Error(w, "Failed to parse NodeID, error: "+err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	var request WriteRequest
