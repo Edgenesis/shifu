@@ -62,6 +62,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolOPCUA:
 			for instruction, properties := range opcuaInstructions.Instructions {
+				if properties.OPCUAInstructionProperty == nil {
+					return nil, fmt.Errorf("instruction: %s's instructionProperties is nil", instruction)
+				}
 				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
@@ -251,6 +254,7 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 		http.Error(w, "Failed to parse request, error: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+	logger.Infof("write data: %s", request.Value)
 
 	value, err := ua.NewVariant(request.Value)
 	if err != nil {
@@ -276,7 +280,6 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 	defer cancel()
 
 	resp, err := handler.client.WriteWithContext(ctx, opcuaRequest)
-
 	if err != nil {
 		http.Error(w, "Failed to write message to Server, error: "+err.Error(), http.StatusBadRequest)
 		logger.Errorf("Write failed: %s", err)
