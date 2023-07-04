@@ -184,6 +184,7 @@ func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Req
 	if err != nil {
 		logger.Errorf("invalid node id: %v", err)
 		http.Error(w, "invalid node id: "+err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	req := &ua.ReadRequest{
@@ -248,12 +249,14 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
 		logger.Errorf("invalid request: %v", err)
 		http.Error(w, "Failed to parse request, error: "+err.Error(), http.StatusBadRequest)
+		return
 	}
 
 	value, err := ua.NewVariant(request.Value)
 	if err != nil {
 		logger.Errorf("invalid value: %v", err)
 		http.Error(w, "Failed to parse value, error: "+err.Error(), http.StatusBadRequest)
+		return
 	}
 	opcuaRequest := &ua.WriteRequest{
 		NodesToWrite: []*ua.WriteValue{
