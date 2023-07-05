@@ -3,6 +3,7 @@ package deviceshifuopcua
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
@@ -68,6 +69,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 
 			for instruction, properties := range opcuaInstructions.Instructions {
+				if properties.OPCUAInstructionProperty == nil {
+					return nil, fmt.Errorf("instruction: %s's instructionProperties is nil", instruction)
+				}
 				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
@@ -176,57 +180,132 @@ type DeviceCommandHandlerOPCUA struct {
 
 func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		nodeID := handler.HandlerMetaData.properties.OPCUANodeID
-		logger.Infof("Requesting NodeID: %v", nodeID)
-
-		id, err := ua.ParseNodeID(nodeID)
-		if err != nil {
-			logger.Fatalf("invalid node id: %v", err)
+		switch r.Method {
+		case http.MethodGet:
+			handler.read(w, r)
+		case http.MethodPost:
+			handler.write(w, r)
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
-
-		req := &ua.ReadRequest{
-			MaxAge: 2000,
-			NodesToRead: []*ua.ReadValueID{
-				{NodeID: id},
-			},
-			TimestampsToReturn: ua.TimestampsToReturnBoth,
-		}
-
-		ctx := context.Background()
-		ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
-		defer cancel()
-
-		resp, err := handler.client.ReadWithContext(ctx, req)
-		handlerInstruction := handler.HandlerMetaData.instruction
-
-		if err != nil {
-			http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
-			logger.Errorf("Read failed: %s", err)
-			return
-		}
-
-		if resp.Results[0].Status != ua.StatusOK {
-			http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(resp.Results[0].Status), http.StatusBadRequest)
-			logger.Errorf("Status not OK: %v", resp.Results[0].Status)
-			return
-		}
-
-		logger.Infof("%#v", resp.Results[0].Value.Value())
-
-		w.WriteHeader(http.StatusOK)
-		// TODO: Should handle different type of return values and return JSON/other data
-		// types instead of plain text
-		rawRespBody := resp.Results[0].Value.Value()
-		rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
-		respString := rawRespBodyString
-		instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
-		logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
-		if shouldUsePythonCustomProcessing {
-			logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-			respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
-		}
-		fmt.Fprintf(w, "%v", respString)
 	}
+}
+
+func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Request) {
+	nodeID := handler.HandlerMetaData.properties.OPCUANodeID
+	logger.Infof("Writing to NodeID: %v", nodeID)
+
+	id, err := ua.ParseNodeID(nodeID)
+	if err != nil {
+		logger.Errorf("invalid node id: %v", err)
+		http.Error(w, "invalid node id: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	req := &ua.ReadRequest{
+		MaxAge: 2000,
+		NodesToRead: []*ua.ReadValueID{
+			{NodeID: id},
+		},
+		TimestampsToReturn: ua.TimestampsToReturnBoth,
+	}
+
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
+	defer cancel()
+
+	resp, err := handler.client.ReadWithContext(ctx, req)
+	handlerInstruction := handler.HandlerMetaData.instruction
+
+	if err != nil {
+		http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
+		logger.Errorf("Read failed: %s", err)
+		return
+	}
+
+	if resp.Results[0].Status != ua.StatusOK {
+		http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(resp.Results[0].Status), http.StatusBadRequest)
+		logger.Errorf("Status not OK: %v", resp.Results[0].Status)
+		return
+	}
+
+	logger.Infof("%#v", resp.Results[0].Value.Value())
+
+	w.WriteHeader(http.StatusOK)
+	// TODO: Should handle different type of return values and return JSON/other data
+	// types instead of plain text
+	rawRespBody := resp.Results[0].Value.Value()
+	rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
+	respString := rawRespBodyString
+	instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+	logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+	if shouldUsePythonCustomProcessing {
+		logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+		respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
+	}
+	fmt.Fprintf(w, "%v", respString)
+}
+
+type WriteRequest struct {
+	Value interface{} `json:"value"`
+}
+
+func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Request) {
+	nodeID := handler.HandlerMetaData.properties.OPCUANodeID
+	logger.Infof("Requesting NodeID: %v", nodeID)
+
+	id, err := ua.ParseNodeID(nodeID)
+	if err != nil {
+		logger.Errorf("invalid node id: %v", err)
+		http.Error(w, "Failed to parse NodeID, error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var request WriteRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		logger.Errorf("invalid request: %v", err)
+		http.Error(w, "Failed to parse request, error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	logger.Infof("write data: %s", request.Value)
+
+	value, err := ua.NewVariant(request.Value)
+	if err != nil {
+		logger.Errorf("invalid value: %v", err)
+		http.Error(w, "Failed to parse value, error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	opcuaRequest := &ua.WriteRequest{
+		NodesToWrite: []*ua.WriteValue{
+			{
+				NodeID:      id,
+				AttributeID: ua.AttributeIDValue,
+				Value: &ua.DataValue{
+					EncodingMask: ua.DataValueValue,
+					Value:        value,
+				},
+			},
+		},
+	}
+
+	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
+	defer cancel()
+
+	resp, err := handler.client.WriteWithContext(ctx, opcuaRequest)
+	if err != nil {
+		http.Error(w, "Failed to write message to Server, error: "+err.Error(), http.StatusBadRequest)
+		logger.Errorf("Write failed: %s", err)
+		return
+	}
+
+	if resp.Results[0] != ua.StatusOK {
+		http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(resp.Results[0]), http.StatusBadRequest)
+		logger.Errorf("Status not OK: %v", resp.Results[0])
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string) (string, error) {

@@ -1,7 +1,7 @@
+from opcua import ua, Server
+import time
 import sys
 sys.path.insert(0, "..")
-import time
-from opcua import ua, Server
 
 if __name__ == "__main__":
     # setup our server
@@ -18,7 +18,8 @@ if __name__ == "__main__":
     # populating our address space
     myobj = objects.add_object(idx, "MyObject")
     myvar = myobj.add_variable(idx, "MyVariable", 6.7)
-    myvar.set_writable()    # Set MyVariable to be writable by clients
+    editvar = myobj.add_variable(idx, "writabltVar", -1)
+    editvar.set_writable()    # Set MyVariable to be writable by clients
 
     # starting!
     server.start()
@@ -30,5 +31,5 @@ if __name__ == "__main__":
             count += 0.1
             myvar.set_value(count)
     finally:
-        #close connection, remove subcsriptions, etc
+        # close connection, remove subcsriptions, etc
         server.stop()

@@ -6,12 +6,15 @@ metadata:
 data:
   driverProperties: |
     driverSku: Test OPC UA Server
-    driverImage: 
+    driverImage:
   instructions: |
     instructions:
       get_value:
         protocolPropertyList:
           OPCUANodeID: "ns=2;i=2"
+      writable_value:
+        protocolPropertyList:
+          OPCUANodeID: "ns=2;i=3"
       get_time:
         protocolPropertyList:
           OPCUANodeID: "i=2258"
