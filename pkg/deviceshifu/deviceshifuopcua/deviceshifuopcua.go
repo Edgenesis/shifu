@@ -291,7 +291,7 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 
 	// create new value by old value's type and new value's value
 	oldValue := readResponse.Results[0].Value.Value()
-	newValue := CreateValue(oldValue, request.Value)
+	newValue := createValue(oldValue, request.Value)
 	if newValue == nil {
 		oldType := readResponse.Results[0].Value.Type().String()
 		http.Error(w, "wrong type of value, value's type should be "+oldType, http.StatusBadRequest)
@@ -427,7 +427,7 @@ func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
 }
 
-func CreateValue(ref interface{}, newValue interface{}) interface{} {
+func createValue(ref interface{}, newValue interface{}) interface{} {
 	refCopy := ref
 	elem := reflect.ValueOf(&refCopy).Elem()
 	if !elem.CanSet() {

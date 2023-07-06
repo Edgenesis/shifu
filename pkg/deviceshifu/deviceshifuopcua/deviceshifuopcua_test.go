@@ -161,7 +161,7 @@ func TestCreateValue(t *testing.T) {
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
-			output := CreateValue(tC.ref, tC.newValue)
+			output := createValue(tC.ref, tC.newValue)
 			assert.Equal(tC.exceptOutput, output)
 		})
 	}
