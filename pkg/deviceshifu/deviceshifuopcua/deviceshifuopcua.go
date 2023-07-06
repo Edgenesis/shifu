@@ -305,6 +305,7 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 		http.Error(w, "Failed to parse value, error: "+err.Error(), http.StatusBadRequest)
 		return
 	}
+
 	opcuaRequest := &ua.WriteRequest{
 		NodesToWrite: []*ua.WriteValue{
 			{
