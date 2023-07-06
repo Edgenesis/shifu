@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path"
+	"reflect"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
@@ -198,25 +199,12 @@ func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Req
 	id, err := ua.ParseNodeID(nodeID)
 	if err != nil {
 		logger.Errorf("invalid node id: %v", err)
-		http.Error(w, "invalid node id: "+err.Error(), http.StatusBadRequest)
+		http.Error(w, "Failed to parse NodeID, error: "+err.Error(), http.StatusBadRequest)
 		return
 	}
 
-	req := &ua.ReadRequest{
-		MaxAge: 2000,
-		NodesToRead: []*ua.ReadValueID{
-			{NodeID: id},
-		},
-		TimestampsToReturn: ua.TimestampsToReturnBoth,
-	}
-
 	ctx := context.Background()
-	ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
-	defer cancel()
-
-	resp, err := handler.client.ReadWithContext(ctx, req)
-	handlerInstruction := handler.HandlerMetaData.instruction
-
+	resp, err := handler.readByNodeId(ctx, id)
 	if err != nil {
 		http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
 		logger.Errorf("Read failed: %s", err)
@@ -237,6 +225,8 @@ func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Req
 	rawRespBody := resp.Results[0].Value.Value()
 	rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
 	respString := rawRespBodyString
+
+	handlerInstruction := handler.HandlerMetaData.instruction
 	instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 	logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 	if shouldUsePythonCustomProcessing {
@@ -244,6 +234,21 @@ func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Req
 		respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
 	}
 	fmt.Fprintf(w, "%v", respString)
+}
+
+func (handler DeviceCommandHandlerOPCUA) readByNodeId(ctx context.Context, nodeId *ua.NodeID) (*ua.ReadResponse, error) {
+	req := &ua.ReadRequest{
+		MaxAge: 2000,
+		NodesToRead: []*ua.ReadValueID{
+			{NodeID: nodeId},
+		},
+		TimestampsToReturn: ua.TimestampsToReturnBoth,
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
+	defer cancel()
+
+	return handler.client.ReadWithContext(ctx, req)
 }
 
 type WriteRequest struct {
@@ -269,7 +274,32 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 	}
 	logger.Infof("write data: %s", request.Value)
 
-	value, err := ua.NewVariant(request.Value)
+	// get old value by nodeid
+	ctx := context.Background()
+	readResponse, err := handler.readByNodeId(ctx, id)
+	if err != nil {
+		http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
+		logger.Errorf("Read failed: %s", err)
+		return
+	}
+
+	if readResponse.Results[0].Status != ua.StatusOK {
+		http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(readResponse.Results[0].Status), http.StatusBadRequest)
+		logger.Errorf("Status not OK: %v", readResponse.Results[0].Status)
+		return
+	}
+
+	// create new value by old value's type and new value's value
+	oldValue := readResponse.Results[0].Value.Value()
+	newValue := CreateValue(oldValue, request.Value)
+	if newValue == nil {
+		oldType := readResponse.Results[0].Value.Type().String()
+		http.Error(w, "wrong type of value, value's type should be "+oldType, http.StatusBadRequest)
+		logger.Errorf("Failed to create new value")
+		return
+	}
+
+	value, err := ua.NewVariant(newValue)
 	if err != nil {
 		logger.Errorf("invalid value: %v", err)
 		http.Error(w, "Failed to parse value, error: "+err.Error(), http.StatusBadRequest)
@@ -288,20 +318,19 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 		},
 	}
 
-	ctx := context.Background()
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
 	defer cancel()
 
-	resp, err := handler.client.WriteWithContext(ctx, opcuaRequest)
+	writeResponse, err := handler.client.WriteWithContext(ctx, opcuaRequest)
 	if err != nil {
 		http.Error(w, "Failed to write message to Server, error: "+err.Error(), http.StatusBadRequest)
 		logger.Errorf("Write failed: %s", err)
 		return
 	}
 
-	if resp.Results[0] != ua.StatusOK {
-		http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(resp.Results[0]), http.StatusBadRequest)
-		logger.Errorf("Status not OK: %v", resp.Results[0])
+	if writeResponse.Results[0] != ua.StatusOK {
+		http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(writeResponse.Results[0]), http.StatusBadRequest)
+		logger.Errorf("Status not OK: %v", writeResponse.Results[0])
 		return
 	}
 
@@ -395,4 +424,22 @@ func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 // Stop http server
 func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
+}
+
+func CreateValue(ref interface{}, newValue interface{}) interface{} {
+	refCopy := ref
+	elem := reflect.ValueOf(&refCopy).Elem()
+	if !elem.CanSet() {
+		return nil
+	}
+
+	valueofnewValue := reflect.ValueOf(newValue)
+	typeofRefCopy := reflect.TypeOf(refCopy)
+
+	if !valueofnewValue.CanConvert(typeofRefCopy) {
+		return nil
+	}
+
+	elem.Set(valueofnewValue.Convert(typeofRefCopy))
+	return refCopy
 }
