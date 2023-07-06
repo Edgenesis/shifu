@@ -8,6 +8,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/logger"
+	"github.com/stretchr/testify/assert"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -110,5 +111,58 @@ func TestDeviceHealthHandler(t *testing.T) {
 
 	if err := mockds.Stop(); err != nil {
 		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
+	}
+}
+
+func TestCreateValue(t *testing.T) {
+	assert := assert.New(t)
+	testCases := []struct {
+		name         string
+		ref          interface{}
+		newValue     interface{}
+		exceptOutput interface{}
+	}{
+		{
+			name:         "int64 to int",
+			ref:          int(0),
+			newValue:     int64(64),
+			exceptOutput: int(64),
+		},
+		{
+			name:         "int to int16",
+			ref:          int16(0),
+			newValue:     int(64),
+			exceptOutput: int16(64),
+		},
+		{
+			name:         "int to int32",
+			ref:          int32(0),
+			newValue:     int(64),
+			exceptOutput: int32(64),
+		},
+		{
+			name:         "string to int",
+			ref:          int(0),
+			newValue:     "64",
+			exceptOutput: nil,
+		},
+		{
+			name:         "float64 to int16",
+			ref:          int16(0),
+			newValue:     float64(64.1),
+			exceptOutput: int16(64),
+		},
+		{
+			name:         "int to float32",
+			ref:          float32(0),
+			newValue:     123,
+			exceptOutput: float32(123),
+		},
+	}
+	for _, tC := range testCases {
+		t.Run(tC.name, func(t *testing.T) {
+			output := CreateValue(tC.ref, tC.newValue)
+			assert.Equal(tC.exceptOutput, output)
+		})
 	}
 }
