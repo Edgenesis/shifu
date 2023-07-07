@@ -293,7 +293,7 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 
 	// create new value by old value's type and new value's value
 	oldValue := readResponse.Results[0].Value.Value()
-	newValue := createValue(oldValue, request.Value)
+	newValue := convertValueToRef(oldValue, request.Value)
 	if newValue == nil {
 		oldType := readResponse.Results[0].Value.Type().String()
 		http.Error(w, "wrong type of value, value's type should be "+oldType, http.StatusBadRequest)
@@ -429,25 +429,41 @@ func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
 }
 
-// create a new interface with type same with ref and value with newValue, if convert failed will return nil
-func createValue(ref interface{}, newValue interface{}) interface{} {
-	if ref == nil || newValue == nil {
+// convertValueToRef attempts to convert the given value to the type of the reference
+// and assigns the converted value to the reference.
+// The function returns the reference with the newly assigned value, or nil if conversion is not possible.
+func convertValueToRef(ref interface{}, value interface{}) interface{} {
+	// Check if the ref or value are nil.
+	// If either is nil, log a warning and return nil.
+	if ref == nil || value == nil {
+		logger.Warnf("ref(%v) or newValue(%v) is nil", ref, value)
 		return nil
 	}
 
-	refCopy := ref
-	refElem := reflect.ValueOf(&refCopy).Elem()
+	// Copy the reference.
+	newValue := ref
+	// Create a reflect.Value for newValue. The Elem() function is used to get the actual value that the pointer points to.
+	refElem := reflect.ValueOf(&newValue).Elem()
+
+	// If the reference can't be set (it's unaddressable), return nil.
 	if !refElem.CanSet() {
 		return nil
 	}
 
-	valueOfNewValue := reflect.ValueOf(newValue)
-	typeOfRefCopy := reflect.TypeOf(refCopy)
+	// Get the reflect.Value of the new value.
+	valueOfNewValue := reflect.ValueOf(value)
+	// Get the type of the copied reference.
+	typeOfRefCopy := reflect.TypeOf(newValue)
 
+	// Check if the value can be converted to the type of the reference.
+	// If it can't, log a warning and return nil.
 	if !valueOfNewValue.CanConvert(typeOfRefCopy) {
+		logger.Warnf("failed to convert value %s to type %v", valueOfNewValue, typeOfRefCopy)
 		return nil
 	}
 
+	// Set the value of the reference to the converted value.
 	refElem.Set(valueOfNewValue.Convert(typeOfRefCopy))
-	return refCopy
+	// Return the reference with the newly assigned value.
+	return newValue
 }
