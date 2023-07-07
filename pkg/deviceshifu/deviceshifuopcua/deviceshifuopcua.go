@@ -38,6 +38,8 @@ type HandlerMetaData struct {
 const (
 	DeviceConfigmapCertificatePath string = "/etc/edgedevice/certificate"
 	DeviceSecretPasswordPath       string = "/etc/edgedevice/secret/password"
+
+	DefaultOPCUARequestMaxAge = 2000
 )
 
 // New This function creates a new Device Shifu based on the configuration
@@ -198,7 +200,7 @@ func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Req
 
 	id, err := ua.ParseNodeID(nodeID)
 	if err != nil {
-		logger.Errorf("invalid node id: %v", err)
+		logger.Errorf("Failed to parse NodeID, error: %v", err)
 		http.Error(w, "Failed to parse NodeID, error: "+err.Error(), http.StatusBadRequest)
 		return
 	}
@@ -238,7 +240,7 @@ func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Req
 
 func (handler DeviceCommandHandlerOPCUA) readByNodeId(ctx context.Context, nodeId *ua.NodeID) (*ua.ReadResponse, error) {
 	req := &ua.ReadRequest{
-		MaxAge: 2000,
+		MaxAge: DefaultOPCUARequestMaxAge,
 		NodesToRead: []*ua.ReadValueID{
 			{NodeID: nodeId},
 		},
@@ -274,7 +276,7 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 	}
 	logger.Infof("write data: %s", request.Value)
 
-	// get old value by nodeid
+	// get old value by nodeId
 	ctx := context.Background()
 	readResponse, err := handler.readByNodeId(ctx, id)
 	if err != nil {
@@ -353,7 +355,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 	}
 
 	req := &ua.ReadRequest{
-		MaxAge: 2000,
+		MaxAge: DefaultOPCUARequestMaxAge,
 		NodesToRead: []*ua.ReadValueID{
 			{NodeID: id},
 		},
@@ -427,20 +429,25 @@ func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
 }
 
+// create a new interface with type same with ref and value with newValue, if convert failed will return nil
 func createValue(ref interface{}, newValue interface{}) interface{} {
+	if ref == nil || newValue == nil {
+		return nil
+	}
+
 	refCopy := ref
-	elem := reflect.ValueOf(&refCopy).Elem()
-	if !elem.CanSet() {
+	refElem := reflect.ValueOf(&refCopy).Elem()
+	if !refElem.CanSet() {
 		return nil
 	}
 
-	valueofnewValue := reflect.ValueOf(newValue)
-	typeofRefCopy := reflect.TypeOf(refCopy)
+	valueOfNewValue := reflect.ValueOf(newValue)
+	typeOfRefCopy := reflect.TypeOf(refCopy)
 
-	if !valueofnewValue.CanConvert(typeofRefCopy) {
+	if !valueOfNewValue.CanConvert(typeOfRefCopy) {
 		return nil
 	}
 
-	elem.Set(valueofnewValue.Convert(typeofRefCopy))
+	refElem.Set(valueOfNewValue.Convert(typeOfRefCopy))
 	return refCopy
 }

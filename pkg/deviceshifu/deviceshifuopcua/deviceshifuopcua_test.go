@@ -158,6 +158,12 @@ func TestCreateValue(t *testing.T) {
 			newValue:     123,
 			exceptOutput: float32(123),
 		},
+		{
+			name:         "nil to nil",
+			ref:          nil,
+			newValue:     nil,
+			exceptOutput: nil,
+		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.name, func(t *testing.T) {
