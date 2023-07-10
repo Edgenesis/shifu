@@ -7,6 +7,7 @@
 ## Bug fixes
 
 * <bug Fix>Fix the opcua protocol creating too many clients, resulting in excessive session usage by @leepala in https://github.com/Edgenesis/shifu/pull/643
+* <BUG Fix>fix wrong type when write to opcua server by @leepala in https://github.com/Edgenesis/shifu/pull/650
 
 ## Docs
 
