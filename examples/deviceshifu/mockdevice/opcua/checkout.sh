@@ -23,7 +23,7 @@ for i in {1..5}; do
     fi
 done
 
-kubectl exec -it -n deviceshifu nginx -- curl -X POST -d "{\"value\":\"${writeData}\"}" deviceshifu-opcua/writable_value
+kubectl exec -it -n deviceshifu nginx -- curl -X POST -d "{\"value\":${writeData}}" deviceshifu-opcua/writable_value
 
 out=$(kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-opcua/writable_value)
 if [[ $out -ne $writeData ]]; then
