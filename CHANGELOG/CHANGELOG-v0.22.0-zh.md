@@ -7,6 +7,8 @@
 ## Bug 修复
 
 * <bug Fix> 修复OPC UA协议中创建太多client导致session过多的问题 by @leepala in https://github.com/Edgenesis/shifu/pull/643
+* <BUG Fix> 修复写入OPC UA服务器时使用错误的类型 by @leepala in https://github.com/Edgenesis/shifu/pull/650
+
 
 ## 文档
 
