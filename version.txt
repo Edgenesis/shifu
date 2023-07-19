@@ -1,1 +1,1 @@
-nightly
+v0.23.0-rc1
