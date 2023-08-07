@@ -23,7 +23,7 @@ require (
 	github.com/taosdata/driver-go/v3 v3.1.0
 	golang.org/x/crypto v0.11.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
-	sigs.k8s.io/controller-runtime v0.15.0
+	sigs.k8s.io/controller-runtime v0.15.1
 )
 
 require (
