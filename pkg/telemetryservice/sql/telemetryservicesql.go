@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/mysql"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/sqlserver"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
 	"io"
 	"net/http"
@@ -37,6 +39,10 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 	switch *request.SQLConnectionSetting.DBType {
 	case v1alpha1.DBTypeTDengine:
 		err = tdengine.SendToTDengine(context.TODO(), request.RawData, request.SQLConnectionSetting)
+	case v1alpha1.DBTypeMysql:
+		err = mysql.SendToMysql(context.TODO(), request.RawData, request.SQLConnectionSetting)
+	case v1alpha1.DBTypeSQLServer:
+		err = sqlserver.SendToSQLServer(context.TODO(), request.RawData, request.SQLConnectionSetting)
 	default:
 		err = fmt.Errorf("UnSupport DB Type")
 	}

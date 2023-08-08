@@ -1,36 +1,35 @@
-package tdengine
+package sqlserver
 
 import (
 	"context"
 	"database/sql"
-	"testing"
-
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
+	"testing"
 )
 
-func TestConstructTDengineUri(t *testing.T) {
+func TestConstructDBUri(t *testing.T) {
 	testCases := []struct {
 		desc   string
 		Input  v1alpha1.SQLConnectionSetting
 		output string
 	}{
 		{
-			desc: "test",
+			desc: "mysql test",
 			Input: v1alpha1.SQLConnectionSetting{
 				UserName:      unitest.ToPointer("testUser"),
 				Secret:        unitest.ToPointer("testPassword"),
 				ServerAddress: unitest.ToPointer("testAddress"),
 				DBName:        unitest.ToPointer("testDB"),
 			},
-			output: "testUser:testPassword@http(testAddress)/testDB",
+			output: "sqlserver://testUser:testPassword@testAddress?database=testDB",
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			result := constructTDengineUri(&tC.Input)
+			result := constructDBUri(&tC.Input)
 			assert.Equal(t, tC.output, result)
 		})
 	}
@@ -107,8 +106,7 @@ func TestInsertDataToDB(t *testing.T) {
 	}
 }
 
-// just for cover the code
-func TestConnectTdengine(t *testing.T) {
+func TestConnectT0DB(t *testing.T) {
 	db := &DBHelper{
 		Settings: &v1alpha1.SQLConnectionSetting{
 			UserName:      unitest.ToPointer("testUser"),
@@ -117,19 +115,20 @@ func TestConnectTdengine(t *testing.T) {
 			DBName:        unitest.ToPointer("testDB"),
 		},
 	}
+	expectErr := "EOF"
 	err := db.ConnectToDB(context.TODO())
-	assert.Nil(t, err)
+	assert.Equal(t, expectErr, err.Error())
 }
 
-func TestSendToTDengine(t *testing.T) {
+func TestSendToSQLServer(t *testing.T) {
 	settings := &v1alpha1.SQLConnectionSetting{
 		UserName:      unitest.ToPointer("testUser"),
 		Secret:        unitest.ToPointer("testSecret"),
-		ServerAddress: unitest.ToPointer("1.2.3.4"),
+		ServerAddress: unitest.ToPointer("testAddress"),
 		DBName:        unitest.ToPointer("testDB"),
 		DBTable:       unitest.ToPointer("testTable"),
 	}
-	expectErr := "invalid DSN: network address not terminated (missing closing brace)"
-	err := SendToTDengine(context.TODO(), []byte("test"), settings)
+	expectErr := "EOF"
+	err := SendToSQLServer(context.TODO(), []byte("test"), settings)
 	assert.Equal(t, expectErr, err.Error())
 }
