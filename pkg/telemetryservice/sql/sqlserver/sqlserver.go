@@ -47,6 +47,9 @@ func (db DBHelper) ConnectToDB(ctx context.Context) error {
 	sqlServerUri := constructDBUri(db.Settings)
 	db.DB, err = sql.Open("sqlserver", sqlServerUri)
 	logger.Infof("Try connect to sqlserver %v", *db.Settings.DBName)
+	if err != nil {
+		return err
+	}
 	err = db.DB.Ping()
 	return err
 }

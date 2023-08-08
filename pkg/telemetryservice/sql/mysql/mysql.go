@@ -46,6 +46,9 @@ func (db DBHelper) ConnectToDB(ctx context.Context) error {
 	mysqlUri := constructDBUri(db.Settings)
 	db.DB, err = sql.Open("mysql", mysqlUri)
 	logger.Infof("Try connect to mysql %v", *db.Settings.DBName)
+	if err != nil {
+		return err
+	}
 	err = db.DB.Ping()
 	return err
 }
