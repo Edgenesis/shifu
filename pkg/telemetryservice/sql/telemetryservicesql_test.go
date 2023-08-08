@@ -56,7 +56,7 @@ func TestBindSQLServiceHandler(t *testing.T) {
 			requestBody: &v1alpha1.TelemetryRequest{
 				SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
 					ServerAddress: unitest.ToPointer("testAddr"),
-					DBType:        unitest.ToPointer(v1alpha1.DBTypeMysql),
+					DBType:        unitest.ToPointer(v1alpha1.DBTypeMySQL),
 					UserName:      unitest.ToPointer("test"),
 					Secret:        unitest.ToPointer("test"),
 					DBName:        unitest.ToPointer("test"),

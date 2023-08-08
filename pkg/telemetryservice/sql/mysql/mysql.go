@@ -49,8 +49,7 @@ func (db DBHelper) ConnectToDB(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	err = db.DB.Ping()
-	return err
+	return db.DB.Ping()
 }
 
 func (db DBHelper) InsertDataToDB(ctx context.Context, rawData []byte) error {

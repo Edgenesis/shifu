@@ -122,6 +122,6 @@ type DBType string
 
 const (
 	DBTypeTDengine  DBType = "TDengine"
-	DBTypeMysql     DBType = "Mysql"
+	DBTypeMySQL     DBType = "MySQL"
 	DBTypeSQLServer DBType = "SQLServer"
 )
