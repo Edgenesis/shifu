@@ -3,11 +3,13 @@ package mysql
 import (
 	"context"
 	"database/sql"
+	"testing"
+
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/template"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestConstructDBUri(t *testing.T) {
@@ -24,7 +26,7 @@ func TestConstructDBUri(t *testing.T) {
 				ServerAddress: unitest.ToPointer("testAddress"),
 				DBName:        unitest.ToPointer("testDB"),
 			},
-			output: "testUser:testPassword@http(testAddress)/testDB",
+			output: "testUser:testPassword@(testAddress)/testDB",
 		},
 	}
 	for _, tC := range testCases {
@@ -115,7 +117,7 @@ func TestConnectT0DB(t *testing.T) {
 			DBName:        unitest.ToPointer("testDB"),
 		},
 	}
-	expectErr := "dial http: unknown network http"
+	expectErr := "dial tcp: lookup testAddress: no such host"
 	err := db.ConnectToDB(context.TODO())
 	assert.Equal(t, expectErr, err.Error())
 }
@@ -124,11 +126,14 @@ func TestSendToMysql(t *testing.T) {
 	settings := &v1alpha1.SQLConnectionSetting{
 		UserName:      unitest.ToPointer("testUser"),
 		Secret:        unitest.ToPointer("testSecret"),
-		ServerAddress: unitest.ToPointer("1.2.3.4"),
+		ServerAddress: unitest.ToPointer("testAddress"),
 		DBName:        unitest.ToPointer("testDB"),
 		DBTable:       unitest.ToPointer("testTable"),
 	}
-	expectErr := "dial http: unknown network http"
-	err := SendToMysql(context.TODO(), []byte("test"), settings)
+	var dbDriver template.DBDriver
+
+	expectErr := "dial tcp: lookup testAddress: no such host"
+	dbDriver = &DBHelper{Settings: settings}
+	err := dbDriver.SendToDB(context.TODO(), []byte("test"))
 	assert.Equal(t, expectErr, err.Error())
 }

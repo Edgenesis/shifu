@@ -5,8 +5,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/template"
 	"time"
+
+	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/template"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
@@ -20,9 +21,7 @@ type DBHelper struct {
 
 var _ template.DBDriver = (*DBHelper)(nil)
 
-func SendToTDengine(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConnectionSetting) error {
-	db := &DBHelper{Settings: sqlcs}
-
+func (db *DBHelper) SendToDB(ctx context.Context, rawData []byte) error {
 	err := db.ConnectToDB(ctx)
 	if err != nil {
 		logger.Errorf("Error to Connect to tdengine, error %v", err.Error())

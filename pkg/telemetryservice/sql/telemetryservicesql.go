@@ -4,12 +4,14 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/mysql"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/sqlserver"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/template"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
-	"io"
-	"net/http"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
@@ -36,19 +38,27 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 
 	injectSecret(request.SQLConnectionSetting)
 
+	var dbDriver template.DBDriver
+
 	switch *request.SQLConnectionSetting.DBType {
 	case v1alpha1.DBTypeTDengine:
-		err = tdengine.SendToTDengine(context.TODO(), request.RawData, request.SQLConnectionSetting)
+		dbDriver = &tdengine.DBHelper{Settings: request.SQLConnectionSetting}
 	case v1alpha1.DBTypeMySQL:
-		err = mysql.SendToMysql(context.TODO(), request.RawData, request.SQLConnectionSetting)
+		dbDriver = &mysql.DBHelper{Settings: request.SQLConnectionSetting}
 	case v1alpha1.DBTypeSQLServer:
-		err = sqlserver.SendToSQLServer(context.TODO(), request.RawData, request.SQLConnectionSetting)
+		dbDriver = &sqlserver.DBHelper{Settings: request.SQLConnectionSetting}
 	default:
 		err = fmt.Errorf("UnSupport DB Type")
 	}
-
 	if err != nil {
-		logger.Errorf("Error to Send to SQL Server, error: %s", err.Error())
+		logger.Errorf("Error to Send to %s, error: %s", *request.SQLConnectionSetting.DBType, err.Error())
+		http.Error(w, "Error to send to server", http.StatusBadRequest)
+		return
+	}
+
+	err = dbDriver.SendToDB(context.TODO(), request.RawData)
+	if err != nil {
+		logger.Errorf("Error to Send to %s, error: %s", *request.SQLConnectionSetting.DBType, err.Error())
 		http.Error(w, "Error to send to server", http.StatusBadRequest)
 	}
 }

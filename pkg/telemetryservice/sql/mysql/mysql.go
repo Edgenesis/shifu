@@ -5,11 +5,12 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"time"
+
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/template"
 	_ "github.com/go-sql-driver/mysql"
-	"time"
 )
 
 type DBHelper struct {
@@ -19,9 +20,7 @@ type DBHelper struct {
 
 var _ template.DBDriver = (*DBHelper)(nil)
 
-func SendToMysql(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConnectionSetting) error {
-	db := &DBHelper{Settings: sqlcs}
-
+func (db *DBHelper) SendToDB(ctx context.Context, rawData []byte) error {
 	err := db.ConnectToDB(ctx)
 	if err != nil {
 		logger.Errorf("Error to Connect to mysql, error %v", err.Error())
@@ -38,10 +37,10 @@ func SendToMysql(ctx context.Context, rawData []byte, sqlcs *v1alpha1.SQLConnect
 }
 
 func constructDBUri(sqlcs *v1alpha1.SQLConnectionSetting) string {
-	return fmt.Sprintf("%s:%s@http(%s)/%s", *sqlcs.UserName, *sqlcs.Secret, *sqlcs.ServerAddress, *sqlcs.DBName)
+	return fmt.Sprintf("%s:%s@(%s)/%s", *sqlcs.UserName, *sqlcs.Secret, *sqlcs.ServerAddress, *sqlcs.DBName)
 }
 
-func (db DBHelper) ConnectToDB(ctx context.Context) error {
+func (db *DBHelper) ConnectToDB(ctx context.Context) error {
 	var err error
 	mysqlUri := constructDBUri(db.Settings)
 	db.DB, err = sql.Open("mysql", mysqlUri)
@@ -52,8 +51,9 @@ func (db DBHelper) ConnectToDB(ctx context.Context) error {
 	return db.DB.Ping()
 }
 
-func (db DBHelper) InsertDataToDB(ctx context.Context, rawData []byte) error {
-	result, err := db.DB.Exec(fmt.Sprintf("Insert Into %s Values('%s','%s')", *db.Settings.DBTable, time.Now().Format("2006-01-02 15:04:05"), string(rawData)))
+func (db *DBHelper) InsertDataToDB(ctx context.Context, rawData []byte) error {
+	sql := fmt.Sprintf("Insert Into %s Values('%s','%s')", *db.Settings.DBTable, time.Now().Format("2006-01-02 15:04:05"), string(rawData))
+	result, err := db.DB.Exec(sql)
 	if err != nil {
 		logger.Errorf("Error to Insert RawData to db, error: %v", err)
 		return err

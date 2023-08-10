@@ -8,6 +8,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/edgenesis/shifu/pkg/telemetryservice/sql/template"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -129,7 +130,10 @@ func TestSendToTDengine(t *testing.T) {
 		DBName:        unitest.ToPointer("testDB"),
 		DBTable:       unitest.ToPointer("testTable"),
 	}
+	var dbDriver template.DBDriver
+
 	expectErr := "invalid DSN: network address not terminated (missing closing brace)"
-	err := SendToTDengine(context.TODO(), []byte("test"), settings)
+	dbDriver = &DBHelper{Settings: settings}
+	err := dbDriver.SendToDB(context.TODO(), []byte("test"))
 	assert.Equal(t, expectErr, err.Error())
 }
