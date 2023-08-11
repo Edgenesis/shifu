@@ -18,7 +18,7 @@ The predefined schema looks like:
 CREATE TABLE ${DbTableName}
 (
     TelemetryID INT IDENTITY(1,1) PRIMARY KEY,
-    DeviceName INT,
+    DeviceName VARCHAR,
     TelemetryData TEXT,
     TelemetryTimeStamp DATETIME
 );
