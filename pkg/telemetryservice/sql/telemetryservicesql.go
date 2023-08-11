@@ -56,7 +56,7 @@ func BindSQLServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	err = dbDriver.SendToDB(context.TODO(), request.RawData)
+	err = dbDriver.SendToDB(context.TODO(), *request.Spec.Sku, request.RawData)
 	if err != nil {
 		logger.Errorf("Error to Send to %s, error: %s", *request.SQLConnectionSetting.DBType, err.Error())
 		http.Error(w, "Error to send to server", http.StatusBadRequest)

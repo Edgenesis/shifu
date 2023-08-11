@@ -41,6 +41,7 @@ func TestInsertDataToDB(t *testing.T) {
 	testCases := []struct {
 		desc         string
 		expectSQL    string
+		deviceName   string
 		rawData      []byte
 		dbHelper     *DBHelper
 		expectResult sql.Result
@@ -48,9 +49,10 @@ func TestInsertDataToDB(t *testing.T) {
 		preCloseDB   bool
 	}{
 		{
-			desc:      "testCases 1 insert Successfully",
-			expectSQL: "Insert Into testTable",
-			rawData:   []byte("testData"),
+			desc:       "testCases 1 insert Successfully",
+			expectSQL:  "Insert Into testTable",
+			deviceName: "testDevice",
+			rawData:    []byte("testData"),
 			dbHelper: &DBHelper{
 				Settings: &v1alpha1.SQLConnectionSetting{
 					DBName:  unitest.ToPointer("testDB"),
@@ -60,8 +62,9 @@ func TestInsertDataToDB(t *testing.T) {
 			expectResult: sqlmock.NewResult(1, 1),
 		},
 		{
-			desc:    "testCases2 without DBName",
-			rawData: []byte("testData"),
+			desc:       "testCases2 without DBName",
+			deviceName: "testDevice",
+			rawData:    []byte("testData"),
 			dbHelper: &DBHelper{
 				Settings: &v1alpha1.SQLConnectionSetting{
 					DBName:  unitest.ToPointer("testDB"),
@@ -72,9 +75,10 @@ func TestInsertDataToDB(t *testing.T) {
 			expectErr:  "sql: database is closed",
 		},
 		{
-			desc:      "testCases 3 LastInsertId = 0",
-			expectSQL: "Insert Into testTable",
-			rawData:   []byte("testData"),
+			desc:       "testCases 3 LastInsertId = 0",
+			deviceName: "testDevice",
+			expectSQL:  "Insert Into testTable",
+			rawData:    []byte("testData"),
 			dbHelper: &DBHelper{
 				Settings: &v1alpha1.SQLConnectionSetting{
 					DBName:  unitest.ToPointer("testDB"),
@@ -97,7 +101,7 @@ func TestInsertDataToDB(t *testing.T) {
 
 			sm.ExpectExec(tC.expectSQL).WillReturnResult(tC.expectResult)
 			helper := DBHelper{DB: db, Settings: tC.dbHelper.Settings}
-			err = helper.InsertDataToDB(context.TODO(), tC.rawData)
+			err = helper.InsertDataToDB(context.TODO(), tC.deviceName, tC.rawData)
 			if tC.expectErr == "" {
 				assert.Nil(t, err)
 			} else {
@@ -134,6 +138,6 @@ func TestSendToSQLServer(t *testing.T) {
 
 	expectErr := "lookup testAddress: no such host"
 	dbDriver = &DBHelper{Settings: settings}
-	err := dbDriver.SendToDB(context.TODO(), []byte("test"))
+	err := dbDriver.SendToDB(context.TODO(), "testDevice", []byte("test"))
 	assert.Equal(t, expectErr, err.Error())
 }

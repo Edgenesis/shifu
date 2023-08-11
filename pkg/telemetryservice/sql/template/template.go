@@ -6,6 +6,6 @@ import (
 
 type DBDriver interface {
 	ConnectToDB(ctx context.Context) error
-	InsertDataToDB(ctx context.Context, rawData []byte) error
-	SendToDB(ctx context.Context, rawData []byte) error
+	InsertDataToDB(ctx context.Context, deviceName string, rawData []byte) error
+	SendToDB(ctx context.Context, deviceName string, rawData []byte) error
 }

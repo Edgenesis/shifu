@@ -21,14 +21,14 @@ type DBHelper struct {
 
 var _ template.DBDriver = (*DBHelper)(nil)
 
-func (db *DBHelper) SendToDB(ctx context.Context, rawData []byte) error {
+func (db *DBHelper) SendToDB(ctx context.Context, deviceName string, rawData []byte) error {
 	err := db.ConnectToDB(ctx)
 	if err != nil {
 		logger.Errorf("Error to Connect to tdengine, error %v", err.Error())
 		return err
 	}
 
-	err = db.InsertDataToDB(ctx, rawData)
+	err = db.InsertDataToDB(ctx, deviceName, rawData)
 	if err != nil {
 		logger.Errorf("Error to Insert rawData to DB, errror: %v", err.Error())
 		return err
@@ -45,7 +45,7 @@ func (db *DBHelper) ConnectToDB(ctx context.Context) error {
 	return err
 }
 
-func (db *DBHelper) InsertDataToDB(ctx context.Context, rawData []byte) error {
+func (db *DBHelper) InsertDataToDB(ctx context.Context, deviceName string, rawData []byte) error {
 	result, err := db.DB.Exec(fmt.Sprintf("Insert Into %s Values('%s','%s')", *db.Settings.DBTable, time.Now().Format("2006-01-02 15:04:05"), string(rawData)))
 	if err != nil {
 		logger.Errorf("Error to Insert RawData to db, error: %v", err)
