@@ -42,6 +42,9 @@ func sendToMQTT(w http.ResponseWriter, r *http.Request) {
 
 func sendToTDengine(w http.ResponseWriter, r *http.Request) {
 	req := &v1alpha1.TelemetryRequest{
+		Spec: &v1alpha1.EdgeDeviceSpec{
+			Sku: toPointer("testDevice"),
+		},
 		SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
 			ServerAddress: &targetSqlServer,
 			UserName:      toPointer("root"),
