@@ -117,11 +117,11 @@ func TestConnectT0DB(t *testing.T) {
 		Settings: &v1alpha1.SQLConnectionSetting{
 			UserName:      unitest.ToPointer("testUser"),
 			Secret:        unitest.ToPointer("testSecret"),
-			ServerAddress: unitest.ToPointer("testAddress"),
+			ServerAddress: unitest.ToPointer("localhost:1234"),
 			DBName:        unitest.ToPointer("testDB"),
 		},
 	}
-	expectErr := "dial tcp: lookup testAddress: no such host"
+	expectErr := "dial tcp [::1]:1234: connect: connection refused"
 	err := db.ConnectToDB(context.TODO())
 	assert.Equal(t, expectErr, err.Error())
 }
@@ -130,13 +130,13 @@ func TestSendToMysql(t *testing.T) {
 	settings := &v1alpha1.SQLConnectionSetting{
 		UserName:      unitest.ToPointer("testUser"),
 		Secret:        unitest.ToPointer("testSecret"),
-		ServerAddress: unitest.ToPointer("testAddress"),
+		ServerAddress: unitest.ToPointer("localhost:1234"),
 		DBName:        unitest.ToPointer("testDB"),
 		DBTable:       unitest.ToPointer("testTable"),
 	}
 	var dbDriver template.DBDriver
 
-	expectErr := "dial tcp: lookup testAddress: no such host"
+	expectErr := "dial tcp [::1]:1234: connect: connection refused"
 	dbDriver = &DBHelper{Settings: settings}
 	err := dbDriver.SendToDB(context.TODO(), "testDevice", []byte("test"))
 	assert.Equal(t, expectErr, err.Error())
