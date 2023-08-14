@@ -13,6 +13,13 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
+const (
+	TIMESTAMP_FORMAT = "2006-01-02 15:04:05"
+	MYSQL_URL_FORMAT = "%s:%s@(%s)/%s"
+	MYSQL_QUERY      = "Insert Into %s (DeviceName,TelemetryData,TelemetryTimeStamp) Values('%s','%s','%s')"
+	MYSQL            = "mysql"
+)
+
 type DBHelper struct {
 	DB       *sql.DB
 	Settings *v1alpha1.SQLConnectionSetting
@@ -38,13 +45,13 @@ func (db *DBHelper) SendToDB(ctx context.Context, deviceName string, rawData []b
 }
 
 func constructDBUri(sqlcs *v1alpha1.SQLConnectionSetting) string {
-	return fmt.Sprintf("%s:%s@(%s)/%s", *sqlcs.UserName, *sqlcs.Secret, *sqlcs.ServerAddress, *sqlcs.DBName)
+	return fmt.Sprintf(MYSQL_URL_FORMAT, *sqlcs.UserName, *sqlcs.Secret, *sqlcs.ServerAddress, *sqlcs.DBName)
 }
 
 func (db *DBHelper) ConnectToDB(ctx context.Context) error {
 	var err error
 	mysqlUri := constructDBUri(db.Settings)
-	db.DB, err = sql.Open("mysql", mysqlUri)
+	db.DB, err = sql.Open(MYSQL, mysqlUri)
 	logger.Infof("Try connect to mysql %v", *db.Settings.DBName)
 	if err != nil {
 		return err
@@ -52,8 +59,16 @@ func (db *DBHelper) ConnectToDB(ctx context.Context) error {
 	return db.DB.Ping()
 }
 
+// Database Table: ${DbTableName}
+// This table stores telemetry data from various devices.
+// Columns:
+// - TelemetryID: Auto-incrementing primary key for each telemetry entry.
+// - DeviceName: The name of the device sending the telemetry.
+// - TelemetryData: The raw telemetry data in string format.
+// - TelemetryTimeStamp: Timestamp indicating when the telemetry data was received.
+// The table is used to track telemetry information for analysis and monitoring.
 func (db *DBHelper) InsertDataToDB(ctx context.Context, deviceName string, rawData []byte) error {
-	result, err := db.DB.Exec(fmt.Sprintf("Insert Into %s (DeviceName,TelemetryData,TelemetryTimeStamp) Values('%s','%s','%s')", *db.Settings.DBTable, deviceName, string(rawData), time.Now().Format("2006-01-02 15:04:05")))
+	result, err := db.DB.Exec(fmt.Sprintf(MYSQL_QUERY, *db.Settings.DBTable, deviceName, string(rawData), time.Now().Format(TIMESTAMP_FORMAT)))
 	if err != nil {
 		logger.Errorf("Error to Insert RawData to db, error: %v", err)
 		return err
