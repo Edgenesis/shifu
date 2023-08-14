@@ -59,13 +59,15 @@ func (db *DBHelper) ConnectToDB(ctx context.Context) error {
 	return db.DB.Ping()
 }
 
-// Database Table: ${DbTableName}
 // This table stores telemetry data from various devices.
-// Columns:
-// - TelemetryID: Auto-incrementing primary key for each telemetry entry.
-// - DeviceName: The name of the device sending the telemetry.
-// - TelemetryData: The raw telemetry data in string format.
-// - TelemetryTimeStamp: Timestamp indicating when the telemetry data was received.
+// CREATE TABLE ${DbTableName} (
+//
+//	    TelemetryID INT AUTO_INCREMENT PRIMARY KEY,
+//	    DeviceName VARCHAR(255),
+//	    TelemetryData TEXT,
+//	    TelemetryTimeStamp TIMESTAMP
+//	)
+//
 // The table is used to track telemetry information for analysis and monitoring.
 func (db *DBHelper) InsertDataToDB(ctx context.Context, deviceName string, rawData []byte) error {
 	result, err := db.DB.Exec(fmt.Sprintf(MYSQL_QUERY, *db.Settings.DBTable, deviceName, string(rawData), time.Now().Format(TIMESTAMP_FORMAT)))
