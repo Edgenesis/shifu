@@ -70,6 +70,7 @@ type TelemetryServiceSpec struct {
 type Type string
 
 type TelemetryRequest struct {
+	Spec                 *EdgeDeviceSpec       `json:"spec,omitempty"`
 	RawData              []byte                `json:"rawData,omitempty"`
 	MQTTSetting          *MQTTSetting          `json:"mqttSetting,omitempty"`
 	SQLConnectionSetting *SQLConnectionSetting `json:"sqlConnectionSetting,omitempty"`
@@ -121,5 +122,7 @@ type SQLConnectionSetting struct {
 type DBType string
 
 const (
-	DBTypeTDengine DBType = "TDengine"
+	DBTypeTDengine  DBType = "TDengine"
+	DBTypeMySQL     DBType = "MySQL"
+	DBTypeSQLServer DBType = "SQLServer"
 )

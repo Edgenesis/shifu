@@ -39,9 +39,48 @@ func TestBindSQLServiceHandler(t *testing.T) {
 			desc:       "testCase3 db Type TDengine",
 			expectResp: "Error to send to server\n",
 			requestBody: &v1alpha1.TelemetryRequest{
+				Spec: &v1alpha1.EdgeDeviceSpec{
+					Sku: unitest.ToPointer("testDevice"),
+				},
 				SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
 					ServerAddress: unitest.ToPointer("testAddr"),
 					DBType:        unitest.ToPointer(v1alpha1.DBTypeTDengine),
+					UserName:      unitest.ToPointer("test"),
+					Secret:        unitest.ToPointer("test"),
+					DBName:        unitest.ToPointer("test"),
+					DBTable:       unitest.ToPointer("test"),
+				},
+				RawData: []byte("test"),
+			},
+		},
+		{
+			desc:       "testCase4 db Type Mysql",
+			expectResp: "Error to send to server\n",
+			requestBody: &v1alpha1.TelemetryRequest{
+				Spec: &v1alpha1.EdgeDeviceSpec{
+					Sku: unitest.ToPointer("testDevice"),
+				},
+				SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
+					ServerAddress: unitest.ToPointer("testAddr"),
+					DBType:        unitest.ToPointer(v1alpha1.DBTypeMySQL),
+					UserName:      unitest.ToPointer("test"),
+					Secret:        unitest.ToPointer("test"),
+					DBName:        unitest.ToPointer("test"),
+					DBTable:       unitest.ToPointer("test"),
+				},
+				RawData: []byte("test"),
+			},
+		},
+		{
+			desc:       "testCase5 db Type SQL Server",
+			expectResp: "Error to send to server\n",
+			requestBody: &v1alpha1.TelemetryRequest{
+				Spec: &v1alpha1.EdgeDeviceSpec{
+					Sku: unitest.ToPointer("testDevice"),
+				},
+				SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
+					ServerAddress: unitest.ToPointer("testAddr"),
+					DBType:        unitest.ToPointer(v1alpha1.DBTypeSQLServer),
 					UserName:      unitest.ToPointer("test"),
 					Secret:        unitest.ToPointer("test"),
 					DBName:        unitest.ToPointer("test"),
