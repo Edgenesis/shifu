@@ -356,6 +356,8 @@ stages:
           docker run -itd --network host -e TARGET_SERVER_ADDRESS=:17772 \
             -e TARGET_MQTT_SERVER_ADDRESS=localhost:1883 \
             -e TARGET_SQL_SERVER_ADDRESS=localhost:6041 \
+            -e TARGET_MYSQL_SERVER_ADDRESS=localhost:3306 \
+            -e TARGET_SQLSERVER_SERVER_ADDRESS=localhost:1433 \
             --name mockclient edgehub/mockclient:$(tag)
         displayName: build mockClient
       - script: |
@@ -380,6 +382,21 @@ stages:
             tdengine/tdengine:3.0.1.4
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/tdengine/checkoutput.sh
         displayName: docker run tdengine and checkoutput
+      - script: |
+          set -e
+          docker run -itd --network host --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+            -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/mysql/init.sql:/root/init.sql \
+            mysql:8.1.0
+          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mysql/checkoutput.sh
+        displayName: docker run mysql and checkoutput
+      - script: |
+          set -e
+          docker run -itd --network host --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=SomethingComplicated \
+            -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/init.sql:/root/init.sql \
+            mcr.microsoft.com/mssql/server:2022-latest
+          bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
+        displayName: docker run sqlserver and checkoutput
+
 
 - stage: docker_build_muiltiarch_and_push
   condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not(startsWith(variables['Build.SourceBranchName'],'release')))
