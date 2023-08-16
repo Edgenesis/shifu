@@ -384,9 +384,8 @@ stages:
         displayName: docker run tdengine and checkoutput
       - script: |
           set -e
-          docker run -itd --network host --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
-            -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/mysql/init.sql:/root/init.sql \
-            mysql:8.1.0
+          docker run -itd --network host --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=yes mysql:8.1.0
+          docker wait mysql
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mysql/checkoutput.sh
         displayName: docker run mysql and checkoutput
       - script: |
