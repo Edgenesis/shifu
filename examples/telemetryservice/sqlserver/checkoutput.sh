@@ -1,7 +1,7 @@
 #!bin/bash
 SQLServerOutput=2
-sleep 3
-for i in {1..30}
+sleep 5
+for i in {1..50}
 do
     output=$(docker exec sqlserver /opt/mssql-tools/bin/sqlcmd  \
     -S localhost -U sa -P Some_Strong_Password \
@@ -10,7 +10,7 @@ do
     if [[ $output -eq 0 ]]
     then
         break
-    elif [[ $i -eq 30 ]]
+    elif [[ $i -eq 50 ]]
     then
         exit 1
     fi
