@@ -89,7 +89,7 @@ func sendToSQLServer(w http.ResponseWriter, r *http.Request) {
 		SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
 			ServerAddress: &targetMSSQLServer,
 			UserName:      toPointer("sa"),
-			Secret:        toPointer("SomethingComplicated"),
+			Secret:        toPointer("Some_Strong_Password"),
 			DBName:        toPointer("shifu"),
 			DBTable:       toPointer("testTable"),
 			DBType:        toPointer(v1alpha1.DBTypeSQLServer),

@@ -1,6 +1,6 @@
 #!/bin/bash
 MySQLOutput=2
-sleep 2
+sleep 3
 for i in {1..50}
 do
     output=$(docker exec mysql mysql -u root -e "Show databases;" 2>&1 | grep 'ERROR' | wc -l)
@@ -16,14 +16,11 @@ do
 done
 
 # init MySQL Table
-
 docker exec mysql mysql -u root \
     -e "Create database shifu;
         Use shifu;
         CREATE TABLE testTable ( TelemetryID INT AUTO_INCREMENT PRIMARY KEY, DeviceName VARCHAR(255), TelemetryData TEXT, TelemetryTimeStamp DATETIME );
         Select * From testTable;" 
-
-
 
 for i in {1..30}
 do
