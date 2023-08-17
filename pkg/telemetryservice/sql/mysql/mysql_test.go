@@ -1,4 +1,4 @@
-package tdengine
+package mysql
 
 import (
 	"context"
@@ -12,26 +12,26 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestConstructTDengineUri(t *testing.T) {
+func TestConstructDBUri(t *testing.T) {
 	testCases := []struct {
 		desc   string
 		Input  v1alpha1.SQLConnectionSetting
 		output string
 	}{
 		{
-			desc: "test",
+			desc: "mysql test",
 			Input: v1alpha1.SQLConnectionSetting{
 				UserName:      unitest.ToPointer("testUser"),
 				Secret:        unitest.ToPointer("testPassword"),
 				ServerAddress: unitest.ToPointer("testAddress"),
 				DBName:        unitest.ToPointer("testDB"),
 			},
-			output: "testUser:testPassword@http(testAddress)/testDB",
+			output: "testUser:testPassword@(testAddress)/testDB",
 		},
 	}
 	for _, tC := range testCases {
 		t.Run(tC.desc, func(t *testing.T) {
-			result := constructTDengineUri(&tC.Input)
+			result := constructDBUri(&tC.Input)
 			assert.Equal(t, tC.output, result)
 		})
 	}
@@ -41,8 +41,8 @@ func TestInsertDataToDB(t *testing.T) {
 	testCases := []struct {
 		desc         string
 		expectSQL    string
-		rawData      []byte
 		deviceName   string
+		rawData      []byte
 		dbHelper     *DBHelper
 		expectResult sql.Result
 		expectErr    string
@@ -63,8 +63,8 @@ func TestInsertDataToDB(t *testing.T) {
 		},
 		{
 			desc:       "testCases2 without DBName",
-			rawData:    []byte("testData"),
 			deviceName: "testDevice",
+			rawData:    []byte("testData"),
 			dbHelper: &DBHelper{
 				Settings: &v1alpha1.SQLConnectionSetting{
 					DBName:  unitest.ToPointer("testDB"),
@@ -112,31 +112,31 @@ func TestInsertDataToDB(t *testing.T) {
 	}
 }
 
-// just for cover the code
-func TestConnectTdengine(t *testing.T) {
+func TestConnectT0DB(t *testing.T) {
 	db := &DBHelper{
 		Settings: &v1alpha1.SQLConnectionSetting{
 			UserName:      unitest.ToPointer("testUser"),
 			Secret:        unitest.ToPointer("testSecret"),
-			ServerAddress: unitest.ToPointer("testAddress"),
+			ServerAddress: unitest.ToPointer("127.0.0.1:1234"),
 			DBName:        unitest.ToPointer("testDB"),
 		},
 	}
+	expectErr := "dial tcp 127.0.0.1:1234: connect: connection refused"
 	err := db.ConnectToDB(context.TODO())
-	assert.Nil(t, err)
+	assert.Equal(t, expectErr, err.Error())
 }
 
-func TestSendToTDengine(t *testing.T) {
+func TestSendToMysql(t *testing.T) {
 	settings := &v1alpha1.SQLConnectionSetting{
 		UserName:      unitest.ToPointer("testUser"),
 		Secret:        unitest.ToPointer("testSecret"),
-		ServerAddress: unitest.ToPointer("1.2.3.4"),
+		ServerAddress: unitest.ToPointer("127.0.0.1:1234"),
 		DBName:        unitest.ToPointer("testDB"),
 		DBTable:       unitest.ToPointer("testTable"),
 	}
 	var dbDriver template.DBDriver
 
-	expectErr := "invalid DSN: network address not terminated (missing closing brace)"
+	expectErr := "dial tcp 127.0.0.1:1234: connect: connection refused"
 	dbDriver = &DBHelper{Settings: settings}
 	err := dbDriver.SendToDB(context.TODO(), "testDevice", []byte("test"))
 	assert.Equal(t, expectErr, err.Error())
