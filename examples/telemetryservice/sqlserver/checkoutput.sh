@@ -21,9 +21,6 @@ docker exec sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P Some_Str
     -Q "Create database shifu;"
 
 docker exec sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P Some_Strong_Password \
-    -Q "Use shifu;"
-
-docker exec sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P Some_Strong_Password \
     -d shifu -Q "CREATE TABLE testTable ( TelemetryID INT IDENTITY(1,1) PRIMARY KEY, DeviceName VARCHAR(255), TelemetryData TEXT, TelemetryTimeStamp DATETIME );"
 
 docker exec sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P Some_Strong_Password \
@@ -31,7 +28,7 @@ docker exec sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U SA -P Some_Str
 
 for i in {1..30}
 do
-    docker exec nginx curl localhost:9090/sql/sqlserver
+    docker exec nginx curl localhost:9090/sqlserver
     output=$(docker exec sqlserver /opt/mssql-tools/bin/sqlcmd  \
     -S localhost -U sa -P Some_Strong_Password \
     -Q "SELECT TOP 10 TelemetryData FROM shifu.dbo.testTable WHERE CAST(TelemetryData AS VARCHAR(MAX)) = 'testData'" | grep 'testData' | wc -l)

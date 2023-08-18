@@ -24,7 +24,7 @@ docker exec mysql mysql -u root \
 
 for i in {1..30}
 do
-    docker exec nginx curl 127.0.0.1:9090/sql/mysql
+    docker exec nginx curl 127.0.0.1:9090/mysql
     output=$(docker exec mysql mysql -u root -e "Use shifu;Select TelemetryData from testTable where TelemetryData='testData' limit 10;" | grep 'testData' | wc -l)
     echo $output
     if [[ $output -ge $MySQLOutput ]]

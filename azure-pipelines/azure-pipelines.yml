@@ -355,7 +355,7 @@ stages:
             -t edgehub/mockclient:$(tag) --load
           docker run -itd --network host -e TARGET_SERVER_ADDRESS=:17772 \
             -e TARGET_MQTT_SERVER_ADDRESS=localhost:1883 \
-            -e TARGET_SQL_SERVER_ADDRESS=localhost:6041 \
+            -e TARGET_TDENGINE_SERVER_ADDRESS=localhost:6041 \
             -e TARGET_MYSQL_SERVER_ADDRESS=localhost:3306 \
             -e TARGET_SQLSERVER_SERVER_ADDRESS=localhost:1433 \
             --name mockclient edgehub/mockclient:$(tag)

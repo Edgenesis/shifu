@@ -13,19 +13,19 @@ import (
 )
 
 var (
-	targetServer      = "http://" + os.Getenv("TARGET_SERVER_ADDRESS")
-	targetMqttServer  = os.Getenv("TARGET_MQTT_SERVER_ADDRESS")
-	targetSqlServer   = os.Getenv("TARGET_SQL_SERVER_ADDRESS")
-	targetMySQLServer = os.Getenv("TARGET_MYSQL_SERVER_ADDRESS")
-	targetMSSQLServer = os.Getenv("TARGET_SQLSERVER_SERVER_ADDRESS")
+	targetServer         = "http://" + os.Getenv("TARGET_SERVER_ADDRESS")
+	targetMqttServer     = os.Getenv("TARGET_MQTT_SERVER_ADDRESS")
+	targetTDengineServer = os.Getenv("TARGET_TDENGINE_SERVER_ADDRESS")
+	targetMySQLServer    = os.Getenv("TARGET_MYSQL_SERVER_ADDRESS")
+	targetMSSQLServer    = os.Getenv("TARGET_SQLSERVER_SERVER_ADDRESS")
 )
 
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/mqtt", sendToMQTT)
-	mux.HandleFunc("/sql", sendToTDengine)
-	mux.HandleFunc("/sql/mysql", sendToMySQL)
-	mux.HandleFunc("/sql/sqlserver", sendToSQLServer)
+	mux.HandleFunc("/tdengine", sendToTDengine)
+	mux.HandleFunc("/mysql", sendToMySQL)
+	mux.HandleFunc("/sqlserver", sendToSQLServer)
 
 	http.ListenAndServe(":9090", mux)
 
@@ -51,7 +51,7 @@ func sendToTDengine(w http.ResponseWriter, r *http.Request) {
 			Sku: toPointer("testDevice"),
 		},
 		SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
-			ServerAddress: &targetSqlServer,
+			ServerAddress: &targetTDengineServer,
 			UserName:      toPointer("root"),
 			Secret:        toPointer("taosdata"),
 			DBName:        toPointer("shifu"),
