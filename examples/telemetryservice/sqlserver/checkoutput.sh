@@ -1,6 +1,6 @@
 #!bin/bash
 SQLServerOutput=2
-sleep 5
+sleep 3
 for i in {1..50}
 do
     output=$(docker exec sqlserver /opt/mssql-tools/bin/sqlcmd  \

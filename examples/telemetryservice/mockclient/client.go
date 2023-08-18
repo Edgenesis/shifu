@@ -23,7 +23,7 @@ var (
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/mqtt", sendToMQTT)
-	mux.HandleFunc("/sql/tdengine", sendToTDengine)
+	mux.HandleFunc("/sql", sendToTDengine)
 	mux.HandleFunc("/sql/mysql", sendToMySQL)
 	mux.HandleFunc("/sql/sqlserver", sendToSQLServer)
 
