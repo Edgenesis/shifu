@@ -6,10 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	v1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/rest"
 	"net/http"
 	"time"
+
+	v1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/rest"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -22,7 +23,7 @@ const (
 	SecretResource      = "secrets"
 )
 
-func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message *http.Response) error {
+func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, spec *v1alpha1.EdgeDeviceSpec, message *http.Response) error {
 	if tss.ServiceSettings == nil {
 		return fmt.Errorf("empty telemetryServiceSpec")
 	}
@@ -47,6 +48,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, message 
 
 	if tss.ServiceSettings.SQLSetting != nil {
 		request := &v1alpha1.TelemetryRequest{
+			Spec:                 spec,
 			SQLConnectionSetting: tss.ServiceSettings.SQLSetting,
 		}
 		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURISQL

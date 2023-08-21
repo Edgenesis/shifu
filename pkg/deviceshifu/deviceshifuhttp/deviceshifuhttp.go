@@ -483,7 +483,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 						telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
 						if exist && *telemetryCollectionService.TelemetrySeriveEndpoint != "" {
 							resp.Header.Add(DeviceNameHeaderField, deviceName)
-							err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, resp)
+							err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
 							if err != nil {
 								return false, err
 							}
