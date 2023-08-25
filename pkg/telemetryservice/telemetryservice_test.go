@@ -1,3 +1,6 @@
+// Package tdengine contains tests for the TDengine database interactions.
+// IMPORTANT: Do not run these tests with the -race flag due to a known issue.
+// For more details, see the GitHub issue: https://github.com/taosdata/driver-go/issues/185
 package telemetryservice
 
 import (
