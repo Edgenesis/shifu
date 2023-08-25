@@ -23,7 +23,7 @@ jobs:
       - name: Codecov
         uses: codecov/codecov-action@v3.1.0
         with:
-          files: ./coverage.out
+          files: ./coverage.out,./coverage_tdengine.out
           name: codecov-shifu
           fail_ci_if_error: true
           verbose: true
