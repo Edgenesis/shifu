@@ -130,6 +130,10 @@ spec:
               sku:
                 description: Sku specifies the EdgeDevice's SKU.
                 type: string
+              state:
+                type: string
+            required:
+            - state
             type: object
           status:
             description: EdgeDeviceStatus defines the observed state of EdgeDevice
