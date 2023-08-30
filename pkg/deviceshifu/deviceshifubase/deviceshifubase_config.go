@@ -24,6 +24,7 @@ type DeviceShifuConfig struct {
 	Telemetries              *DeviceShifuTelemetries
 	CustomInstructionsPython map[string]string `yaml:"customInstructionsPython"`
 	ControlMsgs              map[string]string `yaml:"controlMsgs,omitempty"`
+	FSM                      *DeviceShifuFSM   `yaml:"fsm,omitempty"`
 }
 
 // DeviceShifuDriverProperties properties of deviceshifuDriver
@@ -98,6 +99,20 @@ type EdgeDeviceConfig struct {
 	KubeconfigPath string
 }
 
+type DeviceShifuFSM struct {
+	States        map[string]*DeviceShifuState `yaml:"states"`
+	StartingState *string                      `yaml:"startingState"`
+}
+
+type DeviceShifuState struct {
+	Actions map[string]*DeviceShifuAction `yaml:"actions"`
+	Forbid  []string                      `yaml:"forbid"`
+}
+
+type DeviceShifuAction struct {
+	NextState string `yaml:"next_state"`
+}
+
 // default value
 const (
 	DeviceInstructionInitialDelay            int64 = 3000
@@ -160,6 +175,14 @@ func NewDeviceShifuConfig(path string) (*DeviceShifuConfig, error) {
 		err = yaml.Unmarshal([]byte(controlMsgs), &dsc.ControlMsgs)
 		if err != nil {
 			logger.Errorf("Error parsing %v from ConfigMap, error: %v", ControlMsgsConfigStr, err)
+			return nil, err
+		}
+	}
+
+	if fsm, ok := cfg[FSMStr]; ok {
+		err = yaml.Unmarshal([]byte(fsm), &dsc.FSM)
+		if err != nil {
+			logger.Errorf("Error parsing %v from ConfigMap, error: %v", FSMStr, err)
 			return nil, err
 		}
 	}
