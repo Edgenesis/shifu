@@ -1,4 +1,5 @@
 # Changelog since [v0.25.0](https://github.com/Edgenesis/shifu/releases/tag/v0.25.0)
+
 ## New Features 🎉
 * Added design for telemetry service sql by @BtXin in https://github.com/Edgenesis/shifu/pull/669
 * Add telemetry server sql pipeline test by @Yunxe in https://github.com/Edgenesis/shifu/pull/678
