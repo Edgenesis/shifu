@@ -126,8 +126,6 @@ spec:
                 type: string
               state:
                 type: string
-            required:
-            - state
             type: object
           status:
             description: EdgeDeviceStatus defines the observed state of EdgeDevice

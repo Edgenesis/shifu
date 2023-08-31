@@ -102,7 +102,7 @@ type EdgeDeviceSpec struct {
 	ProtocolSettings *ProtocolSettings  `json:"protocolSettings,omitempty"`
 	CustomMetadata   *map[string]string `json:"customMetadata,omitempty"`
 
-	State *string `json:"state"`
+	State *string `json:"state,omitempty"`
 	// TODO: add other fields like disconnectTimemoutInSeconds
 }
 
