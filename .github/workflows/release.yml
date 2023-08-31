@@ -1,0 +1,28 @@
+name: Generate Release Log
+
+on:
+  push:
+    branches:
+      - generate-release-log
+
+jobs:
+  generate_release_log:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Generate Release Log
+        id: generate_log
+        run: |
+          # Use appropriate command/script to generate the release log
+          # For example, you might use a shell script or a tool like Git log
+          git log --pretty=format:"- %s" > release_log.md
+          echo "::set-output name=log::$(cat release_log.md)"
+
+      - name: Save Release Log as Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: release-log
+          path: release_log.md
