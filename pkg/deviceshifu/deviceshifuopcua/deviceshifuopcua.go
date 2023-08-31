@@ -3,10 +3,12 @@ package deviceshifuopcua
 import (
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"path"
+	"reflect"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
@@ -36,6 +38,8 @@ type HandlerMetaData struct {
 const (
 	DeviceConfigmapCertificatePath string = "/etc/edgedevice/certificate"
 	DeviceSecretPasswordPath       string = "/etc/edgedevice/secret/password"
+
+	DefaultOPCUARequestMaxAge = 2000
 )
 
 // New This function creates a new Device Shifu based on the configuration
@@ -68,6 +72,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			}
 
 			for instruction, properties := range opcuaInstructions.Instructions {
+				if properties.OPCUAInstructionProperty == nil {
+					return nil, fmt.Errorf("instruction: %s's instructionProperties is nil", instruction)
+				}
 				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
@@ -176,57 +183,161 @@ type DeviceCommandHandlerOPCUA struct {
 
 func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		nodeID := handler.HandlerMetaData.properties.OPCUANodeID
-		logger.Infof("Requesting NodeID: %v", nodeID)
-
-		id, err := ua.ParseNodeID(nodeID)
-		if err != nil {
-			logger.Fatalf("invalid node id: %v", err)
+		switch r.Method {
+		case http.MethodGet:
+			handler.read(w, r)
+		case http.MethodPost:
+			handler.write(w, r)
+		default:
+			http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 		}
-
-		req := &ua.ReadRequest{
-			MaxAge: 2000,
-			NodesToRead: []*ua.ReadValueID{
-				{NodeID: id},
-			},
-			TimestampsToReturn: ua.TimestampsToReturnBoth,
-		}
-
-		ctx := context.Background()
-		ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
-		defer cancel()
-
-		resp, err := handler.client.ReadWithContext(ctx, req)
-		handlerInstruction := handler.HandlerMetaData.instruction
-
-		if err != nil {
-			http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
-			logger.Errorf("Read failed: %s", err)
-			return
-		}
-
-		if resp.Results[0].Status != ua.StatusOK {
-			http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(resp.Results[0].Status), http.StatusBadRequest)
-			logger.Errorf("Status not OK: %v", resp.Results[0].Status)
-			return
-		}
-
-		logger.Infof("%#v", resp.Results[0].Value.Value())
-
-		w.WriteHeader(http.StatusOK)
-		// TODO: Should handle different type of return values and return JSON/other data
-		// types instead of plain text
-		rawRespBody := resp.Results[0].Value.Value()
-		rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
-		respString := rawRespBodyString
-		instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
-		logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
-		if shouldUsePythonCustomProcessing {
-			logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-			respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
-		}
-		fmt.Fprintf(w, "%v", respString)
 	}
+}
+
+func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Request) {
+	nodeID := handler.HandlerMetaData.properties.OPCUANodeID
+	logger.Infof("Writing to NodeID: %v", nodeID)
+
+	id, err := ua.ParseNodeID(nodeID)
+	if err != nil {
+		logger.Errorf("Failed to parse NodeID, error: %v", err)
+		http.Error(w, "Failed to parse NodeID, error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	ctx := context.Background()
+	resp, err := handler.readByNodeId(ctx, id)
+	if err != nil {
+		http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
+		logger.Errorf("Read failed: %s", err)
+		return
+	}
+
+	if resp.Results[0].Status != ua.StatusOK {
+		http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(resp.Results[0].Status), http.StatusBadRequest)
+		logger.Errorf("Status not OK: %v", resp.Results[0].Status)
+		return
+	}
+
+	logger.Infof("%#v", resp.Results[0].Value.Value())
+
+	w.WriteHeader(http.StatusOK)
+	// TODO: Should handle different type of return values and return JSON/other data
+	// types instead of plain text
+	rawRespBody := resp.Results[0].Value.Value()
+	rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
+	respString := rawRespBodyString
+
+	handlerInstruction := handler.HandlerMetaData.instruction
+	instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+	logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+	if shouldUsePythonCustomProcessing {
+		logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+		respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
+	}
+	fmt.Fprintf(w, "%v", respString)
+}
+
+func (handler DeviceCommandHandlerOPCUA) readByNodeId(ctx context.Context, nodeId *ua.NodeID) (*ua.ReadResponse, error) {
+	req := &ua.ReadRequest{
+		MaxAge: DefaultOPCUARequestMaxAge,
+		NodesToRead: []*ua.ReadValueID{
+			{NodeID: nodeId},
+		},
+		TimestampsToReturn: ua.TimestampsToReturnBoth,
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
+	defer cancel()
+
+	return handler.client.ReadWithContext(ctx, req)
+}
+
+type WriteRequest struct {
+	Value interface{} `json:"value"`
+}
+
+func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Request) {
+	nodeID := handler.HandlerMetaData.properties.OPCUANodeID
+	logger.Infof("Requesting NodeID: %v", nodeID)
+
+	id, err := ua.ParseNodeID(nodeID)
+	if err != nil {
+		logger.Errorf("invalid node id: %v", err)
+		http.Error(w, "Failed to parse NodeID, error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	var request WriteRequest
+	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
+		logger.Errorf("invalid request: %v", err)
+		http.Error(w, "Failed to parse request, error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	logger.Infof("write data: %s", request.Value)
+
+	// get old value by nodeId
+	ctx := context.Background()
+	readResponse, err := handler.readByNodeId(ctx, id)
+	if err != nil {
+		http.Error(w, "Failed to read message from Server, error: "+err.Error(), http.StatusBadRequest)
+		logger.Errorf("Read failed: %s", err)
+		return
+	}
+
+	if readResponse.Results[0].Status != ua.StatusOK {
+		http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(readResponse.Results[0].Status), http.StatusBadRequest)
+		logger.Errorf("Status not OK: %v", readResponse.Results[0].Status)
+		return
+	}
+
+	// create new value by old value's type and new value's value
+	oldValue := readResponse.Results[0].Value.Value()
+	newValue := convertValueToRef(oldValue, request.Value)
+	if newValue == nil {
+		oldType := readResponse.Results[0].Value.Type().String()
+		http.Error(w, "wrong type of value, value's type should be "+oldType, http.StatusBadRequest)
+		logger.Errorf("Failed to create new value")
+		return
+	}
+
+	value, err := ua.NewVariant(newValue)
+	if err != nil {
+		logger.Errorf("invalid value: %v", err)
+		http.Error(w, "Failed to parse value, error: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	opcuaRequest := &ua.WriteRequest{
+		NodesToWrite: []*ua.WriteValue{
+			{
+				NodeID:      id,
+				AttributeID: ua.AttributeIDValue,
+				Value: &ua.DataValue{
+					EncodingMask: ua.DataValueValue,
+					Value:        value,
+				},
+			},
+		},
+	}
+
+	ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
+	defer cancel()
+
+	writeResponse, err := handler.client.WriteWithContext(ctx, opcuaRequest)
+	if err != nil {
+		http.Error(w, "Failed to write message to Server, error: "+err.Error(), http.StatusBadRequest)
+		logger.Errorf("Write failed: %s", err)
+		return
+	}
+
+	if writeResponse.Results[0] != ua.StatusOK {
+		http.Error(w, "OPC UA response status is not OK "+fmt.Sprint(writeResponse.Results[0]), http.StatusBadRequest)
+		logger.Errorf("Status not OK: %v", writeResponse.Results[0])
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string) (string, error) {
@@ -244,7 +355,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 	}
 
 	req := &ua.ReadRequest{
-		MaxAge: 2000,
+		MaxAge: DefaultOPCUARequestMaxAge,
 		NodesToRead: []*ua.ReadValueID{
 			{NodeID: id},
 		},
@@ -316,4 +427,43 @@ func (ds *DeviceShifu) Start(stopCh <-chan struct{}) error {
 // Stop http server
 func (ds *DeviceShifu) Stop() error {
 	return ds.base.Stop()
+}
+
+// convertValueToRef attempts to convert the given value to the type of the reference
+// and assigns the converted value to the reference.
+// The function returns the reference with the newly assigned value, or nil if conversion is not possible.
+func convertValueToRef(ref interface{}, value interface{}) interface{} {
+	// Check if the ref or value are nil.
+	// If either is nil, log a warning and return nil.
+	if ref == nil || value == nil {
+		logger.Warnf("ref(%v) or newValue(%v) is nil", ref, value)
+		return nil
+	}
+
+	// Copy the reference.
+	newValue := ref
+	// Create a reflect.Value for newValue. The Elem() function is used to get the actual value that the pointer points to.
+	refElem := reflect.ValueOf(&newValue).Elem()
+
+	// If the reference can't be set (it's unaddressable), return nil.
+	if !refElem.CanSet() {
+		return nil
+	}
+
+	// Get the reflect.Value of the new value.
+	valueOfNewValue := reflect.ValueOf(value)
+	// Get the type of the copied reference.
+	typeOfRefCopy := reflect.TypeOf(newValue)
+
+	// Check if the value can be converted to the type of the reference.
+	// If it can't, log a warning and return nil.
+	if !valueOfNewValue.CanConvert(typeOfRefCopy) {
+		logger.Warnf("failed to convert value %s to type %v", valueOfNewValue, typeOfRefCopy)
+		return nil
+	}
+
+	// Set the value of the reference to the converted value.
+	refElem.Set(valueOfNewValue.Convert(typeOfRefCopy))
+	// Return the reference with the newly assigned value.
+	return newValue
 }

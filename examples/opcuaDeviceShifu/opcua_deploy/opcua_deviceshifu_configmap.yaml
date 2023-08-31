@@ -6,12 +6,15 @@ metadata:
 data:
   driverProperties: |
     driverSku: Test OPC UA Server
-    driverImage: 
+    driverImage:
   instructions: |
     instructions:
       get_value:
         protocolPropertyList:
           OPCUANodeID: "ns=2;i=2"
+      writable:
+        protocolPropertyList:
+          OPCUANodeID: "ns=2;i=3"
       get_time:
         protocolPropertyList:
           OPCUANodeID: "i=2258"
@@ -27,4 +30,3 @@ data:
           instruction: get_server
           initialDelayMs: 1000
           intervalMs: 1000
-   

@@ -2,20 +2,21 @@ package deviceshifubase
 
 import (
 	"bytes"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
-	"github.com/stretchr/testify/assert"
 	"io"
-	v1 "k8s.io/api/apps/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/client-go/rest"
 	"net/http"
 	"net/http/httptest"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/stretchr/testify/assert"
+	v1 "k8s.io/api/apps/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 
 	utiltesting "k8s.io/client-go/util/testing"
 )
@@ -404,6 +405,7 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 
 	testCases := []struct {
 		name        string
+		eds         *v1alpha1.EdgeDeviceSpec
 		spec        *v1alpha1.TelemetryServiceSpec
 		message     *http.Response
 		expectedErr string
@@ -444,6 +446,9 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 			expectedErr: "",
 		}, {
 			name: "case3 SQL",
+			eds: &v1alpha1.EdgeDeviceSpec{
+				Sku: unitest.ToPointer("testDevice"),
+			},
 			spec: &v1alpha1.TelemetryServiceSpec{
 				ServiceSettings: &v1alpha1.ServiceSettings{
 					SQLSetting: &v1alpha1.SQLConnectionSetting{},
@@ -484,7 +489,7 @@ func TestPushTelemetryCollectionService(t *testing.T) {
 	}
 
 	for _, c := range testCases {
-		err := PushTelemetryCollectionService(c.spec, c.message)
+		err := PushTelemetryCollectionService(c.spec, c.eds, c.message)
 		if err != nil {
 			assert.Equal(t, err.Error(), c.expectedErr)
 		}

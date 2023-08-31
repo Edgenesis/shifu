@@ -13,15 +13,20 @@ import (
 )
 
 var (
-	targetServer     = "http://" + os.Getenv("TARGET_SERVER_ADDRESS")
-	targetMqttServer = os.Getenv("TARGET_MQTT_SERVER_ADDRESS")
-	targetSqlServer  = os.Getenv("TARGET_SQL_SERVER_ADDRESS")
+	targetServer         = "http://" + os.Getenv("TARGET_SERVER_ADDRESS")
+	targetMqttServer     = os.Getenv("TARGET_MQTT_SERVER_ADDRESS")
+	targetTDengineServer = os.Getenv("TARGET_TDENGINE_SERVER_ADDRESS")
+	targetMySQLServer    = os.Getenv("TARGET_MYSQL_SERVER_ADDRESS")
+	targetMSSQLServer    = os.Getenv("TARGET_SQLSERVER_SERVER_ADDRESS")
 )
 
 func main() {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/mqtt", sendToMQTT)
-	mux.HandleFunc("/sql", sendToTDengine)
+	mux.HandleFunc("/tdengine", sendToTDengine)
+	mux.HandleFunc("/mysql", sendToMySQL)
+	mux.HandleFunc("/sqlserver", sendToSQLServer)
+
 	http.ListenAndServe(":9090", mux)
 
 }
@@ -42,13 +47,52 @@ func sendToMQTT(w http.ResponseWriter, r *http.Request) {
 
 func sendToTDengine(w http.ResponseWriter, r *http.Request) {
 	req := &v1alpha1.TelemetryRequest{
+		Spec: &v1alpha1.EdgeDeviceSpec{
+			Sku: toPointer("testDevice"),
+		},
 		SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
-			ServerAddress: &targetSqlServer,
+			ServerAddress: &targetTDengineServer,
 			UserName:      toPointer("root"),
 			Secret:        toPointer("taosdata"),
 			DBName:        toPointer("shifu"),
 			DBTable:       toPointer("testsubtable"),
 			DBType:        toPointer(v1alpha1.DBTypeTDengine),
+		},
+		RawData: []byte("testData"),
+	}
+	sendRequest(req, "/sql")
+}
+
+func sendToMySQL(w http.ResponseWriter, r *http.Request) {
+	req := &v1alpha1.TelemetryRequest{
+		Spec: &v1alpha1.EdgeDeviceSpec{
+			Sku: toPointer("testDevice"),
+		},
+		SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
+			ServerAddress: &targetMySQLServer,
+			UserName:      toPointer("root"),
+			Secret:        toPointer(""),
+			DBName:        toPointer("shifu"),
+			DBTable:       toPointer("testTable"),
+			DBType:        toPointer(v1alpha1.DBTypeMySQL),
+		},
+		RawData: []byte("testData"),
+	}
+	sendRequest(req, "/sql")
+}
+
+func sendToSQLServer(w http.ResponseWriter, r *http.Request) {
+	req := &v1alpha1.TelemetryRequest{
+		Spec: &v1alpha1.EdgeDeviceSpec{
+			Sku: toPointer("testDevice"),
+		},
+		SQLConnectionSetting: &v1alpha1.SQLConnectionSetting{
+			ServerAddress: &targetMSSQLServer,
+			UserName:      toPointer("sa"),
+			Secret:        toPointer("Some_Strong_Password"),
+			DBName:        toPointer("shifu"),
+			DBTable:       toPointer("testTable"),
+			DBType:        toPointer(v1alpha1.DBTypeSQLServer),
 		},
 		RawData: []byte("testData"),
 	}
