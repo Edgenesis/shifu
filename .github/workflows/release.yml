@@ -1,28 +1,53 @@
-name: Generate Release Log
+name: Auto Generate Release Log
 
 on:
-  push:
-    branches:
-      - generate-release-log
+    workflow_dispatch:
+        inputs:
+            tag_name:
+              required: true
+              type: string
+            previous_tag_name:
+              required: true
+              type: string
+            target_commitish:
+              required: true
+              type: string
 
+permissions: 
+    contents: write    
+    pull-requests: write
+          
 jobs:
-  generate_release_log:
+  generate_changelog:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-
-      - name: Generate Release Log
-        id: generate_log
-        run: |
-          # Use appropriate command/script to generate the release log
-          # For example, you might use a shell script or a tool like Git log
-          git log --pretty=format:"- %s" > release_log.md
-          echo "::set-output name=log::$(cat release_log.md)"
-
-      - name: Save Release Log as Artifact
-        uses: actions/upload-artifact@v2
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v4
         with:
-          name: release-log
-          path: release_log.md
+            go-version: '1.20.2'
+      - name: set version
+        run: | 
+          echo "VERSION=$(echo "${{inputs.tag_name}}" | cut -d '-' -f1)" >> "$GITHUB_ENV"
+      - name: generate changelog
+        run: |
+            set -e
+            response=$(curl -L \
+            -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            https://api.github.com/repos/Yunxe/auto-release-demo/releases/generate-notes \
+            -d '{"tag_name":"${{inputs.tag_name}}","target_commitish":"${{inputs.target_commitish}}","previous_tag_name":"${{inputs.previous_tag_name}}"}')
+            echo $response
+            go run cmd/gpt/gpt.go "$response"
+        env:
+            AZURE_OPENAI_APIKEY: ${{ secrets.AZURE_OPENAI_APIKEY }}
+            AZURE_OPENAI_HOST: ${{ secrets.AZURE_OPENAI_HOST }}
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: add changelog for ${{env.VERSION}}
+          title: add changelog for ${{env.VERSION}}
+          body: add changelog for ${{env.VERSION}}
+          branch: changelog-${{env.VERSION}}
+          base: main
