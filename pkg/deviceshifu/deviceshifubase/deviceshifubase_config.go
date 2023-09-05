@@ -100,13 +100,13 @@ type EdgeDeviceConfig struct {
 }
 
 type DeviceShifuFSM struct {
-	States        map[string]*DeviceShifuState `yaml:"states"`
-	StartingState *string                      `yaml:"startingState"`
+	States        map[string]DeviceShifuState `yaml:"states"`
+	StartingState string                      `yaml:"startingState"`
 }
 
 type DeviceShifuState struct {
-	Actions map[string]*DeviceShifuAction `yaml:"actions"`
-	Forbid  []string                      `yaml:"forbid"`
+	Actions map[string]DeviceShifuAction `yaml:"actions"`
+	Forbid  []string                     `yaml:"forbid"`
 }
 
 type DeviceShifuAction struct {

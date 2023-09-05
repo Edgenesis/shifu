@@ -78,27 +78,27 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	}
 
 	var mockDeviceFSM = &DeviceShifuFSM{
-		States: map[string]*DeviceShifuState{
+		States: map[string]DeviceShifuState{
 			"red": {
-				Actions: map[string]*DeviceShifuAction{
+				Actions: map[string]DeviceShifuAction{
 					"go": {NextState: "green"},
 				},
 				Forbid: []string{"caution"},
 			},
 			"green": {
-				Actions: map[string]*DeviceShifuAction{
+				Actions: map[string]DeviceShifuAction{
 					"caution": {NextState: "yellow"},
 				},
 				Forbid: []string{"stop"},
 			},
 			"yellow": {
-				Actions: map[string]*DeviceShifuAction{
+				Actions: map[string]DeviceShifuAction{
 					"stop": {NextState: "red"},
 				},
 				Forbid: []string{"go"},
 			},
 		},
-		StartingState: unitest.ToPointer("red"),
+		StartingState: "red",
 	}
 
 	mockdsc, err := NewDeviceShifuConfig(MockDeviceConfigFolder)
