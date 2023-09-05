@@ -25,8 +25,7 @@ type Helper struct {
 }
 
 func Start(releaseNoteResp string) error {
-	var helper *Helper
-
+	helper := &Helper{}
 	client, err := newGPT()
 	if err != nil {
 		return err
