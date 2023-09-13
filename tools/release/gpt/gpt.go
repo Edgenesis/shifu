@@ -13,10 +13,11 @@ import (
 )
 
 var (
-	API_KEY = os.Getenv("AZURE_OPENAI_APIKEY")
-	HOST    = os.Getenv("AZURE_OPENAI_HOST")
-	VERSION = os.Getenv("VERSION")
-	GPT4    = "gpt-4"
+	API_KEY         = os.Getenv("AZURE_OPENAI_APIKEY")
+	HOST            = os.Getenv("AZURE_OPENAI_HOST")
+	VERSION         = os.Getenv("VERSION")
+	DEPLOYMENT_NAME = os.Getenv("DEPLOYMENT_NAME")
+	ENDPOINT        = "https://" + HOST + ".openai.azure.com"
 )
 
 type Helper struct {
@@ -49,7 +50,7 @@ func newGPT() (*azopenai.Client, error) {
 		return nil, fmt.Errorf("error new key credential %s", err.Error())
 	}
 
-	client, err := azopenai.NewClientWithKeyCredential("https://"+HOST+".openai.azure.com", ky, nil)
+	client, err := azopenai.NewClientWithKeyCredential(ENDPOINT, ky, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error new azure client %s", err.Error())
 	}
@@ -84,7 +85,7 @@ func (h *Helper) generateMessages(releaseNoteResp string) {
 func (h *Helper) generateChangelog() error {
 	resp, err := h.client.GetChatCompletions(context.Background(), azopenai.ChatCompletionsOptions{
 		Messages:    h.messages,
-		Deployment:  GPT4,
+		Deployment:  DEPLOYMENT_NAME,
 		Temperature: toPointer(float32(0)),
 	}, nil)
 	if err != nil {
