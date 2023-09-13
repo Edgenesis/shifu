@@ -43,6 +43,7 @@ jobs:
         env:
           AZURE_OPENAI_APIKEY: ${{ secrets.AZURE_OPENAI_APIKEY }}
           AZURE_OPENAI_HOST: ${{ secrets.AZURE_OPENAI_HOST }}
+          DEPLOYMENT_NAME: ${{secrets.DEPLOYMENT_NAME}}
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:
