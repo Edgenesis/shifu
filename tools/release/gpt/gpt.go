@@ -15,9 +15,8 @@ import (
 var (
 	API_KEY         = os.Getenv("AZURE_OPENAI_APIKEY")
 	HOST            = os.Getenv("AZURE_OPENAI_HOST")
-	VERSION         = os.Getenv("VERSION")
 	DEPLOYMENT_NAME = os.Getenv("DEPLOYMENT_NAME")
-	ENDPOINT        = "https://" + HOST + ".openai.azure.com"
+	VERSION         = os.Getenv("VERSION")
 )
 
 type Helper struct {
@@ -50,7 +49,7 @@ func newGPT() (*azopenai.Client, error) {
 		return nil, fmt.Errorf("error new key credential %s", err.Error())
 	}
 
-	client, err := azopenai.NewClientWithKeyCredential(ENDPOINT, ky, nil)
+	client, err := azopenai.NewClientWithKeyCredential(HOST, ky, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error new azure client %s", err.Error())
 	}
