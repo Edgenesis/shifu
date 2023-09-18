@@ -390,7 +390,7 @@ stages:
       - script: |
           set -e
           docker run -itd --network host --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=Some_Strong_Password \
-            mcr.microsoft.com/mssql/server:2022-latest
+            mcr.microsoft.com/mssql/server:2022-CU7-ubuntu-20.04
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
         displayName: docker run sqlserver and checkoutput
 

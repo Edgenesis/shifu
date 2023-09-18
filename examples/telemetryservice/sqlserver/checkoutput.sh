@@ -1,27 +1,18 @@
 #!bin/bash
 SQLServerOutput=2
 sleep 6
-MAX_RETRIES=5
-for retry in $(seq 1 $MAX_RETRIES); do
-    echo "Attempt $retry of $MAX_RETRIES"
-
-    for i in {1..50}; do
-        output=$(docker exec sqlserver /opt/mssql-tools/bin/sqlcmd \
-        -S localhost -U sa -P Some_Strong_Password \
-        -Q "select name from sys.databases" | grep 'Error' | wc -l)
-        echo "Output: $output"
-        
-        if [[ $output -eq 0 ]]; then
-            echo "Database connection successful"
-            break
-        elif [[ $i -eq 50 ]]; then
-            echo "connection failed, try again"
-            sleep 5
-        fi
-    done
-
-    if [[ $output -eq 0 ]]; then
+for i in {1..50}
+do
+    output=$(docker exec sqlserver /opt/mssql-tools/bin/sqlcmd  \
+    -S localhost -U sa -P Some_Strong_Password \
+    -Q "select name from sys.databases" | grep 'Error' | wc -l)
+    echo $output
+    if [[ $output -eq 0 ]]
+    then
         break
+    elif [[ $i -eq 50 ]]
+    then
+        exit 1
     fi
 done
 
