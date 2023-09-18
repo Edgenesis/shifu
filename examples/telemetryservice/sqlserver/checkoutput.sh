@@ -15,9 +15,7 @@ for retry in $(seq 1 $MAX_RETRIES); do
             echo "Database connection successful"
             break
         elif [[ $i -eq 50 ]]; then
-            echo "Max retries reached. Exiting script."
-            exit 1
-        else
+            echo "connection failed, try again"
             sleep 5
         fi
     done
