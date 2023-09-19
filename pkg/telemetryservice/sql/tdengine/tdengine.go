@@ -34,7 +34,7 @@ func (db *DBHelper) SendToDB(ctx context.Context, deviceName string, rawData []b
 		return err
 	}
 
-	return nil
+	return db.DB.Close()
 }
 
 func (db *DBHelper) ConnectToDB(ctx context.Context) error {
