@@ -384,13 +384,15 @@ stages:
         displayName: docker run tdengine and checkoutput
       - script: |
           set -e
-          docker run -itd --network host --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=yes mysql:8.1.0
+          docker run -itd --network host --name mysql -e MYSQL_ALLOW_EMPTY_PASSWORD=yes \
+            --health-cmd='mysqladmin ping -h localhost -uroot' --health-interval=5s --health-timeout=5s --health-retries=20 \
+            mysql:8.1.0
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mysql/checkoutput.sh
         displayName: docker run mysql and checkoutput
       - script: |
           set -e
           docker run -itd --network host --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=Some_Strong_Password \
-            --health-cmd="/opt/mssql-tools/bin/sqlcmd -U sa -P Some_Strong_Password -Q 'select name from sys.databases'" --health-interval=10s --health-timeout=5s --health-retries=5 \
+            --health-cmd="/opt/mssql-tools/bin/sqlcmd -U sa -P Some_Strong_Password -Q 'select name from sys.databases'" --health-interval=5s --health-timeout=5s --health-retries=20 \
             mcr.microsoft.com/mssql/server:2022-CU7-ubuntu-20.04	
           bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
         displayName: docker run sqlserver and checkoutput
