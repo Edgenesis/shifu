@@ -6,7 +6,7 @@ metadata:
 spec:
   sku: "HTTP Device"
   connection: Ethernet
-  address: 127.0.0.0:8080
+  address: 192.168.14.163:12345
   protocol: HTTP
 
 
