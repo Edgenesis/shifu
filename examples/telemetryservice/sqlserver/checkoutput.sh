@@ -1,20 +1,10 @@
 #!bin/bash
 SQLServerOutput=2
-sleep 6
-for i in {1..50}
-do
-    output=$(docker exec sqlserver /opt/mssql-tools/bin/sqlcmd  \
-    -S localhost -U sa -P Some_Strong_Password \
-    -Q "select name from sys.databases" | grep 'Error' | wc -l)
-    echo $output
-    if [[ $output -eq 0 ]]
-    then
-        break
-    elif [[ $i -eq 50 ]]
-    then
-        exit 1
-    fi
+echo "Waiting for SQL Server to be ready..."
+while [[ "$(docker inspect --format='{{.State.Health.Status}}' sqlserver)" != "healthy" ]]; do
+  sleep 5
 done
+echo "SQL Server is ready."
 
 # init SQLServer Table
 docker exec sqlserver /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Some_Strong_Password \
