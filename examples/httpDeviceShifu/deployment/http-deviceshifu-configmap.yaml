@@ -13,6 +13,12 @@ data:
     instructions:
       status:
       info:
+      movefl:
+      movefr:
+      movef:
+      movebr:
+      movebl:
+      moveb:
 #    telemetry retrieval methods
 #    in this example, a device_health telemetry is collected by calling hello instruction every 1 second
   telemetries: |
@@ -30,3 +36,5 @@ data:
           instruction: status
           pushSettings:
             telemetryCollectionService: push-endpoint-2
+
+
