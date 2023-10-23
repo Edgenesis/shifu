@@ -167,6 +167,10 @@ func establishOPCUAConnection(ctx context.Context, address string, setting *v1al
 
 	options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*setting.AuthenticationMode)))
 	opcuaClient, err := opcua.NewClient(address, options...)
+	if err != nil {
+		logger.Errorf("Failed to create a new OPC UA client, error: %v", err)
+		return nil, err
+	}
 	if err := opcuaClient.Connect(ctx); err != nil {
 		logger.Errorf("Unable to connect to OPC UA server, error: %v", err)
 		return nil, err
