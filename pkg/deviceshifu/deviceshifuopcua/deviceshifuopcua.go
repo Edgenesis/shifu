@@ -166,7 +166,11 @@ func establishOPCUAConnection(ctx context.Context, address string, setting *v1al
 	}
 
 	options = append(options, opcua.SecurityFromEndpoint(ep, ua.UserTokenTypeFromString(*setting.AuthenticationMode)))
-	opcuaClient := opcua.NewClient(address, options...)
+	opcuaClient, err := opcua.NewClient(address, options...)
+	if err != nil {
+		logger.Errorf("Failed to create a new OPC UA client, error: %v", err)
+		return nil, err
+	}
 	if err := opcuaClient.Connect(ctx); err != nil {
 		logger.Errorf("Unable to connect to OPC UA server, error: %v", err)
 		return nil, err
@@ -250,7 +254,7 @@ func (handler DeviceCommandHandlerOPCUA) readByNodeId(ctx context.Context, nodeI
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
 	defer cancel()
 
-	return handler.client.ReadWithContext(ctx, req)
+	return handler.client.Read(ctx, req)
 }
 
 type WriteRequest struct {
@@ -324,7 +328,7 @@ func (handler DeviceCommandHandlerOPCUA) write(w http.ResponseWriter, r *http.Re
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(*handler.timeout)*time.Millisecond)
 	defer cancel()
 
-	writeResponse, err := handler.client.WriteWithContext(ctx, opcuaRequest)
+	writeResponse, err := handler.client.Write(ctx, opcuaRequest)
 	if err != nil {
 		http.Error(w, "Failed to write message to Server, error: "+err.Error(), http.StatusBadRequest)
 		logger.Errorf("Write failed: %s", err)
@@ -366,7 +370,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Duration(deviceshifubase.DeviceDefaultRequestTimeoutInMS)*time.Millisecond)
 	defer cancel()
 
-	resp, err := ds.opcuaClient.ReadWithContext(ctx, req)
+	resp, err := ds.opcuaClient.Read(ctx, req)
 	if err != nil {
 		logger.Errorf("Failed to read message from Server, error: %v " + err.Error())
 		return err
