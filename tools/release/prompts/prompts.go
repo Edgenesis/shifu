@@ -40,7 +40,7 @@ const (
 	GeneratePrompts = `
 	Then I will give you a json formatted response.
 	Please generate two markdown files according to the two templates I provided.
-	One is English version and the other is Chinese version, please translate the neccessary words to Chinese as well.
+	One is English version and the other is Chinese version, please translate the necessary words to Chinese as well.
 	And please OMIT the EMPTY fields.
 	divide each version by '--------'
 	Your answer MUST not contain any other contents unrelative to the md, which means you are only allowed to output markdown.
