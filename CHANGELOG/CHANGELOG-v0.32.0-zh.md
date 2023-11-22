@@ -1,9 +1,5 @@
 # 自 [v0.31.0](https://github.com/Edgenesis/shifu/releases/tag/v0.31.0) 以来的变更
 
-## 新功能 🎉
-
-* 由 @github-actions 在 [Pull Request #747](https://github.com/Edgenesis/shifu/pull/747) 中添加 v0.31.0 的变更日志
-
 ## Bug 修复
 
 * 由 @testwill 在 [Pull Request #755](https://github.com/Edgenesis/shifu/pull/755) 中修复了拼写错误

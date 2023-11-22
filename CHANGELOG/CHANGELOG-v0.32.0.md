@@ -1,9 +1,5 @@
 # Changelog since [v0.31.0](https://github.com/Edgenesis/shifu/releases/tag/v0.31.0)
 
-## New Features 🎉
-
-* add changelog for v0.31.0 by @github-actions in [Pull Request #747](https://github.com/Edgenesis/shifu/pull/747)
-
 ## Bug fixes
 
 * fix: typo by @testwill in [Pull Request #755](https://github.com/Edgenesis/shifu/pull/755)
