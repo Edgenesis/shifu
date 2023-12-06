@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-camera-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-http:nightly
+      - image: edgehub/deviceshifu-http-http:v0.33.0-rc1
         name: deviceshifu-http
         ports:
         - containerPort: 8080
@@ -32,7 +32,7 @@ spec:
       - image: edgehub/camera-python:v0.0.1
         name: camera-python
         ports:
-        - containerPort: 11112
+        - containerPort: 9000
         volumeMounts:
         - name: deviceshifu-config
           mountPath: "/etc/edgedevice/config"
@@ -43,13 +43,13 @@ spec:
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
         - name: IP_CAMERA_ADDRESS
-          value: "192.168.14.254"
+          value: "192.168.0.66"
         - name: IP_CAMERA_HTTP_PORT
           value: ""
         - name: IP_CAMERA_RTSP_PORT
           value: ""
         - name: IP_CAMERA_USERNAME
-          value: "admin"
+          value: "guest"
         - name: IP_CAMERA_PASSWORD
           valueFrom:
             secretKeyRef:
@@ -57,7 +57,7 @@ spec:
               key: rtsp_password
               optional: false
         - name: IP_CAMERA_CONTAINER_PORT
-          value: "11112"
+          value: "8000"
         - name: PYTHONUNBUFFERED
           value: "1"
       volumes:
