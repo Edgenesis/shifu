@@ -41,7 +41,7 @@ var (
 	mqttMessageInstructionMap      = map[string]string{}
 	mqttMessageReceiveTimestampMap = map[string]time.Time{}
 	mutexBlocking                  bool
-	controlMsgs                    map[string]string  // The key is controlMsg, the value is completion Msg returned by the device
+	controlMsgs                    map[string]string // The key is controlMsg, the value is completion Msg returned by the device
 	currentControlMsg              string
 )
 

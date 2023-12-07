@@ -368,7 +368,7 @@ func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
 func TestCollectHTTPTelemtries(t *testing.T) {
 	ms := checkCustomizedTelemetryOutput(t)
 	defer ms.Close()
-	
+
 	err := makePythonCustomFile()
 	assert.Nil(t, err)
 	err = makePythonRawDataFile()
@@ -437,10 +437,10 @@ func TestCollectHTTPTelemtries(t *testing.T) {
 	res, err := mockDevice.collectHTTPTelemtries()
 	assert.Equal(t, true, res)
 	assert.Nil(t, err)
-    err = os.RemoveAll("pythoncustomizedhandlers")
-    if err != nil {
-        logger.Fatal(err)
-    }
+	err = os.RemoveAll("pythoncustomizedhandlers")
+	if err != nil {
+		logger.Fatal(err)
+	}
 }
 
 func mockTelemetryServer(t *testing.T) *httptest.Server {
