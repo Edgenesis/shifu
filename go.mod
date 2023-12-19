@@ -13,7 +13,7 @@ require (
 
 require (
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.9.1
-	github.com/DATA-DOG/go-sqlmock v1.5.0
+	github.com/DATA-DOG/go-sqlmock v1.5.1
 	github.com/briandowns/spinner v1.23.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/microsoft/go-mssqldb v1.6.0
