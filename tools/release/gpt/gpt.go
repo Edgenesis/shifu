@@ -46,10 +46,6 @@ func Start(releaseNoteResp string) error {
 
 func newGPT() (*azopenai.Client, error) {
 	ky := azcore.NewKeyCredential(API_KEY)
-	// ky, err := azopenai.NewKeyCredential(API_KEY)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("error new key credential %s", err.Error())
-	// }
 
 	client, err := azopenai.NewClientWithKeyCredential(HOST, ky, nil)
 	if err != nil {
