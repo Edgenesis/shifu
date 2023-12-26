@@ -1,19 +1,10 @@
 #!/bin/bash
 MySQLOutput=2
-sleep 3
-for i in {1..50}
-do
-    output=$(docker exec mysql mysql -u root -e "Show databases;" 2>&1 | grep 'ERROR' | wc -l)
-    #echo $output
-    if [[ $output -eq 0 ]]
-    then
-        echo $output
-        break
-    elif [[ $i -eq 50 ]]
-    then
-        exit 1
-    fi
+echo "Waiting for MySQL to be ready..."
+while [[ "$(docker inspect --format='{{.State.Health.Status}}' mysql)" != "healthy" ]]; do
+  sleep 5
 done
+echo "MySQL is ready."
 
 # init MySQL Table
 docker exec mysql mysql -u root \

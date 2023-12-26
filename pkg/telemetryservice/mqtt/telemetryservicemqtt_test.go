@@ -78,7 +78,7 @@ func TestConnectToMQTT(t *testing.T) {
 			var client *mqtt.Client
 			var err error
 			connectAttempts := 3
-			for i := 0; i < connectAttempts; i++{
+			for i := 0; i < connectAttempts; i++ {
 				client, err = connectToMQTT(c.setting)
 				if err == nil {
 					break

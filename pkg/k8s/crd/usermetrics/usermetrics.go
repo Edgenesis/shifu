@@ -17,13 +17,6 @@ func StartUserMetricsCollection(source string) {
 	for {
 		time.Sleep(time.Duration(utils.TelemetryIntervalInSecond) * time.Second)
 
-		publicIP, err := utils.GetPublicIPAddr(utils.URL_EXTERNAL_IP)
-		if err != nil {
-			logger.Errorf("issue getting Public IP")
-			publicIP = utils.URL_DEFAULT_PUBLIC_IP
-		}
-
-		logger.Infof("Public IP is %v\n", publicIP)
 		config, err := rest.InClusterConfig()
 		if err != nil {
 			logger.Errorln("error when get cluster Config,error: ", err)
@@ -41,7 +34,7 @@ func StartUserMetricsCollection(source string) {
 			logger.Errorln("cannot get Kubernetes Server Info,errors: ", err)
 			continue
 		}
-		logger.Infof("%#v", kVersion)
+
 		pods, err := clientset.CoreV1().Pods("").List(context.TODO(), metav1.ListOptions{})
 		if err != nil {
 			logger.Errorln("cannot get Pod Info,errors: ", err)
@@ -74,14 +67,14 @@ func StartUserMetricsCollection(source string) {
 		}
 
 		controllerTelemetry := types.UserMetricsResponse{
-			IP:          publicIP,
+			IP:          utils.URL_DEFAULT_PUBLIC_IP,
 			Source:      source,
 			Task:        utils.TASK_RUN_DEMO_KIND,
 			ClusterInfo: clusterInfoTelemetry,
 		}
 
 		if result := utils.SendUserMetrics(controllerTelemetry); result == nil {
-			logger.Infoln("telemetry done")
+			logger.Infof("telemetry done")
 		}
 	}
 }

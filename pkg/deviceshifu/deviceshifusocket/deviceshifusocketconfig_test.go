@@ -20,7 +20,7 @@ const (
 	MockDeviceWritFilePermission = 0644
 	MockDeviceConfigPath         = "etc"
 	MockConfigFile               = "mockconfig"
-	UnitTestAddress              = "localhost:23266"
+	UnitTestAddress              = "localhost:23267"
 )
 
 var MockDeviceConfigFolder = path.Join("etc", "edgedevice", "config")

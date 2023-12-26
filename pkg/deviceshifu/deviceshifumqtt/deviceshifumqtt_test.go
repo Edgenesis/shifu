@@ -138,7 +138,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 		mockMQTTServer(stop)
 		wg.Done()
 	}()
-	
+
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", *unitest.ToPointer(unitTestServerAddress)))
 	opts.SetClientID("shifu-service")
