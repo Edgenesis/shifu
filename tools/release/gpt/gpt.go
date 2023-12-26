@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/sdk/ai/azopenai"
+	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
 	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/edgenesis/shifu/tools/release/prompts"
@@ -21,7 +22,7 @@ var (
 
 type Helper struct {
 	client   *azopenai.Client
-	messages []azopenai.ChatMessage
+	messages []azopenai.ChatRequestUserMessage
 }
 
 func Start(releaseNoteResp string) error {
@@ -44,10 +45,11 @@ func Start(releaseNoteResp string) error {
 }
 
 func newGPT() (*azopenai.Client, error) {
-	ky, err := azopenai.NewKeyCredential(API_KEY)
-	if err != nil {
-		return nil, fmt.Errorf("error new key credential %s", err.Error())
-	}
+	ky := azcore.NewKeyCredential(API_KEY)
+	// ky, err := azopenai.NewKeyCredential(API_KEY)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("error new key credential %s", err.Error())
+	// }
 
 	client, err := azopenai.NewClientWithKeyCredential(HOST, ky, nil)
 	if err != nil {
@@ -57,35 +59,40 @@ func newGPT() (*azopenai.Client, error) {
 }
 
 func (h *Helper) generateMessages(releaseNoteResp string) {
-	h.messages = []azopenai.ChatMessage{
+	h.messages = []azopenai.ChatRequestUserMessage{
 		{
-			Role:    to.Ptr(azopenai.ChatRoleUser),
-			Content: to.Ptr(prompts.GreetingPrompts),
+			Content: azopenai.NewChatRequestUserMessageContent(prompts.GreetingPrompts),
 		},
 		{
-			Role:    to.Ptr(azopenai.ChatRoleUser),
-			Content: to.Ptr(prompts.TemplateENPrompts),
+			Content: azopenai.NewChatRequestUserMessageContent(prompts.TemplateENPrompts),
 		},
 		{
-			Role:    to.Ptr(azopenai.ChatRoleUser),
-			Content: to.Ptr(prompts.TemplateZHPrompts),
+			Content: azopenai.NewChatRequestUserMessageContent(prompts.TemplateZHPrompts),
 		},
 		{
-			Role:    to.Ptr(azopenai.ChatRoleUser),
-			Content: to.Ptr(prompts.GeneratePrompts),
+			Content: azopenai.NewChatRequestUserMessageContent(prompts.GeneratePrompts),
 		},
 		{
-			Role:    to.Ptr(azopenai.ChatRoleUser),
-			Content: to.Ptr(releaseNoteResp),
+			Content: azopenai.NewChatRequestUserMessageContent(releaseNoteResp),
 		},
 	}
 }
 
+// convert []azopenai.ChatRequestUserMessage to []azopenai.ChatRequestMessageClassification
+func convertChatRequestMessageClassification(messages []azopenai.ChatRequestUserMessage) []azopenai.ChatRequestMessageClassification {
+	var chatRequestMessages []azopenai.ChatRequestMessageClassification
+
+	for _, userMessage := range messages {
+		chatRequestMessages = append(chatRequestMessages, userMessage.GetChatRequestMessage())
+	}
+	return chatRequestMessages
+}
+
 func (h *Helper) generateChangelog() error {
 	resp, err := h.client.GetChatCompletions(context.Background(), azopenai.ChatCompletionsOptions{
-		Messages:    h.messages,
-		Deployment:  DEPLOYMENT_NAME,
-		Temperature: toPointer(float32(0)),
+		Messages:       convertChatRequestMessageClassification(h.messages),
+		DeploymentName: to.Ptr(DEPLOYMENT_NAME),
+		Temperature:    toPointer(float32(0)),
 	}, nil)
 	if err != nil {
 		return fmt.Errorf("error get chat completions %s", err.Error())
