@@ -22,7 +22,7 @@ var (
 
 type Helper struct {
 	client   *azopenai.Client
-	messages []azopenai.ChatRequestUserMessage
+	messages []azopenai.ChatRequestMessageClassification
 }
 
 func Start(releaseNoteResp string) error {
@@ -45,9 +45,9 @@ func Start(releaseNoteResp string) error {
 }
 
 func newGPT() (*azopenai.Client, error) {
-	ky := azcore.NewKeyCredential(API_KEY)
+	keyCredential := azcore.NewKeyCredential(API_KEY)
 
-	client, err := azopenai.NewClientWithKeyCredential(HOST, ky, nil)
+	client, err := azopenai.NewClientWithKeyCredential(HOST, keyCredential, nil)
 	if err != nil {
 		return nil, fmt.Errorf("error new azure client %s", err.Error())
 	}
@@ -55,38 +55,28 @@ func newGPT() (*azopenai.Client, error) {
 }
 
 func (h *Helper) generateMessages(releaseNoteResp string) {
-	h.messages = []azopenai.ChatRequestUserMessage{
-		{
+	h.messages = []azopenai.ChatRequestMessageClassification{
+		&azopenai.ChatRequestUserMessage{
 			Content: azopenai.NewChatRequestUserMessageContent(prompts.GreetingPrompts),
 		},
-		{
+		&azopenai.ChatRequestUserMessage{
 			Content: azopenai.NewChatRequestUserMessageContent(prompts.TemplateENPrompts),
 		},
-		{
+		&azopenai.ChatRequestUserMessage{
 			Content: azopenai.NewChatRequestUserMessageContent(prompts.TemplateZHPrompts),
 		},
-		{
+		&azopenai.ChatRequestUserMessage{
 			Content: azopenai.NewChatRequestUserMessageContent(prompts.GeneratePrompts),
 		},
-		{
+		&azopenai.ChatRequestUserMessage{
 			Content: azopenai.NewChatRequestUserMessageContent(releaseNoteResp),
 		},
 	}
 }
 
-// convert []azopenai.ChatRequestUserMessage to []azopenai.ChatRequestMessageClassification
-func convertChatRequestMessageClassification(messages []azopenai.ChatRequestUserMessage) []azopenai.ChatRequestMessageClassification {
-	var chatRequestMessages []azopenai.ChatRequestMessageClassification
-
-	for _, userMessage := range messages {
-		chatRequestMessages = append(chatRequestMessages, userMessage.GetChatRequestMessage())
-	}
-	return chatRequestMessages
-}
-
 func (h *Helper) generateChangelog() error {
 	resp, err := h.client.GetChatCompletions(context.Background(), azopenai.ChatCompletionsOptions{
-		Messages:       convertChatRequestMessageClassification(h.messages),
+		Messages:       h.messages,
 		DeploymentName: to.Ptr(DEPLOYMENT_NAME),
 		Temperature:    toPointer(float32(0)),
 	}, nil)
