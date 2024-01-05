@@ -40,8 +40,14 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT d
 **Open Platform** — No vendor lock-in. You can easily deploy Shifu on the edge(from RaspberryPi to edge clusters) or on the cloud(public, private and hybrid cloud are all supported).
 
 **Protocol agnostic** — HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA...The microservice architecture of Shifu enables it to quickly adapt to new protocols.
+
+## Terms 
+**shifu** - a Kubernetes CRD for integrating IoT devices into the cluster.
+
+**DeviceShifu** - a Kubernetes pod as well as the atomic unit of Shifu. DeviceShifu mainly contains the driver of the device and represents a device in the cluster. Or you can call it "digital twin" of the device.
+
 <div align="center">
-<img width="900px" src="./img/shifu-before-and-after.png"></img>
+<img width="900px" src="./img/shifu-architecture.png"></img>
 </div>
 
 ## How to connect a proprietary-protocol camera with five lines of code
