@@ -17,10 +17,10 @@
 
 <h1 style="border-bottom: none">
 <br>
-    Kubernetes原生的物联网开发平台
+    Kubernetes原生的物联网网关
     <br />
 </h1>
-Shifu是一个k8s原生的，生产级的，支持多协议设备接入的，开放物联网开发平台。
+Shifu是一个k8s原生的，生产级的，支持多协议设备接入的开放物联网网关。
 </div>
 </div>
 <br/><br/>
