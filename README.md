@@ -17,10 +17,10 @@
 
 <h1 style="border-bottom: none">
 <br>
-    Open Source Industrial Edge
+    Kubernetes native IoT Gateway
     <br />
 </h1>
-Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT development framework.
+Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT gateway.
 </div>
 </div>
 
