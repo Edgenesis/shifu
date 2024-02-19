@@ -16,7 +16,7 @@ spec:
         app: humidity-detector
     spec:
       containers:
-        - image: edgehub/humidity-detector:V0.38.0
+        - image: edgehub/humidity-detector:v0.38.0
           imagePullPolicy: Never
           name: humidity-detector
           ports:
