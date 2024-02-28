@@ -17,7 +17,7 @@ require (
 	github.com/briandowns/spinner v1.23.0
 	github.com/go-sql-driver/mysql v1.7.1
 	github.com/microsoft/go-mssqldb v1.6.0
-	github.com/minio/minio-go/v7 v7.0.66
+	github.com/minio/minio-go/v7 v7.0.67
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.15.0
 	github.com/onsi/gomega v1.30.0
