@@ -34,6 +34,12 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT g
     <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height=25></a>
 </div>
 
+## CNCF livestream with hands-on demo
+
+<div align="center">
+    <iframe width="531" height="299" src="https://www.youtube.com/embed/qMrdM1QcLMk" title="Cloud Native Live: Introducing Shifu, a Kubernetes native industrial edge" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+</div>
+
 ## Features
 **Kubernetes native** — developing your application while managing your devices, spare the need for maintaining an additional O&M infrastructure.
 
