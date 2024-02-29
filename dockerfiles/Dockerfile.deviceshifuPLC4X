@@ -1,14 +1,5 @@
-# Install apt-get
-FROM ubuntu:20.04 as utils
-RUN apt-get update && apt-get install -y apt-utils
-RUN apt-get install -y vim
-
 # Build the manager binary
-FROM --platform=$TARGETPLATFORM golang:1.22.0-alpine as builder
-
-COPY --from=utils /usr/bin/apt-get /usr/bin/apt-get
-COPY --from=utils /etc/apt/sources.list /etc/apt/sources.list
-CMD ["apt-get", "update"]
+FROM --platform=$TARGETPLATFORM golang:1.20.2-buster as builder
 
 WORKDIR /shifu
 
