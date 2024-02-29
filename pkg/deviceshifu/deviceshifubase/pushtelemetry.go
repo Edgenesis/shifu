@@ -29,7 +29,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, spec *v1
 	}
 
 	if tss.ServiceSettings.HTTPSetting != nil {
-		err := pushToHTTPTelemetryCollectionService(message, *tss.TelemetrySeriveEndpoint)
+		err := pushToHTTPTelemetryCollectionService(message, *tss.TelemetryServiceEndpoint)
 		if err != nil {
 			return err
 		}
@@ -39,7 +39,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, spec *v1
 		request := &v1alpha1.TelemetryRequest{
 			MQTTSetting: tss.ServiceSettings.MQTTSetting,
 		}
-		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMQTT
+		telemetryServicePath := *tss.TelemetryServiceEndpoint + v1alpha1.TelemetryServiceURIMQTT
 		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
@@ -51,7 +51,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, spec *v1
 			Spec:                 spec,
 			SQLConnectionSetting: tss.ServiceSettings.SQLSetting,
 		}
-		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURISQL
+		telemetryServicePath := *tss.TelemetryServiceEndpoint + v1alpha1.TelemetryServiceURISQL
 		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
@@ -62,7 +62,7 @@ func PushTelemetryCollectionService(tss *v1alpha1.TelemetryServiceSpec, spec *v1
 		request := &v1alpha1.TelemetryRequest{
 			MinIOSetting: tss.ServiceSettings.MinIOSetting,
 		}
-		telemetryServicePath := *tss.TelemetrySeriveEndpoint + v1alpha1.TelemetryServiceURIMinIO
+		telemetryServicePath := *tss.TelemetryServiceEndpoint + v1alpha1.TelemetryServiceURIMinIO
 		err := pushToShifuTelemetryCollectionService(message, request, telemetryServicePath)
 		if err != nil {
 			return err
@@ -194,7 +194,7 @@ func getTelemetryCollectionServiceMap(ds *DeviceShifuBase) (map[string]v1alpha1.
 	defaultTelemetryCollectionService := ""
 	defaultTelemetryServiceAddress := ""
 	defaultTelemetryServiceSpec := &v1alpha1.TelemetryServiceSpec{
-		TelemetrySeriveEndpoint: &defaultTelemetryServiceAddress,
+		TelemetryServiceEndpoint: &defaultTelemetryServiceAddress,
 	}
 
 	telemetries := ds.DeviceShifuConfig.Telemetries

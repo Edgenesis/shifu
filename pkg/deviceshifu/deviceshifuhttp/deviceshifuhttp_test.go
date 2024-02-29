@@ -387,7 +387,7 @@ func TestCollectHTTPTelemtries(t *testing.T) {
 	}
 	deviceshifubase.TelemetryCollectionServiceMap = map[string]v1alpha1.TelemetryServiceSpec{
 		"device_healthy": v1alpha1.TelemetryServiceSpec{
-			TelemetrySeriveEndpoint: &ms.URL,
+			TelemetryServiceEndpoint: &ms.URL,
 			ServiceSettings: &v1alpha1.ServiceSettings{
 				HTTPSetting: &v1alpha1.HTTPSetting{
 					Username: &username,

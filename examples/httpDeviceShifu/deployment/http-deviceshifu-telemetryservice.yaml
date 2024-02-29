@@ -5,7 +5,7 @@ metadata:
   name: push-endpoint-1
   namespace: devices
 spec:
-  telemetrySeriveEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
+  telemetryServiceEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
   serviceSettings:
     MQTTSetting:
       MQTTServerAddress: 192.168.14.163:1883
@@ -17,7 +17,7 @@ metadata:
   name: push-endpoint-2
   namespace: devices
 spec:
-  telemetrySeriveEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
+  telemetryServiceEndpoint: http://telemetryservice.shifu-service.svc.cluster.local
   serviceSettings:
     SQLSetting:
       serverAddress: 192.168.14.163:6041
