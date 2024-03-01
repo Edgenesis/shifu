@@ -37,7 +37,7 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT g
 ## CNCF livestream with hands-on demo
 
 <div align="center">
- <a herf="https://www.youtube.com/watch?v=qMrdM1QcLMk&t=1s">
+ <a href="https://www.youtube.com/watch?v=qMrdM1QcLMk">
    <img src="https://github.com/Edgenesis/shifu/assets/77156159/22f74a9f-a86b-4b72-ab83-6ce411f83e85"/>
  </a>
 </div>
