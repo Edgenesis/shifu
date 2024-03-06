@@ -240,7 +240,7 @@ spec:
                         type: string
                     type: object
                 type: object
-              telemetrySeriveEndpoint:
+              telemetryServiceEndpoint:
                 type: string
             type: object
           status:
