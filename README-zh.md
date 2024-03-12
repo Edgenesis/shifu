@@ -41,13 +41,9 @@ Shifu是一个k8s原生的，生产级的，支持多协议设备接入的开放
 [👉🙋‍♀️**职位点这里**👈🙋‍♂️](https://4g1tj81q9o.jobs.fbmms.cn/page/PSVAGacDW6xEEcT5qbbfRL0FR3)
 
 
-## CNCF现场直播和动手演示
+## CNCF现场直播和演示
 
-<div align="center">
- <a href="https://www.bilibili.com/video/BV1E8411R7QK/">
-   <img src="https://github.com/Edgenesis/shifu/assets/77156159/7bb0ed4c-8aed-41f8-b401-54b4ab8f0720"/>
- </a>
-</div>
+[![Cloud Native Live](https://img.youtube.com/vi/qMrdM1QcLMk/maxresdefault.jpg)](https://www.youtube.com/watch?v=qMrdM1QcLMk)
 
 ## 特点
 **Kubernetes原生** — 应用开发的同时进行设备管理，无需再构建额外的运维基础设施
