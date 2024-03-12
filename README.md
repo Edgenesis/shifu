@@ -77,7 +77,7 @@ Welcome to check 🗒️[Shifu Documentation](https://shifu.dev/) for detailed i
 - 🔧[Install](https://shifu.dev/docs/guides/install/install-shifu-dev)
 - 🔌[Connect devices](https://shifu.dev/docs/guides/cases/)
 - 👨‍💻[Application Development](https://shifu.dev/docs/guides/application/)
-- 🎮[Play shifu online](https://killercoda.com/shifu/shifu-demo)
+- 🎮[Try Our KillerCoda Demo](https://killercoda.com/shifu/shifu-demo)
 
 ## Contributing
 
