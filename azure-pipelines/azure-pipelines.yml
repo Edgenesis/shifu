@@ -360,7 +360,7 @@ stages:
   - job: docker_e2e_test_telemetryservice
     steps:
       - task: GoTool@0
-          inputs:
+        inputs:
             version: '1.22.0'
       - script: |
           tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
