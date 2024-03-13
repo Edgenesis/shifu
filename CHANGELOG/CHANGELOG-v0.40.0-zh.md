@@ -1,8 +1,10 @@
 # 自 [v0.39.0](https://github.com/Edgenesis/shifu/releases/tag/v0.39.0) 以来的变更
 
-## 新功能 🎉
+## Bug 修复
 
 * 由 @p-mega 在 [PR#837](https://github.com/Edgenesis/shifu/pull/837) 中将字段从 "telemetrySeriveEndpoint" 更改为 "telemetryServiceEndpoint"
+
+## 新功能 🎉
 
 * 由 @p-mega 在 [PR#838](https://github.com/Edgenesis/shifu/pull/838) 中为 readme 添加了 cncf 的录播
 

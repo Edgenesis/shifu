@@ -1,8 +1,10 @@
 # Changelog since [v0.39.0](https://github.com/Edgenesis/shifu/releases/tag/v0.39.0)
 
-## New Features 🎉
+## Bug fixes
 
 * Change the field from "telemetrySeriveEndpoint" to "telemetryServiceEndpoint" by @p-mega in [PR#837](https://github.com/Edgenesis/shifu/pull/837)
+
+## New Features 🎉
 
 * Added the cncf recorded broadcast for readme by @p-mega in [PR#838](https://github.com/Edgenesis/shifu/pull/838)
 
