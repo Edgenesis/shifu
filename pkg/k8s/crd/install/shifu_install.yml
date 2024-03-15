@@ -500,7 +500,7 @@ spec:
         - --source=default
         command:
         - /manager
-        image: edgehub/shifu-controller:v0.40.0-rc1
+        image: edgehub/shifu-controller:nightly
         livenessProbe:
           httpGet:
             path: /healthz
