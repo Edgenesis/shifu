@@ -359,6 +359,9 @@ stages:
 
   - job: docker_e2e_test_telemetryservice
     steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - script: |
           tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
         displayName: Set the tag name as an environment variable
@@ -426,7 +429,10 @@ stages:
       value: $[replace(variables['build.sourcebranch'], 'refs/tags/', '')]
   jobs:
   - job: docker_push_deviceshifu_http_http
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -441,7 +447,10 @@ stages:
         displayName: build edgehub/deviceshifu-http-http
 
   - job: docker_push_deviceshifu_http_socket
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -456,7 +465,10 @@ stages:
         displayName: build edgehub/deviceshifu-http-socket
 
   - job: docker_push_deviceshifu_http_mqtt
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -471,7 +483,10 @@ stages:
         displayName: build edgehub/deviceshifu-http-mqtt
 
   - job: docker_push_deviceshifu_http_opcua
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -486,7 +501,10 @@ stages:
         displayName: build deviceshifu-http-opcua
 
   - job: docker_push_deviceshifu_http_plc4x
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -501,7 +519,10 @@ stages:
         displayName: build deviceshifu-http-plc4x
 
   - job: docker_push_deviceshifu_tcp_tcp
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -516,7 +537,10 @@ stages:
         displayName: build deviceshifu-tcp-tcp
 
   - job: docker_push_shifu_controller
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -531,7 +555,10 @@ stages:
         displayName: build edgehub/shifu-controller
 
   - job: docker_push_mockdevice_thermometer
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -546,7 +573,10 @@ stages:
         displayName: build edgehub/mockdevice-thermometer
 
   - job: docker_push_mockdevice_robot_arm
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -561,7 +591,10 @@ stages:
         displayName: build edgehub/mockdevice-robot-arm
 
   - job: docker_push_mockdevice_plate_reader
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -576,7 +609,10 @@ stages:
         displayName: build edgehub/mockdevice-plate-reader
 
   - job: docker_push_mockdevice_agv
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -591,7 +627,10 @@ stages:
         displayName: build edgehub/mockdevice-agv
 
   - job: docker_push_mockdevice_plc
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -606,7 +645,10 @@ stages:
         displayName: build edgehub/mockdevice-plc
 
   - job: docker_push_mockdevice_socket
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -621,7 +663,10 @@ stages:
         displayName: build edgehub/mockdevice-socket
 
   - job: docker_push_mockdevice_opcua
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
@@ -636,7 +681,10 @@ stages:
         displayName: build edgehub/mockdevice-opcua
 
   - job: docker_push_telemetry_service
-    steps: 
+    steps:
+      - task: GoTool@0
+        inputs:
+          version: '1.22.0'
       - task: Docker@2
         displayName: Login to DockerHub
         inputs:
