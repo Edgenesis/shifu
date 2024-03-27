@@ -1,8 +1,8 @@
 # Changelog since [v0.40.0](https://github.com/Edgenesis/shifu/releases/tag/v0.40.0)
 
-## New Features 🎉
+## Bug fixes
 
-* Rebase GoTool pipeline update changes from v0.40.0 branch by @tomqin93 in [Pull Request #850](https://github.com/Edgenesis/shifu/pull/850)
+* Added step for install go 1.22 in pipeline, details: [Pull Request #850](https://github.com/Edgenesis/shifu/pull/850)
 
 ## Dependabot 🤖
 
