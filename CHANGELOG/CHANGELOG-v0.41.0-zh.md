@@ -1,9 +1,9 @@
 
 # 和[v0.40.0](https://github.com/Edgenesis/shifu/releases/tag/v0.40.0)相比发生的变化
 
-## BUG修复 🎉
+## BUG修复
 
-* [依赖缺失] 在pipeline中缺少go 1.22的安装步骤, 导致shifu编译失败, 详情可见: [Pull Request #850](https://github.com/Edgenesis/shifu/pull/850)
+* 在pipeline中增加了安装go1.22的步骤, 详情可见: [Pull Request #850](https://github.com/Edgenesis/shifu/pull/850)
 
 ## Dependabot 🤖
 
