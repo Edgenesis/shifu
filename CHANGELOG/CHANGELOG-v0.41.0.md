@@ -2,7 +2,7 @@
 
 ## Bug fixes
 
-* Added step for install go 1.22 in pipeline, details: [Pull Request #850](https://github.com/Edgenesis/shifu/pull/850)
+* Added a step to install Go 1.22 by @tomqin93 in [Pull Request #850](https://github.com/Edgenesis/shifu/pull/850) 
 
 ## Dependabot 🤖
 
