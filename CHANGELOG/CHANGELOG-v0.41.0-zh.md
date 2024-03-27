@@ -3,7 +3,7 @@
 
 ## BUG修复
 
-* 在pipeline中增加了安装go1.22的步骤, 详情可见: [Pull Request #850](https://github.com/Edgenesis/shifu/pull/850)
+* 在pipeline中增加了安装go1.22的步骤, 详情可见: @tomqin93 [Pull Request #850](https://github.com/Edgenesis/shifu/pull/850)
 
 ## Dependabot 🤖
 
