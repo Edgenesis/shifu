@@ -26,4 +26,4 @@
 
 * Bump github.com/onsi/ginkgo/v2 from 2.15.0 to 2.17.1 by @dependabot in [Pull Request #857](https://github.com/Edgenesis/shifu/pull/857)
 
-**Full Changelog**: https://github.com/Edgenesis/shifu/compare/v0.40.0...v0.41.0-rc1
+**Full Changelog**: https://github.com/Edgenesis/shifu/compare/v0.40.0...v0.41.0
