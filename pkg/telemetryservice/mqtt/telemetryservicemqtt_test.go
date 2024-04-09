@@ -189,7 +189,7 @@ func TestInjectSecret(t *testing.T) {
 			client: testclient.NewSimpleClientset(),
 			ns:     testNamespace,
 			setting: &v1alpha1.MQTTSetting{
-				MQTTServerSecret: unitest.ToPointer("test-secret"),
+				MQTTServerSecret: "test-secret",
 			},
 			specPassword: "test-secret",
 		},
@@ -206,7 +206,7 @@ func TestInjectSecret(t *testing.T) {
 			}),
 			ns: testNamespace,
 			setting: &v1alpha1.MQTTSetting{
-				MQTTServerSecret: unitest.ToPointer("test-secret"),
+				MQTTServerSecret: "test-secret",
 			},
 			specPassword: "overwrite",
 		},
@@ -215,6 +215,6 @@ func TestInjectSecret(t *testing.T) {
 	for _, c := range testCases {
 		utils.SetClient(c.client, c.ns)
 		injectSecret(c.setting)
-		assert.Equal(t, c.specPassword, *c.setting.MQTTServerSecret)
+		assert.Equal(t, c.specPassword, c.setting.MQTTServerSecret)
 	}
 }
