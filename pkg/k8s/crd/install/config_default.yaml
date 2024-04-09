@@ -70,6 +70,8 @@ spec:
                         type: string
                       MQTTServerSecret:
                         type: string
+                      MQTTServerUserName:
+                        type: string
                       MQTTTopic:
                         type: string
                     type: object
@@ -210,6 +212,8 @@ spec:
                       MQTTServerAddress:
                         type: string
                       MQTTServerSecret:
+                        type: string
+                      MQTTServerUserName:
                         type: string
                       MQTTTopic:
                         type: string
