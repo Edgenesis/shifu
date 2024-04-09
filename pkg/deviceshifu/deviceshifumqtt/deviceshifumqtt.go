@@ -60,7 +60,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			ConfigFiniteStateMachine(base.DeviceShifuConfig.ControlMsgs)
 			mqttProtocolSetting := base.EdgeDevice.Spec.ProtocolSettings
 			if mqttProtocolSetting != nil {
-				if mqttProtocolSetting.MQTTSetting != nil && mqttProtocolSetting.MQTTSetting.MQTTServerSecret != nil {
+				if mqttProtocolSetting.MQTTSetting != nil && mqttProtocolSetting.MQTTSetting.MQTTServerSecret != "" {
 					logger.Infof("MQTT Server Secret is not empty, currently Shifu does not use MQTT Server Secret")
 					// TODO Add MQTT Server secret processing logic
 				}
