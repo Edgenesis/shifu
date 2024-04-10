@@ -410,6 +410,7 @@ stages:
               edgehub/mockserver:$(tag)
               sleep 3
               docker logs mockserver
+              docker logs mosquitto
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput_auth.sh
               docker stop mosquitto mockserver
               docker rm mosquitto mockserver
