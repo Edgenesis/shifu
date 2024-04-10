@@ -402,7 +402,7 @@ stages:
               set -e
               docker run -itd --network host --name mosquitto \
               -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/mosquitto.conf:/mosquitto/config/mosquitto.conf \
-              -v $(System.DefaultWorkingDirectory)/telemetryservice/mqtt/mosquitto.password:/mosquitto/config/passwd_file \
+              -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/mosquitto.password:/mosquitto/config/passwd_file \
               eclipse-mosquitto:2.0.15
               docker run -itd --network host --name mockserver \
               -e MQTT_USERNAME=mosquitto \
