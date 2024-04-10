@@ -408,7 +408,8 @@ stages:
               -e MQTT_USERNAME=mosquitto \
               -e MQTT_PASSWORD=mosquitto \
               edgehub/mockserver:$(tag)
-              docker ps
+              sleep 3
+              docker logs mockserver
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput_auth.sh
               docker stop mosquitto mockserver
               docker rm mosquitto mockserver
