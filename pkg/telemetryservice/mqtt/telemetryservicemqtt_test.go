@@ -183,6 +183,8 @@ func TestInjectSecret(t *testing.T) {
 		ns           string
 		setting      *v1alpha1.MQTTSetting
 		specPassword string
+		specSecret   string
+		specUsername string
 	}{
 		{
 			name:   "case0 no secrets found",
@@ -191,7 +193,9 @@ func TestInjectSecret(t *testing.T) {
 			setting: &v1alpha1.MQTTSetting{
 				MQTTServerSecret: unitest.ToPointer("test-secret"),
 			},
-			specPassword: "test-secret",
+			specSecret:   "test-secret",
+			specPassword: "",
+			specUsername: "",
 		},
 		{
 			name: "case2 have HTTP password secret",
@@ -201,20 +205,69 @@ func TestInjectSecret(t *testing.T) {
 					Namespace: testNamespace,
 				},
 				Data: map[string][]byte{
-					"password": []byte("overwrite"),
+					"password": []byte("newpassword"),
 				},
 			}),
 			ns: testNamespace,
 			setting: &v1alpha1.MQTTSetting{
-				MQTTServerSecret: unitest.ToPointer("test-secret"),
+				MQTTServerSecret:   unitest.ToPointer("test-secret"),
+				MQTTServerPassword: "newpassword",
 			},
-			specPassword: "overwrite",
+			specSecret:   "test-secret",
+			specPassword: "newpassword",
+			specUsername: "",
+		},
+		{
+			name: "case3 have username and password secret",
+			client: testclient.NewSimpleClientset(&v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-secret",
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{
+					"password": []byte("newpassword"),
+					"username": []byte("newusername"),
+				},
+			}),
+			ns: testNamespace,
+			setting: &v1alpha1.MQTTSetting{
+				MQTTServerSecret:   unitest.ToPointer("test-secret"),
+				MQTTServerPassword: "newpassword",
+				MQTTServerUserName: "newusername",
+			},
+			specSecret:   "test-secret",
+			specPassword: "newpassword",
+			specUsername: "newusername",
+		},
+		{
+			name: "case4 overwrite username and password secret",
+			client: testclient.NewSimpleClientset(&v1.Secret{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "test-secret",
+					Namespace: testNamespace,
+				},
+				Data: map[string][]byte{
+					"password": []byte("newpassword"),
+					"username": []byte("newusername"),
+				},
+			}),
+			ns: testNamespace,
+			setting: &v1alpha1.MQTTSetting{
+				MQTTServerSecret:   unitest.ToPointer("test-secret"),
+				MQTTServerPassword: "oldpassword",
+				MQTTServerUserName: "oldusername",
+			},
+			specSecret:   "test-secret",
+			specPassword: "newpassword",
+			specUsername: "newusername",
 		},
 	}
 
 	for _, c := range testCases {
 		utils.SetClient(c.client, c.ns)
 		injectSecret(c.setting)
-		assert.Equal(t, c.specPassword, *c.setting.MQTTServerSecret)
+		assert.Equal(t, c.specUsername, c.setting.MQTTServerUserName)
+		assert.Equal(t, c.specPassword, c.setting.MQTTServerPassword)
+		assert.Equal(t, c.specPassword, c.setting.MQTTServerPassword)
 	}
 }

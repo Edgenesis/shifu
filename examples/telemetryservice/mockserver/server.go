@@ -18,6 +18,8 @@ import (
 var (
 	serverAddress = os.Getenv("MQTT_SERVER_ADDRESS")
 	clientAddress = os.Getenv("HTTP_SERVER_ADDRESS")
+	mqttUserName  = os.Getenv("MQTT_USERNAME")
+	mqttPassword  = os.Getenv("MQTT_PASSWORD")
 	tmpMessage    string
 )
 
@@ -67,6 +69,8 @@ func connectToMQTT(address string) (*mqtt.Client, error) {
 	for i := 0; i < 20; i++ {
 		<-ticker
 		opts := mqtt.NewClientOptions()
+		opts.Username = mqttUserName
+		opts.Password = mqttPassword
 		opts.AddBroker(fmt.Sprintf("tcp://%s", address))
 		opts.SetClientID("mockServer")
 		opts.SetDefaultPublishHandler(messageSubHandler)

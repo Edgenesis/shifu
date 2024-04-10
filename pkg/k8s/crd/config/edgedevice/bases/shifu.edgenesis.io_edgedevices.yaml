@@ -62,7 +62,11 @@ spec:
                     properties:
                       MQTTServerAddress:
                         type: string
+                      MQTTServerPassword:
+                        type: string
                       MQTTServerSecret:
+                        type: string
+                      MQTTServerUserName:
                         type: string
                       MQTTTopic:
                         type: string

@@ -33,9 +33,11 @@ type TCPSetting struct {
 
 // MQTTSetting defines MQTT specific settings when connecting to an EdgeDevice
 type MQTTSetting struct {
-	MQTTTopic         *string `json:"MQTTTopic,omitempty"`
-	MQTTServerAddress *string `json:"MQTTServerAddress,omitempty"`
-	MQTTServerSecret  *string `json:"MQTTServerSecret,omitempty"`
+	MQTTTopic          *string `json:"MQTTTopic,omitempty"`
+	MQTTServerAddress  *string `json:"MQTTServerAddress,omitempty"`
+	MQTTServerSecret   *string `json:"MQTTServerSecret,omitempty"`
+	MQTTServerUserName string  `json:"MQTTServerUserName,omitempty"`
+	MQTTServerPassword string  `json:"MQTTServerPassword,omitempty"`
 }
 
 // OPCUASetting defines OPC UA specific settings when connecting to an OPC UA endpoint
