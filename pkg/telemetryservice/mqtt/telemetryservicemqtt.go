@@ -100,7 +100,7 @@ func injectSecret(setting *v1alpha1.MQTTSetting) {
 		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.PasswordSecretField)
 	} else {
 		setting.MQTTServerPassword = password
-		logger.Info("MQTTServerSecret load from secret")
+		logger.Info("MQTTServerPassword load from secret")
 	}
 
 	username, exist := secret[deviceshifubase.UsernameSecretField]
