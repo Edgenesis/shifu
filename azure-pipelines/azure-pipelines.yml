@@ -405,6 +405,7 @@ stages:
               -v $(System.DefaultWorkingDirectory)/telemetryservice/mqtt/mosquitto.password:/mosquitto/config/passwd_file \
               eclipse-mosquitto:2.0.15
               docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
+              docker ps
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput_auth.sh
               docker stop mosquitto mockserver
               docker rm mosquitto mockserver
