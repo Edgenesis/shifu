@@ -266,8 +266,8 @@ func TestInjectSecret(t *testing.T) {
 	for _, c := range testCases {
 		utils.SetClient(c.client, c.ns)
 		injectSecret(c.setting)
-		assert.Equal(t, c.specUsername, *&c.setting.MQTTServerUserName)
-		assert.Equal(t, c.specPassword, *&c.setting.MQTTServerPassword)
-		assert.Equal(t, c.specPassword, *&c.setting.MQTTServerPassword)
+		assert.Equal(t, c.specUsername, c.setting.MQTTServerUserName)
+		assert.Equal(t, c.specPassword, c.setting.MQTTServerPassword)
+		assert.Equal(t, c.specPassword, c.setting.MQTTServerPassword)
 	}
 }
