@@ -189,7 +189,7 @@ func TestInjectSecret(t *testing.T) {
 			client: testclient.NewSimpleClientset(),
 			ns:     testNamespace,
 			setting: &v1alpha1.MQTTSetting{
-				MQTTServerSecret: "test-secret",
+				MQTTServerSecret: unitest.ToPointer("test-secret"),
 			},
 			specPassword: "test-secret",
 		},
@@ -206,7 +206,7 @@ func TestInjectSecret(t *testing.T) {
 			}),
 			ns: testNamespace,
 			setting: &v1alpha1.MQTTSetting{
-				MQTTServerSecret: "test-secret",
+				MQTTServerSecret: unitest.ToPointer("test-secret"),
 			},
 			specPassword: "overwrite",
 		},

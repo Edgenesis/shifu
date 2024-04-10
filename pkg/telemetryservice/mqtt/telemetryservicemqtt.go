@@ -59,7 +59,7 @@ func connectToMQTT(settings *v1alpha1.MQTTSetting) (*mqtt.Client, error) {
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
 	opts.SetUsername(settings.MQTTServerUserName)
-	opts.SetPassword(settings.MQTTServerSecret)
+	opts.SetPassword(settings.MQTTServerPassword)
 	client := mqtt.NewClient(opts)
 	if token := client.Connect(); token.Wait() && token.Error() != nil {
 		logger.Errorf("Error when connect to server error: %v", token.Error())
@@ -86,20 +86,20 @@ func injectSecret(setting *v1alpha1.MQTTSetting) {
 		logger.Warn("empty telemetry service setting.")
 		return
 	}
-	if setting.MQTTServerSecret == "" {
+	if setting.MQTTServerSecret == nil {
 		logger.Warn("empty secret setting.")
 		return
 	}
-	secret, err := utils.GetSecret(setting.MQTTServerSecret)
+	secret, err := utils.GetSecret(*setting.MQTTServerSecret)
 	if err != nil {
 		logger.Errorf("unable to get secret for telemetry %v, error: %v", setting.MQTTServerSecret, err)
 		return
 	}
-	pwd, exist := secret[deviceshifubase.PasswordSecretField]
+	password, exist := secret[deviceshifubase.PasswordSecretField]
 	if !exist {
 		logger.Errorf("the %v field not found in telemetry secret", deviceshifubase.PasswordSecretField)
 	} else {
-		setting.MQTTServerSecret = pwd
+		setting.MQTTServerPassword = password
 		logger.Info("MQTTServerSecret load from secret")
 	}
 

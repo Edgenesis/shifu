@@ -68,10 +68,11 @@ First you need to add `MQTTSetting` to `ProtocolSettings`. Then you need to add 
 ```go
 // MQTTSetting defines MQTT specific settings when connecting to an EdgeDevice
 type MQTTSetting struct {
-    MQTTTopic         *string `json:"MQTTTopic,omitempty"`
-    MQTTServerAddress *string `json:"MQTTServerAddress,omitempty"`
-    MQTTServerSecret   string `json:"MQTTServerSecret,omitempty"`
-    MQTTServerUserName string  `json:"MQTTServerUserName,omitempty"`
+    MQTTTopic           *string `json:"MQTTTopic,omitempty"`
+    MQTTServerAddress   *string `json:"MQTTServerAddress,omitempty"`
+    MQTTServerSecret    *string `json:"MQTTServerSecret,omitempty"``
+    MQTTServerPassword   string `json:"MQTTServerPassword,omitempty"`
+    MQTTServerUserName   string  `json:"MQTTServerUserName,omitempty"`
 }
 ```
 

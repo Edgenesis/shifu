@@ -61,6 +61,8 @@ spec:
                     properties:
                       MQTTServerAddress:
                         type: string
+                      MQTTServerPassword:
+                        type: string
                       MQTTServerSecret:
                         type: string
                       MQTTServerUserName:
