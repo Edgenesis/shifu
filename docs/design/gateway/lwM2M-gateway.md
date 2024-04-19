@@ -28,14 +28,47 @@ So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pu
 
 For LwM2M Gateway, it will as a LwM2M client to connect a server and it will handle all request from the server over the LwM2M protocol. 
 
-### Centralized Or Distributed Gateway?
 
-- Centralized: All device connect to the same gateway, and the gateway will connect to the server.
-    When a device enable the gateway feature, it will register to the gateway and the gateway will call the server to update the device info. Each device will have a unique ObjectId like `/33953` and their instruction will be a instance of the ObjectId like `/33953/1`.
-- Distributed: Each device connect to a gateway, and the gateway will connect to the server.
-    When a device enable the gateway feature, it will create a pod to host the gateway and register to the server. Then the server will call the gateway to update the device info or get the data.
+When a device enable the gateway feature, it will register to the gateway and the gateway will call the server to update the device info. Each device will have a unique ObjectId like `/33953` and their.
+instruction will be a instance of the ObjectId like `/33953/1`.
 
-in the current design, we will use the centralized gateway.
+```mermaid
+flowchart BT
+s1[Server]
+s2[Server]
+
+subgraph EdgeNode
+    subgraph Shifu
+        gw1[LwM2M Gateway]
+        gw2[LwM2M Gateway]
+
+        ds1[deviceShifu-lwM2M]
+        ds2[deviceShifu-MQTT]
+        ds3[deviceShifu-HTTP]
+
+    end
+end
+
+d1[Device]
+d2[Device]
+d3[Device]
+
+
+
+d1 -->|lwM2M| ds1 -->|HTTP| gw1 
+ds2 -->|MQTT| gw1
+d2 -->|MQTT| ds2 -->|HTTP| gw2
+d3 -->|HTTP| ds3 -->|HTTP| gw2
+
+
+gw1 <-->|lwM2M| s1
+gw2 <-->|lwM2M| s2
+
+
+
+
+
+```
 
 ### What will the gateway do?
 
