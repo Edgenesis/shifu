@@ -98,8 +98,6 @@ Define data structures and types in Go for configuring and managing LwM2M commun
 
 ```go
 type LwM2MSetting struct {
-    EndpointName            string `json:"EndpointName,omitempty"`
-    BootStrapServerAddress  string `json:"BootStrapServerAddress,omitempty"`
 }
 ```
 
