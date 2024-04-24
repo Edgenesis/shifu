@@ -1,5 +1,3 @@
-```
-
 # 自 [v0.42.0](https://github.com/Edgenesis/shifu/releases/tag/v0.42.0) 以来的变更
 
 ## Dependabot 自动更新 🤖
@@ -15,5 +13,3 @@
 - Bump github.com/minio/minio-go/v7 从 7.0.67 升级到 7.0.69 由 @dependabot 在 [#862](https://github.com/Edgenesis/shifu/pull/862)
 
 **完整变更日志**: https://github.com/Edgenesis/shifu/compare/v0.42.0...v0.43.0
-
-```
