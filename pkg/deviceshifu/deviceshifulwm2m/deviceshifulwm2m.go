@@ -53,7 +53,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	if err != nil {
 		return nil, err
 	}
-	go server.Run()
+	go func() {
+		_ = server.Run()
+	}()
 
 	instructionSettings = base.DeviceShifuConfig.Instructions.InstructionSettings
 	if instructionSettings == nil {
