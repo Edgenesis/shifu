@@ -82,6 +82,10 @@ type SocketSetting struct {
 	NetworkType  *string `json:"networkType,omitempty"`
 }
 
+type LwM2MSettings struct {
+	EndpointName string `json:"endpointName,omitempty"`
+}
+
 // ProtocolSettings defines protocol settings when connecting to an EdgeDevice
 type ProtocolSettings struct {
 	MQTTSetting   *MQTTSetting   `json:"MQTTSetting,omitempty"`
@@ -89,6 +93,7 @@ type ProtocolSettings struct {
 	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
 	PLC4XSetting  *PLC4XSetting  `json:"PLC4XSetting,omitempty"`
 	TCPSetting    *TCPSetting    `json:"TCPSetting,omitempty"`
+	LwM2MSettings *LwM2MSettings `json:"LwM2MSettings,omitempty"`
 }
 
 // EdgeDeviceSpec defines the desired state of EdgeDevice
@@ -136,6 +141,7 @@ type Protocol string
 
 // Protocol String
 const (
+	ProtocolLwM2M           Protocol = "LwM2M"
 	ProtocolHTTP            Protocol = "HTTP"
 	ProtocolHTTPCommandline Protocol = "HTTPCommandline"
 	ProtocolMQTT            Protocol = "MQTT"
