@@ -69,10 +69,6 @@ func NewServer(endpointName string) (*Server, error) {
 				fn(string(data))
 			}
 		}
-		// log.Printf("path not found: %v", path)
-		// if fn, exists := server.observeCallback[path]; exists {
-		// 	fn(path)
-		// }
 	}))
 
 	router.Use(loggingMiddleware)
