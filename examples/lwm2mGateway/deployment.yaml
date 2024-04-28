@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: shifu-gateway-lwm2m
+  namespace: shifu-service
+spec:
+  selector:
+    matchLabels:
+      app: shifu-gateway-lwm2m
+  template:
+    metadata:
+      labels:
+        app: shifu-gateway-lwm2m
+    spec:
+      containers:
+      - name: shifu-gateway-lwm2m
+        image: edgehub/gateway-lwm2m:nightly
+        volumeMounts:
+          - name: shifu-gateway-config
+            mountPath: "/etc/gateway/config"
+            readOnly: true
+        env:
+          - name: SERVER_URL
+            value: 10.20.30.173:5683
+          - name: ENDPOINT
+            value: test
+      volumes:
+        - name: shifu-gateway-config
+          configMap:
+            name: shifu-gateway-lwm2m

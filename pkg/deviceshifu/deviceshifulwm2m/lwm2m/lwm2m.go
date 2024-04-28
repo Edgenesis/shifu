@@ -23,7 +23,7 @@ import (
 type Server struct {
 	router *mux.Router
 
-	conn                 mux.Conn
+	Conn                 mux.Conn
 	endpointName         string
 	liftTime             int
 	lastRegistrationTime time.Time
@@ -82,12 +82,12 @@ func (s *Server) Run() error {
 		options.WithKeepAlive(10, time.Minute*10, func(cc *udpClient.Conn) {
 		}))
 
-	conn, err := net.NewListenUDP("udp", ":5683")
+	Conn, err := net.NewListenUDP("udp", ":5689")
 	if err != nil {
 		return err
 	}
 
-	return server.Serve(conn)
+	return server.Serve(Conn)
 }
 
 func (s *Server) handleRegister(w mux.ResponseWriter, r *mux.Message) {
@@ -117,7 +117,7 @@ func (s *Server) handleRegister(w mux.ResponseWriter, r *mux.Message) {
 	}
 
 	s.lastRegistrationTime = time.Now()
-	s.conn = w.Conn()
+	s.Conn = w.Conn()
 
 	for _, fn := range s.onRegister {
 		if err := fn(); err != nil {
@@ -141,12 +141,12 @@ func (s *Server) handleResource(w mux.ResponseWriter, r *mux.Message) {
 
 	switch r.Code() {
 	case codes.DELETE:
-		s.conn = nil
+		s.Conn = nil
 		s.lastRegistrationTime = time.Time{}
 		return
 	case codes.POST:
 		s.lastRegistrationTime = time.Now()
-		if s.conn.RemoteAddr() != w.Conn().RemoteAddr() {
+		if s.Conn.RemoteAddr() != w.Conn().RemoteAddr() {
 			_ = w.SetResponse(codes.BadRequest, message.TextPlain, nil)
 			return
 		}
@@ -199,13 +199,13 @@ func (s *Server) Read(objectId string) (string, error) {
 		return "", err
 	}
 
-	request, err := s.conn.NewGetRequest(s.conn.Context(), objectId)
+	request, err := s.Conn.NewGetRequest(s.Conn.Context(), objectId)
 	if err != nil {
 		return "", err
 	}
 	request.SetAccept(message.TextPlain)
 
-	resp, err := s.conn.Do(request)
+	resp, err := s.Conn.Do(request)
 	if err != nil {
 		return "", err
 	}
@@ -230,12 +230,12 @@ func (s *Server) Write(objectId string, newValue string) error {
 		return err
 	}
 
-	request, err := s.conn.NewPutRequest(s.conn.Context(), objectId, message.TextPlain, strings.NewReader(newValue))
+	request, err := s.Conn.NewPutRequest(s.Conn.Context(), objectId, message.TextPlain, strings.NewReader(newValue))
 	if err != nil {
 		return err
 	}
 
-	resp, err := s.conn.Do(request)
+	resp, err := s.Conn.Do(request)
 	if err != nil {
 		return err
 	}
@@ -256,13 +256,13 @@ func (s *Server) Observe(objectId string, callback func(newData interface{})) er
 		return err
 	}
 
-	request, err := s.conn.NewObserveRequest(s.conn.Context(), objectId)
+	request, err := s.Conn.NewObserveRequest(s.Conn.Context(), objectId)
 	if err != nil {
 		return err
 	}
 	request.SetAccept(message.TextPlain)
 
-	resp, err := s.conn.Do(request)
+	resp, err := s.Conn.Do(request)
 	if err != nil {
 		return err
 	}

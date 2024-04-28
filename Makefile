@@ -224,6 +224,12 @@ buildx-build-image-telemetry-service:
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/telemetryservice:${IMAGE_VERSION} --load
 
+buildx-build-image-gateway-lwm2m:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/dockerfiles/Dockerfile.gatewayLwM2M \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/gateway-lwm2m:$(IMAGE_VERSION) --load
+
 .PHONY: download-demo-files
 download-demo-files:
 	docker pull edgehub/mockdevice-agv:${IMAGE_VERSION}

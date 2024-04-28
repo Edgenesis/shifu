@@ -6,7 +6,7 @@ metadata:
 spec:
   sku: "LwM2M Device"
   connection: Ethernet
-  address: 10.20.30.147:5683
+  address: --
   protocol: LwM2M
   protocolSettings:
     LwM2MSettings:
