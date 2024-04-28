@@ -21,7 +21,7 @@ spec:
             readOnly: true
         env:
           - name: SERVER_URL
-            value: 10.20.30.173:5683
+            value: 10.20.30.173:5683 # edit this line to real lwm2m server endpoint
           - name: ENDPOINT
             value: test
       volumes:

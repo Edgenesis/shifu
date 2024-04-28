@@ -5,13 +5,13 @@ metadata:
   namespace: shifu-service
 data:
   instructions: |
-    - serviceName: deviceshifu-http
+    - serviceName: deviceshifu-lwm2m
       namespace: deviceshifu
       instructionName: temperature
       resourceId: /3301
       objectId: /0/5700
       type: float
-    - serviceName: deviceshifu-http
+    - serviceName: deviceshifu-lwm2m
       namespace: deviceshifu
       instructionName: temperature
       resourceId: /3301

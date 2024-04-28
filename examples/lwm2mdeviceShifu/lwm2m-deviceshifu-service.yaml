@@ -2,8 +2,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: deviceshifu-http-deployment
-  name: deviceshifu-http
+    app: deviceshifu-lwm2m
+  name: deviceshifu-lwm2m
   namespace: deviceshifu
 spec:
   ports:
@@ -18,5 +18,5 @@ spec:
       nodePort: 30000
       targetPort: 5683
   selector:
-    app: deviceshifu-http-deployment
+    app: deviceshifu-lwm2m-deployment
   type: NodePort

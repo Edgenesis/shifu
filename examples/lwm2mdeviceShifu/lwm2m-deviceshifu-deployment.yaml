@@ -2,22 +2,22 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: deviceshifu-http-deployment
-  name: deviceshifu-http-deployment
+    app: deviceshifu-lwm2m-deployment
+  name: deviceshifu-lwm2m-deployment
   namespace: deviceshifu
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: deviceshifu-http-deployment
+      app: deviceshifu-lwm2m-deployment
   template:
     metadata:
       labels:
-        app: deviceshifu-http-deployment
+        app: deviceshifu-lwm2m-deployment
     spec:
       containers:
         - image: edgehub/deviceshifu-http-lwm2m:nightly
-          name: deviceshifu-http
+          name: deviceshifu-lwm2m
           ports:
             - containerPort: 8080
           volumeMounts:
@@ -26,11 +26,11 @@ spec:
               readOnly: true
           env:
             - name: EDGEDEVICE_NAME
-              value: "edgedevice-http"
+              value: "edgedevice-lwm2m"
             - name: EDGEDEVICE_NAMESPACE
               value: "devices"
       volumes:
         - name: deviceshifu-config
           configMap:
-            name: http-configmap-0.0.1
+            name: deviceshifu-lwm2m
       serviceAccountName: edgedevice-sa
