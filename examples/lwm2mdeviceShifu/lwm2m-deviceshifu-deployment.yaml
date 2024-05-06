@@ -29,6 +29,8 @@ spec:
               value: "edgedevice-lwm2m"
             - name: EDGEDEVICE_NAMESPACE
               value: "devices"
+            - name: LOG_LEVEL
+              value: debug
       volumes:
         - name: deviceshifu-config
           configMap:

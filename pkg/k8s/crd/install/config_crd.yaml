@@ -57,7 +57,20 @@ spec:
                 properties:
                   LwM2MSettings:
                     properties:
+                      cipherSuites:
+                        items:
+                          type: string
+                        type: array
+                      dtlsMode:
+                        type: string
                       endpointName:
+                        type: string
+                      pskIdentity:
+                        type: string
+                      pskKey:
+                        type: string
+                      securityMode:
+                        default: None
                         type: string
                     type: object
                   MQTTSetting:

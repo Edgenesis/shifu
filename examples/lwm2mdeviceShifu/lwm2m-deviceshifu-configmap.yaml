@@ -13,6 +13,9 @@ data:
     instructions:
       temperature:
         protocolPropertyList:
-          DataFormat: PlainText
           ObjectId: /3303/0/5700
-          EnableObserve: true
+          EnableObserve: false
+      reset:
+        protocolPropertyList:
+          ObjectId: /3303/0/5605
+          EnableObserve: false

@@ -82,9 +82,63 @@ type SocketSetting struct {
 	NetworkType  *string `json:"networkType,omitempty"`
 }
 
+type SecurityMode string
+
+const (
+	// SecurityModeNoSec No security
+	SecurityModeNone SecurityMode = "None"
+	// SecurityModePSK Pre-Shared Key
+	SecurityModeDTLS SecurityMode = "DTLS"
+)
+
+type DTLSMode string
+
+const (
+	// DTLSModePSK Pre-Shared Key
+	DTLSModePSK DTLSMode = "PSK"
+	// DTLSModeRPK Raw Public Key
+	DTLSModeRPK DTLSMode = "RPK"
+	// DTLSModeX509 X.509
+	DTLSModeX509 DTLSMode = "X.509"
+)
+
 type LwM2MSettings struct {
 	EndpointName string `json:"endpointName,omitempty"`
+	// +kubebuilder:default="None"
+	SecurityMode *SecurityMode `json:"securityMode,omitempty"`
+	DTLSMode     *DTLSMode     `json:"dtlsMode,omitempty"`
+
+	CipherSuites []CiperSuite `json:"cipherSuites,omitempty"`
+	PSKIdentity  *string      `json:"pskIdentity,omitempty"`
+	PSKKey       *string      `json:"pskKey,omitempty"`
 }
+
+type CiperSuite string
+
+const (
+	// AES-128-CCM
+	CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM   CiperSuite = "TLS_ECDHE_ECDSA_WITH_AES_128_CCM"
+	CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8 CiperSuite = "TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8"
+
+	// AES-128-GCM-SHA256
+	CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256 CiperSuite = "TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256"
+	CiperSuite_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256   CiperSuite = "TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256"
+
+	CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384 CiperSuite = "TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384"
+	CiperSuite_TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384   CiperSuite = "TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384"
+
+	// AES-256-CBC-SHA
+	CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA CiperSuite = "TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA"
+	CiperSuite_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA   CiperSuite = "TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA"
+
+	CiperSuite_TLS_PSK_WITH_AES_128_CCM        CiperSuite = "TLS_PSK_WITH_AES_128_CCM"
+	CiperSuite_TLS_PSK_WITH_AES_128_CCM_8      CiperSuite = "TLS_PSK_WITH_AES_128_CCM_8"
+	CiperSuite_TLS_PSK_WITH_AES_256_CCM_8      CiperSuite = "TLS_PSK_WITH_AES_256_CCM_8"
+	CiperSuite_TLS_PSK_WITH_AES_128_GCM_SHA256 CiperSuite = "TLS_PSK_WITH_AES_128_GCM_SHA256"
+	CiperSuite_TLS_PSK_WITH_AES_128_CBC_SHA256 CiperSuite = "TLS_PSK_WITH_AES_128_CBC_SHA256"
+
+	CiperSuite_TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256 CiperSuite = "TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256"
+)
 
 // ProtocolSettings defines protocol settings when connecting to an EdgeDevice
 type ProtocolSettings struct {

@@ -3,6 +3,7 @@ package lwm2m
 import (
 	"bytes"
 	"context"
+	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"io"
@@ -10,7 +11,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
+	"github.com/pion/dtls/v2"
+	dtlsServer "github.com/plgd-dev/go-coap/v3/dtls/server"
 	"github.com/plgd-dev/go-coap/v3/message"
 	"github.com/plgd-dev/go-coap/v3/message/codes"
 	"github.com/plgd-dev/go-coap/v3/mux"
@@ -23,6 +27,7 @@ import (
 type Server struct {
 	router *mux.Router
 
+	settings             v1alpha1.LwM2MSettings
 	Conn                 mux.Conn
 	endpointName         string
 	liftTime             int
@@ -41,11 +46,30 @@ func loggingMiddleware(next mux.Handler) mux.Handler {
 	})
 }
 
-func NewServer(endpointName string) (*Server, error) {
+func (s *Server) Execute(objectId string, args string) error {
+	req, err := s.Conn.NewPostRequest(s.Conn.Context(), objectId, message.TextPlain, strings.NewReader(args))
+	if err != nil {
+		return err
+	}
+
+	resp, err := s.Conn.Do(req)
+	if err != nil {
+		return err
+	}
+
+	if resp.Code() != codes.Changed {
+		return errors.New("failed to execute object")
+	}
+
+	return nil
+}
+
+func NewServer(settings v1alpha1.LwM2MSettings) (*Server, error) {
 	var server = &Server{
-		endpointName:    endpointName,
+		endpointName:    settings.EndpointName,
 		observeCallback: make(map[string]func(interface{})),
 		deviceTokenMap:  make(map[string]string),
+		settings:        settings,
 	}
 
 	router := mux.NewRouter()
@@ -77,17 +101,77 @@ func NewServer(endpointName string) (*Server, error) {
 }
 
 func (s *Server) Run() error {
-	server := udpServer.New(options.WithMux(s.router),
-		options.WithContext(context.Background()),
-		options.WithKeepAlive(10, time.Minute*10, func(cc *udpClient.Conn) {
-		}))
+	switch *s.settings.SecurityMode {
+	case v1alpha1.SecurityModeDTLS:
+		return s.startDTLSServer()
+	default:
+		logger.Infof("securityMode not set or not support, using none security mode")
+	// default using none security mode
+	case v1alpha1.SecurityModeNone:
+	}
+	return s.startUDPServer()
+}
 
-	Conn, err := net.NewListenUDP("udp", ":5689")
+func (s *Server) startDTLSServer() error {
+	switch *s.settings.DTLSMode {
+	case v1alpha1.DTLSModePSK:
+		serverOptions := []dtlsServer.Option{
+			options.WithMux(s.router),
+			options.WithContext(context.Background()),
+			options.WithKeepAlive(10, time.Minute*10, func(cc *udpClient.Conn) {}),
+		}
+
+		server := dtlsServer.New(serverOptions...)
+
+		cipersuits, err := StringsToCodes(s.settings.CipherSuites)
+		if err != nil {
+			return err
+		}
+
+		psk, err := hex.DecodeString(*s.settings.PSKKey)
+		if err != nil {
+			return err
+		}
+
+		dtlsConfig := dtls.Config{
+			PSK: func(hint []byte) ([]byte, error) {
+				return []byte(psk), nil
+			},
+			PSKIdentityHint: []byte(*s.settings.PSKIdentity),
+			CipherSuites:    cipersuits,
+		}
+		logger.Infof("Starting DTLS server")
+		l, err := net.NewDTLSListener("udp", ":5684", &dtlsConfig)
+		if err != nil {
+			return err
+		}
+
+		return server.Serve(l)
+	case v1alpha1.DTLSModeRPK:
+		fallthrough
+	case v1alpha1.DTLSModeX509:
+		return errors.New("not implemented")
+	default:
+		// default using none security mode
+	}
+
+	logger.Infof("dtlsMode not set, using none security mode")
+	return s.startUDPServer()
+}
+
+func (s *Server) startUDPServer() error {
+	serverOptions := []udpServer.Option{
+		options.WithMux(s.router),
+		options.WithContext(context.Background()),
+		options.WithKeepAlive(10, time.Minute*10, func(cc *udpClient.Conn) {}),
+	}
+
+	server := udpServer.New(serverOptions...)
+	conn, err := net.NewListenUDP("udp", ":5683")
 	if err != nil {
 		return err
 	}
-
-	return server.Serve(Conn)
+	return server.Serve(conn)
 }
 
 func (s *Server) handleRegister(w mux.ResponseWriter, r *mux.Message) {

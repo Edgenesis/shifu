@@ -49,12 +49,12 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 	lwM2MSettings := base.EdgeDevice.Spec.ProtocolSettings.LwM2MSettings
 	logger.Info("endpoint name: %s", lwM2MSettings.EndpointName)
-	server, err := lwm2m.NewServer(lwM2MSettings.EndpointName)
+	server, err := lwm2m.NewServer(*lwM2MSettings)
 	if err != nil {
 		return nil, err
 	}
 	go func() {
-		_ = server.Run()
+		panic(server.Run())
 	}()
 
 	instructionSettings = base.DeviceShifuConfig.Instructions.InstructionSettings
@@ -149,6 +149,22 @@ func (handler DeviceCommandHandlerLwM2M) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 			respString = data
+		case http.MethodPost:
+			requestBody, err := io.ReadAll(r.Body)
+			if err != nil {
+				http.Error(w, "Error on parsing body", http.StatusBadRequest)
+				logger.Errorf("Error on parsing body" + err.Error())
+				return
+			}
+
+			err = handlerServer.Execute(objectId, string(requestBody))
+			if err != nil {
+				http.Error(w, "Error on executing object", http.StatusBadRequest)
+				logger.Errorf("Error on executing object" + err.Error())
+				return
+			}
+
+			respString = "Success"
 		default:
 			http.Error(w, "not supported yet", http.StatusBadRequest)
 			logger.Errorf("Request type %s is not supported yet!", r.Method)
