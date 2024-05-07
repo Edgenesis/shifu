@@ -8,6 +8,7 @@ COPY go.sum go.sum
 COPY pkg/k8s pkg/k8s
 COPY cmd/gateway/cmdlwm2m cmd/gateway/cmdlwm2m
 COPY pkg/gateway pkg/gateway
+COPY pkg/deviceshifu pkg/deviceshifu
 COPY pkg/logger pkg/logger
 
 RUN go mod download

@@ -2,7 +2,7 @@ package lwm2m
 
 import (
 	"encoding/json"
-	"errors"
+	"log"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -11,6 +11,7 @@ import (
 type ObjectAPI interface {
 	Read() (interface{}, error)
 	Write(interface{}) error
+	Execute() error
 }
 
 type Object struct {
@@ -46,23 +47,29 @@ func NewObject(Id string, data ObjectAPI) *Object {
 	return objectAPI
 }
 
-func (o Object) ReadAll(baseName string) (Resource, error) {
-	var resource = Resource{}
-
-	paths := strings.Split(baseName, "/")
-	for _, v := range paths {
-		if v == "" {
+func (o Object) GetChildObject(path string) *Object {
+	paths := strings.Split(path, "/")
+	var obj *Object = &o
+	for _, subPath := range paths {
+		if subPath == "" {
 			continue
 		}
-		object, exists := o.Child[v]
-		if !exists {
-			return resource, errors.New("not found")
+
+		if child, exists := obj.Child[subPath]; exists {
+			obj = &child
+		} else {
+			return nil
 		}
-
-		o = object
 	}
+	return obj
+}
 
-	data, err := o.readAll("")
+func (o Object) ReadAll(baseName string) (Resource, error) {
+	var resource = Resource{}
+	object := o.GetChildObject(baseName)
+	log.Println(object)
+
+	data, err := object.readAll("")
 	if err != nil {
 		return resource, err
 	}

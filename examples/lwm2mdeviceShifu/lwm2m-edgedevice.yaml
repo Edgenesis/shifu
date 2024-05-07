@@ -8,6 +8,17 @@ spec:
   connection: Ethernet
   address: --
   protocol: LwM2M
+  gatewaySettings:
+    protocol: lwm2m
+    address: 10.20.30.104:5683
+    LwM2MSettings:
+      endpointName: test
+      securityMode: DTLS
+      dtlsMode: PSK123
+      cipherSuites: 
+        - TLS_PSK_WITH_AES_128_CCM
+      pskIdentity: hint
+      pskKey: ABC123
   protocolSettings:
     LwM2MSettings:
       endpointName: test

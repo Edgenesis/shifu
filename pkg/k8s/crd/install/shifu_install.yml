@@ -55,6 +55,33 @@ spec:
                 additionalProperties:
                   type: string
                 type: object
+              gatewaySettings:
+                description: GatewaySettings defines gateway settings when connecting
+                  to an EdgeDevice
+                properties:
+                  LwM2MSettings:
+                    properties:
+                      cipherSuites:
+                        items:
+                          type: string
+                        type: array
+                      dtlsMode:
+                        type: string
+                      endpointName:
+                        type: string
+                      pskIdentity:
+                        type: string
+                      pskKey:
+                        type: string
+                      securityMode:
+                        default: None
+                        type: string
+                    type: object
+                  address:
+                    type: string
+                  protocol:
+                    type: string
+                type: object
               protocol:
                 description: Protocol specifies the EdgeDevice's communication protocol.
                 type: string

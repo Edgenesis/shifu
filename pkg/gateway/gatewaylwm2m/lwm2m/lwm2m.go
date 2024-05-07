@@ -8,22 +8,23 @@ import (
 	"strings"
 	"time"
 
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
+	piondtls "github.com/pion/dtls/v2"
+	"github.com/plgd-dev/go-coap/v3/dtls"
 	"github.com/plgd-dev/go-coap/v3/message"
 	"github.com/plgd-dev/go-coap/v3/message/codes"
 	"github.com/plgd-dev/go-coap/v3/mux"
 	"github.com/plgd-dev/go-coap/v3/options"
 	"github.com/plgd-dev/go-coap/v3/udp"
-	"github.com/plgd-dev/go-coap/v3/udp/client"
+	udpClient "github.com/plgd-dev/go-coap/v3/udp/client"
 )
 
 type Client struct {
 	ctx context.Context
+	Config
 
-	endpointName string
-	serverUrl    string
-	locationPath string
-
+	locationPath     string
 	updateInterval   int
 	liftTime         int
 	object           Object
@@ -31,8 +32,15 @@ type Client struct {
 	lastUpdatedTime  time.Time
 	dataCache        map[string]interface{}
 
-	conn *client.Conn
-	tmgr *TaskManager
+	settings v1alpha1.LwM2MSettings
+	conn     *udpClient.Conn
+	tmgr     *TaskManager
+}
+
+type Config struct {
+	EndpointName string
+	EndpointUrl  string
+	ShifuHost    string
 }
 
 const (
@@ -40,11 +48,10 @@ const (
 	DefaultUpdateInterval = 60
 )
 
-func NewClient(serverUrl string, endpointName string) (*Client, error) {
+func NewClient(config Config) (*Client, error) {
 	var client = &Client{
 		ctx:            context.TODO(),
-		serverUrl:      serverUrl,
-		endpointName:   endpointName,
+		Config:         config,
 		liftTime:       DefaultLifeTime,
 		updateInterval: DefaultUpdateInterval,
 		object:         *NewObject("root", nil),
@@ -57,12 +64,36 @@ func NewClient(serverUrl string, endpointName string) (*Client, error) {
 		options.WithMux(client.handleRouter()),
 	)
 
-	co, err := udp.Dial(serverUrl, udpClientOpts...)
+	var conn *udpClient.Conn
+	var err error
+
+	switch *client.settings.SecurityMode {
+	case v1alpha1.SecurityModeDTLS:
+		switch *client.settings.DTLSMode {
+		case v1alpha1.DTLSModePSK:
+			dtlsConfig := &piondtls.Config{
+				PSK: func(hint []byte) ([]byte, error) {
+					fmt.Printf("Server's hint: %s \n", hint)
+					return []byte{0xAB, 0xC1, 0x23}, nil
+				},
+				PSKIdentityHint: []byte("Pion DTLS Client"),
+				CipherSuites:    []piondtls.CipherSuiteID{piondtls.TLS_PSK_WITH_AES_128_CCM_8},
+			}
+
+			conn, err = dtls.Dial(client.EndpointUrl, dtlsConfig, udpClientOpts...)
+
+		}
+	default:
+		fallthrough
+	case v1alpha1.SecurityModeNone:
+		conn, err = udp.Dial(client.EndpointUrl, udpClientOpts...)
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	client.conn = co
+	client.conn = conn
 	return client, nil
 }
 
@@ -77,7 +108,7 @@ func (c *Client) Register() error {
 		return err
 	}
 
-	request.AddQuery("ep=" + c.endpointName)
+	request.AddQuery("ep=" + c.EndpointName)
 	request.AddQuery(fmt.Sprintf("lt=%d", c.liftTime))
 	request.AddQuery("lwm2m=1.0")
 	request.AddQuery("b=U")
@@ -177,6 +208,12 @@ func (c *Client) handleRouter() *mux.Router {
 			_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
 		}
 
+		object := c.object.GetChildObject(objectId)
+		if object == nil {
+			_ = w.SetResponse(codes.NotFound, message.TextPlain, nil)
+			return
+		}
+
 		switch r.Code() {
 		case codes.GET:
 			if r.Options().HasOption(message.Observe) {
@@ -186,6 +223,7 @@ func (c *Client) handleRouter() *mux.Router {
 
 			res, err := c.object.ReadAll(objectId)
 			if err != nil {
+				logger.Errorf("failed to read data from object, error: %v", err)
 				_ = w.SetResponse(codes.NotFound, message.TextPlain, strings.NewReader(err.Error()))
 				return
 			}
@@ -197,15 +235,26 @@ func (c *Client) handleRouter() *mux.Router {
 				_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
 				return
 			}
-			err = c.object.Write(string(newData))
+			err = object.Write(string(newData))
 			if err != nil {
 				_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
 				return
 			}
 			_ = w.SetResponse(codes.Changed, message.TextPlain, nil)
+
+		case codes.POST:
+			err = object.Execute()
+			if err != nil {
+				_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
+				return
+			}
+
+			_ = w.SetResponse(codes.Changed, message.TextPlain, nil)
+
 		default:
 			_ = w.SetResponse(codes.MethodNotAllowed, message.TextPlain, nil)
 		}
+
 	}))
 
 	return router

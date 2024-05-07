@@ -4,31 +4,58 @@ import (
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 	"strconv"
 	"strings"
 
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/gateway/gatewaylwm2m/lwm2m"
+	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
-	"gopkg.in/yaml.v3"
+	"gopkg.in/yaml.v2"
+	"k8s.io/client-go/rest"
+	"knative.dev/pkg/configmap"
 )
 
-const CONFIG_FILE = "/etc/gateway/config/instructions"
+const (
+	ConfigmapFolderPath      = "/etc/edgedevice/config"
+	ConfigmapInstructionsStr = "instructions"
+	ObjectIdStr              = "ObjectId"
+	DataTypeStr              = "DataType"
+)
 
 type Gateway struct {
-	client *lwm2m.Client
+	client         *lwm2m.Client
+	KRestfulClient *rest.RESTClient
+	edgedevice     *v1alpha1.EdgeDevice
 }
 
 func New() (*Gateway, error) {
-	endpoint := os.Getenv("ENDPOINT")
-	serverUrl := os.Getenv("SERVER_URL")
-	client, err := lwm2m.NewClient(serverUrl, endpoint)
+	edgedevice, krclient, err := deviceshifubase.NewEdgeDevice(&deviceshifubase.EdgeDeviceConfig{
+		NameSpace:  "devices",
+		DeviceName: "edgedevice-lwm2m",
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if edgedevice.Spec.GatewaySettings == nil {
+		return nil, fmt.Errorf("GatewaySettings not found in EdgeDevice spec")
+	}
+
+	lwm2mSettings := edgedevice.Spec.GatewaySettings.LwM2MSettings
+
+	client, err := lwm2m.NewClient(lwm2m.Config{
+		EndpointUrl:  *edgedevice.Spec.GatewaySettings.Address,
+		EndpointName: lwm2mSettings.EndpointName,
+	})
 	if err != nil {
 		return nil, err
 	}
 
 	var gateway = &Gateway{
-		client: client,
+		edgedevice:     edgedevice,
+		client:         client,
+		KRestfulClient: krclient,
 	}
 
 	return gateway, nil
@@ -44,33 +71,34 @@ type Config struct {
 }
 
 func (g *Gateway) LoadCfg() error {
-	file, err := os.Open(CONFIG_FILE)
+	cfg, err := configmap.Load(ConfigmapFolderPath)
 	if err != nil {
 		return err
 	}
-	defer file.Close()
-	var config []Config
 
-	if err := yaml.NewDecoder(file).Decode(&config); err != nil {
-		return err
+	var instructions deviceshifubase.DeviceShifuInstructions
+	if instructions, ok := cfg[ConfigmapInstructionsStr]; ok {
+		err := yaml.Unmarshal([]byte(instructions), &instructions)
+		if err != nil {
+			logger.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
+			return err
+		}
 	}
 
-	var objectMap = make(map[string]*lwm2m.Object)
-	for _, obj := range config {
-		var instruction ShifuInstruction
-		rsName := strings.TrimPrefix(obj.ResourceId, "/")
-		instruction.ResourceId = rsName
-		instruction.ObjectId = obj.ObjectId
-		instruction.DataType = obj.DataType
-		instruction.Endpoint = fmt.Sprintf("http://%s.%s.svc.cluster.local/%s", obj.ServiceName, obj.NameSpace, obj.InstructionName)
-		if _, ok := objectMap[rsName]; !ok {
-			objectMap[rsName] = lwm2m.NewObject(rsName, nil)
+	for instructionName, instruction := range instructions.Instructions {
+		objectId, exists := instruction.DeviceShifuGatewayProperties[ObjectIdStr]
+		if !exists {
+			continue
 		}
 
-		objectMap[rsName].AddObject(obj.ObjectId, &instruction)
-	}
+		var gwInstruction ShifuInstruction
+		gwInstruction.ObjectId = objectId
+		gwInstruction.DataType, exists = instruction.DeviceShifuGatewayProperties[DataTypeStr]
+		if !exists {
+			gwInstruction.DataType = "string"
+		}
 
-	for _, obj := range objectMap {
+		obj := lwm2m.NewObject(instructionName, &gwInstruction)
 		g.client.AddObject(*obj)
 	}
 
@@ -88,10 +116,9 @@ func (g *Gateway) Start() error {
 }
 
 type ShifuInstruction struct {
-	ResourceId string
-	ObjectId   string
-	Endpoint   string
-	DataType   string
+	ObjectId string
+	Endpoint string
+	DataType string
 }
 
 func (si *ShifuInstruction) Read() (interface{}, error) {
@@ -127,6 +154,19 @@ func (si *ShifuInstruction) Write(data interface{}) error {
 
 	if resp.StatusCode != http.StatusOK {
 		return fmt.Errorf("error writing data: %v", resp.Status)
+	}
+
+	return nil
+}
+
+func (si *ShifuInstruction) Execute() error {
+	resp, err := http.Post(si.Endpoint, "plain/text", nil)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return fmt.Errorf("error executing instruction: %v", resp.Status)
 	}
 
 	return nil
