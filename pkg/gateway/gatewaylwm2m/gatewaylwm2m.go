@@ -3,6 +3,7 @@ package gatewaylwm2m
 import (
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -38,15 +39,10 @@ func New() (*Gateway, error) {
 		return nil, err
 	}
 
-	if edgedevice.Spec.GatewaySettings == nil {
-		return nil, fmt.Errorf("GatewaySettings not found in EdgeDevice spec")
-	}
-
-	lwm2mSettings := edgedevice.Spec.GatewaySettings.LwM2MSettings
-
 	client, err := lwm2m.NewClient(lwm2m.Config{
-		EndpointUrl:  *edgedevice.Spec.GatewaySettings.Address,
-		EndpointName: lwm2mSettings.EndpointName,
+		EndpointUrl: *edgedevice.Spec.GatewaySettings.Address,
+		Settings:    *edgedevice.Spec.GatewaySettings.LwM2MSettings,
+		ShifuHost:   "http://localhost:8080",
 	})
 	if err != nil {
 		return nil, err
@@ -54,9 +50,21 @@ func New() (*Gateway, error) {
 
 	var gateway = &Gateway{
 		edgedevice:     edgedevice,
-		client:         client,
 		KRestfulClient: krclient,
+		client:         client,
 	}
+
+	if err := gateway.LoadCfg(); err != nil {
+		return nil, err
+	}
+
+	if edgedevice.Spec.GatewaySettings == nil {
+		return nil, fmt.Errorf("GatewaySettings not found in EdgeDevice spec")
+	}
+
+	lwm2mSettings := edgedevice.Spec.GatewaySettings.LwM2MSettings
+	gateway.client.EndpointName = lwm2mSettings.EndpointName
+	gateway.client = client
 
 	return gateway, nil
 }
@@ -77,14 +85,15 @@ func (g *Gateway) LoadCfg() error {
 	}
 
 	var instructions deviceshifubase.DeviceShifuInstructions
-	if instructions, ok := cfg[ConfigmapInstructionsStr]; ok {
-		err := yaml.Unmarshal([]byte(instructions), &instructions)
+	if instructionInCfg, ok := cfg[ConfigmapInstructionsStr]; ok {
+		err := yaml.Unmarshal([]byte(instructionInCfg), &instructions)
 		if err != nil {
 			logger.Fatalf("Error parsing %v from ConfigMap, error: %v", ConfigmapInstructionsStr, err)
 			return err
 		}
 	}
 
+	var objMap = make(map[string]*lwm2m.Object)
 	for instructionName, instruction := range instructions.Instructions {
 		objectId, exists := instruction.DeviceShifuGatewayProperties[ObjectIdStr]
 		if !exists {
@@ -94,11 +103,31 @@ func (g *Gateway) LoadCfg() error {
 		var gwInstruction ShifuInstruction
 		gwInstruction.ObjectId = objectId
 		gwInstruction.DataType, exists = instruction.DeviceShifuGatewayProperties[DataTypeStr]
+		gwInstruction.Endpoint = g.client.ShifuHost + "/" + instructionName
 		if !exists {
 			gwInstruction.DataType = "string"
 		}
 
-		obj := lwm2m.NewObject(instructionName, &gwInstruction)
+		var resourceId string
+		var objPath string
+		paths := strings.Split(objectId, "/")
+		for index, path := range paths {
+			if path != "" {
+				resourceId = path
+				objPath = strings.Join(paths[index+1:], "/")
+				break
+			}
+		}
+
+		if _, exists := objMap[resourceId]; !exists {
+			objMap[resourceId] = lwm2m.NewObject(resourceId, nil)
+		}
+
+		log.Println(objPath)
+		objMap[resourceId].AddObject(objPath, &gwInstruction)
+	}
+
+	for _, obj := range objMap {
 		g.client.AddObject(*obj)
 	}
 
@@ -106,6 +135,10 @@ func (g *Gateway) LoadCfg() error {
 }
 
 func (g *Gateway) Start() error {
+	if err := g.client.Start(); err != nil {
+		return err
+	}
+
 	err := g.client.Register()
 	if err != nil {
 		logger.Errorf("Error registering client: %v", err)
@@ -113,6 +146,7 @@ func (g *Gateway) Start() error {
 	}
 
 	select {}
+	return nil
 }
 
 type ShifuInstruction struct {

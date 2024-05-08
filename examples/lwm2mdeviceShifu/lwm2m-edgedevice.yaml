@@ -10,11 +10,11 @@ spec:
   protocol: LwM2M
   gatewaySettings:
     protocol: lwm2m
-    address: 10.20.30.104:5683
+    address: 10.20.30.175:5684
     LwM2MSettings:
-      endpointName: test
+      endpointName: test1
       securityMode: DTLS
-      dtlsMode: PSK123
+      dtlsMode: PSK
       cipherSuites: 
         - TLS_PSK_WITH_AES_128_CCM
       pskIdentity: hint

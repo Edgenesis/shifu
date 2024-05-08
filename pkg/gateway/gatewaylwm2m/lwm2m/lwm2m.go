@@ -2,12 +2,14 @@ package lwm2m
 
 import (
 	"context"
+	"encoding/hex"
 	"errors"
 	"fmt"
 	"io"
 	"strings"
 	"time"
 
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifulwm2m/lwm2m"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 	piondtls "github.com/pion/dtls/v2"
@@ -32,15 +34,15 @@ type Client struct {
 	lastUpdatedTime  time.Time
 	dataCache        map[string]interface{}
 
-	settings v1alpha1.LwM2MSettings
-	conn     *udpClient.Conn
-	tmgr     *TaskManager
+	conn *udpClient.Conn
+	tmgr *TaskManager
 }
 
 type Config struct {
 	EndpointName string
 	EndpointUrl  string
 	ShifuHost    string
+	Settings     v1alpha1.LwM2MSettings
 }
 
 const (
@@ -58,43 +60,49 @@ func NewClient(config Config) (*Client, error) {
 		tmgr:           NewTaskManager(),
 		dataCache:      make(map[string]interface{}),
 	}
+
+	return client, nil
+}
+
+func (c *Client) Start() error {
 	udpClientOpts := []udp.Option{}
 
 	udpClientOpts = append(udpClientOpts,
-		options.WithMux(client.handleRouter()),
+		options.WithMux(c.handleRouter()),
 	)
 
 	var conn *udpClient.Conn
 	var err error
-
-	switch *client.settings.SecurityMode {
+	cipherSuites, err := lwm2m.StringsToCodes(c.Settings.CipherSuites)
+	if err != nil {
+		return err
+	}
+	switch *c.Settings.SecurityMode {
 	case v1alpha1.SecurityModeDTLS:
-		switch *client.settings.DTLSMode {
+		switch *c.Settings.DTLSMode {
 		case v1alpha1.DTLSModePSK:
 			dtlsConfig := &piondtls.Config{
 				PSK: func(hint []byte) ([]byte, error) {
 					fmt.Printf("Server's hint: %s \n", hint)
-					return []byte{0xAB, 0xC1, 0x23}, nil
+					return hex.DecodeString(*c.Settings.PSKKey)
 				},
-				PSKIdentityHint: []byte("Pion DTLS Client"),
-				CipherSuites:    []piondtls.CipherSuiteID{piondtls.TLS_PSK_WITH_AES_128_CCM_8},
+				PSKIdentityHint: []byte(*c.Settings.PSKIdentity),
+				CipherSuites:    cipherSuites,
 			}
 
-			conn, err = dtls.Dial(client.EndpointUrl, dtlsConfig, udpClientOpts...)
-
+			conn, err = dtls.Dial(c.EndpointUrl, dtlsConfig, udpClientOpts...)
 		}
 	default:
 		fallthrough
 	case v1alpha1.SecurityModeNone:
-		conn, err = udp.Dial(client.EndpointUrl, udpClientOpts...)
+		conn, err = udp.Dial(c.EndpointUrl, udpClientOpts...)
 	}
-
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	client.conn = conn
-	return client, nil
+	c.conn = conn
+	return nil
 }
 
 func (c *Client) Object() Object {
@@ -262,7 +270,12 @@ func (c *Client) handleRouter() *mux.Router {
 
 func (c *Client) AddObject(object Object) {
 	logger.Infof("add object %v", object.Id)
-	c.object.AddGroup(object)
+	if obj, exists := c.object.Child[object.Id]; exists {
+		obj.AddObject(object.Id, object)
+	} else {
+		c.object.AddGroup(object)
+	}
+
 	c.lastModifiedTime = time.Now()
 }
 
