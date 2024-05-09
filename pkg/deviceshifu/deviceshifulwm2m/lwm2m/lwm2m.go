@@ -123,7 +123,7 @@ func (s *Server) startDTLSServer() error {
 
 		server := dtlsServer.New(serverOptions...)
 
-		cipersuits, err := StringsToCodes(s.settings.CipherSuites)
+		cipersuites, err := StringsToCodes(s.settings.CipherSuites)
 		if err != nil {
 			return err
 		}
@@ -138,10 +138,10 @@ func (s *Server) startDTLSServer() error {
 				return []byte(psk), nil
 			},
 			PSKIdentityHint: []byte(*s.settings.PSKIdentity),
-			CipherSuites:    cipersuits,
+			CipherSuites:    cipersuites,
 		}
-		logger.Infof("Starting DTLS server")
-		l, err := net.NewDTLSListener("udp", ":5684", &dtlsConfig)
+
+		l, err := net.NewDTLSListener("udp4", ":5684", &dtlsConfig)
 		if err != nil {
 			return err
 		}

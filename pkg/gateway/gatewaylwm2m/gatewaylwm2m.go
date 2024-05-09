@@ -146,7 +146,10 @@ func (g *Gateway) Start() error {
 	}
 
 	select {}
-	return nil
+}
+
+func (g *Gateway) ShutDown() {
+	g.client.CleanUp()
 }
 
 type ShifuInstruction struct {

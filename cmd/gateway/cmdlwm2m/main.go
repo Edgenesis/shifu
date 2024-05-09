@@ -1,6 +1,10 @@
 package main
 
 import (
+	"os"
+	"os/signal"
+	"syscall"
+
 	"github.com/edgenesis/shifu/pkg/gateway/gatewaylwm2m"
 	"github.com/edgenesis/shifu/pkg/logger"
 )
@@ -11,10 +15,10 @@ func main() {
 		logger.Fatal(err)
 	}
 
-	err = client.LoadCfg()
-	if err != nil {
-		logger.Fatal(err)
-	}
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	panic(client.Start())
+	go client.Start()
+	<-sigs
+	client.ShutDown()
 }
