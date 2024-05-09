@@ -5,6 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 	"strings"
 
@@ -32,8 +33,8 @@ type Gateway struct {
 
 func New() (*Gateway, error) {
 	edgedevice, krclient, err := deviceshifubase.NewEdgeDevice(&deviceshifubase.EdgeDeviceConfig{
-		NameSpace:  "devices",
-		DeviceName: "edgedevice-lwm2m",
+		NameSpace:  os.Getenv("EDGEDEVICE_NAMESPACE"),
+		DeviceName: os.Getenv("EDGEDEVICE_NAME"),
 	})
 	if err != nil {
 		return nil, err

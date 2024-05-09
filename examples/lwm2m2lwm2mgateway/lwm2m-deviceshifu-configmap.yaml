@@ -15,7 +15,12 @@ data:
         protocolPropertyList:
           ObjectId: /3303/0/5700
           EnableObserve: false
+        gatewayPropertyList:
+          ObjectId: /3303/0/5700
+          DataType: float
       reset:
         protocolPropertyList:
           ObjectId: /3303/0/5605
           EnableObserve: false
+        gatewayPropertyList:
+          ObjectId: /3303/0/5605

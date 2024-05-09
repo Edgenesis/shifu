@@ -31,6 +31,12 @@ spec:
               value: "devices"
             - name: LOG_LEVEL
               value: debug
+        - image: edgehub/gateway-lwm2m:nightly
+          name: gateway-lwm2m
+          volumeMounts:
+            - name: deviceshifu-config
+              mountPath: "/etc/edgedevice/config"
+              readOnly: true
       volumes:
         - name: deviceshifu-config
           configMap:
