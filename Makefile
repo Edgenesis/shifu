@@ -139,6 +139,11 @@ buildx-build-image-deviceshifu-http-http:
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-http:${IMAGE_VERSION} --load
 
+buildx-build-image-deviceshifu-http-lwm2m:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuLwM2M \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-http-lwm2m:${IMAGE_VERSION} --load
+
 buildx-build-image-deviceshifu-http-mqtt:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuMQTT \
 	 	--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
@@ -218,6 +223,12 @@ buildx-build-image-telemetry-service:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice\
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/telemetryservice:${IMAGE_VERSION} --load
+
+buildx-build-image-gateway-lwm2m:
+	docker buildx build --platform=linux/$(shell go env GOARCH) \
+          -f $(PROJECT_ROOT)/dockerfiles/Dockerfile.gatewayLwM2M \
+          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+          -t edgehub/gateway-lwm2m:$(IMAGE_VERSION) --load
 
 .PHONY: download-demo-files
 download-demo-files:
