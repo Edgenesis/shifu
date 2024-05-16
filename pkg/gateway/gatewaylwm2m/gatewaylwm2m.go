@@ -96,6 +96,10 @@ func (g *Gateway) LoadCfg() error {
 
 	var objMap = make(map[string]*lwm2m.Object)
 	for instructionName, instruction := range instructions.Instructions {
+		if instruction == nil {
+			continue
+		}
+
 		objectId, exists := instruction.DeviceShifuGatewayProperties[ObjectIdStr]
 		if !exists {
 			continue
@@ -185,7 +189,13 @@ func (si *ShifuInstruction) Read() (interface{}, error) {
 
 func (si *ShifuInstruction) Write(data interface{}) error {
 	dataStr := fmt.Sprintf("%v", data)
-	resp, err := http.Post(si.Endpoint, "plain/text", strings.NewReader(dataStr))
+
+	req, err := http.NewRequest(http.MethodPut, si.Endpoint, strings.NewReader(dataStr))
+	if err != nil {
+		return err
+	}
+
+	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return err
 	}

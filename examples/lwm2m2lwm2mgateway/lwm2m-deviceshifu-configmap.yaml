@@ -18,6 +18,27 @@ data:
         gatewayPropertyList:
           ObjectId: /3303/0/5700
           DataType: float
+      units:
+        protocolPropertyList:
+          ObjectId: /3303/0/5701
+          EnableObserve: false
+        gatewayPropertyList:
+          ObjectId: /3303/0/5701
+          DataType: string
+      max:
+        protocolPropertyList:
+          ObjectId: /3303/0/5602
+          EnableObserve: false
+        gatewayPropertyList:
+          ObjectId: /3303/0/5602
+          DataType: float
+      min:
+        protocolPropertyList:
+          ObjectId: /3303/0/5601
+          EnableObserve: false
+        gatewayPropertyList:
+          ObjectId: /3303/0/5601
+          DataType: float
       reset:
         protocolPropertyList:
           ObjectId: /3303/0/5605
