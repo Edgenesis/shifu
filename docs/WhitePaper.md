@@ -8,7 +8,9 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT e
 
 [https://github.com/Edgenesis/shifu](https://github.com/Edgenesis/shifu)
 
-![shifu Logo](../img/shifu-logo.svg)
+<div style="text-align: center">
+    <img src="../img/shifu-logo.svg" alt="shifu Logo" width="200"/>
+</div>
 
 ## 2. Highlights
 
@@ -93,7 +95,10 @@ An energy company, due to the complex maintenance and operation of many critical
 
 ![Shifu whitepaper case2 solution](../img/shifu-whitepaper-case2-solution.png)
 
-![Shifu whitepaper case2 solution 1](../img/shifu-whitepaper-case2-solution-1.png)
+<div style="display: flex; justify-content: space-between;">
+    <img src="../img/shifu-whitepaper-case2-solution-1.png" alt="Shifu whitepaper case2 solution 1" style="width: 48%; margin-right: 1%;">
+    <img src="../img/shifu-whitepaper-case2-solution-2.png" alt="Shifu whitepaper case2 solution 2" style="width: 48%; margin-left: 1%;">
+</div>
 
 ## 7. Use Case 3 -  Cloud Surveillance Security
 
@@ -138,4 +143,7 @@ The California Strawberry Commission is committed to digitalizing and enhancing 
 
 ![Shifu whitepaper case4 solution](../img/shifu-whitepaper-case4-solution.png)
 
-![Shifu whitepaper case4 solution 1](../img/shifu-whitepaper-case4-solution-1.png)
+<div style="display: flex; justify-content: space-between;">
+    <img src="../img/shifu-whitepaper-case4-solution-1.png" alt="Shifu whitepaper case4 solution 1" style="width: 48%; margin-right: 1%;">
+    <img src="../img/shifu-whitepaper-case4-solution-2.png" alt="Shifu whitepaper case4 solution 2" style="width: 48%; margin-left: 1%;">
+</div>
