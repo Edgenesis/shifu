@@ -40,9 +40,9 @@ HTTP, MQTT, RTSP, Siemens S7, TCP socket, OPC UA etc. The microservice architect
 
 ## 4. Our Solution
 
-### Standardize Device into web API (deviceShifu)
+### Standardize Device into Web API (deviceShifu)
 
-Our solution simplifies these complexities by providing developers with a standardized web API. We achieve this by creating Docker images for device SDKs and deploying them as **deviceshifu** (aka. device digital twin) within a Kubernetes cluster.
+Our solution simplifies these complexities by providing developers with a standardized Web API. We achieve this by creating Docker images for device SDKs and deploying them as **deviceShifu** (aka. device digital twin) within a Kubernetes cluster.
 
 ![Shifu whitepaper standardize](../img/shifu-whitepaper-standardize.png)
 
