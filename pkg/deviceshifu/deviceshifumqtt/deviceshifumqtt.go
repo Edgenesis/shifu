@@ -2,8 +2,10 @@ package deviceshifumqtt
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
@@ -115,6 +117,8 @@ var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Me
 		mqttMessageInstructionMap[msg.Topic()] = rawMqttMessageStr
 	}
 	mqttMessageReceiveTimestampMap[msg.Topic()] = time.Now()
+
+	logger.Infof("MESSAGE_STR: %v", mqttMessageInstructionMap[msg.Topic()])
 	logger.Infof("MESSAGE_STR updated")
 }
 
@@ -232,7 +236,6 @@ func (ds *DeviceShifu) getMQTTTopicFromInstructionName(instructionName string) (
 // TODO: update status based on telemetry
 
 func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
-
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
@@ -247,6 +250,8 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 			}
 
 			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
+			log.Println(mqttMessageReceiveTimestampMap)
+			var errorCollector = []error{}
 			for telemetry, telemetryProperties := range telemetries {
 				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
 					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
@@ -255,8 +260,9 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				mqttTopic, err := ds.getMQTTTopicFromInstructionName(instruction)
 				if err != nil {
+					errorCollector = append(errorCollector, err)
 					logger.Errorf("%v", err.Error())
-					return false, err
+					continue
 				}
 
 				// use mqtttopic to get the mqttMessageReceiveTimestampMap
@@ -264,9 +270,29 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				// return true if there is a topic message interval is normal
 				// return false if the time interval of all topics is abnormal
 				nowTime := time.Now()
-				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqttTopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
-					return true, nil
+				log.Println(mqttTopic, nowTime, mqttMessageReceiveTimestampMap[mqttTopic])
+				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqttTopic]).Milliseconds()) > *telemetrySettings.DeviceShifuTelemetryTimeoutInMilliseconds {
+					logger.Infof("Telemetry %v is not updated in time", telemetry)
+					continue
 				}
+
+				telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
+				if exist && *telemetryCollectionService.TelemetryServiceEndpoint != "" {
+					var resp = &http.Response{
+						Body: io.NopCloser(strings.NewReader(mqttMessageInstructionMap[mqttTopic])),
+					}
+					err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
+					if err != nil {
+						errorCollector = append(errorCollector, err)
+						logger.Errorf("Error when pushing telemetry to service, error: %v", err.Error())
+						continue
+					}
+				}
+
+			}
+
+			if len(errorCollector) > 0 {
+				return false, errors.Join(errorCollector...)
 			}
 		default:
 			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
