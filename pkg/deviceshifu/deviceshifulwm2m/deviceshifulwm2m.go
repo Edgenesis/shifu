@@ -182,6 +182,15 @@ func (handler DeviceCommandHandlerLwM2M) commandHandleFunc() http.HandlerFunc {
 }
 
 func (ds *DeviceShifuLwM2M) collectHTTPTelemtries() (bool, error) {
+	if ds.server.Conn == nil {
+		return false, nil
+	}
+
+	if err := ds.server.Conn.Ping(ds.server.Conn.Context()); err != nil {
+		logger.Errorf("Error checking telemetry: %v", err.Error())
+		return false, err
+	}
+
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolLwM2M:
