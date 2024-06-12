@@ -279,6 +279,10 @@ func (c *Client) AddObject(object Object) {
 	c.lastModifiedTime = time.Now()
 }
 
+func (c *Client) Ping() error {
+	return c.conn.Ping(c.ctx)
+}
+
 func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 	objectId, err := r.Path()
 	if err != nil {

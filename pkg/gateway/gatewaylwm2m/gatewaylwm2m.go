@@ -8,6 +8,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/gateway/gatewaylwm2m/lwm2m"
@@ -150,7 +151,20 @@ func (g *Gateway) Start() error {
 		return err
 	}
 
-	select {}
+	t := time.NewTicker(time.Second * 10).C
+
+	for {
+		select {
+		case <-t:
+			if err := g.client.Ping(); err != nil {
+				logger.Errorf("Error pinging client: %v", err)
+				g.ShutDown()
+				if err := g.client.Start(); err != nil {
+					return err
+				}
+			}
+		}
+	}
 }
 
 func (g *Gateway) ShutDown() {

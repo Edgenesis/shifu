@@ -229,6 +229,11 @@ func (s *Server) handleResource(w mux.ResponseWriter, r *mux.Message) {
 		s.lastRegistrationTime = time.Time{}
 		return
 	case codes.POST:
+		// if not registered, handle register
+		if s.Conn == nil {
+			_ = w.SetResponse(codes.NotFound, message.TextPlain, nil)
+			return
+		}
 		s.lastRegistrationTime = time.Now()
 		if s.Conn.RemoteAddr() != w.Conn().RemoteAddr() {
 			_ = w.SetResponse(codes.BadRequest, message.TextPlain, nil)
