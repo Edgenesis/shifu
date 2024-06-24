@@ -13,7 +13,7 @@ COPY pkg/deviceshifu pkg/deviceshifu
 COPY pkg/logger pkg/logger
 
 RUN apt-get update
-RUN apt-get install -y libpcap-dev
+RUN apt-get install -y libpcap-dev gcc
 
 RUN go mod download
 
