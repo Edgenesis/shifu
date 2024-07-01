@@ -128,7 +128,7 @@ func toPointer[T any](v T) *T {
 }
 
 func removeChar(s string) string {
-	// remove all "`"
-	char := '`'
-	return strings.ReplaceAll(s, string(char), "")
+	// remove all "```" 
+	str := "```"
+	return strings.ReplaceAll(s, str, "")
 }
