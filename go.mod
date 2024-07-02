@@ -19,7 +19,7 @@ require (
 	github.com/microsoft/go-mssqldb v1.7.1
 	github.com/minio/minio-go/v7 v7.0.70
 	github.com/mochi-co/mqtt v1.3.2
-	github.com/onsi/ginkgo/v2 v2.17.2
+	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
 	github.com/spf13/cobra v1.8.0
 	github.com/stretchr/testify v1.9.0
