@@ -76,7 +76,7 @@ jobs:
           new_tag="v0.${next_version}.0"
           echo "VERSION=${new_tag}" >> "$GITHUB_ENV"
           echo "PREVIOUS_TAG=${current_tag}" >> "$GITHUB_ENV"
-          echp "Print env:VERSION and env:PREVIOUS_TAG"
+          echo "Print env:VERSION and env:PREVIOUS_TAG"
           echo "VERSION=${new_tag}"
           echo "PREVIOUS_TAG=${current_tag}"
       - name: generate changelog
