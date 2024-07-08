@@ -4,11 +4,11 @@
 
 ## 新功能 🎉
 
-* 添加 shifu 仪表盘配置和自述文件 by @rhoninl in https://github.com/Edgenesis/shifu/pull/918
+* 添加 shifu 仪表板配置和自述文件 by @rhoninl in https://github.com/Edgenesis/shifu/pull/918
 
 ## Bug 修复
 
-* 修复：删除首尾行的特殊字符 by @AEnjoy in https://github.com/Edgenesis/shifu/pull/919
+* 修复：从第一行和最后一行删除特殊字符 by @AEnjoy in https://github.com/Edgenesis/shifu/pull/919
 
 ## Dependabot 自动更新 🤖
 
