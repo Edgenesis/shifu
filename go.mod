@@ -17,7 +17,7 @@ require (
 	github.com/briandowns/spinner v1.23.1
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/microsoft/go-mssqldb v1.7.2
-	github.com/minio/minio-go/v7 v7.0.70
+	github.com/minio/minio-go/v7 v7.0.74
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1
@@ -35,22 +35,22 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
-	github.com/goccy/go-json v0.10.2 // indirect
+	github.com/goccy/go-json v0.10.3 // indirect
 	github.com/golang-sql/civil v0.0.0-20220223132316-b832511892a9 // indirect
 	github.com/golang-sql/sqlexp v0.1.0 // indirect
 	github.com/google/gnostic-models v0.6.8 // indirect
 	github.com/google/pprof v0.0.0-20240424215950-a892ee059fd6 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/klauspost/compress v1.17.6 // indirect
-	github.com/klauspost/cpuid/v2 v2.2.6 // indirect
+	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/matttproud/golang_protobuf_extensions/v2 v2.0.0 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	golang.org/x/exp v0.0.0-20230522175609-2e198f4a06a1 // indirect
 	golang.org/x/tools v0.21.1-0.20240508182429-e35e4ccd0d2d // indirect
-	gopkg.in/ini.v1 v1.67.0 // indirect
 	k8s.io/klog/v2 v2.110.1 // indirect
 )
 
