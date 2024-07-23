@@ -2,7 +2,6 @@ package lwm2m
 
 import (
 	"encoding/json"
-	"log"
 	"path/filepath"
 	"slices"
 	"strings"
@@ -67,7 +66,6 @@ func (o Object) GetChildObject(path string) *Object {
 func (o Object) ReadAll(baseName string) (Resource, error) {
 	var resource = Resource{}
 	object := o.GetChildObject(baseName)
-	log.Println(object)
 
 	data, err := object.readAll("")
 	if err != nil {

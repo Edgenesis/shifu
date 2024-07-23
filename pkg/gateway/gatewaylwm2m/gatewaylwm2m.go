@@ -183,6 +183,11 @@ func (si *ShifuInstruction) Read() (interface{}, error) {
 		return nil, err
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("error reading data: %v", resp.Status)
+	}
+
 	rawData, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err

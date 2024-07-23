@@ -127,7 +127,7 @@ func (c *Client) Register() error {
 	}
 
 	if resp.Code() != codes.Created {
-		return errors.New("register failed")
+		return fmt.Errorf("register failed: %v", resp.Code())
 	}
 
 	locationPath, err := resp.Options().LocationPath()
