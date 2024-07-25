@@ -61,7 +61,7 @@ jobs:
           # else
           #   new_tag="v0.${next_version}.0"
           # fi
-          minute=$(( (date +%M) % 10 ))
+          minute= $(( $(date +%M) % 10 ))
           if [ "$minute" -eq 5 ]; then
             new_tag="v0.${next_version}.0-rc1"
           else
