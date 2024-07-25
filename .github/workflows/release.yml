@@ -11,9 +11,9 @@ on:
         type: string
       target_commitish:
         required: true
-          type: string
+        type: string
   schedule:
-    - cron: '20/5 * * * *'
+    - cron: '*/5 * * * *'
 
 permissions:
   contents: write
