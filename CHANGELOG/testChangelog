@@ -1,0 +1,1 @@
+{ "message": "Resource not accessible by integration", "documentation_url": "https://docs.github.com/rest/releases/releases#generate-release-notes-content-for-a-release", "status": "403" }
