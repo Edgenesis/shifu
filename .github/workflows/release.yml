@@ -11,11 +11,9 @@ on:
         type: string
       target_commitish:
         required: true
-        type: string
-  schedule:
-    - cron: '33 10 * * 4' # 09:56 Thu
-    - cron: '30 15 * * 1' # 15:30 Mon 
-    - cron: '30 15 * * 4' # 15:30 Thu
+          type: string
+            schedule:
+            - cron: '20/5 * * * *'
 
 permissions:
   contents: write
@@ -57,8 +55,14 @@ jobs:
           current_tag="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
           current_version=$(echo "${current_tag}" | cut -d'.' -f2)
           next_version=$((current_version + 1))
-          week_number=$(( ($(date +%s) / (60*60*24*7)) % 2 ))
-          if [ "$week_number" -eq 0 ]; then
+          # week_number=$(( ($(date +%s) / (60*60*24*7)) % 2 ))
+          # if [ "$week_number" -eq 0 ]; then
+          #   new_tag="v0.${next_version}.0-rc1"
+          # else
+          #   new_tag="v0.${next_version}.0"
+          # fi
+          minute=$(((date +%M) % 10))
+          if [ "$minute" -eq 5 ]; then
             new_tag="v0.${next_version}.0-rc1"
           else
             new_tag="v0.${next_version}.0"
