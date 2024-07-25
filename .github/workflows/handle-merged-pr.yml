@@ -3,8 +3,8 @@ name: Handle Merged PR
 on:
   pull_request:
     types: [closed]
-    branches:
-      - changelog-*
+    # branches:
+    #   - changelog-*
 
 jobs:
   handle_merged_pr:
