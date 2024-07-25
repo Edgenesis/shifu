@@ -121,9 +121,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - name: Merge Pull Request
-        run:
-          echo steps.get-pr.outputs.PR_NUMBER
-        if: steps.get-pr.outputs.PR_NUMBER != ''
         run: gh pr merge ${{ env.PR_NUMBER }} --auto --merge
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
