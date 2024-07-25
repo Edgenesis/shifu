@@ -63,7 +63,7 @@ jobs:
           # fi
           minute=$(( $(date +%M) % 10 ))
           echo $minute
-          if [ "$minute" -eq 5 ]; then
+          if [ "$minute" -ge 5 ]; then
             new_tag="v0.${next_version}.0-rc1"
           else
             new_tag="v0.${next_version}.0"
