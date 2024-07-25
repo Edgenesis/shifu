@@ -115,6 +115,7 @@ jobs:
       - name: Fetch Pull Request Number
         run: |
           PR_NUMBER=$(gh pr list --base main --head changelog-${{ env.NEW_TAG }} --json number --jq '.[0].number')
+          echo $PR_NUMBER
           echo "PR_NUMBER=${PR_NUMBER}" >> $GITHUB_ENV
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
