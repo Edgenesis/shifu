@@ -1,0 +1,87 @@
+name: Publish Release
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - changelog-*
+
+jobs:
+  publish_release:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+
+      - name: set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: get latest tag
+        id: get_latest_tag
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "::set-output name=LATEST_TAG::${latest_tag}"
+
+      - name: determine new tag and version
+        id: determine_new_tag
+        run: |
+          current_tag="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
+          current_version=$(echo "${current_tag}" | cut -d'.' -f2)
+          next_version=$((current_version + 1))
+          new_tag="v0.${next_version}.0"
+          echo "::set-output name=NEW_TAG::${new_tag}"
+
+      - name: read changelog content
+        id: read_changelog
+        run: |
+          new_tag="${{ steps.determine_new_tag.outputs.NEW_TAG }}"
+          changelog_file="CHANGELOG/CHANGELOG-${new_tag}.md"
+          changelog_file_zh="CHANGELOG/CHANGELOG-${new_tag}-zh.md"
+          if [ -f "$changelog_file" ]; then
+            changelog_content=$(cat $changelog_file)
+          else
+            echo "Changelog file not found: $changelog_file"
+            exit 1
+          fi
+          if [ -f "$changelog_file_zh" ]; then
+            changelog_content_zh=$(cat $changelog_file_zh)
+          else
+            echo "Warning: Changelog file not found: $changelog_file_zh"
+          fi
+          combined_changelog="${changelog_content}\n\n${changelog_content_zh}"
+          echo "::set-output name=CHANGELOG_CONTENT::${combined_changelog}"
+
+      - name: determine if pre-release
+        id: determine_pre_release
+        run: |
+          day_of_week=$(date +%u)
+          if [ "$day_of_week" -eq 4 ]; then
+            echo "::set-output name=PRE_RELEASE::true"
+          else
+            echo "::set-output name=PRE_RELEASE::false"
+          fi
+
+      - name: create release
+        run: |
+          release_tag="${{ steps.determine_new_tag.outputs.NEW_TAG }}"
+          changelog_content="${{ steps.read_changelog.outputs.CHANGELOG_CONTENT }}"
+          pre_release="${{ steps.determine_pre_release.outputs.PRE_RELEASE }}"
+          if [ "$pre_release" == "true" ]; then
+            gh release create $release_tag \
+              --target main \
+              --title "$release_tag" \
+              --notes "$changelog_content" \
+              --prerelease
+          else
+            gh release create $release_tag \
+              --target main \
+              --title "$release_tag" \
+              --notes "$changelog_content"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

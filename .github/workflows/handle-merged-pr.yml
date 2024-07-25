@@ -1,0 +1,86 @@
+name: Handle Merged PR
+
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - changelog-*
+
+jobs:
+  handle_merged_pr:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+
+      - name: set up git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: get latest tag
+        id: get_latest_tag
+        run: |
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "::set-output name=LATEST_TAG::${latest_tag}"
+
+      - name: determine new tag and version
+        id: determine_new_tag
+        run: |
+          current_tag="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
+          current_version=$(echo "${current_tag}" | cut -d'.' -f2)
+          next_version=$((current_version + 1))
+          new_tag="v0.${next_version}.0"
+          echo "::set-output name=NEW_TAG::${new_tag}"
+
+      - name: read changelog content
+        id: read_changelog
+        run: |
+          new_tag="${{ steps.determine_new_tag.outputs.NEW_TAG }}"
+          changelog_file="CHANGELOG/CHANGELOG-${new_tag}.md"
+          changelog_file_zh="CHANGELOG/CHANGELOG-${new_tag}-zh.md"
+          if [ -f "$changelog_file" ]; then
+            changelog_content=$(cat $changelog_file)
+          else
+            echo "Changelog file not found: $changelog_file"
+            exit 1
+          fi
+          if [ -f "$changelog_file_zh" ]; then
+            changelog_content_zh=$(cat $changelog_file_zh)
+          else
+            echo "Changelog file not found: $changelog_file_zh"
+            exit 1
+          fi
+          combined_changelog="${changelog_content}\n\n${changelog_content_zh}"
+          echo "::set-output name=CHANGELOG_CONTENT::${combined_changelog}"
+
+      - name: checkout main branch
+        run: |
+          git checkout main
+          git pull
+
+      - name: create local branch
+        run: |
+          new_tag="${{ steps.determine_new_tag.outputs.NEW_TAG }}"
+          branch_name="release_${new_tag//./_}"
+          git checkout -b $branch_name
+          echo "::set-output name=BRANCH_NAME::${branch_name}"
+
+      - name: make tag
+        run: |
+          new_tag="${{ steps.determine_new_tag.outputs.NEW_TAG }}"
+          make tag VERSION="${new_tag}-rc1"
+          git commit -am "change tag for release ${new_tag}-rc1"
+          git push origin HEAD
+
+      - name: create pull request for tag
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: change tag for release ${{ steps.determine_new_tag.outputs.NEW_TAG }}-rc1
+          title: change tag for release ${{ steps.determine_new_tag.outputs.NEW_TAG }}-rc1
+          body: change tag for release ${{ steps.determine_new_tag.outputs.NEW_TAG }}-rc1
+          branch: ${{ steps.handle_merged_pr.outputs.BRANCH_NAME }}
+          base: main
