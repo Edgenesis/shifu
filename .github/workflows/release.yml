@@ -113,6 +113,7 @@ jobs:
           branch: changelog-${{ env.NEW_TAG }}
           base: main
       - name: Fetch Pull Request Number
+        id: get-pr
         run: |
           PR_NUMBER=$(gh pr list --base main --head changelog-${{ env.NEW_TAG }} --json number --jq '.[0].number')
           echo $PR_NUMBER
