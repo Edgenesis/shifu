@@ -160,21 +160,22 @@ jobs:
       - name: create local branch
         run: |
           new_tag="${{ env.NEW_TAG }}"
-          branch_name="release_${new_tag//./_}"
+          branch_name="release.${new_tag}"
           git checkout -b $branch_name
           echo "BRANCH_NAME=${branch_name}" >> "$GITHUB_ENV"
       - name: make tag
         run: |
           new_tag="${{ env.NEW_TAG }}"
-          make tag VERSION="${new_tag}-rc1"
-          git commit -am "change tag for release ${new_tag}-rc1"
+          make tag VERSION="${new_tag}"
+          echo "BRANCH NAME = ${{ env.BRANCH_NAME }}"
+          git commit -am "change tag for release ${new_tag}"
           git push origin HEAD
 
       - name: create pull request for tag
         uses: peter-evans/create-pull-request@v5
         with:
-          commit-message: change tag for release ${{ env.NEW_TAG }}-rc1
-          title: change tag for release ${{ env.NEW_TAG }}-rc1
-          body: change tag for release ${{ env.NEW_TAG }}-rc1
+          commit-message: change tag for release ${{ env.NEW_TAG }}
+          title: change tag for release ${{ env.NEW_TAG }}
+          body: change tag for release ${{ env.NEW_TAG }}
           branch: ${{ env.BRANCH_NAME }}
           base: main
