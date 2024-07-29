@@ -29,6 +29,11 @@ jobs:
         with:
           go-version: "1.22.x"
 
+      - name: set up git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
       - name: get latest tag
         if: github.event_name != 'workflow_dispatch'
         id: get_latest_tag
