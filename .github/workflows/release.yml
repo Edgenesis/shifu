@@ -97,8 +97,8 @@ jobs:
           -H "X-GitHub-Api-Version: 2022-11-28" \
           https://api.github.com/repos/Edgenesis/shifu/releases/generate-notes \
           -d '{"tag_name":"${{ env.NEW_TAG }}","target_commitish":"'"${target_commitish}"'","previous_tag_name":"${{ env.PREVIOUS_TAG }}"}')
-          echo $response >> CHANGELOG/testChangelog
-          #go run tools/release/release.go "$response"
+          echo $response
+          go run tools/release/release.go "$response"
         env:
           AZURE_OPENAI_APIKEY: ${{ secrets.AZURE_OPENAI_APIKEY }}
           AZURE_OPENAI_HOST: ${{ secrets.AZURE_OPENAI_HOST }}
@@ -128,6 +128,7 @@ jobs:
         id: read_changelog
         run: |
           new_tag="${{ steps.determine_new_tag.outputs.NEW_TAG }}"
+          echo $new_tag
           changelog_file="CHANGELOG/CHANGELOG-${new_tag}.md"
           changelog_file_zh="CHANGELOG/CHANGELOG-${new_tag}-zh.md"
           if [ -f "$changelog_file" ]; then
