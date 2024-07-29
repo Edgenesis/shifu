@@ -97,8 +97,8 @@ jobs:
           -H "X-GitHub-Api-Version: 2022-11-28" \
           https://api.github.com/repos/Edgenesis/shifu/releases/generate-notes \
           -d '{"tag_name":"${{ env.NEW_TAG }}","target_commitish":"'"${target_commitish}"'","previous_tag_name":"${{ env.PREVIOUS_TAG }}"}')
-          echo $response
-          go run tools/release/release.go "$response"
+          echo $response >> CHANGELOG/testChangelog
+          #go run tools/release/release.go "$response"
         env:
           AZURE_OPENAI_APIKEY: ${{ secrets.AZURE_OPENAI_APIKEY }}
           AZURE_OPENAI_HOST: ${{ secrets.AZURE_OPENAI_HOST }}
@@ -129,22 +129,24 @@ jobs:
         run: |
           new_tag="${{ steps.determine_new_tag.outputs.NEW_TAG }}"
           echo $new_tag
-          changelog_file="CHANGELOG/CHANGELOG-${new_tag}.md"
-          changelog_file_zh="CHANGELOG/CHANGELOG-${new_tag}-zh.md"
+          changelog_file="CHANGELOG/testChangeLog"
+          # changelog_file="CHANGELOG/CHANGELOG-${new_tag}.md"
+          # changelog_file_zh="CHANGELOG/CHANGELOG-${new_tag}-zh.md"
           if [ -f "$changelog_file" ]; then
             changelog_content=$(cat $changelog_file)
           else
             echo "Changelog file not found: $changelog_file"
             exit 1
           fi
-          if [ -f "$changelog_file_zh" ]; then
-            changelog_content_zh=$(cat $changelog_file_zh)
-          else
-            echo "Changelog file not found: $changelog_file_zh"
-            exit 1
-          fi
-          combined_changelog="${changelog_content}\n\n${changelog_content_zh}"
-          echo "::set-output name=CHANGELOG_CONTENT::${combined_changelog}"
+          # if [ -f "$changelog_file_zh" ]; then
+          #   changelog_content_zh=$(cat $changelog_file_zh)
+          # else
+          #   echo "Changelog file not found: $changelog_file_zh"
+          #   exit 1
+          # fi
+          # combined_changelog="${changelog_content}\n\n${changelog_content_zh}"
+          # echo "::set-output name=CHANGELOG_CONTENT::${combined_changelog}"
+          echo "::set-output name=CHANGELOG_CONTENT::${changelog_content}"
       - name: checkout main branch
         run: |
           git checkout main
