@@ -127,8 +127,8 @@ jobs:
       - name: read changelog content
         id: read_changelog
         run: |
-          new_tag="${{ steps.determine_new_tag.outputs.NEW_TAG }}"
-          echo $new_tag
+          # new_tag="${{ steps.determine_new_tag.outputs.NEW_TAG }}"
+          echo ${{ env.NEW_TAG }}
           changelog_file="CHANGELOG/testChangeLog"
           # changelog_file="CHANGELOG/CHANGELOG-${new_tag}.md"
           # changelog_file_zh="CHANGELOG/CHANGELOG-${new_tag}-zh.md"
