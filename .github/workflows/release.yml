@@ -160,7 +160,7 @@ jobs:
       - name: create local branch
         run: |
           new_tag="${{ env.NEW_TAG }}"
-          branch_name="release.${new_tag}"
+          branch_name="release_${new_tag}"
           git checkout -b $branch_name
           echo "BRANCH_NAME=${branch_name}" >> "$GITHUB_ENV"
       - name: make tag
@@ -177,5 +177,5 @@ jobs:
           commit-message: change tag for release ${{ env.NEW_TAG }}
           title: change tag for release ${{ env.NEW_TAG }}
           body: change tag for release ${{ env.NEW_TAG }}
-          branch: ${{ env.BRANCH_NAME }}
+          branch: release_${{ env.NEW_TAG }}
           base: main
