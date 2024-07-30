@@ -9,10 +9,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
-
 	mqtt "github.com/eclipse/paho.mqtt.golang"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 )
@@ -77,7 +76,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				panic(token.Error())
 			}
 
+			logger.Info(mqttInstructions.Instructions)
 			for instruction, properties := range mqttInstructions.Instructions {
+				logger.Infof("Instruction: %v, Properties: %v", instruction, properties)
 				MQTTTopic = properties.MQTTProtocolProperty.MQTTTopic
 				sub(client, MQTTTopic)
 
@@ -106,14 +107,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 var messagePubHandler mqtt.MessageHandler = func(client mqtt.Client, msg mqtt.Message) {
 	logger.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	rawMqttMessageStr := string(msg.Payload())
-	instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[msg.Topic()]
-	logger.Infof("Topic %v is custom: %v", msg.Topic(), shouldUsePythonCustomProcessing)
-	if shouldUsePythonCustomProcessing {
-		logger.Infof("Topic %v has a python customized handler configured.\n", msg.Topic())
-		mqttMessageInstructionMap[msg.Topic()] = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawMqttMessageStr, deviceshifubase.PythonScriptDir)
-	} else {
-		mqttMessageInstructionMap[msg.Topic()] = rawMqttMessageStr
-	}
+	mqttMessageInstructionMap[msg.Topic()] = rawMqttMessageStr
 	mqttMessageReceiveTimestampMap[msg.Topic()] = time.Now()
 	logger.Infof("MESSAGE_STR updated")
 }
@@ -163,16 +157,35 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// handlerEdgeDeviceSpec := handler.HandlerMetaData.edgeDeviceSpec
 		reqType := r.Method
-
+		topic := handler.HandlerMetaData.properties.MQTTTopic
 		if reqType == http.MethodGet {
 			returnMessage := ReturnBody{
-				MQTTMessage:   mqttMessageInstructionMap[handler.HandlerMetaData.properties.MQTTTopic],
-				MQTTTimestamp: mqttMessageReceiveTimestampMap[handler.HandlerMetaData.properties.MQTTTopic].String(),
+				MQTTMessage:   mqttMessageInstructionMap[topic],
+				MQTTTimestamp: mqttMessageReceiveTimestampMap[topic].String(),
 			}
 
 			w.WriteHeader(http.StatusOK)
-			w.Header().Set("Content-Type", "application/json")
-			err := json.NewEncoder(w).Encode(returnMessage)
+			responseMessage, err := json.Marshal(returnMessage)
+			if err != nil {
+				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
+				logger.Errorf("Cannot Encode message to json")
+				return
+			}
+
+			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handler.HandlerMetaData.instruction]
+			if shouldUsePythonCustomProcessing {
+				logger.Infof("Topic %v has a python customized handler configured.\n", topic)
+				responseMessage = []byte(utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, string(responseMessage), deviceshifubase.PythonScriptDir))
+				if json.Valid(responseMessage) {
+					w.Header().Set("Content-Type", "application/json")
+				} else {
+					w.Header().Set("Content-Type", "text/plain")
+				}
+			} else {
+				w.Header().Set("Content-Type", "application/json")
+			}
+			logger.Info("Response message: ", string(responseMessage))
+			_, err = w.Write(responseMessage)
 			if err != nil {
 				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
 				logger.Errorf("Cannot Encode message to json")
