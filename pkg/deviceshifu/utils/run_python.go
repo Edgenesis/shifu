@@ -13,7 +13,7 @@ const (
 )
 
 func ProcessInstruction(moduleName string, funcName string, rawData string, scriptDir string) string {
-	cmdString := fmt.Sprintf("import %s; print(%s.%s(%s))", moduleName, moduleName, funcName, rawData)
+	cmdString := fmt.Sprintf("import %s; print(%s.%s(%s), end='')", moduleName, moduleName, funcName, rawData)
 	cmd := exec.Command(PYTHON, CMDARG, cmdString)
 	cmd.Dir = scriptDir
 	processed, err := cmd.CombinedOutput()
