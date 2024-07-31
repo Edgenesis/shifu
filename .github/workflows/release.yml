@@ -29,9 +29,28 @@ jobs:
       - uses: actions/setup-go@v4
         with:
           go-version: "1.22.x"
+      
+      - name: check correct week
+        id: check_week
+        run: |
+          day_of_week=$(date +%u)
+          week_number=$(( ($(date +%s) / (60*60*24*7)) % 2 ))
+          if [ "$day_of_week" -eq 1 ] && [ "$week_number" -eq 0 ]; then
+            echo "::set-output name=RUN_WORKFLOW::true"
+          else if [ "$day_of_week" -eq 4 ] && [ "$week_number" -eq 1 ]; then
+            echo "::set-output name=RUN_WORKFLOW::true"
+          else
+            echo "::set-output name=RUN_WORKFLOW::false"
+          fi
+
+      - name: set up git
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: get latest tag
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && steps.check_week.outputs.RUN_WORKFLOW == 'true'
         id: get_latest_tag
         run: | 
           git fetch --tags
@@ -39,7 +58,7 @@ jobs:
           echo "::set-output name=LATEST_TAG::${latest_tag}"
 
       - name: set version by manual
-        if: github.event_name == 'workflow_dispatch'
+        if: github.event_name == 'workflow_dispatch' && steps.check_week.outputs.RUN_WORKFLOW == 'true'
         id: set_version
         run: |
           new_tag="${{ github.event.inputs.tag_name }}"
@@ -50,14 +69,14 @@ jobs:
           GITHUB_ENV: ${{ env.GITHUB_ENV }}
 
       - name: set version by automatic
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && steps.check_week.outputs.RUN_WORKFLOW == 'true'
         id: set_version_auto
         run: |
           current_tag="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
           current_version=$(echo "${current_tag}" | cut -d'.' -f2)
           next_version=$((current_version + 1))
-          week_number=$(( ($(date +%s) / (60*60*24*7)) % 2 ))
-          if [ "$week_number" -eq 0 ]; then
+          day_of_week=$(date +%u)
+          if [ "$day_of_week" -eq 1 ]; then
             new_tag="v0.${next_version}.0-rc1"
           else
             new_tag="v0.${next_version}.0"
@@ -68,7 +87,7 @@ jobs:
           GITHUB_ENV: ${{ env.GITHUB_ENV }}
 
       - name: parse env (for scheduled runs)
-        if: github.event_name != 'workflow_dispatch'
+        if: github.event_name != 'workflow_dispatch' && steps.check_week.outputs.RUN_WORKFLOW == 'true'
         run: |
           current_tag="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
           current_version=$(echo "${current_tag}" | cut -d'.' -f2)
@@ -80,7 +99,7 @@ jobs:
           echo "VERSION=${new_tag}"
           echo "PREVIOUS_TAG=${current_tag}"
       - name: generate changelog
-        # if: github.event_name == 'workflow_dispatch'
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
         run: |
           set -e
           target_commitish="${{ github.event.inputs.target_commitish || 'main' }}"
@@ -98,7 +117,9 @@ jobs:
           AZURE_OPENAI_HOST: ${{ secrets.AZURE_OPENAI_HOST }}
           DEPLOYMENT_NAME: ${{secrets.DEPLOYMENT_NAME}}
           GITHUB_ENV: ${{ env.GITHUB_ENV }}
+
       - name: Create Pull Request
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
         uses: peter-evans/create-pull-request@v5
         with:
           commit-message: add changelog for ${{ env.NEW_TAG }}
@@ -106,3 +127,106 @@ jobs:
           body: add changelog for ${{ env.NEW_TAG }}
           branch: changelog-${{ env.NEW_TAG }}
           base: main
+
+      - name: Fetch Pull Request Number
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+        id: get-pr
+        run: |
+          PR_NUMBER=$(gh pr list --base main --head changelog-${{ env.NEW_TAG }} --json number --jq '.[0].number')
+          echo $PR_NUMBER
+          echo "PR_NUMBER=${PR_NUMBER}" >> $GITHUB_ENV
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Merge Pull Request
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+        run: |
+          gh pr merge ${{ env.PR_NUMBER }} --auto --merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: read changelog content
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+        id: read_changelog
+        run: |
+          echo ${{ env.NEW_TAG }}
+          changelog_file="CHANGELOG/testChangelog"
+          changelog_file="CHANGELOG/CHANGELOG-${new_tag}.md"
+          changelog_file_zh="CHANGELOG/CHANGELOG-${new_tag}-zh.md"
+          if [ -f "$changelog_file" ]; then
+            changelog_content=$(cat $changelog_file)
+          else
+            echo "Changelog file not found: $changelog_file"
+            exit 1
+          fi
+          if [ -f "$changelog_file_zh" ]; then
+            changelog_content_zh=$(cat $changelog_file_zh)
+          else
+            echo "Changelog file not found: $changelog_file_zh"
+            exit 1
+          fi
+          combined_changelog="${changelog_content}\n\n${changelog_content_zh}"
+          echo "::set-output name=CHANGELOG_CONTENT::${combined_changelog}"
+
+      - name: checkout main branch
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+        run: |
+          git checkout main
+          git pull
+
+      - name: create local branch
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+        run: |
+          new_tag="${{ env.NEW_TAG }}"
+          branch_name="release_${new_tag}"
+          git checkout -b $branch_name
+          echo "BRANCH_NAME=${branch_name}" >> "$GITHUB_ENV"
+
+      - name: make tag
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+        run: |
+          new_tag="${{ env.NEW_TAG }}"
+          make tag VERSION="${new_tag}"
+          echo "BRANCH NAME = ${{ env.BRANCH_NAME }}"
+          git commit -am "change tag for release ${new_tag}"
+          echo "BEFORE TAG"
+          git show-ref
+          git tag ${new_tag}
+          echo "AFTER TAG"
+          git show-ref
+          git push origin ${new_tag}
+          git push origin "release_${new_tag}"
+
+      - name: determine if pre-release
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+        id: determine_pre_release
+        run: |
+          day_of_week=$(date +%u)
+          if [ "$day_of_week" -eq 4 ]; then
+            echo "::set-output name=PRE_RELEASE::true"
+          else
+            echo "::set-output name=PRE_RELEASE::false"
+          fi
+
+      - name: create release
+        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+        run: |
+          release_tag="${{ env.NEW_TAG }}"
+          echo ${release_tag}
+          changelog_content="${{ steps.read_changelog.outputs.CHANGELOG_CONTENT }}"
+          echo ${changelog_content}
+          pre_release="${{ steps.determine_pre_release.outputs.PRE_RELEASE }}"
+          if [ "$pre_release" == "true" ]; then
+            gh release create $release_tag \
+              --target main \
+              --title "$release_tag" \
+              --notes "$changelog_content" \
+              --prerelease
+          else
+            gh release create $release_tag \
+              --target main \
+              --title "$release_tag" \
+              --notes "$changelog_content"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
