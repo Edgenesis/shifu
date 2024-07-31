@@ -76,9 +76,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				panic(token.Error())
 			}
 
-			logger.Info(mqttInstructions.Instructions)
 			for instruction, properties := range mqttInstructions.Instructions {
-				logger.Infof("Instruction: %v, Properties: %v", instruction, properties)
 				MQTTTopic = properties.MQTTProtocolProperty.MQTTTopic
 				sub(client, MQTTTopic)
 
@@ -174,7 +172,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 
 			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handler.HandlerMetaData.instruction]
 			if shouldUsePythonCustomProcessing {
-				logger.Infof("Topic %v has a python customized handler configured.\n", topic)
+				logger.Infof("Topic %v has a python customized handler configured.", topic)
 				responseMessage = []byte(utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, string(responseMessage), deviceshifubase.PythonScriptDir))
 				if json.Valid(responseMessage) {
 					w.Header().Set("Content-Type", "application/json")
@@ -184,7 +182,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			} else {
 				w.Header().Set("Content-Type", "application/json")
 			}
-			logger.Info("Response message: ", string(responseMessage))
+
 			_, err = w.Write(responseMessage)
 			if err != nil {
 				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
@@ -225,7 +223,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
 			return
 		} else {
-			http.Error(w, "must be GET or POST method", http.StatusBadRequest)
+			http.Error(w, "must be GET or PUT method", http.StatusBadRequest)
 			logger.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}
