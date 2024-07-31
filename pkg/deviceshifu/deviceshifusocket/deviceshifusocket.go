@@ -145,18 +145,16 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 			return
 		}
 
+		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
+
 		instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 		if shouldUsePythonCustomProcessing {
 			logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
 			returnMessage = []byte(utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, outputMessage, deviceshifubase.PythonScriptDir))
-			if json.Valid(returnMessage) {
-				w.Header().Set("Content-Type", "application/json")
-			} else {
+			if !json.Valid(returnMessage) {
 				w.Header().Set("Content-Type", "text/plain")
 			}
-		} else {
-			w.Header().Set("Content-Type", "application/json")
 		}
 
 		_, err = w.Write(returnMessage)

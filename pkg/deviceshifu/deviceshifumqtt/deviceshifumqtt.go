@@ -162,7 +162,6 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				MQTTTimestamp: mqttMessageReceiveTimestampMap[topic].String(),
 			}
 
-			w.WriteHeader(http.StatusOK)
 			responseMessage, err := json.Marshal(returnMessage)
 			if err != nil {
 				http.Error(w, "Cannot Encode message to json", http.StatusInternalServerError)
@@ -170,17 +169,16 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				return
 			}
 
+			w.Header().Set("Content-Type", "application/json")
+			w.WriteHeader(http.StatusOK)
+
 			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handler.HandlerMetaData.instruction]
 			if shouldUsePythonCustomProcessing {
 				logger.Infof("Topic %v has a python customized handler configured.", topic)
 				responseMessage = []byte(utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, string(responseMessage), deviceshifubase.PythonScriptDir))
-				if json.Valid(responseMessage) {
-					w.Header().Set("Content-Type", "application/json")
-				} else {
+				if !json.Valid(responseMessage) {
 					w.Header().Set("Content-Type", "text/plain")
 				}
-			} else {
-				w.Header().Set("Content-Type", "application/json")
 			}
 
 			_, err = w.Write(responseMessage)
