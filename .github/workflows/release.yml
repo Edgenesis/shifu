@@ -1,3 +1,4 @@
+
 name: Auto Generate Release Log
 
 on:
@@ -36,7 +37,7 @@ jobs:
           week_number=$(( ($(date +%s) / (60*60*24*7)) % 2 ))
           if [ "$day_of_week" -eq 1 ] && [ "$week_number" -eq 0 ]; then
             echo "::set-output name=RUN_WORKFLOW::true"
-          else if [ "$day_of_week" -eq 4 ] && [ "$week_number" -eq 1 ]; then
+          elif [ "$day_of_week" -eq 3 ] && [ "$week_number" -eq 1 ]; then
             echo "::set-output name=RUN_WORKFLOW::true"
           else
             echo "::set-output name=RUN_WORKFLOW::false"
@@ -63,7 +64,6 @@ jobs:
           new_tag="${{ github.event.inputs.tag_name }}"
           current_tag="${{ github.event.inputs.previous_tag_name }}"
           echo "NEW_TAG=${new_tag}" >> "$GITHUB_ENV"
-          echo "PREVIOUS_TAG=${current_tag}" >> "$GITHUB_ENV"
         env:
           GITHUB_ENV: ${{ env.GITHUB_ENV }}
 
@@ -72,31 +72,22 @@ jobs:
         id: set_version_auto
         run: |
           current_tag="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
-          current_version=$(echo "${current_tag}" | cut -d'.' -f2)
-          next_version=$((current_version + 1))
+          current_tag=${current_tag#v}
+          if [[ "$current_tag" == *"-rc1" ]]; then
+            current_tag=${current_tag%-rc1}
+          fi
+          IFS='.' read -r x y z <<< "$current_tag"
+          y=$((y + 1))
           day_of_week=$(date +%u)
           if [ "$day_of_week" -eq 1 ]; then
-            new_tag="v0.${next_version}.0-rc1"
+            new_tag="v${x}.${y}.${z}"
           else
-            new_tag="v0.${next_version}.0"
+            new_tag="v${x}.${y}.${z}-rc1"
           fi
           echo "NEW_TAG=${new_tag}" >> "$GITHUB_ENV"
-          echo "PREVIOUS_TAG=${current_tag}" >> "$GITHUB_ENV"
         env:
           GITHUB_ENV: ${{ env.GITHUB_ENV }}
 
-      - name: parse env (for scheduled runs)
-        if: github.event_name != 'workflow_dispatch' && steps.check_week.outputs.RUN_WORKFLOW == 'true'
-        run: |
-          current_tag="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
-          current_version=$(echo "${current_tag}" | cut -d'.' -f2)
-          next_version=$((current_version + 1))
-          new_tag="v0.${next_version}.0"
-          echo "VERSION=${new_tag}" >> "$GITHUB_ENV"
-          echo "PREVIOUS_TAG=${current_tag}" >> "$GITHUB_ENV"
-          echo "Print env:VERSION and env:PREVIOUS_TAG"
-          echo "VERSION=${new_tag}"
-          echo "PREVIOUS_TAG=${current_tag}"
       - name: generate changelog
         if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
         run: |
@@ -126,100 +117,12 @@ jobs:
           body: add changelog for ${{ env.NEW_TAG }}
           branch: changelog-${{ env.NEW_TAG }}
           base: main
-
-      - name: Fetch Pull Request Number
-        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
-        id: get-pr
-        run: |
-          PR_NUMBER=$(gh pr list --base main --head changelog-${{ env.NEW_TAG }} --json number --jq '.[0].number')
-          echo "PR_NUMBER=${PR_NUMBER}" >> $GITHUB_ENV
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Merge Pull Request
-        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
-        run: |
-          gh pr merge ${{ env.PR_NUMBER }} --auto --merge
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: read changelog content
-        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
-        id: read_changelog
-        run: |
-          changelog_file="CHANGELOG/testChangelog"
-          changelog_file="CHANGELOG/CHANGELOG-${new_tag}.md"
-          changelog_file_zh="CHANGELOG/CHANGELOG-${new_tag}-zh.md"
-          if [ -f "$changelog_file" ]; then
-            changelog_content=$(cat $changelog_file)
-          else
-            echo "Changelog file not found: $changelog_file"
-            exit 1
-          fi
-          if [ -f "$changelog_file_zh" ]; then
-            changelog_content_zh=$(cat $changelog_file_zh)
-          else
-            echo "Changelog file not found: $changelog_file_zh"
-            exit 1
-          fi
-          combined_changelog="${changelog_content}\n\n${changelog_content_zh}"
-          echo "::set-output name=CHANGELOG_CONTENT::${combined_changelog}"
-
-      - name: checkout main branch
-        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
+      
+      - name: make release branch
         run: |
           git checkout main
           git pull
-
-      - name: create local branch
-        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
-        run: |
-          new_tag="${{ env.NEW_TAG }}"
-          branch_name="release_${new_tag}"
-          git checkout -b $branch_name
-          echo "BRANCH_NAME=${branch_name}" >> "$GITHUB_ENV"
-
-      - name: make tag
-        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
-        run: |
-          new_tag="${{ env.NEW_TAG }}"
-          make tag VERSION="${new_tag}"
-          echo "BRANCH NAME = ${{ env.BRANCH_NAME }}"
-          git commit -am "change tag for release ${new_tag}"
-          git tag ${new_tag}
-          git push origin ${new_tag}
-          git push origin "release_${new_tag}"
-
-      - name: determine if pre-release
-        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
-        id: determine_pre_release
-        run: |
-          day_of_week=$(date +%u)
-          if [ "$day_of_week" -eq 4 ]; then
-            echo "::set-output name=PRE_RELEASE::true"
-          else
-            echo "::set-output name=PRE_RELEASE::false"
-          fi
-
-      - name: create release
-        if: steps.check_week.outputs.RUN_WORKFLOW == 'true'
-        run: |
-          release_tag="${{ env.NEW_TAG }}"
-          echo ${release_tag}
-          changelog_content="${{ steps.read_changelog.outputs.CHANGELOG_CONTENT }}"
-          echo ${changelog_content}
-          pre_release="${{ steps.determine_pre_release.outputs.PRE_RELEASE }}"
-          if [ "$pre_release" == "true" ]; then
-            gh release create $release_tag \
-              --target main \
-              --title "$release_tag" \
-              --notes "$changelog_content" \
-              --prerelease
-          else
-            gh release create $release_tag \
-              --target main \
-              --title "$release_tag" \
-              --notes "$changelog_content"
-          fi
+          git checkout -b "release_${{ env.NEW_TAG }}"
+          git push origin HEAD
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_ENV: ${{ env.GITHUB_ENV }}
