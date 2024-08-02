@@ -1,0 +1,77 @@
+name: Publish Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish_release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+
+      - name: set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          
+      - name: get latest tag
+        id: get_latest_tag
+        run: | 
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "::set-output name=LATEST_TAG::${latest_tag}"
+        env:
+          GITHUB_ENV: ${{ env.GITHUB_ENV }}
+
+      - name: set version
+        id: set_version_auto
+        run: |
+          current_tag="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
+          current_tag=${current_tag#v}
+          if [[ "$current_tag" == *"-rc1" ]]; then
+            current_tag=${current_tag%-rc1}
+          fi
+          IFS='.' read -r x y z <<< "$current_tag"
+          y=$((y + 1))
+          day_of_week=$(date +%u)
+          if [ "$day_of_week" -eq 1 ]; then
+            new_tag="v${x}.${y}.${z}"
+          else
+            new_tag="v${x}.${y}.${z}-rc1"
+          fi
+          echo "NEW_TAG=${new_tag}" >> "$GITHUB_ENV"
+        env:
+          GITHUB_ENV: ${{ env.GITHUB_ENV }}
+      
+      - name: determine if pre-release
+        id: determine_pre_release
+        run: |
+          day_of_week=$(date +%u)
+          if [ "$day_of_week" -eq 3 ]; then
+            echo "::set-output name=PRE_RELEASE::true"
+          else
+            echo "::set-output name=PRE_RELEASE::false"
+          fi
+
+      - name: create release
+        run: |
+          release_tag="${{ env.NEW_TAG }}"
+          changelog_content="""## See [CHANGELOG-v0.x.0.md](CHANGELOG/CHANGELOG-v0.x.0.md) for details
+          ## 详细内容请查看 [CHANGELOG-v0.x.0-zh.md](CHANGELOG/CHANGELOG-v0.x.0-zh.md)"""
+          pre_release="${{ steps.determine_pre_release.outputs.PRE_RELEASE }}"
+          if [ "$pre_release" == "true" ]; then
+            gh release create "$release_tag" \
+              --target main \
+              --title "$release_tag" \
+              --generate-notes \
+              --prerelease
+          else
+            gh release create "$release_tag" \
+              --target main \
+              --title "$release_tag" \
+              --notes "$changelog_content"
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

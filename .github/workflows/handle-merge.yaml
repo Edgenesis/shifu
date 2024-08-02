@@ -1,0 +1,90 @@
+name: Create Tag
+
+on:
+  workflow_dispatch:
+
+jobs:
+  handle_merged_pr:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout code
+        uses: actions/checkout@v2
+      
+      - uses: actions/setup-go@v4
+        with:
+          go-version: "1.22.x"
+
+      - name: set up git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: get latest tag
+        id: get_latest_tag
+        run: | 
+          git fetch --tags
+          latest_tag=$(git describe --tags `git rev-list --tags --max-count=1`)
+          echo "::set-output name=LATEST_TAG::${latest_tag}"
+        env:
+          GITHUB_ENV: ${{ env.GITHUB_ENV }}
+
+      - name: set version
+        id: set_version_auto
+        run: |
+          current_tag="${{ steps.get_latest_tag.outputs.LATEST_TAG }}"
+          current_tag=${current_tag#v}
+          if [[ "$current_tag" == *"-rc1" ]]; then
+            current_tag=${current_tag%-rc1}
+          fi
+          IFS='.' read -r x y z <<< "$current_tag"
+          y=$((y + 1))
+          day_of_week=$(date +%u)
+          if [ "$day_of_week" -eq 1 ]; then
+            new_tag="v${x}.${y}.${z}"
+          else
+            new_tag="v${x}.${y}.${z}-rc1"
+          fi
+          echo "NEW_TAG=${new_tag}" >> "$GITHUB_ENV"
+        env:
+          GITHUB_ENV: ${{ env.GITHUB_ENV }}
+
+      - name: read changelog content
+        id: read_changelog
+        run: |
+          changelog_file="CHANGELOG/CHANGELOG-${new_tag}.md"
+          changelog_file_zh="CHANGELOG/CHANGELOG-${new_tag}-zh.md"
+          if [ -f "$changelog_file" ]; then
+            changelog_content=$(cat $changelog_file)
+          else
+            echo "Changelog file not found: $changelog_file"
+            exit 1
+          fi
+          if [ -f "$changelog_file_zh" ]; then
+            changelog_content_zh=$(cat $changelog_file_zh)
+          else
+            echo "Changelog file not found: $changelog_file_zh"
+            exit 1
+          fi
+          combined_changelog="${changelog_content}\n\n${changelog_content_zh}"
+          echo "::set-output name=CHANGELOG_CONTENT::${combined_changelog}"
+
+      - name: make tag
+        run: |
+          git checkout main
+          git pull
+          git checkout -b "local_release${{ env.NEW_TAG }}"
+          make tag VERSION="${{ env.NEW_TAG }}"
+          git commit -am "change tag for release ${{ env.NEW_TAG }}"
+          git push origin HEAD
+        env:
+          GITHUB_ENV: ${{ env.GITHUB_ENV }}
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v5
+        with:
+          commit-message: change tag for release ${{ env.NEW_TAG }}
+          title: change tag for release ${{ env.NEW_TAG }}
+          body: change tag for release ${{ env.NEW_TAG }}
+          branch: local_release${{ env.NEW_TAG }}
+          base: release_${{ env.NEW_TAG }}
