@@ -88,4 +88,3 @@ jobs:
           body: change tag for release ${{ env.NEW_TAG }}
           branch: local_release${{ env.NEW_TAG }}
           base: release_${{ env.NEW_TAG }}
-
