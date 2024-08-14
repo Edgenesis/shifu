@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: telemetryservice
-        image: edgehub/telemetryservice:v0.50.0-rc1
+        image: edgehub/telemetryservice:v0.51.0-rc1
         ports:
         - containerPort: 8080
         env:
