@@ -29,7 +29,7 @@ spec:
               value: "edgedevice-plc"
             - name: EDGEDEVICE_NAMESPACE
               value: "devices"
-        - image: edgehub/plc-device:v0.0.1
+        - image: edgenesis/siemens-s7:v0.0.1
           name: plc
           env:
             - name: PLC_ADDRESS
@@ -38,6 +38,8 @@ spec:
               value: "0"        
             - name: PLC_SLOT
               value: "1"
+            - name: PLC_PORT
+              value: "102"
             - name: PLC_CONTAINER_PORT
               value: "11111"
       volumes:
