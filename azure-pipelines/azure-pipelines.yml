@@ -428,9 +428,9 @@ stages:
             displayName: docker run mysql and checkoutput
           - script: |
               set -e
-              docker run -itd --network host --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=Some_Strong_Password \
-                --health-cmd="/opt/mssql-tools/bin/sqlcmd -U sa -P Some_Strong_Password -Q 'select name from sys.databases'" --health-interval=5s --health-timeout=5s --health-retries=20 \
-                mcr.microsoft.com/mssql/server:2022-CU7-ubuntu-20.04	
+              docker run -d -p 1433:1433 --name sqlserver -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" \
+                --health-cmd="/opt/mssql-tools18/bin/sqlcmd -U sa -C -P YourStrong@Passw0rd -Q 'select name from sys.databases'" --health-interval=5s --health-timeout=5s --health-retries=20 \
+                mcr.microsoft.com/mssql/server:2022-latest
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
             displayName: docker run sqlserver and checkoutput
 
