@@ -24,7 +24,7 @@ require (
 	github.com/onsi/gomega v1.34.2
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
-	github.com/taosdata/driver-go/v3 v3.5.6
+	github.com/taosdata/driver-go/v3 v3.5.7
 	golang.org/x/crypto v0.27.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
 	sigs.k8s.io/controller-runtime v0.19.0
