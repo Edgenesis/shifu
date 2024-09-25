@@ -5,7 +5,7 @@ toolchain go1.22.5
 
 require (
 	github.com/apache/plc4x/plc4go v0.0.0-20220929155823-14e7d8450c87
-	github.com/eclipse/paho.mqtt.golang v1.4.3
+	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/gopcua/opcua v0.5.3
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.31.1
@@ -78,7 +78,7 @@ require (
 	github.com/google/gofuzz v1.2.0 // indirect
 	github.com/google/gopacket v1.1.19 // indirect
 	github.com/google/uuid v1.6.0 // indirect
-	github.com/gorilla/websocket v1.5.0 // indirect
+	github.com/gorilla/websocket v1.5.3 // indirect
 	github.com/icza/bitio v1.1.0 // indirect
 	github.com/imdario/mergo v0.3.16
 	github.com/jacobsa/go-serial v0.0.0-20180131005756-15cf729a72d4 // indirect
