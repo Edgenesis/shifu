@@ -14,9 +14,9 @@ spec:
       AuthenticationMode: Anonymous
   gatewaySettings:
     protocol: lwm2m
-    address: 10.20.30.58:5684
+    address: leshan.eclipseprojects.io:5684
     LwM2MSettings:
-      endpointName: test1
+      endpointName: opcua-device
       securityMode: DTLS
       dtlsMode: PSK
       cipherSuites: 
