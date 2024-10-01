@@ -394,14 +394,6 @@ stages:
             displayName: docker run nginx
           - script: |
               set -e
-              docker run -itd --network host --name sqlserver -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" \
-                --health-cmd="/opt/mssql-tools18/bin/sqlcmd -U sa -C -P YourStrong@Passw0rd -Q 'select name from sys.databases'" --health-interval=5s --health-timeout=5s --health-retries=20 \
-                mcr.microsoft.com/mssql/server:2022-latest
-              bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
-              docker rm -f sqlserver
-            displayName: docker run sqlserver and checkoutput
-          - script: |
-              set -e
               docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.15
               docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput.sh
@@ -436,6 +428,14 @@ stages:
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mysql/checkoutput.sh
               docker rm -f mysql
             displayName: docker run mysql and checkoutput
+          - script: |
+              set -e
+              docker run -itd --network host --name sqlserver -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" \
+                --health-cmd="/opt/mssql-tools18/bin/sqlcmd -U sa -C -P YourStrong@Passw0rd -Q 'select name from sys.databases'" --health-interval=5s --health-timeout=5s --health-retries=20 \
+                mcr.microsoft.com/mssql/server:2022-latest
+              bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
+              docker rm -f sqlserver
+            displayName: docker run sqlserver and checkoutput
 
   - stage: docker_build_muiltiarch_and_push
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not(startsWith(variables['Build.SourceBranchName'],'release')))
