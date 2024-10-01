@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	PYTHON = "python"
+	PYTHON = "python3"
 	CMDARG = "-c"
 )
 
