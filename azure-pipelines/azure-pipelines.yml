@@ -397,8 +397,7 @@ stages:
               docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.15
               docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput.sh
-              docker stop mosquitto mockserver
-              docker rm mosquitto mockserver
+              docker rm -f mosquitto mockserver
             displayName: e2e_test_mqtt and checkoutput
           - script: |
               set -e
@@ -411,8 +410,7 @@ stages:
               -e MQTT_PASSWORD=mosquitto \
               edgehub/mockserver:$(tag)
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput_auth.sh
-              docker stop mosquitto mockserver
-              docker rm mosquitto mockserver
+              docker rm -f mosquitto mockserver
             displayName: e2e_test_mqtt_with_auth and checkoutput
           - script: |
               set -e
@@ -420,6 +418,7 @@ stages:
                 -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/tdengine/init.sql:/root/init.sql \
                 tdengine/tdengine:3.0.1.4
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/tdengine/checkoutput.sh
+              docker rm -f tdengine
             displayName: docker run tdengine and checkoutput
           - script: |
               set -e
@@ -427,6 +426,7 @@ stages:
                 --health-cmd='mysqladmin ping -h localhost -uroot' --health-interval=5s --health-timeout=5s --health-retries=20 \
                 mysql:8.1.0
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mysql/checkoutput.sh
+              docker rm -f mysql
             displayName: docker run mysql and checkoutput
           - script: |
               set -e
