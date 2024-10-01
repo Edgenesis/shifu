@@ -86,7 +86,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 
 	mockdsc, err := deviceshifubase.NewDeviceShifuConfig(MockDeviceConfigFolder)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("Error: %v", err)
 	}
 
 	mockintructions := CreateOPCUAInstructions(&mockdsc.Instructions)
