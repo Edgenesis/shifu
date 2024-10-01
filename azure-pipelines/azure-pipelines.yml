@@ -432,7 +432,7 @@ stages:
               set -e
               docker run -itd --network host --name sqlserver -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" \
                 --health-cmd="/opt/mssql-tools18/bin/sqlcmd -U sa -C -P YourStrong@Passw0rd -Q 'select name from sys.databases'" --health-interval=5s --health-timeout=5s --health-retries=20 \
-                mcr.microsoft.com/mssql/server:2022-latest
+                mcr.microsoft.com/mssql/server:2022-CU15-ubuntu-22.04
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
             displayName: docker run sqlserver and checkoutput
 

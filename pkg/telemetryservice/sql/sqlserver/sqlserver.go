@@ -39,7 +39,7 @@ func (db *DBHelper) SendToDB(ctx context.Context, deviceName string, rawData []b
 
 	err = db.InsertDataToDB(ctx, deviceName, rawData)
 	if err != nil {
-		logger.Errorf("Error to Insert rawData to DB, error: %v", err.Error())
+		logger.Errorf("Error to Insert rawData to DB, errror: %v", err.Error())
 		return err
 	}
 
