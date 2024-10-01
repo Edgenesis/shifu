@@ -118,3 +118,7 @@ require (
 	sigs.k8s.io/structured-merge-diff/v4 v4.4.1 // indirect
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
+
+// See https://github.com/microsoft/go-mssqldb/issues/217 , https://github.com/microsoft/mssql-docker/issues/895
+// This temporary workaround is to avoid the error "x509: certificate signed by unknown authority" when connecting to Docker SQL Server DB with Go 1.23.1
+godebug x509negativeserial=1
