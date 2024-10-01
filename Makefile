@@ -219,7 +219,7 @@ buildx-build-image-deviceshifu: \
 
 buildx-build-image-telemetry-service:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice\
-		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" --build-arg GODEBUG=x509negativeserial=1 ${PROJECT_ROOT} \
 		-t edgehub/telemetryservice:${IMAGE_VERSION} --load
 
 .PHONY: download-demo-files
