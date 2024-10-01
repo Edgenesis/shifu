@@ -26,7 +26,7 @@ func TestConstructDBUri(t *testing.T) {
 				ServerAddress: unitest.ToPointer("testAddress"),
 				DBName:        unitest.ToPointer("testDB"),
 			},
-			output: "sqlserver://testUser:testPassword@testAddress?database=testDB&TrustServerCertificate=true",
+			output: "sqlserver://testUser:testPassword@testAddress?database=testDB",
 		},
 	}
 	for _, tC := range testCases {
