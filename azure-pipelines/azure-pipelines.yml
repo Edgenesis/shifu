@@ -35,6 +35,8 @@ pr:
 variables:
   - name: tag
     value: ""
+  - name: goVersion
+    value: "1.23.1"
 
 pool:
   vmImage: "ubuntu-latest"
@@ -46,7 +48,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Go@0
             displayName: "go get"
             inputs:
@@ -67,7 +69,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Go@0
             displayName: "go get"
             inputs:
@@ -89,7 +91,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -170,7 +172,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -213,7 +215,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -256,7 +258,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -295,7 +297,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -349,7 +351,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -361,7 +363,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -447,7 +449,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -465,7 +467,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -483,7 +485,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -501,7 +503,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -519,7 +521,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -537,7 +539,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -555,7 +557,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -573,7 +575,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -591,7 +593,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -609,7 +611,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -627,7 +629,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -645,7 +647,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -663,7 +665,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -681,7 +683,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -699,7 +701,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:

@@ -1,8 +1,6 @@
 module github.com/edgenesis/shifu
 
-go 1.22.0
-
-toolchain go1.23.1
+go 1.23.1
 
 require (
 	github.com/apache/plc4x/plc4go v0.0.0-20220929155823-14e7d8450c87
