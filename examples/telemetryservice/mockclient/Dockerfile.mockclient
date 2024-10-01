@@ -8,7 +8,7 @@ COPY go.mod go.mod
 COPY go.sum go.sum
 COPY pkg/logger pkg/logger
 
-RUN go mod download -x
+RUN go mod download
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a \
     -o /output/mockclient \

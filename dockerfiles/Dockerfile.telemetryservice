@@ -21,6 +21,9 @@ RUN go mod download
 # Build the Go app
 ARG TARGETOS
 ARG TARGETARCH
+ARG GODEBUG
+
+ENV GODEBUG=$GODEBUG
 
 RUN CGO_ENABLED=0 GOOS=$TARGETOS GOARCH=$TARGETARCH go build -a -o /output/telemetryservice cmd/telemetryservice/main.go
 
