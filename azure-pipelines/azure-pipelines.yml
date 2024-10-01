@@ -384,6 +384,9 @@ stages:
                 --name mockclient edgehub/mockclient:$(tag)
             displayName: build mockClient
           - script: |
+              docker run -itd --network host --name nginx nginx:1.21
+            displayName: docker run nginx
+          - script: |
               set -e
               docker run -itd --network host --name sqlserver -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" \
                 --health-cmd="/opt/mssql-tools18/bin/sqlcmd -U sa -C -P YourStrong@Passw0rd -Q 'select name from sys.databases'" --health-interval=5s --health-timeout=5s --health-retries=20 \
@@ -391,9 +394,6 @@ stages:
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
               docker rm -f sqlserver
             displayName: docker run sqlserver and checkoutput
-          - script: |
-              docker run -itd --network host --name nginx nginx:1.21
-            displayName: docker run nginx
           - script: |
               docker buildx build --platform=linux/amd64 \
                 -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockserver/Dockerfile.mockserver \
