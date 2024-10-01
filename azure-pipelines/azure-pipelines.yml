@@ -392,14 +392,14 @@ stages:
               docker rm -f sqlserver
             displayName: docker run sqlserver and checkoutput
           - script: |
+              docker run -itd --network host --name nginx nginx:1.21
+            displayName: docker run nginx
+          - script: |
               docker buildx build --platform=linux/amd64 \
                 -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockserver/Dockerfile.mockserver \
                 --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
                 -t edgehub/mockserver:$(tag) --load
             displayName: build mockServer
-          - script: |
-              docker run -itd --network host --name nginx nginx:1.21
-            displayName: docker run nginx
           - script: |
               set -e
               docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.15
