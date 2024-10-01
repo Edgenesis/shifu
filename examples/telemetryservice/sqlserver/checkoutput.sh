@@ -27,5 +27,6 @@ do
     then
         exit 0
     fi
+    sleep 5
 done
 exit 1
