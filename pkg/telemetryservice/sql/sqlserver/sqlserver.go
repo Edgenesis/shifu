@@ -16,7 +16,7 @@ import (
 
 const (
 	TIMESTAMP_FORMAT     = "2006-01-02 15:04:05"
-	SQLSERVER_URL_FORMAT = "sqlserver://%s:%s@%s?database=%s&TrustServerCertificate=true"
+	SQLSERVER_URL_FORMAT = "sqlserver://%s:%s@%s?database=%s&encrypt=disable"
 	SQLSERVER_QUERY      = "Insert Into %s (DeviceName,TelemetryData,TelemetryTimeStamp) Values('%s','%s','%s')"
 	SQLSERVER            = "sqlserver"
 )
