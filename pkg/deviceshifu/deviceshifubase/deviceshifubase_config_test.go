@@ -79,7 +79,6 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	mockdsc, err := NewDeviceShifuConfig(MockDeviceConfigFolder)
 	if err != nil {
 		t.Errorf("Error: %v", err)
-
 	}
 
 	eq := reflect.DeepEqual(DriverProperties, mockdsc.DriverProperties)
