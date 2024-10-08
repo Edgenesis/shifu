@@ -62,7 +62,7 @@ buildx-push-image-deviceshifu-http-opcua:
 		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --push
 
 buildx-push-image-deviceshifu-http-plc4x:
-	docker buildx build --platform=linux/amd64,linux/arm64 -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X \
+	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --push
 
