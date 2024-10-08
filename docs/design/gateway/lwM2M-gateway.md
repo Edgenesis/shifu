@@ -3,6 +3,7 @@
 ## Why need LwM2M Gateway
 
 For telemetryService only support push data to the server, but for LwM2M protocol, it support both push and pull data from the device. it is hard to implement the pull data feature in the telemetryService.
+
 So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pull data call from server and auto push data to the server.
 
 ## Goal
@@ -11,6 +12,7 @@ So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pu
 
 - [LwM2M protocol using v1.0.x version](https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf).
 - LwM2M protocol under UDP.
+- Datagram Transport Layer Security (DTLS) support.
 - Support using LwM2M protocol to communicate with the server.
 - Support both `read` and `write` requests.
 - Support Notify and Observe feature.
@@ -18,7 +20,6 @@ So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pu
 ### Non-Goal
 
 - Support LwM2M v1.1.x or later version.
-- Datagram Transport Layer Security (DTLS) support.
 - Over TCP or other protocol.
 - Bootstrap Server.
 - Support all the LwM2M Object.
@@ -28,46 +29,39 @@ So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pu
 
 For LwM2M Gateway, it will as a LwM2M client to connect a server and it will handle all request from the server over the LwM2M protocol. 
 
-
 When a device enable the gateway feature, it will register to the gateway and the gateway will call the server to update the device info. Each device will have a unique ObjectId like `/33953` and their.
 instruction will be a instance of the ObjectId like `/33953/1`.
 
 ```mermaid
 flowchart BT
-s1[Server]
-s2[Server]
+
+ls[lwm2m-server]
 
 subgraph EdgeNode
     subgraph Shifu
-        gw1[LwM2M Gateway]
-        gw2[LwM2M Gateway]
-
-        ds1[deviceShifu-lwM2M]
-        ds2[deviceShifu-MQTT]
-        ds3[deviceShifu-HTTP]
-
+      subgraph ds1[deviceshifu-lwM2M]
+          dsh[deviceshifu-http]
+          gl1[lwm2m-gateway]
+          dsh <-->|HTTP| gl1
+      end
+      subgraph ds2[deviceshifu-MQTT]
+          dsm[deviceshifu-MQTT]
+          gl2[lwm2m-gateway]
+          dsm <-->|HTTP| gl2
+      end
     end
 end
 
-d1[Device]
-d2[Device]
-d3[Device]
+
+dh[device-http]
+dm[device-mqtt]
 
 
+dh -->|HTTP| dsh
+gl1 -->|lwM2M| ls
 
-d1 -->|lwM2M| ds1 -->|HTTP| gw1 
-ds2 -->|MQTT| gw1
-d2 -->|MQTT| ds2 -->|HTTP| gw2
-d3 -->|HTTP| ds3 -->|HTTP| gw2
-
-
-gw1 <-->|lwM2M| s1
-gw2 <-->|lwM2M| s2
-
-
-
-
-
+dm -->|MQTT| dsm
+gl2 -->|lwM2M| ls 
 ```
 
 ### What will the gateway do?
@@ -86,7 +80,7 @@ sequenceDiagram
    participant s as Server
    participant bs as BootStrap Server
 
-   alt bootstrap is enable
+   opt bootstrap is enable
    gw ->> bs: Get Server Info
    bs ->> gw: Reply Server Info
    end
@@ -113,75 +107,70 @@ sequenceDiagram
 
 ```
 
-### Protocol Specification
+#### Detail Design
+
+##### Read Request
+
+When the server send the read request to the gateway, the gateway will call the deviceShifu instruction with `GET` method. 
+The gateway will get the data from the deviceShifu and return the data to the server.
+
+##### Write Request
+
+When the server send the write request to the gateway, the gateway will call the deviceShifu instruction with `PUT` method with the data in the request body. and return with changed status code to server
+
+##### Execute Request
+
+When the server send the execute request to the gateway, the gateway will call the deviceShifu instruction with `POST` method without request body.
+
+##### Observe and Notify
+
+When the server enable the observe feature, the gateway will get the data from the deviceShifu in a interval and notify the server when the data changed or timeout.
+
+### Gateway Configuration
+
+To connect to the server, the gateway need some configuration like the server address, the endpoint name, the security mode, and the psk key in Edgedevice yaml file. the LwM2MSettings is same with the deviceShifu LwM2MSettings.
 
 ```yaml
 apiVersion: shifu.edgenesis.io/v1alpha1
-kind: ShifuGateWay
+kind: EdgeDevice
 metadata:
-    name: LwM2M-gateway
-    namespace: shifu-services
+  name: edgedevice
+  namespace: devices
 spec:
-    address: 0.0.0.0:5683
-    gatewaySettings:
-        LwM2MSetting:
-            BootstrapServer: "http://bootstrap-server:8080"
-            EndpointName: "LwM2M-gateway"
----
-apiVersion: shifu.edgenesis.io/v1alpha1
-kind: ShifuGateWayConfig
-metadata:
-  name: LwM2M-device1
-  namespace: shifu-services
-spec:
-  gatewayName: LwM2M-gateway
-  instructions:
-    - EdgeDeviceName: device1
-      name: object1
-      accessMode: read/write/readwrite
-    - EdgeDeviceName: device1
-      name: object2
-      accessMode: read/write/readwrite
+  gatewaySettings:
+    protocol: lwm2m
+    address: leshan.eclipseprojects.io:5684
+    LwM2MSettings:
+      endpointName: lwm2m-device
+      securityMode: DTLS
+      dtlsMode: PSK
+      cipherSuites:
+        - TLS_PSK_WITH_AES_128_CCM_8
+      pskIdentity: lwm2m-hint
+      pskKey: ABC123
 ```
 
-When Deploy ShifuGateWay, controller will create a deployment and service for the gateway. and when deploy ShifuGateWayConfig, controller will patch the gateway to update the device info.
+To mapping the LwM2M Object and Resource to the deviceShifu, we add a field `gatewayPropertyList` for instruction in the deviceShifu ConfigMap. Which mean the instruction will forward to the resource in the LwM2M protocol. ObjectId is the LwM2M Object Id and DataType is the LwM2M Resource Type.
 
-Here is the example of the deployment and service:
+Data Type support: `int`, `float`, `string`, `bool`. By default, the data type is `string`.
+
 ```yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
- name: LwM2M-gateway
- namespace: shifu-services
-spec:
-    replicas: 1
-    selector:
-    matchLabels:
-        app: LwM2M-gateway
-    template:
-    metadata:
-        labels:
-        app: LwM2M-gateway
-    spec:
-        containers:
-        - name: LwM2M-gateway
-            image: LwM2M-gateway:latest
-            ports:
-            - containerPort: 5683
-              type: UDP
-...
----
 apiVersion: v1
-kind: Service
+kind: ConfigMap
 metadata:
- name: LwM2M-gateway
- namespace: shifu-services
-spec:
-   selector:
-       app: LwM2M-gateway
-   ports:
-       - protocol: UDP
-       port: 5683
-       targetPort: 5683
-   type: LoadBalancer
+  name: configmap
+  namespace: deviceshifu
+data:
+  instructions: |
+    instructions:
+      instruction1:
+        gatewayPropertyList:
+          ObjectId: 1/0/0
+          DataType: int
 ```
+
+### Test Plan
+
+- Using [Leshan](https://github.com/eclipse-leshan/leshan) as the LwM2M server, connect a HTTP device to the server.
+- Normal mode test: read and write data and execute from device.
+- Observe mode test: read and write data from device, and check the data change or timeout.
