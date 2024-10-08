@@ -149,11 +149,11 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 
 	requestBody := "moving_the_device"
 
-	// test post method when MQTTServer not connected
-	r := dc.Post().Body([]byte(requestBody)).Do(context.TODO())
+	// test put method when MQTTServer not connected
+	r := dc.Put().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
-	// test post method when MQTTServer connected
+	// test put method when MQTTServer connected
 	var token mqtt.Token
 	// try to connect to MQTT server three times
 	for i := 0; i < 3; i++ {
@@ -168,17 +168,17 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	assert.Nil(t, token.Error())
 
 	ConfigFiniteStateMachine(map[string]string{"moving_the_device": "device_finish_moving"})
-	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
+	r = dc.Put().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error())
-	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
+	r = dc.Put().Body([]byte(requestBody)).Do(context.TODO())
 	assert.NotNil(t, r.Error()) // should be blocked
 	// reset mutex
 	MutexProcess("test/test1", "device_finish_moving")
-	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
+	r = dc.Put().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error()) // not blocked
 
-	// test put method
-	r = dc.Put().Do(context.TODO())
+	// test post method
+	r = dc.Post().Do(context.TODO())
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())
 
 	// test Cannot Encode message to json
