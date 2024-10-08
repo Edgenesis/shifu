@@ -18,7 +18,11 @@ func main() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
-	go client.Start()
+	go func() {
+		if err := client.Start(); err != nil {
+			logger.Errorf("Error starting client: %v", err)
+		}
+	}()
 	<-sigs
 	client.ShutDown()
 }

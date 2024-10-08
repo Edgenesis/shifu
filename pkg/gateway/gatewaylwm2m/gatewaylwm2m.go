@@ -153,18 +153,16 @@ func (g *Gateway) Start() error {
 
 	t := time.NewTicker(time.Second * 10).C
 
-	for {
-		select {
-		case <-t:
-			if err := g.client.Ping(); err != nil {
-				logger.Errorf("Error pinging client: %v", err)
-				g.ShutDown()
-				if err := g.client.Start(); err != nil {
-					return err
-				}
+	for range t {
+		if err := g.client.Ping(); err != nil {
+			logger.Errorf("Error pinging client: %v", err)
+			g.ShutDown()
+			if err := g.client.Start(); err != nil {
+				return err
 			}
 		}
 	}
+	return nil
 }
 
 func (g *Gateway) ShutDown() {
