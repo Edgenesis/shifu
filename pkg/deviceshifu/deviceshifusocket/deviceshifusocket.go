@@ -133,21 +133,31 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 			return
 		}
 		handlerInstruction := HandlerMetaData.instruction
-		instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
-		logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
-		if shouldUsePythonCustomProcessing {
-			logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
-			outputMessage = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, outputMessage, deviceshifubase.PythonScriptDir)
-		}
 
-		returnMessage := ReturnBody{
+		returnBody := ReturnBody{
 			Message: outputMessage,
 			Status:  http.StatusOK,
 		}
+		returnMessage, err := json.Marshal(returnBody)
+		if err != nil {
+			logger.Errorf("Failed marshal return message, error: %v", err)
+			http.Error(w, "Failed marshal return message, error: "+err.Error(), http.StatusBadRequest)
+			return
+		}
 
-		w.WriteHeader(http.StatusOK)
 		w.Header().Set("Content-Type", "application/json")
-		err = json.NewEncoder(w).Encode(returnMessage)
+		w.WriteHeader(http.StatusOK)
+
+		instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
+		if shouldUsePythonCustomProcessing {
+			logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+			returnMessage = []byte(utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, outputMessage, deviceshifubase.PythonScriptDir))
+			if !json.Valid(returnMessage) {
+				w.Header().Set("Content-Type", "text/plain")
+			}
+		}
+
+		_, err = w.Write(returnMessage)
 		if err != nil {
 			logger.Errorf("Failed encode message to json, error: %v" + err.Error())
 			http.Error(w, "Failed encode message to json, error: "+err.Error(), http.StatusBadRequest)

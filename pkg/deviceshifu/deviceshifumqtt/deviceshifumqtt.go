@@ -225,7 +225,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
 			return
 		} else {
-			http.Error(w, "must be GET or POST method", http.StatusBadRequest)
+			http.Error(w, "must be GET or PUT method", http.StatusBadRequest)
 			logger.Errorf("Request type %v is not supported yet!", reqType)
 			return
 		}

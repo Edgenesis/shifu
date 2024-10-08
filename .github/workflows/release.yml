@@ -21,10 +21,10 @@ jobs:
   generate_changelog:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
         with:
-          go-version: "1.22.0"
+          go-version: "1.23.1"
       - name: set version
         run: |
           echo "VERSION=$(echo "${{inputs.tag_name}}" | cut -d '-' -f1)" >> "$GITHUB_ENV"

@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM --platform=$TARGETPLATFORM golang:1.20.2-buster as builder
+FROM golang:1.23.1-alpine AS builder
 
 WORKDIR /shifu
 
@@ -12,8 +12,7 @@ COPY cmd/deviceshifu/cmdplc4x cmd/deviceshifu/cmdplc4x
 COPY pkg/deviceshifu pkg/deviceshifu
 COPY pkg/logger pkg/logger
 
-RUN apt-get update
-RUN apt-get install -y libpcap-dev
+RUN apk add --no-cache gcc musl-dev libpcap-dev
 
 RUN go mod download
 
