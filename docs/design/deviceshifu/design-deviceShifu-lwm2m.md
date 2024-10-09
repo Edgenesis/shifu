@@ -144,8 +144,6 @@ type Properties struct {
     ObjectId            string      `json:"ObjectId"` // required example /3303/0
     DataFormat          LwM2MType   `json:"dataFormat"` // optional TLV/JSON/PlainText/Opaque default plaintext
     EnableObserve       bool        `json:"EnableObserve,omitempty"` // optional enable observe mode default false
-    ObserveMinPeriod    int         `json:"ObserveMinPeriod,omitempty"` // optional work when enable observe default 10 seconds
-    ObserveMaxPeriod    int         `json:"ObserveMaxPeriod,omitempty"` // optional work when enable observe default 60 seconds
 }
 ```
 
