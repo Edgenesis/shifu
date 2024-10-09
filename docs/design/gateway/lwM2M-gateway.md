@@ -2,7 +2,7 @@
 
 ## Why need LwM2M Gateway
 
-For telemetryService only support push data to the server, but for LwM2M protocol, it support both push and pull data from the device. it is hard to implement the pull data feature in the telemetryService.
+Telemetry service which serve push data from device to the data server, it didn't have the feature to pull data from device the to the data server, while LwM2M normally needs to pull data from the device to the data server. in order to support this, a LwM2M Gateway is required to do this job.
 
 So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pull data call from server and auto push data to the server.
 
@@ -27,7 +27,7 @@ So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pu
 
 ## LwM2M Gateway Design
 
-For LwM2M Gateway, it will as a LwM2M client to connect a server and it will handle all request from the server over the LwM2M protocol. 
+For the LwM2M Gateway, it will use an LwM2M client to connect server, and it will handle all requests from the server over the LwM2M protocol.
 
 When a device enable the gateway feature, it will register to the gateway and the gateway will call the server to update the device info. Each device will have a unique ObjectId like `/33953` and their.
 instruction will be a instance of the ObjectId like `/33953/1`.
