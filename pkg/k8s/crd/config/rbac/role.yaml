@@ -8,7 +8,6 @@ rules:
   - shifu.edgenesis.io
   resources:
   - edgedevices
-  - telemetryservices
   verbs:
   - create
   - delete
@@ -21,13 +20,37 @@ rules:
   - shifu.edgenesis.io
   resources:
   - edgedevices/finalizers
-  - telemetryservices/finalizers
   verbs:
   - update
 - apiGroups:
   - shifu.edgenesis.io
   resources:
   - edgedevices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
   - telemetryservices/status
   verbs:
   - get

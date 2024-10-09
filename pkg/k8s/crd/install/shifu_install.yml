@@ -9,7 +9,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: edgedevices.shifu.edgenesis.io
 spec:
   group: shifu.edgenesis.io
@@ -155,7 +155,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.14.0
   name: telemetryservices.shifu.edgenesis.io
 spec:
   group: shifu.edgenesis.io
@@ -239,10 +239,6 @@ spec:
                         type: string
                       ServerAddress:
                         type: string
-                    required:
-                    - Bucket
-                    - FileExtension
-                    - ServerAddress
                     type: object
                   SQLSetting:
                     properties:
@@ -258,8 +254,6 @@ spec:
                         type: string
                       username:
                         type: string
-                    required:
-                    - serverAddress
                     type: object
                 type: object
               telemetryServiceEndpoint:
@@ -333,7 +327,6 @@ rules:
   - shifu.edgenesis.io
   resources:
   - edgedevices
-  - telemetryservices
   verbs:
   - create
   - delete
@@ -346,13 +339,37 @@ rules:
   - shifu.edgenesis.io
   resources:
   - edgedevices/finalizers
-  - telemetryservices/finalizers
   verbs:
   - update
 - apiGroups:
   - shifu.edgenesis.io
   resources:
   - edgedevices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
   - telemetryservices/status
   verbs:
   - get
@@ -498,7 +515,7 @@ spec:
         - --source=default
         command:
         - /manager
-        image: edgehub/shifu-controller:nightly
+        image: edgehub/shifu-controller:v0.55.0-rc1
         livenessProbe:
           httpGet:
             path: /healthz
