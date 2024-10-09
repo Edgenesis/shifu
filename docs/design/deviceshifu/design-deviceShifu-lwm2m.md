@@ -6,16 +6,16 @@ This document outlines the design for integrating the [Lightweight Machine to Ma
 
 ## Goals
 
-### Design Goal
+### Features
 
-- Create a deviceshifu-lwm2m type to enable users to connect devices using the LwM2M protocol.
+- Create a deviceShifu-lwm2m type to enable users to connect devices using the LwM2M protocol.
 - LwM2M protocol support both `read` and `write` requests.
 - Datagram Transport Layer Security (DTLS) support.
 - Resource observation or Notification.
 - [LwM2M protocol using v1.0.x version](https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf).
 - LwM2M protocol under UDP.
   
-### Design Non-Goal
+### Unsupported Features
 
 - Support LwM2M v1.1.x or later version.
 - Over TCP or other protocol.
@@ -29,10 +29,10 @@ subgraph kubernetes[Kubernetes]
   subgraph ds[deviceShifu-LwM2M]
           direction TB
           lws[LwM2M Server]
-          http[HTTP Server]
-          http -->|call interface| lws
+          HTTP[HTTP Server]
+          HTTP -->|call interface| lws
   end
-  subgraph ds1[deviceShifu-LwM2M]
+  subgraph ds1[deviceShifu-LwM2M 1]
           direction TB
           lws1[LwM2M Server]
           http1[HTTP Server]
@@ -44,27 +44,38 @@ d[device]
 d1[device1]
 
 
-ap <-->|restful API| http
-ap <-->|restful API| http1
+ap <-->|RESTful API| HTTP
+ap <-->|RESTful API| http1
 lws <-->|LwM2M| d
 lws1 <-->|LwM2M| d1
 ```
 
-The `deviceShifu-LwM2M` will represent each LwM2M object as an instruction that can be accessed through a RESTful API. The API will use the POST method for write operations and the GET method for read operations. The supported data formats for LwM2M v1.0 are TLV, JSON, Plain text, and Opaque.
+The `deviceShifu-LwM2M` will represent each LwM2M object as an instruction that can be accessed through a RESTful API. The API will use the PUT method for write operations and the GET method for read operations. 
 
-deviceShifu-LwM2M's LwM2M server will handle Register, Update, De-register, Read, Write, Observe and Notify. And maintain the device info in the memory cache.
+The supported data formats:
+- PlainText
+- JSON
 
-For each deviceshifu LwM2M should expose a UDP port for LwM2M communication.
+deviceShifu-LwM2M's LwM2M server will handle the following functions:
+- Register
+- Update
+- De-register
+- Read
+- Write
+- Observe
+-  Notify
 
-deviceShifu-LwM2M support two kind of mode normal and observe mode.
-- normal mode: just like the other deviceshifu, when call the instruction, deviceShifu will send Read or Write Request to deviceShifu and return response
-- observe mode: this mode will set the min and max notify time, then device will notify data when data changed or timeout. deviceShifu will record data, and return the data store in the memory cache when call the instruction. and this kind of mode also support read and write operation.
+Each deviceshifuLwM2M should expose a UDP port for LwM2M communication.
 
-deviceShifu will host a LwM2M server and listen on udp 3683(LwM2M default port) and http server(deviceshifu) on 8080.
+deviceShifu-LwM2M support two modes: normal and observe mode.
+- normal mode: just like the other deviceShifu, when call the instruction, deviceShifu will send Read or Write Request to deviceShifu and return response
+- [observe mode](https://guidelines.openmobilealliance.org/object-support/#observe-and-notify-multiple-resources): this mode will set the min and max notify time, then device will notify data when data changed or timeout. deviceShifu will record data, and return the data store in the memory cache when call the instruction. and this kind of mode also support read and write operation.
 
-if the Object is in observe mode, LwM2M server also need to handle the notify request from device and update the data in the memory cache.
+deviceShifu will host a LwM2M server and listen on UDP 3683(LwM2M default port) and HTTP server(deviceShifu) on 8080.
 
-when the deviceShifu received the instruction before the device register, it will return error message. 
+If the object is in observe mode, the LwM2M server must also handle notify requests from the device and update the data in the memory cache.
+
+If deviceShifu receives an instruction before the device is registered, it will return an error message.
 
 ```mermaid
 sequenceDiagram
@@ -109,7 +120,7 @@ sequenceDiagram
 Define data structures and types in Go for configuring and managing LwM2M communication:
 
 ```go
-type LwM2MSettings struct {
+type LwM2MSetting struct {
 	EndpointName string `json:"endpointName,omitempty"`
   	// +kubebuilder:default="None"
 	SecurityMode *SecurityMode `json:"securityMode,omitempty"`
@@ -135,14 +146,12 @@ const (
 )
 ```
 
-If bootstrap server address is not empty, deviceShifu will send register request to bootstrap server, and get the server info, then send register request to deviceShifu.
-
 ```go
 type LwM2MType string
 
 type Properties struct {
     ObjectId            string      `json:"ObjectId"` // required example /3303/0
-    DataFormat          LwM2MType   `json:"dataFormat"` // optional TLV/JSON/PlainText/Opaque default plaintext
+    DataType            LwM2MType   `json:"DataType"` // optional float, int, bool, string, default string
     EnableObserve       bool        `json:"EnableObserve,omitempty"` // optional enable observe mode default false
 }
 ```
@@ -155,7 +164,7 @@ LwM2M supports both `GET` and `PUT` requests.
 
 For read the data from device, the method signature looks like:
 ```
-GET lwm2m.device.svc.cluster.local/{object1_name}
+GET lwm2m.device.svc.cluster.local/{instruction_name}
 ```
 ```go
 LwM2MServer.Read(properties.ObjectId)
@@ -167,7 +176,7 @@ return value
 
 For write the data to device, the method signature looks like:
 ```
-PUT lwm2m.device.svc.cluster.local/{object1_name}
+PUT lwm2m.device.svc.cluster.local/{instruction_name}
 ```
 ```go
 LwM2MServer.Write(properties.ObjectId, newValue)
@@ -201,7 +210,7 @@ func HandleDeRegister(request,response) {
 
 ## Testing Plan
 
-- Using [Leshan](https://github.com/eclipse-leshan/leshan) as a LwM2M client use deviceshifu-LwM2M to connect to the device without bootstrap server.
-- Using [Leshan](https://github.com/eclipse-leshan/leshan)'s bootstrap server and client use deviceshifu-LwM2M to connect to the device.
+- Using [Leshan](https://github.com/eclipse-leshan/leshan) as a LwM2M client use deviceShifu-LwM2M to connect to the device without bootstrap server.
+- Using [Leshan](https://github.com/eclipse-leshan/leshan)'s bootstrap server and client use deviceShifu-LwM2M to connect to the device.
 - Normal mode test: read and write data from device.
 - Observe mode test: read and write data from device, and check the data change or timeout.
