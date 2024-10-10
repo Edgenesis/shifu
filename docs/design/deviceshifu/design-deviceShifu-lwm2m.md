@@ -184,9 +184,7 @@ For LwM2M is Object and Resource based, so the instruction properties will store
 If enable Observe mode, the instruction properties will store the `EnableObserve` field to enable the observe mode. deviceShifu will cache the data when the device notify the data.
 
 ```go
-type LwM2MType string
-
-type Properties struct {
+type LwM2MProtocolProperty struct {
     ObjectId            string      `json:"ObjectId"` // required example /3303/0
     EnableObserve       bool        `json:"EnableObserve,omitempty"` // optional enable observe mode default false
 }
