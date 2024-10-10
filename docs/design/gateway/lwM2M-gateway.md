@@ -2,46 +2,43 @@
 
 ## Why need LwM2M Gateway
 
-Telemetry service which serve push data from device to the data server, it didn't have the feature to pull data from the device and post data from cloud to device, while LwM2M normally needs to do it. In order to support this, a LwM2M Gateway is required to do this job.
-
-So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pull data call from server and auto push data to the server.
+A telemetry service typically pushes data from devices to a data server but does not have the capability to pull data from the device or post data from the cloud to the device. LwM2M (Lightweight Machine to Machine) protocol, however, usually requires both these features. To support this, an LwM2M Gateway is necessary to enable the deviceShifu to adapt to the LwM2M protocol, supporting pull data calls from the server and auto-pushing data to the server.
 
 ## Goal
 
 ### Design Goal
 
-- make device as a LwM2M device registered to the LwM2M server.
-- Provide a way to connect deviceShifu to the LwM2M server.
-- LwM2M Server can read, write and execute the deviceShifu instruction by the LwM2M protocol.
+- Enable the device to act as an LwM2M device registered with the LwM2M server.
+- Provide a method to connect deviceShifu to the LwM2M server.
+- Allow the LwM2M server to read, write, and execute instructions on deviceShifu via the LwM2M protocol.
 
 ### Non-Goal
 
-- Support all features in the LwM2M protocol.
-- According [standard of OMA](HTTPs://github.com/OpenMobileAlliance/lwm2m-registry) recognize and generate the LwM2M Object and Resource.
-- Bootstrap Server.
+- Support for all features in the LwM2M protocol.
+- Automatic recognition and generation of LwM2M Objects and Resources according to the [OMA Standard](https://github.com/OpenMobileAlliance/lwm2m-registry).
 
 ### Features
 
-- [LwM2M protocol using v1.0.x version](HTTPs://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf).
-- LwM2M protocol under UDP.
+- Support for [LwM2M protocol v1.0.x](https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf).
+- LwM2M protocol over UDP.
 - Datagram Transport Layer Security (DTLS) support.
-- Support using LwM2M protocol to communicate with the server.
-- Support `read`, `write` and `Execute` requests.
+- Support for LwM2M protocol communication with the server.
+- Support for `read`, `write` and `Execute` requests.
 - Support Notify and Observe feature.
 
 ### Unsupported Features
 
-- Support LwM2M v1.1.x or later version.
-- Over TCP or other protocol.
-- Bootstrap Server.
-- Support all the LwM2M Object.
-- Support all the LwM2M Resource.
+-	Support for LwM2M v1.1.x or later.
+-	Support over TCP or other protocols.
+-	Bootstrap server.
+-	Support for all LwM2M Objects.
+-	Support for all LwM2M Resources.
 
 ## LwM2M Gateway Design
 
-The LwM2M Gateway includes two parts, the LwM2M client connect to the LwM2M Server and the HTTP client connect to the deviceShifu.
+The LwM2M Gateway consists of two main components: an LwM2M client that connects to the LwM2M server and an HTTP client that connects to deviceShifu.
 
-When the server send the read or write request to the gateway, the gateway will call the deviceShifu instruction to get the data or set the data. When the server enable the Observe feature, the gateway will get the data from the deviceShifu in a interval. When the data changed or timeout, the gateway will notify the server with the changed data.
+When the server sends a read or write request to the gateway, the gateway calls the deviceShifu instructions to either retrieve or set the data. If the server enables the Observe feature, the gateway regularly collects data from the deviceShifu. If the data changes or a timeout occurs, the gateway notifies the server with the updated data.
 
 ```mermaid
 flowchart BT
@@ -84,16 +81,16 @@ dl -->|LwM2M| dsl
 gl3 -->|LwM2M| ls 
 ```
 
-### What does the gateway will do?
+### What Does the Gateway Do?
 
-1. Start the LwM2M Client and get all the device info from the deviceShifu.
-2. Register to the server and update the device info.
-3. handle the request from the server.
-4. When server enable Observe feature, the gateway will notify the server when the data changed or timeout.
-5. When server send the read or write request, the gateway will call the deviceShifu to get the data or set the data.
-6. Before gateway shutdown, deregister from the server and stop the LwM2M Client.
-7. When server disconnect, the gateway will try to reconnect to the server and register again.
-8. When call deviceShifu instruction timeout, the gateway will return the error message to the server.
+1.	Start the LwM2M client and obtain all device information from deviceShifu.
+2.	Register the device with the server and update the device information.
+3.	Handle requests from the server.
+4.	If the server enables the Observe feature, notify the server when data changes or a timeout occurs.
+5.	Handle read or write requests by calling deviceShifu to get or set the data.
+6.	Before shutting down, deregister from the server and stop the LwM2M client.
+7.	If the server disconnects, the gateway will attempt to reconnect and re-register.
+8.	If a deviceShifu instruction times out, the gateway will return an error message to the server.
 
 ```mermaid
 sequenceDiagram
@@ -143,24 +140,23 @@ sequenceDiagram
 
 #### Read Request
 
-When the server send the read request to the gateway, the gateway will call the deviceShifu instruction with `GET` method. 
-The gateway will get the data from the deviceShifu and return the data to the server.
+When the server sends a read request, the gateway will call the deviceShifu instruction using the `GET` method. The gateway retrieves the data from deviceShifu and returns it to the server.
 
 #### Write Request
 
-When the server send the write request to the gateway, the gateway will call the deviceShifu instruction with `PUT` method with the data in the request body. and return with changed status code to server
+When the server sends a write request, the gateway will call the deviceShifu instruction using the `PUT` method with the data provided in the request body and return a changed status code to the server.
 
 #### Execute Request
 
-When the server send the execute request to the gateway, the gateway will call the deviceShifu instruction with `POST` method without request body.
+When the server sends an execute request, the gateway will call the deviceShifu instruction using the `POST` method without a request body.
 
 #### Observe and Notify
 
-When the server enable the observe feature, the gateway will get the data from the deviceShifu in a interval. When the data changed or timeout, the gateway will notify the server with the changed data.
+When the server enables the Observe feature, the gateway will collect data from deviceShifu at regular intervals. If the data changes or a timeout occurs, the gateway will notify the server with the updated data.
 
 ### Gateway Configuration
 
-To connect to the server, the gateway need some configuration like the server address, the endpoint name, the security mode, and the psk key in Edgedevice yaml file. the LwM2MSetting is same with the deviceShifu LwM2MSetting.
+To connect to the server, the gateway requires configuration details such as the server address, endpoint name, security mode, and PSK key in the EdgeDevice YAML file. The LwM2MSettings are the same as those in the deviceShifu LwM2MSettings.
 
 ```yaml
 apiVersion: shifu.edgenesis.io/v1alpha1
@@ -189,9 +185,9 @@ spec:
       pskKey: ABC123
 ```
 
-To mapping the LwM2M Object and Resource to the deviceShifu, we add a field `gatewayPropertyList` for instruction in the deviceShifu ConfigMap. Which mean the instruction will forward to the resource in the LwM2M protocol. ObjectId is the LwM2M Object Id and DataType is the LwM2M Resource Type.
+To map the LwM2M Object and Resource to deviceShifu, we add a `gatewayPropertyList` field for instructions in the deviceShifu ConfigMap. This indicates that the instruction will forward to the LwM2M protocol resource. The ObjectId represents the LwM2M Object Id, and DataType represents the LwM2M Resource Type.
 
-Data Type support: `int`, `float`, `string`, `bool`. By default, the data type is `string`.
+Supported Data Types: `int`, `float`, `string`, `bool`. By default, the data type is `string`.
 
 ```yaml
 apiVersion: v1
@@ -210,6 +206,6 @@ data:
 
 ### Test Plan
 
-- Using [Leshan](HTTPs://github.com/eclipse-leshan/leshan) as the LwM2M server, connect a HTTP device to the server.
-- Normal mode test: read and write data and execute from device.
-- Observe mode test: read and write data from device, and check the data change or timeout.
+- Use [Leshan](HTTPs://github.com/eclipse-leshan/leshan) as the LwM2M server to connect an HTTP device to the server.
+- Normal Mode Test: Perform read, write, and execute operations on the device via the LwM2M Gateway.
+- Observe Mode Test: Enable the observe mode from the server, read and write data from the device, and validate that the gateway correctly notifies the server when data changes or a timeout occurs.
