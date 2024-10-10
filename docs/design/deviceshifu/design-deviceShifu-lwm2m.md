@@ -52,7 +52,8 @@ lws1 <-->|LwM2M| d1
 
 The `deviceShifu-LwM2M` will represent each LwM2M object as an instruction that can be accessed through a RESTful API. The API will use the PUT method for write operations and the GET method for read operations. 
 
-The supported data formats:
+Supported data formats:
+
 - PlainText
 - JSON
 
@@ -63,19 +64,15 @@ deviceShifu-LwM2M's LwM2M server will handle the following functions:
 - Read
 - Write
 - Observe
--  Notify
+- Notify
 
 Each deviceshifuLwM2M should expose a UDP port for LwM2M communication.
 
-deviceShifu-LwM2M support two modes: normal and observe mode.
+deviceShifu-LwM2M supports two modes: normal and observe mode.
 - normal mode: just like the other deviceShifu, when call the instruction, deviceShifu will send Read or Write Request to deviceShifu and return response
 - [observe mode](https://guidelines.openmobilealliance.org/object-support/#observe-and-notify-multiple-resources): this mode will set the min and max notify time, then device will notify data when data changed or timeout. deviceShifu will record data, and return the data store in the memory cache when call the instruction. and this kind of mode also support read and write operation.
 
-deviceShifu will host a LwM2M server and listen on UDP 3683(LwM2M default port) and HTTP server(deviceShifu) on 8080.
-
-If the object is in observe mode, the LwM2M server must also handle notify requests from the device and update the data in the memory cache.
-
-If deviceShifu receives an instruction before the device is registered, it will return an error message.
+DeviceShifu will host an LwM2M server, listening on UDP port 3683 (the default LwM2M port), and an HTTP server on port 8080. When an object is in observe mode, the LwM2M server must handle notifications from the device and update the data in the memory cache. If DeviceShifu receives an instruction before the device is registered, it will return an error message.
 
 ```mermaid
 sequenceDiagram
@@ -117,7 +114,17 @@ sequenceDiagram
 
 ### Protocol Specification
 
-Define data structures and types in Go for configuring and managing LwM2M communication:
+#### Connection Settings
+
+In Edgedevice will add a new protocol `LwM2M` and add a new field `LwM2MSetting` in protocolSettings to store the LwM2M configuration. For deviceshifu-LwM2M is a LwM2M server, so the `address` field is not required.
+
+In LwM2MSetting structure will store the following fields:
+- `EndpointName`: the name of the endpoint, which is used to identify the device, deviceShifu only support the device with the same endpoint name.
+- `SecurityMode`: the security mode of the device, support `None` and `DTLS`. default is `None`.
+- `DTLSMode`: the DTLS mode of the device, support `PSK`. `RPK` ans `X509` are not supported.
+- `CipherSuites`: the cipher suites of the device, reference to [IANA](https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4) for the cipher suites. And at least support [Basic DTLS CipherSuites in Pion](https://github.com/pion/dtls/blob/98a05d681d3affae2d055a70d3273cbb35425b5a/cipher_suite.go#L25-L45)
+- `PSKIdentity`: the pre-shared key identity of the device.
+- `PSKKey`: the pre-shared key of the device.
 
 ```go
 type LwM2MSetting struct {
@@ -146,14 +153,63 @@ const (
 )
 ```
 
+example yaml:
+
+```yaml
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-lwm2m
+  namespace: devices
+spec:
+  sku: "LwM2M Device"
+  connection: Ethernet
+  address: -- 
+  protocol: LwM2M
+  protocolSettings:
+    LwM2MSettings:
+      endpointName: test
+      securityMode: DTLS
+      dtlsMode: PSK
+      cipherSuites:
+        - TLS_PSK_WITH_AES_128_CCM_8
+      pskIdentity: hint
+      pskKey: ABC123
+```
+
+#### Instruction Properties
+
+For LwM2M is Object and Resource based, so the instruction properties will store the ObjectID  which is used to identify the data in the device to make the instruction is mapped to the device's Object and Resource.
+
+If enable Observe mode, the instruction properties will store the `EnableObserve` field to enable the observe mode. deviceShifu will cache the data when the device notify the data.
+
 ```go
 type LwM2MType string
 
 type Properties struct {
     ObjectId            string      `json:"ObjectId"` // required example /3303/0
-    DataType            LwM2MType   `json:"DataType"` // optional float, int, bool, string, default string
     EnableObserve       bool        `json:"EnableObserve,omitempty"` // optional enable observe mode default false
 }
+```
+
+example yaml:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deviceshifu-lwm2m
+  namespace: deviceshifu
+data:
+  driverProperties: |
+    driverSku: LwM2M Device
+    driverImage: lwm2m-device:v0.0.1
+  instructions: |
+    instructions:
+      float:
+        protocolPropertyList:
+          ObjectId: /3442/0/130
+          EnableObserve: false
 ```
 
 ### Serving requests
