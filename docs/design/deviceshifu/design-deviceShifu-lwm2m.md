@@ -9,9 +9,9 @@ This document outlines the design for integrating the [Lightweight Machine to Ma
 ### Features
 
 - Create a deviceShifu-lwm2m type to enable users to connect devices using the LwM2M protocol.
-- LwM2M protocol support both `read` and `write` requests.
+- LwM2M protocol supports both `read` and `write` requests.
 - Datagram Transport Layer Security (DTLS) support.
-- Resource observation or Notification.
+- Resource observation and notification.
 - [LwM2M protocol using v1.0.x version](https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf).
 - LwM2M protocol under UDP.
   
@@ -66,7 +66,7 @@ deviceShifu-LwM2M's LwM2M server will handle the following functions:
 - Observe
 - Notify
 
-Each deviceshifuLwM2M should expose a UDP port for LwM2M communication.
+Each deviceshifu-LwM2M should expose a UDP port for LwM2M communication.
 
 deviceShifu-LwM2M supports two modes: normal and observe mode.
 - normal mode: just like the other deviceShifu, when call the instruction, deviceShifu will send Read or Write Request to deviceShifu and return response
@@ -116,7 +116,7 @@ sequenceDiagram
 
 #### Connection Settings
 
-In Edgedevice will add a new protocol `LwM2M` and add a new field `LwM2MSetting` in protocolSettings to store the LwM2M configuration. For deviceshifu-LwM2M is a LwM2M server, so the `address` field is not required.
+In EdgeDevice, a new protocol LwM2M will be added, and add a new field `LwM2MSetting` in protocolSettings to store the LwM2M configuration. For deviceshifu-LwM2M is a LwM2M server, so the `address` field is not required.
 
 In LwM2MSetting structure will store the following fields:
 - `EndpointName`: the name of the endpoint, which is used to identify the device, deviceShifu only support the device with the same endpoint name.
@@ -179,7 +179,7 @@ spec:
 
 #### Instruction Properties
 
-For LwM2M is Object and Resource based, so the instruction properties will store the ObjectID  which is used to identify the data in the device to make the instruction is mapped to the device's Object and Resource.
+Since LwM2M is Object and Resource-based, so the instruction properties will store the ObjectID  which is used to identify the data in the device to make the instruction is mapped to the device's Object and Resource.
 
 If enable Observe mode, the instruction properties will store the `EnableObserve` field to enable the observe mode. deviceShifu will cache the data when the device notify the data.
 
@@ -216,7 +216,7 @@ deviceShifu-LwM2M would take RESTful-style requests just as other deviceShifu do
 
 LwM2M supports both `GET` and `PUT` requests.
 
-For read the data from device, the method signature looks like:
+To read data from the device, the method signature looks like:
 ```
 GET lwm2m.device.svc.cluster.local/{instruction_name}
 ```
@@ -228,7 +228,7 @@ if properties.EnableObserver {
 return value
 ```
 
-For write the data to device, the method signature looks like:
+To write data to the device, the method signature looks like:
 ```
 PUT lwm2m.device.svc.cluster.local/{instruction_name}
 ```
@@ -240,7 +240,7 @@ if properties.EnableObserver {
 return success
 ```
 
-For the LwM2MServer to handle the notify request from device, the method signature looks like:
+For the LwM2MServer to handle notification requests from device, the method signature looks like:
 
 ```go
 LwM2MServer := NewLwM2MServer()
@@ -266,5 +266,5 @@ func HandleDeRegister(request,response) {
 
 - Using [Leshan](https://github.com/eclipse-leshan/leshan) as a LwM2M client use deviceShifu-LwM2M to connect to the device without bootstrap server.
 - Using [Leshan](https://github.com/eclipse-leshan/leshan)'s bootstrap server and client use deviceShifu-LwM2M to connect to the device.
-- Normal mode test: read and write data from device.
-- Observe mode test: read and write data from device, and check the data change or timeout.
+- Normal mode test: read and write data to/from the device.
+- Observe mode test: read and write data to/from the device, and check the data change or timeout.
