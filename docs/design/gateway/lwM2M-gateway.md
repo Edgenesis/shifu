@@ -2,7 +2,7 @@
 
 ## Why need LwM2M Gateway
 
-Telemetry service which serve push data from device to the data server, it didn't have the feature to pull data from device the to the data server, while LwM2M normally needs to pull data from the device to the data server. in order to support this, a LwM2M Gateway is required to do this job.
+Telemetry service which serve push data from device to the data server, it didn't have the feature to pull data from the device and post data from cloud to device, while LwM2M normally needs to do it. In order to support this, a LwM2M Gateway is required to do this job.
 
 So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pull data call from server and auto push data to the server.
 
@@ -10,14 +10,26 @@ So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pu
 
 ### Design Goal
 
-- [LwM2M protocol using v1.0.x version](https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf).
+- make device as a LwM2M device registered to the LwM2M server.
+- Provide a way to connect deviceShifu to the LwM2M server.
+- LwM2M Server can read, write and execute the deviceShifu instruction by the LwM2M protocol.
+
+### Non-Goal
+
+- Support all features in the LwM2M protocol.
+- According [standard of OMA](HTTPs://github.com/OpenMobileAlliance/lwm2m-registry) recognize and generate the LwM2M Object and Resource.
+- Bootstrap Server.
+
+### Features
+
+- [LwM2M protocol using v1.0.x version](HTTPs://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf).
 - LwM2M protocol under UDP.
 - Datagram Transport Layer Security (DTLS) support.
 - Support using LwM2M protocol to communicate with the server.
-- Support both `read` and `write` requests.
+- Support `read`, `write` and `Execute` requests.
 - Support Notify and Observe feature.
 
-### Non-Goal
+### Unsupported Features
 
 - Support LwM2M v1.1.x or later version.
 - Over TCP or other protocol.
@@ -27,13 +39,9 @@ So we need a gateway make deviceShifu to adapt the LwM2M protocol. to support pu
 
 ## LwM2M Gateway Design
 
-For the LwM2M Gateway will include two parts, the LwM2M Client connect to the LwM2M Server and the deviceShifu connect to the deviceShifu.
+The LwM2M Gateway includes two parts, the LwM2M client connect to the LwM2M Server and the HTTP client connect to the deviceShifu.
 
-When deviceShifu enable gateway feature, gateway will initialize the LwM2M client's object map. Then create a LwM2M Client to connect to the LwM2M Server with the configuration in the EdgeDevice yaml file, and register to the server with object map.
-
-Then, the gateway will handle the request from the server by calling deviceShifu instruction with the LwM2M Object and Resource.
-
-Before the gateway stop, it will deregister from the server and stop the LwM2M Client.
+When the server send the read or write request to the gateway, the gateway will call the deviceShifu instruction to get the data or set the data. When the server enable the Observe feature, the gateway will get the data from the deviceShifu in a interval. When the data changed or timeout, the gateway will notify the server with the changed data.
 
 ```mermaid
 flowchart BT
@@ -42,32 +50,41 @@ ls[LwM2M-server]
 
 subgraph EdgeNode
     subgraph Shifu
-      subgraph ds1[deviceshifu-LwM2M]
-          dsh[deviceshifu-http]
+      subgraph ds1[deviceShifu-HTTP]
+          dsh[deviceShifu-HTTP]
           gl1[LwM2M-gateway]
           dsh <-->|HTTP| gl1
       end
-      subgraph ds2[deviceshifu-MQTT]
-          dsm[deviceshifu-MQTT]
+      subgraph ds2[deviceShifu-MQTT]
+          dsm[deviceShifu-MQTT]
           gl2[LwM2M-gateway]
           dsm <-->|HTTP| gl2
+      end
+        subgraph ds3[deviceShifu-LwM2M]
+          dsl[deviceShifu-LwM2M]
+          gl3[LwM2M-gateway]
+          dsl <-->|HTTP| gl3
       end
     end
 end
 
 
-dh[device-http]
-dm[device-mqtt]
+dh[device-HTTP]
+dm[device-MQTT]
+dl[device-LwM2M]
 
 
 dh -->|HTTP| dsh
 gl1 -->|LwM2M| ls
 
 dm -->|MQTT| dsm
-gl2 -->|LwM2M| ls 
+gl2 -->|LwM2M| ls
+
+dl -->|LwM2M| dsl
+gl3 -->|LwM2M| ls 
 ```
 
-### What will the gateway do?
+### What does the gateway will do?
 
 1. Start the LwM2M Client and get all the device info from the deviceShifu.
 2. Register to the server and update the device info.
@@ -80,29 +97,46 @@ gl2 -->|LwM2M| ls
 
 ```mermaid
 sequenceDiagram
-   participant ds as DeviceShifu
-   participant gw as Gateway
-   participant s as Server
+  participant ds as DeviceShifu
+  participant gw as Gateway
+  participant s as Server
 
-   gw ->> s: Register
-   s ->> gw: Created
+  note over ds,s: Register
+  gw ->> s: Register
+  s ->> gw: Created
 
-   note over ds: read or write data
-   s ->> gw: Get Device Info
-   gw ->> ds: Get Device Info
-   ds ->> gw: Device Info
-   gw ->> s: return Device Info
+  note over ds,s: Read Data
+  s ->> gw: [LwM2M GET /ObjectID] Read Data
+  gw ->> ds: [HTTP GET /Instruction] Get Data
+  ds ->> gw: [HTTP Response] Data
+  gw ->> s: [LwM2M Response] Data
 
-   note over ds: observe data
-   s ->> gw: observe object
-   gw ->> ds: Created
-   loop Get Device Data in a interval
-      gw ->> ds: Get Device Data
-      ds ->> gw: Get Device Data
-      alt data changed or timeout
-         gw ->> s: Notify Data
-      end
-   end
+  note over ds,s: Write Data
+  s ->> gw: [LwM2M PUT /ObjectID] Write Data
+  gw ->> ds: [HTTP PUT /Instruction] Set Data
+  ds ->> gw: [HTTP Response] OK
+  gw ->> s: [LwM2M Response] Changed
+
+  note over ds,s: Execute
+  s ->> gw: [LwM2M POST /ObjectID] Execute
+  gw ->> ds: [HTTP POST /Instruction] Execute
+  ds ->> gw: [HTTP Response] OK
+  gw ->> s: [LwM2M Response] OK
+
+  note over ds,s: observe data
+  s ->> gw: [LwM2M GET /ObjectID] Enable Observe Object
+  gw ->> s: [LwM2M] Created
+  loop Get Device Data in a interval
+     gw ->> ds: [HTTP GET /Instruction] Get Device Data
+     ds ->> gw: [HTTP Response] Get Device Data
+     alt data changed or timeout
+        gw ->> s: [LwM2M Response] New Data
+     end
+  end
+
+  note over ds,s: de-register
+    gw ->> s: [LwM2M /Delete]De-register
+    s ->> gw: [LwM2M Response] Deleted
 ```
 
 ### Detail Design
@@ -122,7 +156,7 @@ When the server send the execute request to the gateway, the gateway will call t
 
 #### Observe and Notify
 
-When the server enable the observe feature, the gateway will get the data from the deviceShifu in a interval and notify the server when the data changed or timeout.
+When the server enable the observe feature, the gateway will get the data from the deviceShifu in a interval. When the data changed or timeout, the gateway will notify the server with the changed data.
 
 ### Gateway Configuration
 
@@ -164,7 +198,7 @@ apiVersion: v1
 kind: ConfigMap
 metadata:
   name: configmap
-  namespace: deviceshifu
+  namespace: deviceShifu
 data:
   instructions: |
     instructions:
@@ -176,6 +210,6 @@ data:
 
 ### Test Plan
 
-- Using [Leshan](https://github.com/eclipse-leshan/leshan) as the LwM2M server, connect a HTTP device to the server.
+- Using [Leshan](HTTPs://github.com/eclipse-leshan/leshan) as the LwM2M server, connect a HTTP device to the server.
 - Normal mode test: read and write data and execute from device.
 - Observe mode test: read and write data from device, and check the data change or timeout.
