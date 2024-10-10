@@ -28,7 +28,7 @@ func TestCopyHeader(t *testing.T) {
 	url := "http://www.example.com"
 	resp, err := http.Get(url)
 	if err != nil {
-		t.Errorf(err.Error())
+		t.Errorf("Error: %v", err)
 	}
 	responseHeader := resp.Header
 	responseHeader2 := http.Header{}

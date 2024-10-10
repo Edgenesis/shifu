@@ -35,6 +35,8 @@ pr:
 variables:
   - name: tag
     value: ""
+  - name: goVersion
+    value: "1.23.1"
 
 pool:
   vmImage: "ubuntu-latest"
@@ -46,7 +48,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Go@0
             displayName: "go get"
             inputs:
@@ -67,7 +69,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Go@0
             displayName: "go get"
             inputs:
@@ -89,7 +91,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -170,7 +172,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -213,7 +215,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -256,7 +258,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -295,7 +297,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -349,7 +351,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -361,7 +363,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - script: |
               tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
             displayName: Set the tag name as an environment variable
@@ -382,21 +384,28 @@ stages:
                 --name mockclient edgehub/mockclient:$(tag)
             displayName: build mockClient
           - script: |
+              docker run -itd --network host --name nginx nginx:1.21
+            displayName: docker run nginx
+          - script: |
+              set -e
+              docker run -itd --network host --name sqlserver -e "ACCEPT_EULA=Y" -e "MSSQL_SA_PASSWORD=YourStrong@Passw0rd" \
+                --health-cmd="/opt/mssql-tools18/bin/sqlcmd -U sa -C -P YourStrong@Passw0rd -Q 'select name from sys.databases'" --health-interval=5s --health-timeout=5s --health-retries=20 \
+                mcr.microsoft.com/mssql/server:2022-latest
+              bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
+              docker rm -f sqlserver
+            displayName: docker run sqlserver and checkoutput
+          - script: |
               docker buildx build --platform=linux/amd64 \
                 -f $(System.DefaultWorkingDirectory)/examples/telemetryservice/mockserver/Dockerfile.mockserver \
                 --build-arg PROJECT_ROOT="$(System.DefaultWorkingDirectory)" $(System.DefaultWorkingDirectory) \
                 -t edgehub/mockserver:$(tag) --load
-            displayName: build and run mockServer
-          - script: |
-              docker run -itd --network host --name nginx nginx:1.21
-            displayName: docker run nginx
+            displayName: build mockServer
           - script: |
               set -e
               docker run -itd --network host --name mosquitto eclipse-mosquitto:2.0.15
               docker run -itd --network host --name mockserver edgehub/mockserver:$(tag)
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput.sh
-              docker stop mosquitto mockserver
-              docker rm mosquitto mockserver
+              docker rm -f mosquitto mockserver
             displayName: e2e_test_mqtt and checkoutput
           - script: |
               set -e
@@ -409,8 +418,7 @@ stages:
               -e MQTT_PASSWORD=mosquitto \
               edgehub/mockserver:$(tag)
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mqtt/checkoutput_auth.sh
-              docker stop mosquitto mockserver
-              docker rm mosquitto mockserver
+              docker rm -f mosquitto mockserver
             displayName: e2e_test_mqtt_with_auth and checkoutput
           - script: |
               set -e
@@ -418,6 +426,7 @@ stages:
                 -v $(System.DefaultWorkingDirectory)/examples/telemetryservice/tdengine/init.sql:/root/init.sql \
                 tdengine/tdengine:3.0.1.4
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/tdengine/checkoutput.sh
+              docker rm -f tdengine
             displayName: docker run tdengine and checkoutput
           - script: |
               set -e
@@ -425,14 +434,8 @@ stages:
                 --health-cmd='mysqladmin ping -h localhost -uroot' --health-interval=5s --health-timeout=5s --health-retries=20 \
                 mysql:8.1.0
               bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/mysql/checkoutput.sh
+              docker rm -f mysql
             displayName: docker run mysql and checkoutput
-          - script: |
-              set -e
-              docker run -itd --network host --name sqlserver -e ACCEPT_EULA=Y -e SA_PASSWORD=Some_Strong_Password \
-                --health-cmd="/opt/mssql-tools/bin/sqlcmd -U sa -P Some_Strong_Password -Q 'select name from sys.databases'" --health-interval=5s --health-timeout=5s --health-retries=20 \
-                mcr.microsoft.com/mssql/server:2022-CU7-ubuntu-20.04	
-              bash $(System.DefaultWorkingDirectory)/examples/telemetryservice/sqlserver/checkoutput.sh
-            displayName: docker run sqlserver and checkoutput
 
   - stage: docker_build_muiltiarch_and_push
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not(startsWith(variables['Build.SourceBranchName'],'release')))
@@ -447,7 +450,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -465,7 +468,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -483,7 +486,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -501,7 +504,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -519,7 +522,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -537,7 +540,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -555,7 +558,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -573,7 +576,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -591,7 +594,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -609,7 +612,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -627,7 +630,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -645,7 +648,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -663,7 +666,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -681,7 +684,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:
@@ -699,7 +702,7 @@ stages:
         steps:
           - task: GoTool@0
             inputs:
-              version: "1.22.0"
+              version: $(goVersion)
           - task: Docker@2
             displayName: Login to DockerHub
             inputs:

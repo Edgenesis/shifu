@@ -90,8 +90,8 @@ func (h *Helper) generateChangelog() error {
 	if len(parts) < 2 {
 		return fmt.Errorf("error invalid content format")
 	}
-	enContent := processContent(parts[0])
-	zhContent := processContent(parts[1])
+	enContent := removeChar(processContent(parts[0]))
+	zhContent := removeChar(processContent(parts[1]))
 	err = createMarkdownFile("CHANGELOG/CHANGELOG-"+VERSION+".md", enContent)
 	if err != nil {
 		return fmt.Errorf("error creating English changelog: %s", err.Error())
@@ -125,4 +125,10 @@ func createMarkdownFile(path, content string) error {
 
 func toPointer[T any](v T) *T {
 	return &v
+}
+
+func removeChar(s string) string {
+	// remove all "```"
+	str := "```"
+	return strings.ReplaceAll(s, str, "")
 }
