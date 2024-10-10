@@ -75,6 +75,8 @@ gl2 -->|LwM2M| ls
 4. When server enable Observe feature, the gateway will notify the server when the data changed or timeout.
 5. When server send the read or write request, the gateway will call the deviceShifu to get the data or set the data.
 6. Before gateway shutdown, deregister from the server and stop the LwM2M Client.
+7. When server disconnect, the gateway will try to reconnect to the server and register again.
+8. When call deviceShifu instruction timeout, the gateway will return the error message to the server.
 
 ```mermaid
 sequenceDiagram
@@ -139,6 +141,7 @@ spec:
   protocol: LwM2M
   protocolSettings:
     LwM2MSettings:
+      ...
   gatewaySettings:
     protocol: LwM2M
     address: leshan.eclipseprojects.io:5684
