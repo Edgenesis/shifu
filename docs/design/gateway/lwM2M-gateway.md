@@ -2,7 +2,7 @@
 
 ## Why need LwM2M Gateway
 
-A telemetry service typically pushes data from devices to a data server but does not have the capability to pull data from the device or post data from the cloud to the device. LwM2M (Lightweight Machine to Machine) protocol, however, usually requires both these features. To support this, an LwM2M Gateway is necessary to enable the deviceShifu to adapt to the LwM2M protocol, supporting pull data calls from the server and auto-pushing data to the server.
+A telemetry service typically pushes data from devices to a data server but does not have the capability to pull data from the device or post data from the cloud to the device. LwM2M (Lightweight Machine to Machine) protocol, however, usually requires both these features. To support this, an LwM2M Gateway is necessary to enable the deviceShifu to adapt to the LwM2M protocol, handle requests from the LwM2M server, and push data to the cloud.
 
 ## Goal
 
@@ -23,7 +23,7 @@ A telemetry service typically pushes data from devices to a data server but does
 - LwM2M protocol over UDP.
 - Datagram Transport Layer Security (DTLS) support.
 - Support for LwM2M protocol communication with the server.
-- Support for `read`, `write` and `Execute` requests.
+- Support for `Read`, `Write` and `Execute` requests.
 - Support Notify and Observe feature.
 
 ### Unsupported Features
@@ -120,7 +120,7 @@ sequenceDiagram
   ds ->> gw: [HTTP Response] OK
   gw ->> s: [LwM2M Response] OK
 
-  note over ds,s: observe data
+  note over ds,s: Observe data
   s ->> gw: [LwM2M GET /ObjectID] Enable Observe Object
   gw ->> s: [LwM2M] Created
   loop Get Device Data in a interval
@@ -131,7 +131,7 @@ sequenceDiagram
      end
   end
 
-  note over ds,s: de-register
+  note over ds,s: De-register
     gw ->> s: [LwM2M /Delete]De-register
     s ->> gw: [LwM2M Response] Deleted
 ```
