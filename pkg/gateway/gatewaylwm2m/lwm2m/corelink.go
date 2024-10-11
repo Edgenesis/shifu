@@ -1,3 +1,5 @@
+// Reference to https://datatracker.ietf.org/doc/html/rfc6690
+// unused for now
 package lwm2m
 
 import (
@@ -17,6 +19,7 @@ func NewLink(resourcePath string, attributes map[string]string) *Link {
 }
 
 // String formats the Link into a CoRE Link Format string.
+// example: </>;rt="oma.lwm2m",</1/0>;rt="oma.lwm2m",</1/1>;rt="oma.lwm2m"
 func (l *Link) String() string {
 	var attrs []string
 	for key, value := range l.Attributes {

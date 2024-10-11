@@ -50,14 +50,14 @@ const (
 	DefaultUpdateInterval = 60
 )
 
-func NewClient(config Config) (*Client, error) {
+func NewClient(ctx context.Context, config Config) (*Client, error) {
 	var client = &Client{
 		ctx:            context.TODO(),
 		Config:         config,
 		liftTime:       DefaultLifeTime,
 		updateInterval: DefaultUpdateInterval,
 		object:         *NewObject("root", nil),
-		tmgr:           NewTaskManager(),
+		tmgr:           NewTaskManager(ctx),
 		dataCache:      make(map[string]interface{}),
 	}
 
@@ -67,7 +67,8 @@ func NewClient(config Config) (*Client, error) {
 func (c *Client) Start() error {
 	udpClientOpts := []udp.Option{}
 
-	udpClientOpts = append(udpClientOpts,
+	udpClientOpts = append(
+		udpClientOpts,
 		options.WithMux(c.handleRouter()),
 	)
 
@@ -77,13 +78,13 @@ func (c *Client) Start() error {
 	if err != nil {
 		return err
 	}
+
 	switch *c.Settings.SecurityMode {
 	case v1alpha1.SecurityModeDTLS:
 		switch *c.Settings.DTLSMode {
 		case v1alpha1.DTLSModePSK:
 			dtlsConfig := &piondtls.Config{
 				PSK: func(hint []byte) ([]byte, error) {
-					fmt.Printf("Server's hint: %s \n", hint)
 					return hex.DecodeString(*c.Settings.PSKKey)
 				},
 				PSKIdentityHint: []byte(*c.Settings.PSKIdentity),
@@ -116,10 +117,13 @@ func (c *Client) Register() error {
 		return err
 	}
 
+	// set query params for register request
+	// example: /rd?ep=shifu-gateway&lt=300&lwm2m=1.0&b=U
 	request.AddQuery("ep=" + c.EndpointName)
 	request.AddQuery(fmt.Sprintf("lt=%d", c.liftTime))
 	request.AddQuery("lwm2m=1.0")
 	request.AddQuery("b=U")
+	// only accept text/plain
 	request.SetAccept(message.TextPlain)
 	resp, err := c.conn.Do(request)
 	if err != nil {
@@ -138,8 +142,11 @@ func (c *Client) Register() error {
 	c.locationPath = locationPath
 	c.lastUpdatedTime = time.Now()
 	go func() {
-		panic(c.AutoUpdate())
+		if err := c.AutoUpdate(); err != nil {
+			logger.Errorf("failed to auto update registration: %v", err)
+		}
 	}()
+
 	logger.Infof("register %v success", c.locationPath)
 	return nil
 }
@@ -163,6 +170,7 @@ func (c *Client) Delete() error {
 	return nil
 }
 
+// AutoUpdate auto update registration
 func (c *Client) AutoUpdate() error {
 	ticker := time.NewTicker(time.Duration(c.updateInterval) * time.Second)
 	for {
@@ -187,10 +195,10 @@ func (c *Client) Update() error {
 	if c.lastUpdatedTime.Before(c.lastModifiedTime) {
 		coRELinkStr = c.object.GetCoRELinkString()
 	} else {
-		logger.Info("no data changed")
+		logger.Debug("update with no data changed")
 	}
 
-	resp, err := c.conn.Post(context.TODO(), c.locationPath, message.AppLinkFormat, strings.NewReader(coRELinkStr))
+	resp, err := c.conn.Post(c.ctx, c.locationPath, message.AppLinkFormat, strings.NewReader(coRELinkStr))
 	if err != nil {
 		return err
 	}
@@ -205,7 +213,9 @@ func (c *Client) Update() error {
 
 func (c *Client) handleRouter() *mux.Router {
 	router := mux.NewRouter()
+	// default to handle object request like read, write and execute
 	router.DefaultHandle(mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
+		// reset mean cancel all observe action
 		if r.Type() == message.Reset {
 			c.tmgr.CancelAllTasks()
 			return
@@ -216,6 +226,7 @@ func (c *Client) handleRouter() *mux.Router {
 			_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
 		}
 
+		// get object which is requested
 		object := c.object.GetChildObject(objectId)
 		if object == nil {
 			_ = w.SetResponse(codes.NotFound, message.TextPlain, nil)
@@ -224,6 +235,8 @@ func (c *Client) handleRouter() *mux.Router {
 
 		switch r.Code() {
 		case codes.GET:
+			// read data from object
+			// if observe option is set, then handle observe action
 			if r.Options().HasOption(message.Observe) {
 				c.handleObserve(w, r)
 				return
@@ -238,6 +251,8 @@ func (c *Client) handleRouter() *mux.Router {
 			_ = w.SetResponse(codes.Content, message.AppLwm2mJSON, strings.NewReader(res.ReadAsJSON()))
 			return
 		case codes.PUT:
+			// write data to object
+			// read data from request body and write to object
 			newData, err := io.ReadAll(r.Body())
 			if err != nil {
 				_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
@@ -251,6 +266,7 @@ func (c *Client) handleRouter() *mux.Router {
 			_ = w.SetResponse(codes.Changed, message.TextPlain, nil)
 
 		case codes.POST:
+			// execute object
 			err = object.Execute()
 			if err != nil {
 				_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
@@ -270,9 +286,12 @@ func (c *Client) handleRouter() *mux.Router {
 
 func (c *Client) AddObject(object Object) {
 	logger.Infof("add object %v", object.Id)
+	// check if object already exists
 	if obj, exists := c.object.Child[object.Id]; exists {
+		// if object already exists, add object to target path
 		obj.AddObject(object.Id, object)
 	} else {
+		// if object not exists, then add object to the root object
 		c.object.AddGroup(object)
 	}
 
@@ -292,8 +311,11 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 
 	logger.Debugf("observe %v", objectId)
 	token := r.Token()
+	// start obs with 2 seq number
 	var obs uint32 = 2
-	c.tmgr.AddTask(objectId, time.Second*10, func() {
+	// report new data with interval 30s
+	// TODO need to config it by read Attribute from object
+	c.tmgr.AddTask(objectId, time.Second*30, func() {
 		data, err := c.object.ReadAll(objectId)
 		if err != nil {
 			return
@@ -301,15 +323,17 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 
 		jsonData := data.ReadAsJSON()
 
-		c.dataCache[objectId] = string(jsonData)
+		c.dataCache[objectId] = jsonData
 		err = sendResponse(w.Conn(), token, obs, jsonData)
 		if err != nil {
 			return
 		}
 		obs++
+		// reset data changed notify task to avoid data changed notify too frequently
 		c.tmgr.ResetTask(objectId + "-ob")
 	})
 
+	// report new data with a interval 5s to check data is changed
 	c.tmgr.AddTask(objectId+"-ob", time.Second*5, func() {
 		data, err := c.object.ReadAll(objectId)
 		if err != nil {
@@ -326,7 +350,7 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 			}
 		}
 
-		c.dataCache[objectId] = string(jsonData)
+		c.dataCache[objectId] = jsonData
 		err = sendResponse(w.Conn(), token, obs, jsonData)
 		if err != nil {
 			return

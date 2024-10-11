@@ -1,6 +1,7 @@
 package lwm2m
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -8,40 +9,50 @@ import (
 )
 
 type Task struct {
-	interval time.Duration
-	Ticker   *time.Ticker
-	Quit     chan struct{}
+	interval   time.Duration
+	Ticker     *time.Ticker
+	CancelFunc context.CancelFunc
 }
 
 type TaskManager struct {
 	Tasks map[string]*Task
 	Lock  sync.Mutex
+
+	ctx context.Context
 }
 
-func NewTaskManager() *TaskManager {
+func NewTaskManager(ctx context.Context) *TaskManager {
 	return &TaskManager{
 		Tasks: make(map[string]*Task),
+		ctx:   ctx,
 	}
 }
 
+// AddTask adds a new task to the task manager.
+// The task will be executed every interval and run the given function and assign the task to the given id.
 func (m *TaskManager) AddTask(id string, interval time.Duration, fn func()) {
 	logger.Infof("AddTask: %s", id)
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
 
+	// Check if the task already exists
 	if _, exists := m.Tasks[id]; exists {
 		return
 	}
 
 	ticker := time.NewTicker(interval)
-	quit := make(chan struct{})
-	task := &Task{Ticker: ticker, Quit: quit, interval: interval}
+	ctx, cancel := context.WithCancel(m.ctx)
+	task := &Task{
+		Ticker:     ticker,
+		CancelFunc: cancel,
+		interval:   interval,
+	}
 	m.Tasks[id] = task
 
 	go func() {
 		for {
 			select {
-			case <-task.Quit:
+			case <-ctx.Done():
 				return
 			case <-task.Ticker.C:
 				fn()
@@ -50,6 +61,7 @@ func (m *TaskManager) AddTask(id string, interval time.Duration, fn func()) {
 	}()
 }
 
+// reset the task ticker for the given id
 func (m *TaskManager) ResetTask(id string) {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
@@ -62,6 +74,7 @@ func (m *TaskManager) ResetTask(id string) {
 	task.Ticker.Reset(task.interval)
 }
 
+// CancelTask cancels the task with the given id.
 func (m *TaskManager) CancelTask(id string) {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
@@ -71,18 +84,17 @@ func (m *TaskManager) CancelTask(id string) {
 		return
 	}
 
+	task.CancelFunc()
 	task.Ticker.Stop()
-	close(task.Quit)
 	delete(m.Tasks, id)
 }
 
+// CancelAllTasks cancels all the tasks in the task manager.
 func (m *TaskManager) CancelAllTasks() {
 	m.Lock.Lock()
 	defer m.Lock.Unlock()
 
-	for _, task := range m.Tasks {
-		task.Ticker.Stop()
-		close(task.Quit)
+	for taskId := range m.Tasks {
+		m.CancelTask(taskId)
 	}
-	m.Tasks = make(map[string]*Task)
 }

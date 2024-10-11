@@ -39,7 +39,7 @@ const (
 // New This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifuLwM2M, error) {
 	if deviceShifuMetadata.Namespace == "" {
-		return nil, fmt.Errorf("DeviceShifuHTTP's namespace can't be empty")
+		return nil, fmt.Errorf("DeviceShifuLwM2M's namespace can't be empty")
 	}
 
 	base, mux, err := deviceshifubase.New(deviceShifuMetadata)
@@ -90,8 +90,8 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				}
 			}
 		default:
-			logger.Errorf("EdgeDevice protocol %v not supported in deviceShifu_http_http", protocol)
-			return nil, errors.New("wrong protocol not supported in deviceShifu_http_http")
+			logger.Errorf("EdgeDevice protocol %v not supported in deviceShifu LwM2M", protocol)
+			return nil, errors.New("wrong protocol not supported in deviceShifu LwM2M")
 		}
 	}
 	deviceshifubase.BindDefaultHandler(mux)

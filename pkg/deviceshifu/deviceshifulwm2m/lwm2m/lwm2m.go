@@ -75,7 +75,7 @@ func NewServer(settings v1alpha1.LwM2MSettings) (*Server, error) {
 	router := mux.NewRouter()
 	if err := errors.Join(
 		router.Handle("/rd", mux.HandlerFunc(server.handleRegister)),
-		router.Handle("/rd/{deviceId}", mux.HandlerFunc(server.handleResource)),
+		router.Handle("/rd/{deviceId}", mux.HandlerFunc(server.handleResourceUpdate)),
 	); err != nil {
 		return nil, err
 	}
@@ -152,10 +152,10 @@ func (s *Server) startDTLSServer() error {
 	case v1alpha1.DTLSModeX509:
 		return errors.New("not implemented")
 	default:
+		logger.Infof("dtlsMode not set, using none security mode")
 		// default using none security mode
 	}
 
-	logger.Infof("dtlsMode not set, using none security mode")
 	return s.startUDPServer()
 }
 
@@ -163,7 +163,9 @@ func (s *Server) startUDPServer() error {
 	serverOptions := []udpServer.Option{
 		options.WithMux(s.router),
 		options.WithContext(context.Background()),
-		options.WithKeepAlive(10, time.Minute*10, func(cc *udpClient.Conn) {}),
+		options.WithKeepAlive(10, time.Minute*10, func(cc *udpClient.Conn) {
+			logger.Error("inactive connection")
+		}),
 	}
 
 	server := udpServer.New(serverOptions...)
@@ -205,7 +207,7 @@ func (s *Server) handleRegister(w mux.ResponseWriter, r *mux.Message) {
 
 	for _, fn := range s.onRegister {
 		if err := fn(); err != nil {
-			logger.Debug(err)
+			logger.Errorf("failed when calling register callback, error: %s", err.Error())
 			_ = w.SetResponse(codes.BadRequest, message.TextPlain, bytes.NewReader([]byte("failed to register object links")))
 			return
 		}
@@ -216,7 +218,8 @@ func (s *Server) OnRegister(fn func() error) {
 	s.onRegister = append(s.onRegister, fn)
 }
 
-func (s *Server) handleResource(w mux.ResponseWriter, r *mux.Message) {
+// handleResourceUpdate handles UPDATE and De-register request
+func (s *Server) handleResourceUpdate(w mux.ResponseWriter, r *mux.Message) {
 	deviceIdQuery := r.RouteParams.Vars["deviceId"]
 	if deviceIdQuery != deviceId {
 		_ = w.SetResponse(codes.BadRequest, message.TextPlain, bytes.NewReader([]byte("device id mismatch")))
@@ -224,10 +227,15 @@ func (s *Server) handleResource(w mux.ResponseWriter, r *mux.Message) {
 	}
 
 	switch r.Code() {
+	// De-register
 	case codes.DELETE:
+		if err := s.Conn.Close(); err != nil {
+			logger.Errorf("failed to close connection, error: %v", err)
+		}
 		s.Conn = nil
 		s.lastRegistrationTime = time.Time{}
 		return
+	// Update
 	case codes.POST:
 		// if not registered, handle register
 		if s.Conn == nil {
@@ -235,6 +243,7 @@ func (s *Server) handleResource(w mux.ResponseWriter, r *mux.Message) {
 			return
 		}
 		s.lastRegistrationTime = time.Now()
+		// check if the request is from the same connection
 		if s.Conn.RemoteAddr() != w.Conn().RemoteAddr() {
 			_ = w.SetResponse(codes.BadRequest, message.TextPlain, nil)
 			return

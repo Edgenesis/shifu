@@ -76,9 +76,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				panic(token.Error())
 			}
 
-			logger.Info(mqttInstructions.Instructions)
 			for instruction, properties := range mqttInstructions.Instructions {
-				logger.Infof("Instruction: %v, Properties: %v", instruction, properties)
 				MQTTTopic = properties.MQTTProtocolProperty.MQTTTopic
 				sub(client, MQTTTopic)
 
