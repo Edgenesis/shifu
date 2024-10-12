@@ -123,7 +123,7 @@ func (s *Server) startDTLSServer() error {
 
 		server := dtlsServer.New(serverOptions...)
 
-		cipersuites, err := StringsToCodes(s.settings.CipherSuites)
+		cipersuites, err := CipherSuiteStringsToCodes(s.settings.CipherSuites)
 		if err != nil {
 			return err
 		}

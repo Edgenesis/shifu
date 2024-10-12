@@ -15,26 +15,19 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 )
 
-// DeviceShifuLwM2M deviceshifu for HTTP
+// DeviceShifuLwM2M deviceshifu for LwM2M
 type DeviceShifuLwM2M struct {
-	server *lwm2m.Server
-	base   *deviceshifubase.DeviceShifuBase
+	server              *lwm2m.Server
+	base                *deviceshifubase.DeviceShifuBase
+	instructionSettings *deviceshifubase.DeviceShifuInstructionSettings
 }
 
 // HandlerMetaData MetaData for HTTPhandler
 type HandlerMetaData struct {
 	edgeDeviceSpec v1alpha1.EdgeDeviceSpec
 	instruction    string
-	properties     *deviceshifubase.DeviceShifuInstruction
+	properties     *LwM2MProtocolProperty
 }
-
-var (
-	instructionSettings *deviceshifubase.DeviceShifuInstructionSettings
-)
-
-const (
-	DeviceNameHeaderField = "Device-Name"
-)
 
 // New This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifuLwM2M, error) {
@@ -48,30 +41,37 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	}
 
 	lwM2MSettings := base.EdgeDevice.Spec.ProtocolSettings.LwM2MSettings
-	logger.Info("endpoint name: %s", lwM2MSettings.EndpointName)
+	logger.Info("LwM2M endpoint is: %s", lwM2MSettings.EndpointName)
 	server, err := lwm2m.NewServer(*lwM2MSettings)
 	if err != nil {
 		return nil, err
 	}
+
+	ds := &DeviceShifuLwM2M{base: base, server: server}
+
 	go func() {
-		panic(server.Run())
+		if err := server.Run(); err != nil {
+			logger.Fatalf("Error starting LwM2M server: %v", err)
+		}
 	}()
 
-	instructionSettings = base.DeviceShifuConfig.Instructions.InstructionSettings
-	if instructionSettings == nil {
-		instructionSettings = &deviceshifubase.DeviceShifuInstructionSettings{}
+	ds.instructionSettings = base.DeviceShifuConfig.Instructions.InstructionSettings
+	if ds.instructionSettings == nil {
+		ds.instructionSettings = &deviceshifubase.DeviceShifuInstructionSettings{}
 	}
 
-	if instructionSettings.DefaultTimeoutSeconds == nil {
+	if ds.instructionSettings.DefaultTimeoutSeconds == nil {
 		var defaultTimeoutSeconds = deviceshifubase.DeviceDefaultGlobalTimeoutInSeconds
-		instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
+		ds.instructionSettings.DefaultTimeoutSeconds = &defaultTimeoutSeconds
 	}
+
+	lwM2MInstructions := CreateLwM2MInstructions(&base.DeviceShifuConfig.Instructions)
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		// switch for different Shifu Protocols
 		switch protocol := *base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolLwM2M:
-			for instruction, properties := range base.DeviceShifuConfig.Instructions.Instructions {
+			for instruction, properties := range lwM2MInstructions.Instructions {
 				HandlerMetaData := &HandlerMetaData{
 					base.EdgeDevice.Spec,
 					instruction,
@@ -80,9 +80,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				handler := DeviceCommandHandlerLwM2M{server, HandlerMetaData}
 				mux.HandleFunc("/"+instruction, handler.commandHandleFunc())
 
-				if properties.DeviceShifuProtocolProperties["EnableObserve"] == "true" {
+				if properties.EnableObserve {
 					server.OnRegister(func() error {
-						return server.Observe(properties.DeviceShifuProtocolProperties["ObjectId"], func(data interface{}) {
+						return server.Observe(properties.ObjectId, func(data interface{}) {
 							logger.Infof("Observe data: %v", data)
 							// TODO need to push data to telemetry service
 						})
@@ -95,8 +95,6 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		}
 	}
 	deviceshifubase.BindDefaultHandler(mux)
-
-	ds := &DeviceShifuLwM2M{base: base, server: server}
 
 	ds.base.UpdateEdgeDeviceResourcePhase(v1alpha1.EdgeDevicePending)
 	return ds, nil
@@ -114,13 +112,7 @@ func (handler DeviceCommandHandlerLwM2M) commandHandleFunc() http.HandlerFunc {
 	handlerInstruction := handler.HandlerMetaData.instruction
 	handlerServer := handler.server
 
-	if handlerProperties != nil {
-		// TODO: handle validation compile
-		for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-			logger.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
-		}
-	}
-	objectId := handlerProperties.DeviceShifuProtocolProperties["ObjectId"]
+	objectId := handlerProperties.ObjectId
 	return func(w http.ResponseWriter, r *http.Request) {
 		var respString string
 
@@ -166,8 +158,8 @@ func (handler DeviceCommandHandlerLwM2M) commandHandleFunc() http.HandlerFunc {
 
 			respString = "Success"
 		default:
-			http.Error(w, "not supported yet", http.StatusBadRequest)
-			logger.Errorf("Request type %s is not supported yet!", r.Method)
+			http.Error(w, "request method not support", http.StatusMethodNotAllowed)
+			logger.Errorf("Request method %s is not support!", r.Method)
 			return
 		}
 

@@ -6,7 +6,6 @@ metadata:
 spec:
   sku: "LwM2M Device"
   connection: Ethernet
-  address: --
   protocol: LwM2M
   protocolSettings:
     LwM2MSettings:
