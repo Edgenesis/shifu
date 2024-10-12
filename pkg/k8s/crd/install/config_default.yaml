@@ -257,6 +257,10 @@ spec:
                         type: string
                       ServerAddress:
                         type: string
+                    required:
+                    - Bucket
+                    - FileExtension
+                    - ServerAddress
                     type: object
                   SQLSetting:
                     properties:
@@ -272,6 +276,8 @@ spec:
                         type: string
                       username:
                         type: string
+                    required:
+                    - serverAddress
                     type: object
                 type: object
               telemetryServiceEndpoint:
@@ -345,31 +351,6 @@ rules:
   - shifu.edgenesis.io
   resources:
   - edgedevices
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - shifu.edgenesis.io
-  resources:
-  - edgedevices/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - shifu.edgenesis.io
-  resources:
-  - edgedevices/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
-  - shifu.edgenesis.io
-  resources:
   - telemetryservices
   verbs:
   - create
@@ -382,12 +363,14 @@ rules:
 - apiGroups:
   - shifu.edgenesis.io
   resources:
+  - edgedevices/finalizers
   - telemetryservices/finalizers
   verbs:
   - update
 - apiGroups:
   - shifu.edgenesis.io
   resources:
+  - edgedevices/status
   - telemetryservices/status
   verbs:
   - get

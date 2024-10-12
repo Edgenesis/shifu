@@ -87,6 +87,10 @@ spec:
                         type: string
                       ServerAddress:
                         type: string
+                    required:
+                    - Bucket
+                    - FileExtension
+                    - ServerAddress
                     type: object
                   SQLSetting:
                     properties:
@@ -102,6 +106,8 @@ spec:
                         type: string
                       username:
                         type: string
+                    required:
+                    - serverAddress
                     type: object
                 type: object
               telemetryServiceEndpoint:
