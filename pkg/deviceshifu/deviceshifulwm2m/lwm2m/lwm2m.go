@@ -27,7 +27,7 @@ import (
 type Server struct {
 	router *mux.Router
 
-	settings             v1alpha1.LwM2MSettings
+	settings             v1alpha1.LwM2MSetting
 	Conn                 mux.Conn
 	endpointName         string
 	liftTime             int
@@ -64,7 +64,7 @@ func (s *Server) Execute(objectId string, args string) error {
 	return nil
 }
 
-func NewServer(settings v1alpha1.LwM2MSettings) (*Server, error) {
+func NewServer(settings v1alpha1.LwM2MSetting) (*Server, error) {
 	var server = &Server{
 		endpointName:    settings.EndpointName,
 		observeCallback: make(map[string]func(interface{})),

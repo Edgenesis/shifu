@@ -62,7 +62,7 @@ spec:
                 description: ProtocolSettings defines protocol settings when connecting
                   to an EdgeDevice
                 properties:
-                  LwM2MSettings:
+                  LwM2MSetting:
                     properties:
                       cipherSuites:
                         items:

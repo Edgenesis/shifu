@@ -102,7 +102,8 @@ const (
 	DTLSModeX509 DTLSMode = "X.509"
 )
 
-type LwM2MSettings struct {
+type LwM2MSetting struct {
+	// +kubebuilder:validation:Required
 	EndpointName string `json:"endpointName,omitempty"`
 	// +kubebuilder:default="None"
 	SecurityMode *SecurityMode `json:"securityMode,omitempty"`
@@ -115,6 +116,9 @@ type LwM2MSettings struct {
 
 type CiperSuite string
 
+// Reference:
+// https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4
+// https://github.com/pion/dtls/blob/98a05d681d3affae2d055a70d3273cbb35425b5a/cipher_suite.go#L25-L45
 const (
 	// AES-128-CCM
 	CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM   CiperSuite = "TLS_ECDHE_ECDSA_WITH_AES_128_CCM"
@@ -147,7 +151,7 @@ type ProtocolSettings struct {
 	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
 	PLC4XSetting  *PLC4XSetting  `json:"PLC4XSetting,omitempty"`
 	TCPSetting    *TCPSetting    `json:"TCPSetting,omitempty"`
-	LwM2MSettings *LwM2MSettings `json:"LwM2MSettings,omitempty"`
+	LwM2MSetting  *LwM2MSetting  `json:"LwM2MSetting,omitempty"`
 }
 
 // EdgeDeviceSpec defines the desired state of EdgeDevice
@@ -195,15 +199,15 @@ type Protocol string
 
 // Protocol String
 const (
-	ProtocolLwM2M           Protocol = "LwM2M"
 	ProtocolHTTP            Protocol = "HTTP"
 	ProtocolHTTPCommandline Protocol = "HTTPCommandline"
+	ProtocolLwM2M           Protocol = "LwM2M"
 	ProtocolMQTT            Protocol = "MQTT"
 	ProtocolOPCUA           Protocol = "OPCUA"
-	ProtocolSocket          Protocol = "Socket"
 	ProtocolPLC4X           Protocol = "PLC4X"
-	ProtocolUSB             Protocol = "USB"
+	ProtocolSocket          Protocol = "Socket"
 	ProtocolTCP             Protocol = "TCP"
+	ProtocolUSB             Protocol = "USB"
 )
 
 type Encoding string

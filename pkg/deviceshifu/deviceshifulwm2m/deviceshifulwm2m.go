@@ -40,9 +40,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, err
 	}
 
-	lwM2MSettings := base.EdgeDevice.Spec.ProtocolSettings.LwM2MSettings
-	logger.Info("LwM2M endpoint is: %s", lwM2MSettings.EndpointName)
-	server, err := lwm2m.NewServer(*lwM2MSettings)
+	lwM2MSetting := base.EdgeDevice.Spec.ProtocolSettings.LwM2MSetting
+	logger.Info("LwM2M endpoint is: %s", lwM2MSetting.EndpointName)
+	server, err := lwm2m.NewServer(*lwM2MSetting)
 	if err != nil {
 		return nil, err
 	}
