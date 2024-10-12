@@ -62,6 +62,24 @@ spec:
                 description: ProtocolSettings defines protocol settings when connecting
                   to an EdgeDevice
                 properties:
+                  LwM2MSettings:
+                    properties:
+                      cipherSuites:
+                        items:
+                          type: string
+                        type: array
+                      dtlsMode:
+                        type: string
+                      endpointName:
+                        type: string
+                      pskIdentity:
+                        type: string
+                      pskKey:
+                        type: string
+                      securityMode:
+                        default: None
+                        type: string
+                    type: object
                   MQTTSetting:
                     description: MQTTSetting defines MQTT specific settings when connecting
                       to an EdgeDevice
@@ -239,10 +257,6 @@ spec:
                         type: string
                       ServerAddress:
                         type: string
-                    required:
-                    - Bucket
-                    - FileExtension
-                    - ServerAddress
                     type: object
                   SQLSetting:
                     properties:
@@ -258,8 +272,6 @@ spec:
                         type: string
                       username:
                         type: string
-                    required:
-                    - serverAddress
                     type: object
                 type: object
               telemetryServiceEndpoint:
@@ -333,7 +345,6 @@ rules:
   - shifu.edgenesis.io
   resources:
   - edgedevices
-  - telemetryservices
   verbs:
   - create
   - delete
@@ -346,13 +357,37 @@ rules:
   - shifu.edgenesis.io
   resources:
   - edgedevices/finalizers
-  - telemetryservices/finalizers
   verbs:
   - update
 - apiGroups:
   - shifu.edgenesis.io
   resources:
   - edgedevices/status
+  verbs:
+  - get
+  - patch
+  - update
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservices
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
+  - telemetryservices/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - shifu.edgenesis.io
+  resources:
   - telemetryservices/status
   verbs:
   - get
