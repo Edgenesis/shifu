@@ -91,9 +91,6 @@ func (m *TaskManager) CancelTask(id string) {
 
 // CancelAllTasks cancels all the tasks in the task manager.
 func (m *TaskManager) CancelAllTasks() {
-	m.Lock.Lock()
-	defer m.Lock.Unlock()
-
 	for taskId := range m.Tasks {
 		m.CancelTask(taskId)
 	}

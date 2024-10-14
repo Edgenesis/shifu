@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	ShifuHost                = "http://localhost:8080"
+	deviceShifuHost          = "http://localhost:8080"
 	ConfigmapFolderPath      = "/etc/edgedevice/config"
 	ConfigmapInstructionsStr = "instructions"
 	ObjectIdStr              = "ObjectId"
@@ -28,9 +28,9 @@ const (
 )
 
 type Gateway struct {
-	client         *lwm2m.Client
-	KRestfulClient *rest.RESTClient
-	edgedevice     *v1alpha1.EdgeDevice
+	client     *lwm2m.Client
+	k8sClient  *rest.RESTClient
+	edgeDevice *v1alpha1.EdgeDevice
 }
 
 func New() (*Gateway, error) {
@@ -47,22 +47,22 @@ func New() (*Gateway, error) {
 	}
 
 	client, err := lwm2m.NewClient(context.TODO(), lwm2m.Config{
-		EndpointName: edgedevice.Spec.GatewaySettings.LwM2MSettings.EndpointName,
-		EndpointUrl:  *edgedevice.Spec.GatewaySettings.Address,
-		Settings:     *edgedevice.Spec.GatewaySettings.LwM2MSettings,
-		ShifuHost:    ShifuHost,
+		EndpointName:    edgedevice.Spec.GatewaySettings.LwM2MSettings.EndpointName,
+		EndpointUrl:     *edgedevice.Spec.GatewaySettings.Address,
+		Settings:        *edgedevice.Spec.GatewaySettings.LwM2MSettings,
+		DeviceShifuHost: deviceShifuHost,
 	})
 	if err != nil {
 		return nil, err
 	}
 
 	var gateway = &Gateway{
-		edgedevice:     edgedevice,
-		KRestfulClient: krclient,
-		client:         client,
+		edgeDevice: edgedevice,
+		k8sClient:  krclient,
+		client:     client,
 	}
 
-	if err := gateway.LoadCfg(); err != nil {
+	if err := gateway.LoadConfiguration(); err != nil {
 		return nil, err
 	}
 
@@ -70,7 +70,7 @@ func New() (*Gateway, error) {
 }
 
 // LoadCfg loads the configuration from the ConfigMap
-func (g *Gateway) LoadCfg() error {
+func (g *Gateway) LoadConfiguration() error {
 	// Load the configmap
 	cfg, err := configmap.Load(ConfigmapFolderPath)
 	if err != nil {
@@ -103,7 +103,7 @@ func (g *Gateway) LoadCfg() error {
 
 		var gwInstruction ShifuInstruction
 		gwInstruction.ObjectId = objectId
-		gwInstruction.Endpoint = g.client.ShifuHost + "/" + instructionName
+		gwInstruction.Endpoint = g.client.DeviceShifuHost + "/" + instructionName
 		gwInstruction.DataType, exists = instruction.DeviceShifuGatewayProperties[DataTypeStr]
 		if !exists {
 			// Default to string if DataType is not set

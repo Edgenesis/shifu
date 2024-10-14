@@ -20,6 +20,12 @@ type Object struct {
 	ObjectAPI
 }
 
+const (
+	ObjectPathDelimiter = "/"
+	ObjectRoot          = "/"
+	defaultCoRELinkRoot = `</>;rt="oma.lwm2m";ct="11543"`
+)
+
 type Resource struct {
 	BaseName      string       `json:"bn"`
 	ResourceArray []ObjectData `json:"e"`
@@ -156,9 +162,10 @@ func (o *Object) AddGroup(group Object) {
 // GetAllChildPaths returns all the child paths of the object.
 // example: [/1/0, /1/1]
 func (o *Object) GetAllChildPaths() []string {
-	uniqueChildPaths := uniqueSlice(o.getChildPaths("/"))
+	uniqueChildPaths := uniqueSlice(o.getChildPaths(ObjectRoot))
 	slices.Sort(uniqueChildPaths)
-	if len(uniqueChildPaths) > 0 && uniqueChildPaths[0] == "/" {
+	// remove base path if it exists
+	if len(uniqueChildPaths) > 0 && uniqueChildPaths[0] == ObjectRoot {
 		uniqueChildPaths = uniqueChildPaths[1:]
 	}
 	return uniqueChildPaths
@@ -198,9 +205,9 @@ func (o *Object) GetCoRELinkString() string {
 	// Add the root path and only support json format for now
 	// ct=11543 is the content format for application/vnd.oma.lwm2m+json
 	// reference to https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats
-	var links []string = []string{`</>;rt="oma.lwm2m";ct="11543"`}
+	var links []string = []string{defaultCoRELinkRoot}
 	for _, path := range childPaths {
-		links = append(links, "<"+path+">")
+		links = append(links, fmt.Sprintf("<%s>", path))
 	}
 
 	// return the string with comma separated links

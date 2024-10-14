@@ -22,6 +22,13 @@ import (
 	udpClient "github.com/plgd-dev/go-coap/v3/udp/client"
 )
 
+const (
+	lwM2MVersion       = "1.0"
+	defaultBindingMode = "U"
+
+	defaultIntervalSec = 30
+)
+
 type Client struct {
 	ctx context.Context
 	Config
@@ -34,15 +41,15 @@ type Client struct {
 	lastUpdatedTime  time.Time
 	dataCache        map[string]interface{}
 
-	conn *udpClient.Conn
-	tmgr *TaskManager
+	udpConnection *udpClient.Conn
+	taskManager   *TaskManager
 }
 
 type Config struct {
-	EndpointName string
-	EndpointUrl  string
-	ShifuHost    string
-	Settings     v1alpha1.LwM2MSettings
+	EndpointName    string
+	EndpointUrl     string
+	DeviceShifuHost string
+	Settings        v1alpha1.LwM2MSettings
 }
 
 const (
@@ -57,7 +64,7 @@ func NewClient(ctx context.Context, config Config) (*Client, error) {
 		liftTime:       DefaultLifeTime,
 		updateInterval: DefaultUpdateInterval,
 		object:         *NewObject("root", nil),
-		tmgr:           NewTaskManager(ctx),
+		taskManager:    NewTaskManager(ctx),
 		dataCache:      make(map[string]interface{}),
 	}
 
@@ -102,7 +109,7 @@ func (c *Client) Start() error {
 		return err
 	}
 
-	c.conn = conn
+	c.udpConnection = conn
 	return nil
 }
 
@@ -110,22 +117,31 @@ func (c *Client) Object() Object {
 	return c.object
 }
 
+type QueryParams string
+
+const (
+	QueryParamsEndpointName QueryParams = "ep"
+	QueryParamsLiftTime     QueryParams = "lt"
+	QueryParamsLwM2MVersion QueryParams = "lwm2m"
+	QueryParamsBindingMode  QueryParams = "b"
+)
+
 func (c *Client) Register() error {
 	coRELinkStr := c.object.GetCoRELinkString()
-	request, err := c.conn.NewPostRequest(context.TODO(), "/rd", message.AppLinkFormat, strings.NewReader(coRELinkStr))
+	request, err := c.udpConnection.NewPostRequest(context.TODO(), "/rd", message.AppLinkFormat, strings.NewReader(coRELinkStr))
 	if err != nil {
 		return err
 	}
 
 	// set query params for register request
 	// example: /rd?ep=shifu-gateway&lt=300&lwm2m=1.0&b=U
-	request.AddQuery("ep=" + c.EndpointName)
-	request.AddQuery(fmt.Sprintf("lt=%d", c.liftTime))
-	request.AddQuery("lwm2m=1.0")
-	request.AddQuery("b=U")
+	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsEndpointName, c.EndpointName))
+	request.AddQuery(fmt.Sprintf("%s=%d", QueryParamsLiftTime, c.liftTime))
+	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsLwM2MVersion, lwM2MVersion))
+	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsBindingMode, defaultBindingMode))
 	// only accept text/plain
 	request.SetAccept(message.TextPlain)
-	resp, err := c.conn.Do(request)
+	resp, err := c.udpConnection.Do(request)
 	if err != nil {
 		return err
 	}
@@ -152,12 +168,12 @@ func (c *Client) Register() error {
 }
 
 func (c *Client) Delete() error {
-	request, err := c.conn.NewDeleteRequest(context.Background(), c.locationPath)
+	request, err := c.udpConnection.NewDeleteRequest(context.Background(), c.locationPath)
 	if err != nil {
 		return err
 	}
 
-	resp, err := c.conn.Do(request)
+	resp, err := c.udpConnection.Do(request)
 	if err != nil {
 		return err
 	}
@@ -198,7 +214,7 @@ func (c *Client) Update() error {
 		logger.Debug("update with no data changed")
 	}
 
-	resp, err := c.conn.Post(c.ctx, c.locationPath, message.AppLinkFormat, strings.NewReader(coRELinkStr))
+	resp, err := c.udpConnection.Post(c.ctx, c.locationPath, message.AppLinkFormat, strings.NewReader(coRELinkStr))
 	if err != nil {
 		return err
 	}
@@ -217,7 +233,7 @@ func (c *Client) handleRouter() *mux.Router {
 	router.DefaultHandle(mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
 		// reset mean cancel all observe action
 		if r.Type() == message.Reset {
-			c.tmgr.CancelAllTasks()
+			c.taskManager.CancelAllTasks()
 			return
 		}
 
@@ -299,7 +315,7 @@ func (c *Client) AddObject(object Object) {
 }
 
 func (c *Client) Ping() error {
-	return c.conn.Ping(c.ctx)
+	return c.udpConnection.Ping(c.ctx)
 }
 
 func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
@@ -315,7 +331,8 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 	var obs uint32 = 2
 	// report new data with interval 30s
 	// TODO need to config it by read Attribute from object
-	c.tmgr.AddTask(objectId, time.Second*30, func() {
+
+	c.taskManager.AddTask(objectId, time.Second*defaultIntervalSec, func() {
 		data, err := c.object.ReadAll(objectId)
 		if err != nil {
 			return
@@ -330,11 +347,11 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 		}
 		obs++
 		// reset data changed notify task to avoid data changed notify too frequently
-		c.tmgr.ResetTask(objectId + "-ob")
+		c.taskManager.ResetTask(objectId + "-ob")
 	})
 
 	// report new data with a interval 5s to check data is changed
-	c.tmgr.AddTask(objectId+"-ob", time.Second*5, func() {
+	c.taskManager.AddTask(objectId+"-ob", time.Second*5, func() {
 		data, err := c.object.ReadAll(objectId)
 		if err != nil {
 			return
@@ -356,7 +373,7 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 			return
 		}
 		obs++
-		c.tmgr.ResetTask(objectId)
+		c.taskManager.ResetTask(objectId)
 	})
 
 	res, err := c.object.ReadAll(objectId)
@@ -384,7 +401,7 @@ func sendResponse(cc mux.Conn, token []byte, obs uint32, body string) error {
 }
 
 func (c *Client) CleanUp() {
-	c.tmgr.CancelAllTasks()
+	c.taskManager.CancelAllTasks()
 	_ = c.Delete()
 }
 
