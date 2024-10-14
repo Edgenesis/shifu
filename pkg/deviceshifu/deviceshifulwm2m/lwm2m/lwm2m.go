@@ -177,6 +177,7 @@ func (s *Server) startUDPServer() error {
 }
 
 func (s *Server) handleRegister(w mux.ResponseWriter, r *mux.Message) {
+	// TODO: parse register message to get object links
 	query, err := r.Queries()
 	if err != nil {
 		_ = w.SetResponse(codes.BadRequest, message.TextPlain, bytes.NewReader([]byte("failed to read queries")))
