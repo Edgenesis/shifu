@@ -780,7 +780,7 @@ stages:
 
       - job: docker_push_shifu_demo_mac
         pool:
-          vmImage: "macOS-12"
+          vmImage: "macOS-latest"
         steps:
           - script: |
               brew --version
