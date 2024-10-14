@@ -17,6 +17,7 @@ import (
 
 // DeviceShifuLwM2M deviceshifu for LwM2M
 type DeviceShifuLwM2M struct {
+	// lwm2m server which device will connect to, it will be used to send command to device
 	server              *lwm2m.Server
 	base                *deviceshifubase.DeviceShifuBase
 	instructionSettings *deviceshifubase.DeviceShifuInstructionSettings
@@ -41,9 +42,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	}
 
 	lwM2MSetting := base.EdgeDevice.Spec.ProtocolSettings.LwM2MSetting
-	logger.Info("LwM2M endpoint is: %s", lwM2MSetting.EndpointName)
+	logger.Debugf("LwM2M endpoint is: %s", lwM2MSetting.EndpointName)
 	server, err := lwm2m.NewServer(*lwM2MSetting)
 	if err != nil {
+		logger.Errorf("Error creating LwM2M server: %v", err)
 		return nil, err
 	}
 
@@ -83,7 +85,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 				if properties.EnableObserve {
 					server.OnRegister(func() error {
 						return server.Observe(properties.ObjectId, func(data interface{}) {
-							logger.Infof("Observe data: %v", data)
+							logger.Debugf("Observe data: %v", data)
 							// TODO need to push data to telemetry service
 						})
 					})
@@ -164,9 +166,9 @@ func (handler DeviceCommandHandlerLwM2M) commandHandleFunc() http.HandlerFunc {
 		}
 
 		instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
-		logger.Infof("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
+		logger.Debugf("Instruction %v is custom: %v", handlerInstruction, shouldUsePythonCustomProcessing)
 		if shouldUsePythonCustomProcessing {
-			logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
+			logger.Debugf("Instruction %v has a python customized handler configured.", handlerInstruction)
 			respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, respString, deviceshifubase.PythonScriptDir)
 		}
 		fmt.Fprintf(w, "%v", respString)
@@ -179,7 +181,7 @@ func (ds *DeviceShifuLwM2M) collectHTTPTelemtries() (bool, error) {
 	}
 
 	if err := ds.server.Conn.Ping(ds.server.Conn.Context()); err != nil {
-		logger.Errorf("Error checking telemetry: %v", err.Error())
+		logger.Errorf("cannot ping the device, please check device is online, error: %v", err.Error())
 		return false, err
 	}
 

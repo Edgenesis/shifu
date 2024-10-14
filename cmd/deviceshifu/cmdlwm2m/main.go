@@ -23,12 +23,11 @@ func main() {
 
 	ds, err := deviceshifulwm2m.New(deviceShifuMetadata)
 	if err != nil {
-		panic(err.Error())
+		logger.Fatalf("Error creating deviceshifu: %v", err)
 	}
 
-	if err = ds.Start(wait.NeverStop); err != nil {
-		logger.Errorf("Error starting deviceshifu: %v", err)
-		panic(err.Error())
+	if err := ds.Start(wait.NeverStop); err != nil {
+		logger.Fatalf("Error starting deviceshifu: %v", err)
 	}
 
 	select {}
