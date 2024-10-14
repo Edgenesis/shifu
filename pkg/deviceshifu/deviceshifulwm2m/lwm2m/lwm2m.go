@@ -123,7 +123,7 @@ func (s *Server) startDTLSServer() error {
 
 		server := dtlsServer.New(serverOptions...)
 
-		cipersuites, err := CipherSuiteStringsToCodes(s.settings.CipherSuites)
+		cipherSuites, err := CipherSuiteStringsToCodes(s.settings.CipherSuites)
 		if err != nil {
 			return err
 		}
@@ -138,7 +138,7 @@ func (s *Server) startDTLSServer() error {
 				return []byte(psk), nil
 			},
 			PSKIdentityHint: []byte(*s.settings.PSKIdentity),
-			CipherSuites:    cipersuites,
+			CipherSuites:    cipherSuites,
 		}
 
 		l, err := net.NewDTLSListener("udp4", ":5684", &dtlsConfig)
@@ -218,9 +218,13 @@ func (s *Server) OnRegister(fn func() error) {
 	s.onRegister = append(s.onRegister, fn)
 }
 
+const (
+	deviceIdObjectParam = "deviceId"
+)
+
 // handleResourceUpdate handles UPDATE and De-register request
 func (s *Server) handleResourceUpdate(w mux.ResponseWriter, r *mux.Message) {
-	deviceIdQuery := r.RouteParams.Vars["deviceId"]
+	deviceIdQuery := r.RouteParams.Vars[deviceIdObjectParam]
 	if deviceIdQuery != deviceId {
 		_ = w.SetResponse(codes.BadRequest, message.TextPlain, bytes.NewReader([]byte("device id mismatch")))
 		return
@@ -375,8 +379,6 @@ func (s *Server) Observe(objectId string, callback func(newData interface{})) er
 	logger.Debugf("observe %s with token %s", objectId, token)
 	return nil
 }
-
-func DoNothing(newData interface{}) {}
 
 func (s *Server) checkRegistrationStatus() error {
 	if time.Since(s.lastRegistrationTime) > time.Second*time.Duration(s.liftTime) {

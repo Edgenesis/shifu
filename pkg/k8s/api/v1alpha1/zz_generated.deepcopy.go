@@ -194,7 +194,7 @@ func (in *LwM2MSetting) DeepCopyInto(out *LwM2MSetting) {
 	}
 	if in.CipherSuites != nil {
 		in, out := &in.CipherSuites, &out.CipherSuites
-		*out = make([]CiperSuite, len(*in))
+		*out = make([]CipherSuite, len(*in))
 		copy(*out, *in)
 	}
 	if in.PSKIdentity != nil {
