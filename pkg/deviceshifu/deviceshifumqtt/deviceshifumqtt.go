@@ -187,7 +187,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				logger.Errorf("Cannot Encode message to json")
 				return
 			}
-		} else if reqType == http.MethodPost {
+		} else if reqType == http.MethodPost || reqType == http.MethodPut {
 			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
 			logger.Infof("the controlMsgs is %v", controlMsgs)
 			if mutexBlocking {

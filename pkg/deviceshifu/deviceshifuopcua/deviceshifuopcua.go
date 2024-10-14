@@ -190,6 +190,8 @@ func (handler DeviceCommandHandlerOPCUA) commandHandleFunc() http.HandlerFunc {
 		switch r.Method {
 		case http.MethodGet:
 			handler.read(w, r)
+		case http.MethodPut:
+			fallthrough
 		case http.MethodPost:
 			handler.write(w, r)
 		default:
