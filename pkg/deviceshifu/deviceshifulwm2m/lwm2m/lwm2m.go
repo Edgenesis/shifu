@@ -37,7 +37,20 @@ type Server struct {
 	onRegister           []func() error
 }
 
-const deviceId string = "shifu"
+const ()
+
+const (
+	LwM2MServerRegisterURI        = "/rd"
+	LwM2MServerHandlerURI         = "/rd/{deviceId}"
+	deviceId               string = "shifu"
+	registerResponseValue  string = "rd"
+
+	defaultLwM2MNetwork    string = "udp"
+	defaultCoapListenPort  string = ":5683"
+	defaultCoapsListenPort string = ":5684"
+	keepAliveTimeoutSec           = 10 * 60
+	keepAliveRetryTimes           = 10
+)
 
 func loggingMiddleware(next mux.Handler) mux.Handler {
 	return mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
@@ -74,8 +87,8 @@ func NewServer(settings v1alpha1.LwM2MSetting) (*Server, error) {
 
 	router := mux.NewRouter()
 	if err := errors.Join(
-		router.Handle("/rd", mux.HandlerFunc(server.handleRegister)),
-		router.Handle("/rd/{deviceId}", mux.HandlerFunc(server.handleResourceUpdate)),
+		router.Handle(LwM2MServerRegisterURI, mux.HandlerFunc(server.handleRegister)),
+		router.Handle(LwM2MServerHandlerURI, mux.HandlerFunc(server.handleResourceUpdate)),
 	); err != nil {
 		return nil, err
 	}
@@ -118,7 +131,9 @@ func (s *Server) startDTLSServer() error {
 		serverOptions := []dtlsServer.Option{
 			options.WithMux(s.router),
 			options.WithContext(context.Background()),
-			options.WithKeepAlive(10, time.Minute*10, func(cc *udpClient.Conn) {}),
+			options.WithKeepAlive(keepAliveRetryTimes, time.Second*keepAliveTimeoutSec, func(cc *udpClient.Conn) {
+				// TODO: handle inactive connection
+			}),
 		}
 
 		server := dtlsServer.New(serverOptions...)
@@ -141,7 +156,7 @@ func (s *Server) startDTLSServer() error {
 			CipherSuites:    cipherSuites,
 		}
 
-		l, err := net.NewDTLSListener("udp4", ":5684", &dtlsConfig)
+		l, err := net.NewDTLSListener(defaultLwM2MNetwork, defaultCoapsListenPort, &dtlsConfig)
 		if err != nil {
 			return err
 		}
@@ -163,13 +178,13 @@ func (s *Server) startUDPServer() error {
 	serverOptions := []udpServer.Option{
 		options.WithMux(s.router),
 		options.WithContext(context.Background()),
-		options.WithKeepAlive(10, time.Minute*10, func(cc *udpClient.Conn) {
+		options.WithKeepAlive(keepAliveRetryTimes, time.Second*keepAliveRetryTimes, func(cc *udpClient.Conn) {
 			logger.Error("inactive connection")
 		}),
 	}
 
 	server := udpServer.New(serverOptions...)
-	conn, err := net.NewListenUDP("udp", ":5683")
+	conn, err := net.NewListenUDP(defaultLwM2MNetwork, defaultCoapListenPort)
 	if err != nil {
 		return err
 	}
@@ -197,7 +212,7 @@ func (s *Server) handleRegister(w mux.ResponseWriter, r *mux.Message) {
 
 	s.liftTime, _ = strconv.Atoi(parsedQuery.Lifetime)
 	if err := w.SetResponse(codes.Created, message.TextPlain, nil,
-		message.Option{ID: message.LocationPath, Value: []byte("rd")},
+		message.Option{ID: message.LocationPath, Value: []byte(registerResponseValue)},
 		message.Option{ID: message.LocationPath, Value: []byte(deviceId)},
 	); err != nil {
 		logger.Debug("register response failed")
@@ -383,6 +398,7 @@ func (s *Server) Observe(objectId string, callback func(newData interface{})) er
 
 func (s *Server) checkRegistrationStatus() error {
 	if time.Since(s.lastRegistrationTime) > time.Second*time.Duration(s.liftTime) {
+		// TODO: handle re-register
 		return errors.New("device is offline")
 	}
 
