@@ -1,3 +1,4 @@
+// TODO: need to test for deviceshifu LwM2M
 package deviceshifulwm2m
 
 import (
