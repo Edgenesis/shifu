@@ -126,6 +126,9 @@ const (
 	QueryParamsBindingMode  QueryParams = "b"
 )
 
+// Register register the client to the server
+// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=27
+// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=76
 func (c *Client) Register() error {
 	coRELinkStr := c.object.GetCoRELinkString()
 	request, err := c.udpConnection.NewPostRequest(context.TODO(), "/rd", message.AppLinkFormat, strings.NewReader(coRELinkStr))
@@ -167,6 +170,8 @@ func (c *Client) Register() error {
 	return nil
 }
 
+// De-register the client from the server
+// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=76
 func (c *Client) Delete() error {
 	request, err := c.udpConnection.NewDeleteRequest(context.Background(), c.locationPath)
 	if err != nil {
@@ -187,6 +192,7 @@ func (c *Client) Delete() error {
 }
 
 // AutoUpdate auto update registration
+// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=30
 func (c *Client) AutoUpdate() error {
 	ticker := time.NewTicker(time.Duration(c.updateInterval) * time.Second)
 	for {
@@ -205,6 +211,9 @@ func (c *Client) AutoUpdate() error {
 	}
 }
 
+// Update update registration
+// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=30
+// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=76
 func (c *Client) Update() error {
 	var coRELinkStr string
 	// if have changed of the object should set the CoRELinkStr updated in payload
@@ -252,6 +261,8 @@ func (c *Client) handleRouter() *mux.Router {
 		switch r.Code() {
 		case codes.GET:
 			// read data from object
+			// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=33
+			// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=78
 			// if observe option is set, then handle observe action
 			if r.Options().HasOption(message.Observe) {
 				c.handleObserve(w, r)
@@ -269,6 +280,8 @@ func (c *Client) handleRouter() *mux.Router {
 		case codes.PUT:
 			// write data to object
 			// read data from request body and write to object
+			// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=33
+			// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=78
 			newData, err := io.ReadAll(r.Body())
 			if err != nil {
 				_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
@@ -283,6 +296,7 @@ func (c *Client) handleRouter() *mux.Router {
 
 		case codes.POST:
 			// execute object
+			// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=78
 			err = object.Execute()
 			if err != nil {
 				_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
@@ -318,6 +332,9 @@ func (c *Client) Ping() error {
 	return c.udpConnection.Ping(c.ctx)
 }
 
+// handleObserve handle observe action
+// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=37
+// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=80
 func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 	objectId, err := r.Path()
 	if err != nil {
