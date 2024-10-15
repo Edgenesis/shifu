@@ -71,6 +71,11 @@ buildx-push-image-deviceshifu-tcp-tcp:
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-tcp-tcp:${IMAGE_VERSION} --push
 
+buildx-build-image-deviceshifu-http-lwm2m:
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm  -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuLwM2M \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-http-lwm2m:${IMAGE_VERSION} --push
+
 buildx-push-image-shifu-controller:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f $(PROJECT_ROOT)/pkg/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
@@ -141,6 +146,11 @@ buildx-build-image-deviceshifu-http-http:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuHTTP \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-http:${IMAGE_VERSION} --load
+
+buildx-build-image-deviceshifu-http-lwm2m:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuLwM2M \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/deviceshifu-http-lwm2m:${IMAGE_VERSION} --load
 
 buildx-build-image-deviceshifu-http-mqtt:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuMQTT \

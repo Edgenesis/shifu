@@ -82,6 +82,24 @@ spec:
                 description: ProtocolSettings defines protocol settings when connecting
                   to an EdgeDevice
                 properties:
+                  LwM2MSetting:
+                    properties:
+                      cipherSuites:
+                        items:
+                          type: string
+                        type: array
+                      dtlsMode:
+                        type: string
+                      endpointName:
+                        type: string
+                      pskIdentity:
+                        type: string
+                      pskKey:
+                        type: string
+                      securityMode:
+                        default: None
+                        type: string
+                    type: object
                   MQTTSetting:
                     description: MQTTSetting defines MQTT specific settings when connecting
                       to an EdgeDevice

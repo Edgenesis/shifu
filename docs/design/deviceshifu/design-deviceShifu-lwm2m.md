@@ -133,7 +133,7 @@ type LwM2MSetting struct {
 	SecurityMode *SecurityMode `json:"securityMode,omitempty"`
 	DTLSMode     *DTLSMode     `json:"dtlsMode,omitempty"`
 
-	CipherSuites []CiperSuite `json:"cipherSuites,omitempty"`
+	CipherSuites []CipherSuite `json:"cipherSuites,omitempty"`
 	PSKIdentity  *string      `json:"pskIdentity,omitempty"`
 	PSKKey       *string      `json:"pskKey,omitempty"`
 }
@@ -145,10 +145,10 @@ const (
     // ...
 )
 
-type CiperSuite string
+type CipherSuite string
 
 const (
-	CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM   CiperSuite = "TLS_ECDHE_ECDSA_WITH_AES_128_CCM"
+	CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM   CipherSuite = "TLS_ECDHE_ECDSA_WITH_AES_128_CCM"
     // ...
 )
 ```

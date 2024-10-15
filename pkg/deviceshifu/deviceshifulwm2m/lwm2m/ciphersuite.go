@@ -4,9 +4,13 @@ import (
 	"errors"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/pion/dtls/v2"
 )
 
+// Reference:
+// https://www.iana.org/assignments/tls-parameters/tls-parameters.xhtml#tls-parameters-4
+// https://github.com/pion/dtls/blob/98a05d681d3affae2d055a70d3273cbb35425b5a/cipher_suite.go#L25-L45
 const (
 	// AES-128-CCM
 	TLS_ECDHE_ECDSA_WITH_AES_128_CCM   dtls.CipherSuiteID = 0xc0ac //nolint:revive,stylecheck
@@ -31,49 +35,40 @@ const (
 	TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256 dtls.CipherSuiteID = 0xC037 //nolint:revive,stylecheck
 )
 
-func StringToCode(ciperSuitStr v1alpha1.CiperSuite) (dtls.CipherSuiteID, error) {
-	switch ciperSuitStr {
-	case v1alpha1.CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM:
-		return TLS_ECDHE_ECDSA_WITH_AES_128_CCM, nil
-	case v1alpha1.CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:
-		return TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8, nil
-	case v1alpha1.CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256:
-		return TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256, nil
-	case v1alpha1.CiperSuite_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:
-		return TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256, nil
-	case v1alpha1.CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:
-		return TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA, nil
-	case v1alpha1.CiperSuite_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:
-		return TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA, nil
-	case v1alpha1.CiperSuite_TLS_PSK_WITH_AES_128_CCM:
-		return TLS_PSK_WITH_AES_128_CCM, nil
-	case v1alpha1.CiperSuite_TLS_PSK_WITH_AES_128_CCM_8:
-		return TLS_PSK_WITH_AES_128_CCM_8, nil
-	case v1alpha1.CiperSuite_TLS_PSK_WITH_AES_256_CCM_8:
-		return TLS_PSK_WITH_AES_256_CCM_8, nil
-	case v1alpha1.CiperSuite_TLS_PSK_WITH_AES_128_GCM_SHA256:
-		return TLS_PSK_WITH_AES_128_GCM_SHA256, nil
-	case v1alpha1.CiperSuite_TLS_PSK_WITH_AES_128_CBC_SHA256:
-		return TLS_PSK_WITH_AES_128_CBC_SHA256, nil
-	case v1alpha1.CiperSuite_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384:
-		return TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384, nil
-	case v1alpha1.CiperSuite_TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:
-		return TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384, nil
-	case v1alpha1.CiperSuite_TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256:
-		return TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256, nil
-	default:
-		return 0, errors.New("unknown ciper suite")
-	}
+var cipherSuiteMap = map[v1alpha1.CipherSuite]dtls.CipherSuiteID{
+	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM:        TLS_ECDHE_ECDSA_WITH_AES_128_CCM,
+	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:      TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8,
+	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+	v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:   TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:    TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
+	v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:      TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_CCM:                TLS_PSK_WITH_AES_128_CCM,
+	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_CCM_8:              TLS_PSK_WITH_AES_128_CCM_8,
+	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_256_CCM_8:              TLS_PSK_WITH_AES_256_CCM_8,
+	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_GCM_SHA256:         TLS_PSK_WITH_AES_128_GCM_SHA256,
+	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_CBC_SHA256:         TLS_PSK_WITH_AES_128_CBC_SHA256,
+	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
+	v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:   TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+	v1alpha1.CipherSuite_TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256:   TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256,
 }
 
-func StringsToCodes(ciperSuitStrs []v1alpha1.CiperSuite) ([]dtls.CipherSuiteID, error) {
-	var ciperSuitCodes []dtls.CipherSuiteID
-	for _, ciperSuitStr := range ciperSuitStrs {
-		ciperSuitCode, err := StringToCode(ciperSuitStr)
+func CipherSuiteStringToCode(cipherSuitesStr v1alpha1.CipherSuite) (dtls.CipherSuiteID, error) {
+	ciperSuitCode, ok := cipherSuiteMap[cipherSuitesStr]
+	if !ok {
+		logger.Errorf("unknown cipher suite: %v", cipherSuitesStr)
+		return 0, errors.New("unknown cipher suite")
+	}
+	return ciperSuitCode, nil
+}
+
+func CipherSuiteStringsToCodes(cipherSuiteStrs []v1alpha1.CipherSuite) ([]dtls.CipherSuiteID, error) {
+	var cipherSuiteCodes = make([]dtls.CipherSuiteID, 0, len(cipherSuiteStrs))
+	for _, ciperSuitStr := range cipherSuiteStrs {
+		ciperSuitCode, err := CipherSuiteStringToCode(ciperSuitStr)
 		if err != nil {
 			return nil, err
 		}
-		ciperSuitCodes = append(ciperSuitCodes, ciperSuitCode)
+		cipherSuiteCodes = append(cipherSuiteCodes, ciperSuitCode)
 	}
-	return ciperSuitCodes, nil
+	return cipherSuiteCodes, nil
 }

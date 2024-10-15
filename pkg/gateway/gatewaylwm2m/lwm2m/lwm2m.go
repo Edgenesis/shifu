@@ -49,7 +49,7 @@ type Config struct {
 	EndpointName    string
 	EndpointUrl     string
 	DeviceShifuHost string
-	Settings        v1alpha1.LwM2MSettings
+	Settings        v1alpha1.LwM2MSetting
 }
 
 const (
@@ -81,7 +81,7 @@ func (c *Client) Start() error {
 
 	var conn *udpClient.Conn
 	var err error
-	cipherSuites, err := lwm2m.StringsToCodes(c.Settings.CipherSuites)
+	cipherSuites, err := lwm2m.CipherSuiteStringsToCodes(c.Settings.CipherSuites)
 	if err != nil {
 		return err
 	}
