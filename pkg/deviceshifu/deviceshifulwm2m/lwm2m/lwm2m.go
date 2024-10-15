@@ -219,6 +219,13 @@ func (s *Server) handleRegister(w mux.ResponseWriter, r *mux.Message) {
 	}
 
 	s.lastRegistrationTime = time.Now()
+	if s.Conn != nil {
+		// try to close the previous connection if exists
+		if err := s.Conn.Close(); err != nil {
+			// log error but continue
+			logger.Errorf("failed to close connection, error: %v", err)
+		}
+	}
 	s.Conn = w.Conn()
 
 	for _, fn := range s.onRegister {
