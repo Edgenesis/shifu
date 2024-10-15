@@ -30,7 +30,7 @@ func CreateLwM2MInstructions(dsInstructions *deviceshifubase.DeviceShifuInstruct
 		if dsInstruction.DeviceShifuProtocolProperties != nil && dsInstruction.DeviceShifuProtocolProperties[enableObserveStr] == "" {
 			logger.Fatalf("Error when Read EnableObserve From DeviceShifuInstructions, error: instruction %v has an empty enable observe", key)
 		}
-		instructions.Instructions[objectIdStr] = &LwM2MProtocolProperty{
+		instructions.Instructions[key] = &LwM2MProtocolProperty{
 			ObjectId:      dsInstruction.DeviceShifuProtocolProperties[objectIdStr],
 			EnableObserve: dsInstruction.DeviceShifuProtocolProperties[enableObserveStr] == "true",
 		}
