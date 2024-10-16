@@ -172,8 +172,8 @@ func (in *GatewaySettings) DeepCopyInto(out *GatewaySettings) {
 		*out = new(string)
 		**out = **in
 	}
-	if in.LwM2MSettings != nil {
-		in, out := &in.LwM2MSettings, &out.LwM2MSettings
+	if in.LwM2MSetting != nil {
+		in, out := &in.LwM2MSetting, &out.LwM2MSetting
 		*out = new(LwM2MSetting)
 		(*in).DeepCopyInto(*out)
 	}

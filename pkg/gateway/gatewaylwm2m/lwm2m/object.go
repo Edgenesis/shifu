@@ -94,7 +94,7 @@ func (o Object) ReadAll(baseName string) (Resource, error) {
 }
 
 func (o *Object) readAll(basePath string) ([]ObjectData, error) {
-	var objectDatas []ObjectData
+	var objectDataList []ObjectData
 	for _, v := range o.Child {
 		path := filepath.Join(basePath, v.Id)
 		childData, err := v.readAll(path)
@@ -102,7 +102,7 @@ func (o *Object) readAll(basePath string) ([]ObjectData, error) {
 			continue
 		}
 
-		objectDatas = append(objectDatas, childData...)
+		objectDataList = append(objectDataList, childData...)
 	}
 
 	if len(o.Child) == 0 {
@@ -113,20 +113,20 @@ func (o *Object) readAll(basePath string) ([]ObjectData, error) {
 
 		switch newData := data.(type) {
 		case int, int32, int64, int16, int8:
-			objectDatas = append(objectDatas, ObjectData{ParameterName: basePath, FloatValue: float64(newData.(int))})
+			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, FloatValue: float64(newData.(int))})
 		case float32, float64:
-			objectDatas = append(objectDatas, ObjectData{ParameterName: basePath, FloatValue: newData.(float64)})
+			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, FloatValue: newData.(float64)})
 		case string:
-			objectDatas = append(objectDatas, ObjectData{ParameterName: basePath, StringValue: newData})
+			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, StringValue: newData})
 		case bool:
-			objectDatas = append(objectDatas, ObjectData{ParameterName: basePath, BoolValue: &newData})
+			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, BoolValue: &newData})
 		default:
 			// default to string
-			objectDatas = append(objectDatas, ObjectData{ParameterName: basePath, StringValue: fmt.Sprintf("%v", data)})
+			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, StringValue: fmt.Sprintf("%v", data)})
 		}
 	}
 
-	return objectDatas, nil
+	return objectDataList, nil
 }
 
 // AddObject adds a child Object to target path

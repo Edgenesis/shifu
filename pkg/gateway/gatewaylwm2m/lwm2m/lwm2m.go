@@ -26,7 +26,13 @@ const (
 	lwM2MVersion       = "1.0"
 	defaultBindingMode = "U"
 
-	defaultIntervalSec = 30
+	defaultIntervalSec    = 30
+	defaultLifeTime       = 300
+	defaultUpdateInterval = 60
+	rootObjectId          = "root"
+	registerPath          = "/rd"
+
+	observeTaskSuffix = "-ob"
 )
 
 type Client struct {
@@ -35,7 +41,7 @@ type Client struct {
 
 	locationPath     string
 	updateInterval   int
-	liftTime         int
+	lifeTime         int
 	object           Object
 	lastModifiedTime time.Time
 	lastUpdatedTime  time.Time
@@ -52,18 +58,15 @@ type Config struct {
 	Settings        v1alpha1.LwM2MSetting
 }
 
-const (
-	DefaultLifeTime       = 300
-	DefaultUpdateInterval = 60
-)
+const ()
 
 func NewClient(ctx context.Context, config Config) (*Client, error) {
 	var client = &Client{
 		ctx:            context.TODO(),
 		Config:         config,
-		liftTime:       DefaultLifeTime,
-		updateInterval: DefaultUpdateInterval,
-		object:         *NewObject("root", nil),
+		lifeTime:       defaultLifeTime,
+		updateInterval: defaultUpdateInterval,
+		object:         *NewObject(rootObjectId, nil),
 		taskManager:    NewTaskManager(ctx),
 		dataCache:      make(map[string]interface{}),
 	}
@@ -79,13 +82,12 @@ func (c *Client) Start() error {
 		options.WithMux(c.handleRouter()),
 	)
 
-	var conn *udpClient.Conn
-	var err error
 	cipherSuites, err := lwm2m.CipherSuiteStringsToCodes(c.Settings.CipherSuites)
 	if err != nil {
 		return err
 	}
 
+	var conn *udpClient.Conn
 	switch *c.Settings.SecurityMode {
 	case v1alpha1.SecurityModeDTLS:
 		switch *c.Settings.DTLSMode {
@@ -121,7 +123,7 @@ type QueryParams string
 
 const (
 	QueryParamsEndpointName QueryParams = "ep"
-	QueryParamsLiftTime     QueryParams = "lt"
+	QueryParamslifeTime     QueryParams = "lt"
 	QueryParamsLwM2MVersion QueryParams = "lwm2m"
 	QueryParamsBindingMode  QueryParams = "b"
 )
@@ -131,7 +133,7 @@ const (
 // Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=76
 func (c *Client) Register() error {
 	coRELinkStr := c.object.GetCoRELinkString()
-	request, err := c.udpConnection.NewPostRequest(context.TODO(), "/rd", message.AppLinkFormat, strings.NewReader(coRELinkStr))
+	request, err := c.udpConnection.NewPostRequest(context.TODO(), registerPath, message.AppLinkFormat, strings.NewReader(coRELinkStr))
 	if err != nil {
 		return err
 	}
@@ -139,7 +141,7 @@ func (c *Client) Register() error {
 	// set query params for register request
 	// example: /rd?ep=shifu-gateway&lt=300&lwm2m=1.0&b=U
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsEndpointName, c.EndpointName))
-	request.AddQuery(fmt.Sprintf("%s=%d", QueryParamsLiftTime, c.liftTime))
+	request.AddQuery(fmt.Sprintf("%s=%d", QueryParamslifeTime, c.lifeTime))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsLwM2MVersion, lwM2MVersion))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsBindingMode, defaultBindingMode))
 	// only accept text/plain
@@ -216,7 +218,7 @@ func (c *Client) AutoUpdate() error {
 // Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=76
 func (c *Client) Update() error {
 	var coRELinkStr string
-	// if have changed of the object should set the CoRELinkStr updated in payload
+	// If there are changes to the object, the CoRELinkStr should be updated in the payload
 	if c.lastUpdatedTime.Before(c.lastModifiedTime) {
 		coRELinkStr = c.object.GetCoRELinkString()
 	} else {
@@ -271,7 +273,7 @@ func (c *Client) handleRouter() *mux.Router {
 
 			res, err := c.object.ReadAll(objectId)
 			if err != nil {
-				logger.Errorf("failed to read data from object, error: %v", err)
+				logger.Errorf("failed to read data from object %s, error: %v", objectId, err)
 				_ = w.SetResponse(codes.NotFound, message.TextPlain, strings.NewReader(err.Error()))
 				return
 			}
@@ -364,11 +366,11 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 		}
 		obs++
 		// reset data changed notify task to avoid data changed notify too frequently
-		c.taskManager.ResetTask(objectId + "-ob")
+		c.taskManager.ResetTask(objectId + observeTaskSuffix)
 	})
 
 	// report new data with a interval 5s to check data is changed
-	c.taskManager.AddTask(objectId+"-ob", time.Second*5, func() {
+	c.taskManager.AddTask(objectId+observeTaskSuffix, time.Second*5, func() {
 		data, err := c.object.ReadAll(objectId)
 		if err != nil {
 			return
@@ -423,5 +425,5 @@ func (c *Client) CleanUp() {
 }
 
 func (c *Client) isActivity() bool {
-	return time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.liftTime) * time.Second))
+	return time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.lifeTime) * time.Second))
 }

@@ -15,7 +15,7 @@ spec:
   gatewaySettings:
     protocol: lwm2m
     address: leshan.eclipseprojects.io:5684
-    LwM2MSettings:
+    LwM2MSetting:
       endpointName: opcua-device
       securityMode: DTLS
       dtlsMode: PSK

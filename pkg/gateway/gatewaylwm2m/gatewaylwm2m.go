@@ -25,6 +25,8 @@ const (
 	ConfigmapInstructionsStr = "instructions"
 	ObjectIdStr              = "ObjectId"
 	DataTypeStr              = "DataType"
+
+	pingIntervalSec = 10
 )
 
 type Gateway struct {
@@ -47,9 +49,9 @@ func New() (*Gateway, error) {
 	}
 
 	client, err := lwm2m.NewClient(context.TODO(), lwm2m.Config{
-		EndpointName:    edgedevice.Spec.GatewaySettings.LwM2MSettings.EndpointName,
+		EndpointName:    edgedevice.Spec.GatewaySettings.LwM2MSetting.EndpointName,
 		EndpointUrl:     *edgedevice.Spec.GatewaySettings.Address,
-		Settings:        *edgedevice.Spec.GatewaySettings.LwM2MSettings,
+		Settings:        *edgedevice.Spec.GatewaySettings.LwM2MSetting,
 		DeviceShifuHost: deviceShifuHost,
 	})
 	if err != nil {
@@ -154,7 +156,7 @@ func (g *Gateway) Start() error {
 	}
 
 	// Ping the client every 10 seconds
-	t := time.NewTicker(time.Second * 10)
+	t := time.NewTicker(time.Second * pingIntervalSec)
 	for range t.C {
 		if err := g.client.Ping(); err != nil {
 			logger.Errorf("Error pinging client: %v", err)

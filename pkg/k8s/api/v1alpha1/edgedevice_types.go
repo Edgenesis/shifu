@@ -156,9 +156,9 @@ type ProtocolSettings struct {
 
 // GatewaySettings defines gateway settings when connecting to an EdgeDevice
 type GatewaySettings struct {
-	Protocol      *string       `json:"protocol,omitempty"`
-	Address       *string       `json:"address,omitempty"`
-	LwM2MSettings *LwM2MSetting `json:"LwM2MSettings,omitempty"`
+	Protocol     *string       `json:"protocol,omitempty"`
+	Address      *string       `json:"address,omitempty"`
+	LwM2MSetting *LwM2MSetting `json:"LwM2MSetting,omitempty"`
 }
 
 // EdgeDeviceSpec defines the desired state of EdgeDevice
