@@ -58,8 +58,6 @@ type Config struct {
 	Settings        v1alpha1.LwM2MSetting
 }
 
-const ()
-
 func NewClient(ctx context.Context, config Config) (*Client, error) {
 	var client = &Client{
 		ctx:            context.TODO(),

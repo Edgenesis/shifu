@@ -25,4 +25,5 @@ func main() {
 	}()
 	<-sigs
 	client.ShutDown()
+	logger.Info("Client shutdown")
 }
