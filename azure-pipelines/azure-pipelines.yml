@@ -438,7 +438,7 @@ stages:
             displayName: docker run mysql and checkoutput
 
   - stage: docker_build_muiltiarch_and_push
-    #condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not(startsWith(variables['Build.SourceBranchName'],'release')))
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), not(startsWith(variables['Build.SourceBranchName'],'release')))
     variables:
       - name: release_tag
         ${{ if eq(variables['Build.SourceBranchName'], 'main')}}:
@@ -446,77 +446,77 @@ stages:
         ${{ else }}:
           value: $[replace(variables['build.sourcebranch'], 'refs/tags/', '')]
     jobs:
-      # - job: docker_push_deviceshifu_http_http
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-deviceshifu-http-http
-      #       displayName: build edgehub/deviceshifu-http-http
+      - job: docker_push_deviceshifu_http_http
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-deviceshifu-http-http
+            displayName: build edgehub/deviceshifu-http-http
 
-      # - job: docker_push_deviceshifu_http_socket
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-deviceshifu-http-socket
-      #       displayName: build edgehub/deviceshifu-http-socket
+      - job: docker_push_deviceshifu_http_socket
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-deviceshifu-http-socket
+            displayName: build edgehub/deviceshifu-http-socket
 
-      # - job: docker_push_deviceshifu_http_mqtt
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-deviceshifu-http-mqtt
-      #       displayName: build edgehub/deviceshifu-http-mqtt
+      - job: docker_push_deviceshifu_http_mqtt
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-deviceshifu-http-mqtt
+            displayName: build edgehub/deviceshifu-http-mqtt
 
-      # - job: docker_push_deviceshifu_http_opcua
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-deviceshifu-http-opcua
-      #       displayName: build deviceshifu-http-opcua
+      - job: docker_push_deviceshifu_http_opcua
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-deviceshifu-http-opcua
+            displayName: build deviceshifu-http-opcua
 
       - job: docker_push_deviceshifu_http_lwm2m
         steps:
@@ -536,203 +536,203 @@ stages:
               make buildx-push-image-deviceshifu-http-lwm2m
             displayName: build deviceshifu-http-lwm2m
 
-      # - job: docker_push_deviceshifu_http_plc4x
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-deviceshifu-http-plc4x
-      #       displayName: build deviceshifu-http-plc4x
+      - job: docker_push_deviceshifu_http_plc4x
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-deviceshifu-http-plc4x
+            displayName: build deviceshifu-http-plc4x
 
-      # - job: docker_push_deviceshifu_tcp_tcp
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-deviceshifu-tcp-tcp
-      #       displayName: build deviceshifu-tcp-tcp
+      - job: docker_push_deviceshifu_tcp_tcp
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-deviceshifu-tcp-tcp
+            displayName: build deviceshifu-tcp-tcp
 
-      # - job: docker_push_shifu_controller
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-shifu-controller
-      #       displayName: build edgehub/shifu-controller
+      - job: docker_push_shifu_controller
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-shifu-controller
+            displayName: build edgehub/shifu-controller
 
-      # - job: docker_push_mockdevice_thermometer
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-mockdevice-thermometer
-      #       displayName: build edgehub/mockdevice-thermometer
+      - job: docker_push_mockdevice_thermometer
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-mockdevice-thermometer
+            displayName: build edgehub/mockdevice-thermometer
 
-      # - job: docker_push_mockdevice_robot_arm
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-mockdevice-robot-arm
-      #       displayName: build edgehub/mockdevice-robot-arm
+      - job: docker_push_mockdevice_robot_arm
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-mockdevice-robot-arm
+            displayName: build edgehub/mockdevice-robot-arm
 
-      # - job: docker_push_mockdevice_plate_reader
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-mockdevice-plate-reader
-      #       displayName: build edgehub/mockdevice-plate-reader
+      - job: docker_push_mockdevice_plate_reader
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-mockdevice-plate-reader
+            displayName: build edgehub/mockdevice-plate-reader
 
-      # - job: docker_push_mockdevice_agv
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-mockdevice-agv
-      #       displayName: build edgehub/mockdevice-agv
+      - job: docker_push_mockdevice_agv
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-mockdevice-agv
+            displayName: build edgehub/mockdevice-agv
 
-      # - job: docker_push_mockdevice_plc
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-mockdevice-plc
-      #       displayName: build edgehub/mockdevice-plc
+      - job: docker_push_mockdevice_plc
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-mockdevice-plc
+            displayName: build edgehub/mockdevice-plc
 
-      # - job: docker_push_mockdevice_socket
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-mockdevice-socket
-      #       displayName: build edgehub/mockdevice-socket
+      - job: docker_push_mockdevice_socket
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-mockdevice-socket
+            displayName: build edgehub/mockdevice-socket
 
-      # - job: docker_push_mockdevice_opcua
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-mockdevice-opcua
-      #       displayName: build edgehub/mockdevice-opcua
+      - job: docker_push_mockdevice_opcua
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-mockdevice-opcua
+            displayName: build edgehub/mockdevice-opcua
 
-      # - job: docker_push_telemetry_service
-      #   steps:
-      #     - task: GoTool@0
-      #       inputs:
-      #         version: $(goVersion)
-      #     - task: Docker@2
-      #       displayName: Login to DockerHub
-      #       inputs:
-      #         command: login
-      #         containerRegistry: dockerhub-connection
-      #     - script: |
-      #         docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
-      #         docker buildx create --use
-      #       displayName: configure multi-arch and buildx
-      #     - script: |
-      #         make buildx-push-image-telemetry-service
-      #       displayName: push edgehub/telemetryservice
+      - job: docker_push_telemetry_service
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-telemetry-service
+            displayName: push edgehub/telemetryservice
 
   - stage: docker_build_shifu_demo_push
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.SourceBranch'],'refs/tags'), not(contains(variables['Build.SourceBranchName'],'rc')))
