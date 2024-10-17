@@ -117,6 +117,11 @@ func (g *Gateway) LoadConfiguration() error {
 		// parse the object id to get the resource id and the object path
 		// example: /3303/0/5700 3303 is the resource id and 0/5700 is the object path
 		paths := strings.Split(objectId, "/")
+		if len(paths) < 2 {
+			logger.Errorf("Invalid object id: %v", objectId)
+			continue
+		}
+
 		for index, path := range paths {
 			if path != "" {
 				resourceId = path
