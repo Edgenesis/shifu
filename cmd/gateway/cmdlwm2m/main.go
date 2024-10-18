@@ -5,12 +5,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/edgenesis/shifu/pkg/gateway/gatewaylwm2m"
+	"github.com/edgenesis/shifu/pkg/gateway/lwm2m"
 	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 func main() {
-	client, err := gatewaylwm2m.New()
+	client, err := lwm2m.New()
 	if err != nil {
 		logger.Fatal(err)
 	}

@@ -1,4 +1,4 @@
-package gatewaylwm2m
+package lwm2m
 
 import (
 	"context"
@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/gateway/gatewaylwm2m/lwm2m"
+	lwm2mclient "github.com/edgenesis/shifu/pkg/gateway/lwm2m/client"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"gopkg.in/yaml.v2"
@@ -30,7 +30,7 @@ const (
 )
 
 type Gateway struct {
-	client     *lwm2m.Client
+	client     *lwm2mclient.Client
 	k8sClient  *rest.RESTClient
 	edgeDevice *v1alpha1.EdgeDevice
 }
@@ -48,7 +48,7 @@ func New() (*Gateway, error) {
 		return nil, fmt.Errorf("GatewaySettings not found in EdgeDevice spec")
 	}
 
-	client, err := lwm2m.NewClient(context.TODO(), lwm2m.Config{
+	client, err := lwm2mclient.NewClient(context.TODO(), lwm2mclient.Config{
 		EndpointName:    edgedevice.Spec.GatewaySettings.LwM2MSetting.EndpointName,
 		EndpointUrl:     *edgedevice.Spec.GatewaySettings.Address,
 		Settings:        *edgedevice.Spec.GatewaySettings.LwM2MSetting,
@@ -88,18 +88,18 @@ func (g *Gateway) LoadConfiguration() error {
 		}
 	}
 
-	var objMap = make(map[string]*lwm2m.Object)
+	var objMap = make(map[string]*lwm2mclient.Object)
 	for instructionName, instruction := range instructions.Instructions {
 		// Skip if instruction is nil
 		if instruction == nil {
-			logger.Infof("Instruction %v is nil", instructionName)
+			logger.Errorf("Instruction %v is nil", instructionName)
 			continue
 		}
 
 		// Skip if instruction does not set the ObjectId
 		objectId, exists := instruction.DeviceShifuGatewayProperties[ObjectIdStr]
 		if !exists {
-			logger.Infof("Instruction %v does not have an ObjectId", instructionName)
+			logger.Errorf("Instruction %v does not have an ObjectId", instructionName)
 			continue
 		}
 
@@ -132,7 +132,7 @@ func (g *Gateway) LoadConfiguration() error {
 
 		// Create the object if it does not exist
 		if _, exists := objMap[resourceId]; !exists {
-			objMap[resourceId] = lwm2m.NewObject(resourceId, nil)
+			objMap[resourceId] = lwm2mclient.NewObject(resourceId, nil)
 		}
 
 		objMap[resourceId].AddObject(objPath, &gwInstruction)

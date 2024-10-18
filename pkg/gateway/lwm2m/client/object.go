@@ -1,4 +1,4 @@
-package lwm2m
+package client
 
 import (
 	"encoding/json"
@@ -58,7 +58,7 @@ func (o Object) GetChildObject(path string) *Object {
 	paths := strings.Split(path, "/")
 	var obj *Object = &o
 	for _, subPath := range paths {
-		if subPath == "" {
+		if len(subPath) == 0 {
 			continue
 		}
 
@@ -138,7 +138,7 @@ func (o *Object) AddObject(path string, childObject ObjectAPI) {
 	var obj *Object = o
 	// iterate through the path and set the object to the last path
 	for _, subPath := range paths[:pathEnd] {
-		if subPath == "" {
+		if len(subPath) == 0 {
 			continue
 		}
 

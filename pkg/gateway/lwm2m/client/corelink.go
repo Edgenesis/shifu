@@ -1,6 +1,6 @@
 // Reference to https://datatracker.ietf.org/doc/html/rfc6690
 // unused for now
-package lwm2m
+package client
 
 import (
 	"fmt"

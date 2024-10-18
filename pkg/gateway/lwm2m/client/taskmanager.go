@@ -1,4 +1,4 @@
-package lwm2m
+package client
 
 import (
 	"context"
