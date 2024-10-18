@@ -1,0 +1,25 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-opcua
+  namespace: devices
+spec:
+  sku: "opcua-test" 
+  connection: Ethernet
+  address: opc.tcp://10.20.30.58:4840/freeopcua/server #change this accordingly
+  protocol: OPCUA
+  protocolSettings:
+    OPCUASetting:
+      SecurityMode: None
+      AuthenticationMode: Anonymous
+  gatewaySettings:
+    protocol: lwm2m
+    address: leshan.eclipseprojects.io:5684
+    LwM2MSetting:
+      endpointName: opcua-device
+      securityMode: DTLS
+      dtlsMode: PSK
+      cipherSuites: 
+        - TLS_PSK_WITH_AES_128_CCM_8
+      pskIdentity: hint
+      pskKey: ABC123

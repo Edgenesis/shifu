@@ -154,6 +154,13 @@ type ProtocolSettings struct {
 	LwM2MSetting  *LwM2MSetting  `json:"LwM2MSetting,omitempty"`
 }
 
+// GatewaySettings defines gateway settings when connecting to an EdgeDevice
+type GatewaySettings struct {
+	Protocol     *string       `json:"protocol,omitempty"`
+	Address      *string       `json:"address,omitempty"`
+	LwM2MSetting *LwM2MSetting `json:"LwM2MSetting,omitempty"`
+}
+
 // EdgeDeviceSpec defines the desired state of EdgeDevice
 type EdgeDeviceSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of EdgeDevice
@@ -165,6 +172,7 @@ type EdgeDeviceSpec struct {
 	Address          *string            `json:"address,omitempty"`
 	Protocol         *Protocol          `json:"protocol,omitempty"`
 	ProtocolSettings *ProtocolSettings  `json:"protocolSettings,omitempty"`
+	GatewaySettings  *GatewaySettings   `json:"gatewaySettings,omitempty"`
 	CustomMetadata   *map[string]string `json:"customMetadata,omitempty"`
 
 	// TODO: add other fields like disconnectTimemoutInSeconds
