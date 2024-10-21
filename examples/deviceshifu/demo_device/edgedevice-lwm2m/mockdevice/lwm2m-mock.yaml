@@ -26,7 +26,6 @@ spec:
           "--psk-key", "ABC123"
         ]
         resources:
-          limits:
             memory: "256Mi"
             cpu: "500m"
       restartPolicy: Always
