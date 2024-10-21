@@ -3,9 +3,9 @@
 writeData=88.8
 
 # Retrieve LwM2M server information with multiple retries
-for i in {1..15}; do
+for i in {1..30}; do
     # Check deviceshifu status
-    out=$(kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value --connect-timeout 5)
+    out=$(kubectl exec -i -n deviceshifu nginx -- curl deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value --connect-timeout 5)
     
     # Remove any whitespace and newline characters
     out=$(echo "$out" | tr -d '\r\n')
@@ -31,10 +31,10 @@ for i in {1..15}; do
 done
 
 # Use deviceshifu to write data to the mock device
-kubectl exec -it -n deviceshifu nginx -- curl -X PUT deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value -d $writeData --connect-timeout 5
+kubectl exec -i -n deviceshifu nginx -- curl -X PUT deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value -d $writeData --connect-timeout 5
 
 # Retrieve the value after writing to verify if it was successful
-out=$(kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value --connect-timeout 5)
+out=$(kubectl exec -i -n deviceshifu nginx -- curl deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value --connect-timeout 5)
 
 # Remove any whitespace and newline characters
 out=$(echo "$out" | tr -d '\r\n')
