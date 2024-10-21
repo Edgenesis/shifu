@@ -93,6 +93,9 @@ docker-build: test ## Build docker image with the manager.
 docker-build: ## Build docker image with the specified Dockerfile
 	cd ../../../ && docker build -f dockerfiles/Dockerfile.Leshan-client-None -t ${IMG} .
 
+docker-build: ## Build docker image with the specified Dockerfile
+	cd ../../../ && docker build -f dockerfiles/Dockerfile.Leshan-client-DTLS -t ${IMG} .
+
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 

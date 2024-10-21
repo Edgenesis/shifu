@@ -8,7 +8,7 @@ data:
     driverSku: LwM2M Device
     driverImage: lwm2m-device:v0.0.1
   leshanConfig: |
-    serverUrl: coap://leshan-service.deviceshifu.svc.cluster.local:5683
+    serverUrl: coaps://leshan-service.deviceshifu.svc.cluster.local:5684
   instructions: |
     instructions:
       float_value:
