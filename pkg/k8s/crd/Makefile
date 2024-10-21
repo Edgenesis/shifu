@@ -90,9 +90,6 @@ run: manifests generate fmt vet ## Run a controller from your host.
 docker-build: test ## Build docker image with the manager.
 	cd ../../../ && docker build -f pkg/k8s/crd/Dockerfile -t ${IMG} .
 
-docker-build: ##Build docker image for leshan client
-	cd ../../../ && docker build -f dockerfiles/Dockerfile.leshan-client -t ${IMG} .
-
 docker-push: ## Push docker image with the manager.
 	docker push ${IMG}
 

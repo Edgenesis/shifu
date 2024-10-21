@@ -1,10 +1,11 @@
+# Reference: https://github.com/rhoninl/leshan/blob/0947d3b08051b967e2cdc9908fc83c8fa89c1ee5/dockerfiles/client.dockerfile
 # Use Maven with SapMachine JDK 17 as the build stage
 FROM maven:3.9-sapmachine-17 as builder
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy all project files to the container from github.com/rhoninl/leshan
+# Copy all project files
 COPY . .
 
 # Run Maven to clean and build the project
