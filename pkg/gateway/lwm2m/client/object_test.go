@@ -34,7 +34,7 @@ func TestNewObject(t *testing.T) {
 // Test GetChildObject
 func TestObject_GetChildObject(t *testing.T) {
 	mockAPI := &MockObjectAPI{}
-	root := NewObject("root", mockAPI)
+	root := NewObject(rootObjectId, mockAPI)
 
 	// Add child objects
 	root.AddObject("/1/0", mockAPI)
@@ -69,7 +69,7 @@ func TestObject_AddObject(t *testing.T) {
 // Test ReadAll
 func TestObject_ReadAll(t *testing.T) {
 	mockAPI := &MockObjectAPI{}
-	root := NewObject("root", mockAPI)
+	root := NewObject(rootObjectId, mockAPI)
 
 	// Add child objects with values
 	root.AddObject("/1/0", mockAPI)
@@ -84,7 +84,7 @@ func TestObject_ReadAll(t *testing.T) {
 // Test GetAllChildPaths
 func TestObject_GetAllChildPaths(t *testing.T) {
 	mockAPI := &MockObjectAPI{}
-	root := NewObject("root", mockAPI)
+	root := NewObject(rootObjectId, mockAPI)
 
 	// Add child objects
 	root.AddObject("/1/0", mockAPI)
@@ -98,7 +98,7 @@ func TestObject_GetAllChildPaths(t *testing.T) {
 // Test GetCoRELinkString
 func TestObject_GetCoRELinkString(t *testing.T) {
 	mockAPI := &MockObjectAPI{}
-	root := NewObject("root", mockAPI)
+	root := NewObject(rootObjectId, mockAPI)
 
 	// Add child objects
 	root.AddObject("/1/0", mockAPI)

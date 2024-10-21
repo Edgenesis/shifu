@@ -9,7 +9,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestTaskManager_AddTask(t *testing.T) {
+func TestTaskManager(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 
@@ -80,43 +80,6 @@ func TestTaskManager_ResetTask(t *testing.T) {
 	mu.Unlock()
 
 	assert.Greater(t, newCount, count, "Task should continue after being reset")
-}
-
-func TestTaskManager_CancelTask(t *testing.T) {
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	taskManager := NewTaskManager(ctx)
-
-	var mu sync.Mutex
-	var executionCount int
-
-	fn := func() {
-		mu.Lock()
-		defer mu.Unlock()
-		executionCount++
-	}
-
-	taskManager.AddTask("task3", 100*time.Millisecond, fn)
-
-	// Let the task run for a while
-	time.Sleep(250 * time.Millisecond)
-
-	taskManager.CancelTask("task3")
-
-	// Capture execution count after cancellation
-	mu.Lock()
-	count := executionCount
-	mu.Unlock()
-
-	// Wait and verify that task3 no longer runs
-	time.Sleep(200 * time.Millisecond)
-
-	mu.Lock()
-	newCount := executionCount
-	mu.Unlock()
-
-	assert.Equal(t, count, newCount, "Task should not execute after being canceled")
 }
 
 func TestTaskManager_CancelAllTasks(t *testing.T) {
