@@ -52,7 +52,7 @@ spec:
                 description: GatewaySettings defines gateway settings when connecting
                   to an EdgeDevice
                 properties:
-                  LwM2MSettings:
+                  LwM2MSetting:
                     properties:
                       cipherSuites:
                         items:
@@ -69,6 +69,8 @@ spec:
                       securityMode:
                         default: None
                         type: string
+                    required:
+                    - endpointName
                     type: object
                   address:
                     type: string
@@ -99,6 +101,8 @@ spec:
                       securityMode:
                         default: None
                         type: string
+                    required:
+                    - endpointName
                     type: object
                   MQTTSetting:
                     description: MQTTSetting defines MQTT specific settings when connecting

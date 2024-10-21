@@ -77,6 +77,9 @@ func (c *Client) Start() error {
 
 	udpClientOpts = append(
 		udpClientOpts,
+		options.WithInactivityMonitor(time.Minute, func(cc *udpClient.Conn) {
+			_ = cc.Close()
+		}),
 		options.WithMux(c.handleRouter()),
 	)
 
@@ -240,9 +243,8 @@ func (c *Client) handleRouter() *mux.Router {
 	router := mux.NewRouter()
 	// default to handle object request like read, write and execute
 	router.DefaultHandle(mux.HandlerFunc(func(w mux.ResponseWriter, r *mux.Message) {
-		// reset mean cancel all observe action
 		if r.Type() == message.Reset {
-			c.taskManager.CancelAllTasks()
+			// ping response is reset message, ignore it
 			return
 		}
 
@@ -332,6 +334,11 @@ func (c *Client) Ping() error {
 	return c.udpConnection.Ping(c.ctx)
 }
 
+const (
+	EnableObserveAction  uint32 = 0
+	DisableObserveAction uint32 = 1
+)
+
 // handleObserve handle observe action
 // Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=37
 // Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=80
@@ -343,7 +350,21 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 	}
 
 	logger.Debugf("observe %v", objectId)
-	token := r.Token()
+
+	observeAction, err := r.Options().GetUint32(message.Observe)
+	if err != nil {
+		_ = w.SetResponse(codes.BadRequest, message.TextPlain, strings.NewReader(err.Error()))
+		return
+	}
+	switch observeAction {
+	case EnableObserveAction:
+		c.observe(w, r.Token(), objectId)
+	case DisableObserveAction:
+		c.cancelObserve(w, objectId)
+	}
+}
+
+func (c *Client) observe(w mux.ResponseWriter, token message.Token, objectId string) {
 	// start obs with 2 seq number
 	var obs uint32 = 2
 	// report new data with interval 30s
@@ -360,6 +381,7 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 		c.dataCache[objectId] = jsonData
 		err = sendResponse(w.Conn(), token, obs, jsonData)
 		if err != nil {
+			logger.Errorf("failed to send response: %v", err)
 			return
 		}
 		obs++
@@ -371,6 +393,7 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 	c.taskManager.AddTask(objectId+observeTaskSuffix, time.Second*5, func() {
 		data, err := c.object.ReadAll(objectId)
 		if err != nil {
+			logger.Errorf("failed to read data from object %s, error: %v", objectId, err)
 			return
 		}
 
@@ -404,6 +427,19 @@ func (c *Client) handleObserve(w mux.ResponseWriter, r *mux.Message) {
 	_ = w.SetResponse(codes.Content, message.AppLwm2mJSON, strings.NewReader(jsonData),
 		message.Option{ID: message.Observe, Value: []byte{byte(obs)}},
 	)
+}
+
+func (c *Client) cancelObserve(w mux.ResponseWriter, objectId string) {
+	logger.Infof("cancel observe %v", objectId)
+	c.taskManager.CancelTask(objectId)
+	c.taskManager.CancelTask(objectId + observeTaskSuffix)
+	res, err := c.object.ReadAll(objectId)
+	if err != nil {
+		logger.Errorf("failed to read data from object %s, error: %v", objectId, err)
+		_ = w.SetResponse(codes.NotFound, message.TextPlain, strings.NewReader(err.Error()))
+		return
+	}
+	_ = w.SetResponse(codes.Content, message.AppLwm2mJSON, strings.NewReader(res.ReadAsJSON()))
 }
 
 func sendResponse(cc mux.Conn, token []byte, obs uint32, body string) error {
