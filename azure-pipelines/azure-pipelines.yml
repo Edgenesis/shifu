@@ -266,7 +266,7 @@ stages:
               make buildx-build-image-shifu-controller
             displayName: build edgehub/shifu-controller
           - script: |
-              make buildx-push-image-deviceshifu-http-lwm2m
+              make buildx-build-image-deviceshifu-http-lwm2m
             displayName: build edgehub/deviceshifu-http-lwm2m
           - script: |
               set -e

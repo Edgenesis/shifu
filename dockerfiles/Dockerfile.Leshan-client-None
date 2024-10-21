@@ -1,0 +1,14 @@
+# Select the base image
+FROM edgenesis/lwm2m-demo-leshan-client:nightly
+
+# Set the working directory
+WORKDIR /shifu
+
+# Copy the Leshan client jar file to the container
+COPY leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar /leshan/
+
+# expose the port
+EXPOSE 5683
+
+# Run the Leshan client
+CMD ["java", "-jar", "leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar", "-u", "coap://deviceshifu-lwm2m.deviceshifu.svc.cluster.local:5683", "-n", "leshan-client"]

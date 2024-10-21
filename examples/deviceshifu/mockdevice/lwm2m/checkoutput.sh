@@ -2,7 +2,7 @@
 
 writeData=88.8
 
-# Retrieve LwM2M server information and attempt multiple retries
+# Retrieve LwM2M server information with multiple retries
 for i in {1..15}; do
     # Check deviceshifu status
     out=$(kubectl exec -it -n deviceshifu nginx -- curl deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value --connect-timeout 5)
