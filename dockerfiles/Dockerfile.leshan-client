@@ -1,14 +1,21 @@
-# Select the base image
-FROM edgenesis/lwm2m-demo-leshan-client:nightly
+# Reference: https://github.com/rhoninl/leshan/blob/0947d3b08051b967e2cdc9908fc83c8fa89c1ee5/dockerfiles/client.dockerfile
+# Use Maven with SapMachine JDK 17 as the build stage
+FROM maven:3.9-sapmachine-17 as builder
 
-# Set the working directory
-WORKDIR /shifu
+# Set the working directory inside the container
+WORKDIR /app
 
-# Copy the Leshan client jar file to the container
-COPY leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar /leshan/
+# Copy all project files
+COPY . .
 
-# expose the port
-EXPOSE 5683
+# Run Maven to clean and build the project
+RUN mvn clean install
 
-# Run the Leshan client
-CMD ["java", "-jar", "leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar", "-u", "coap://deviceshifu-lwm2m.deviceshifu.svc.cluster.local:5683", "-n", "leshan-client"]
+# Use a slim version of OpenJDK 11 for the final runtime image
+FROM openjdk:11-jre-slim
+
+# Set the working directory inside the runtime container
+WORKDIR /app
+
+# Copy the built JAR file from the builder stage to the runtime container
+COPY --from=builder /app/leshan-client-demo/target/leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar .
