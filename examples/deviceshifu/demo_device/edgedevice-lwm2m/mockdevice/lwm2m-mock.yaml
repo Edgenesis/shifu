@@ -25,7 +25,4 @@ spec:
           "--psk-identity", "hint", 
           "--psk-key", "ABC123"
         ]
-        resources:
-            memory: "256Mi"
-            cpu: "500m"
       restartPolicy: Always
