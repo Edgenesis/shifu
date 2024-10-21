@@ -137,6 +137,11 @@ buildx-push-image-telemetry-service:
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/telemetryservice:${IMAGE_VERSION} --push
 
+buildx-build-image-leshan-client:
+	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.leshan-client \
+		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
+		-t edgehub/leshan-client:${IMAGE_VERSION} --load
+
 buildx-build-image-shifu-controller:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f $(PROJECT_ROOT)/pkg/k8s/crd/Dockerfile \
           --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
