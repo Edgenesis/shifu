@@ -1,5 +1,6 @@
 #!/bin/bash
 
+#Default value to write to the mock device
 writeData=88.8
 
 #Get the pod name of deviceshifu
