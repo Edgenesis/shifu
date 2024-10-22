@@ -1,4 +1,4 @@
-# Reference: https://github.com/rhoninl/leshan/blob/0947d3b08051b967e2cdc9908fc83c8fa89c1ee5/dockerfiles/client.dockerfile
+# Reference: https://github.com/rhoninl/leshan/blob/master/dockerfiles/client.dockerfile
 # Use Maven with SapMachine JDK 17 as the build stage
 FROM maven:3.9-sapmachine-17 as builder
 

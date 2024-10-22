@@ -4,16 +4,14 @@ metadata:
   name: deviceshifu-lwm2m
   namespace: deviceshifu
 data:
-#    device name and image address
   driverProperties: |
     driverSku: LwM2M Device
     driverImage: lwm2m-device:v0.0.1
-#    available instructions
   instructions: |
     instructions:
-      temperature:
+      float_value:
         protocolPropertyList:
-          ObjectId: /3303/0/5700
+          ObjectId: /3442/0/130
           EnableObserve: false
       reset:
         protocolPropertyList:
