@@ -53,24 +53,25 @@ func TestCipherSuiteStringToCode(t *testing.T) {
 	}
 }
 
+var want = map[dtls.CipherSuiteID]bool{
+	TLS_ECDHE_ECDSA_WITH_AES_128_CCM:        true,
+	TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:      true,
+	TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256: true,
+	TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:   true,
+	TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: true,
+	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:   true,
+	TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:    true,
+	TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:      true,
+	TLS_PSK_WITH_AES_128_CCM:                true,
+	TLS_PSK_WITH_AES_128_CCM_8:              true,
+	TLS_PSK_WITH_AES_256_CCM_8:              true,
+	TLS_PSK_WITH_AES_128_GCM_SHA256:         true,
+	TLS_PSK_WITH_AES_128_CBC_SHA256:         true,
+	TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256:   true,
+}
+
 func TestCipherSuiteStringsToCodes(t *testing.T) {
 	res, err := CipherSuiteStringsToCodes(cipherSuiteStrs)
-	want := map[dtls.CipherSuiteID]bool{
-		TLS_ECDHE_ECDSA_WITH_AES_128_CCM:        true,
-		TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:      true,
-		TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256: true,
-		TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:   true,
-		TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: true,
-		TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:   true,
-		TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:    true,
-		TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:      true,
-		TLS_PSK_WITH_AES_128_CCM:                true,
-		TLS_PSK_WITH_AES_128_CCM_8:              true,
-		TLS_PSK_WITH_AES_256_CCM_8:              true,
-		TLS_PSK_WITH_AES_128_GCM_SHA256:         true,
-		TLS_PSK_WITH_AES_128_CBC_SHA256:         true,
-		TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256:   true,
-	}
 	if err != nil {
 		t.Errorf("unknown cipher suite: %v", err)
 	}
@@ -80,8 +81,14 @@ func TestCipherSuiteStringsToCodes(t *testing.T) {
 	}
 
 	for _, v := range res {
-		if !want[v] {
-			t.Errorf("Error in mapping cipher suite: %v", res)
-		}
+		t.Run("compare", func(t *testing.T) {
+			if !compareCipherSuites(v) {
+				t.Errorf("Error in mapping cipher suite")
+			}
+		})
 	}
+}
+
+func compareCipherSuites(a dtls.CipherSuiteID) bool {
+	return want[a]
 }
