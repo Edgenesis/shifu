@@ -211,7 +211,7 @@ stages:
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
             displayName: "Shifu demo device OPCUA E2E test"
 
-      - job: kind_e2e_test_lwm2m without security
+      - job: kind_e2e_test_lwm2m_without_security
         steps:
           - task: GoTool@0
             inputs:
