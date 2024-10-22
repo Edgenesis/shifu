@@ -170,7 +170,7 @@ spec:
   address: --
   protocol: LwM2M
   protocolSettings:
-    LwM2MSettings:
+    LwM2MSetting:
       ...
   gatewaySettings:
     protocol: LwM2M
