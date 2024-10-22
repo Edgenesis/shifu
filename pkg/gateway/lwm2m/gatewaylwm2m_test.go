@@ -10,7 +10,7 @@ import (
 func mockServer(response string, statusCode int) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(statusCode)
-		w.Write([]byte(response))
+		_, _ = w.Write([]byte(response))
 	}))
 }
 
