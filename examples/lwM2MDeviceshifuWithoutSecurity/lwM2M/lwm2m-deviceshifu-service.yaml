@@ -17,11 +17,6 @@ spec:
       protocol: UDP
       nodePort: 30000
       targetPort: 5683
-    - name: lwm2mserver-coaps
-      port: 5684
-      protocol: UDP
-      nodePort: 30001
-      targetPort: 5684
   selector:
     app: deviceshifu-lwm2m-deployment
   type: NodePort
