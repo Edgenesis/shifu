@@ -246,6 +246,7 @@ stages:
               kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity/mockdevice
               kubectl wait --for=condition=available --timeout=150s deployment/leshan-client -n deviceshifu
               bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.sh
+              sleep 5
               kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity
             displayName: "Shifu demo device lwM2M E2E test"
 
