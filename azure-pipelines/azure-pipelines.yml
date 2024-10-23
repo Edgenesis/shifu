@@ -285,11 +285,9 @@ stages:
               kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity/lwM2M
               kubectl wait --for=condition=Available deploy/deviceshifu-lwm2m-deployment -n deviceshifu --timeout=150s
               kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-              sleep 3
               kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity/mockdevice
               kubectl wait --for=condition=available --timeout=150s deployment/leshan-client -n deviceshifu
-              python3 $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.py
-              sleep 3
+              bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.sh
               kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity
             displayName: "Shifu demo device lwM2M E2E test"
 
