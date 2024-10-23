@@ -4,7 +4,7 @@
 
 ## 新功能 🎉
 
-* 添加 lwm2m 设备shifu设计 @rhoninl 提交于 https://github.com/Edgenesis/shifu/pull/878
+* 添加 lwm2m deviceShifu设计 @rhoninl 提交于 https://github.com/Edgenesis/shifu/pull/878
 
 * 添加 lwM2M 网关设计 @rhoninl 提交于 https://github.com/Edgenesis/shifu/pull/879
 
