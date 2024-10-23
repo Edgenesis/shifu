@@ -1,7 +1,6 @@
 package client
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -54,7 +53,7 @@ func TestLink_String(t *testing.T) {
 				"ct": "0",
 			},
 			resultCheck: func(s string) bool {
-				return strings.Contains(s, `rt="oma.lwm2m"`) && strings.Contains(s, `ct="0"`)
+				return s == `</1/0>;rt="oma.lwm2m",ct="0"` || s == `</1/0>;ct="0",rt="oma.lwm2m"`
 			},
 		},
 		{
