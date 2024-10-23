@@ -1,9 +1,9 @@
 #!/bin/bash
 
-#Default value to write to the mock device
+# Default value to write to the mock device
 writeData=88.8
 
-#Get the pod name of deviceshifu
+# Get the pod name of deviceshifu
 pod_name=$(kubectl get pods -n deviceshifu -l app=deviceshifu-lwm2m-deployment -o jsonpath='{.items[0].metadata.name}')
 
 if [ -z "$pod_name" ]; then
@@ -11,47 +11,37 @@ if [ -z "$pod_name" ]; then
     exit 1
 fi
 
-# Retrieve LwM2M server information with multiple retries
-for i in {1..30}; do
-    # Check deviceshifu status
-    out=$(kubectl exec -n deviceshifu nginx -- curl deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value --connect-timeout 5)
-    # Remove any whitespace and newline characters
-    out=$(echo "$out" | tr -d '\r\n')
+# Use curl with retry options to retrieve information from the LwM2M server
+out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --retry-max-time 15 --connect-timeout 5 deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value)
 
-    # Output the status
-    echo "Received value: $out"
-    
-    # Check if the server response is empty
-    if [[ $out == "Error on reading object" ]]; then
-        echo "Device is unhealthy"
-        kubectl logs -n deviceshifu $pod_name
-    else
-        break
-    fi
+# Remove any whitespace and newline characters
+out=$(echo "$out" | tr -d '\r\n')
 
-    # If after 5 attempts there is still no success, timeout and exit
-    if [[ $i -eq 5 ]]; then
-        echo "timeout"
-        exit 1
-    fi
+# Output the status
+echo "Received value: $out"
 
-    # Wait for some time before retrying
-    sleep 3
-done
+# Check if the server response indicates an error
+if [[ $out == "Error on reading object" ]]; then
+    echo "Device is unhealthy"
+    kubectl logs -n deviceshifu $pod_name
+    echo "Timeout"
+    exit 1
+fi
 
-# Use deviceshifu to write data to the mock device
-kubectl exec -n deviceshifu nginx -- curl -X PUT deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value -d $writeData --connect-timeout 5
+# Use deviceshifu to write data to the mock device with retry settings
+kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --retry-max-time 15 --connect-timeout 5 -X PUT deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value -d $writeData
 
-# Retrieve the value after writing to verify if it was successful
-out=$(kubectl exec -n deviceshifu nginx -- curl deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value --connect-timeout 5)
+# Retrieve the value again after writing to verify if it was successful
+out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --retry-max-time 15 --connect-timeout 5 deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value)
 
 # Remove any whitespace and newline characters
 out=$(echo "$out" | tr -d '\r\n')
 
 # Check if the modification was successful
 if awk "BEGIN {exit !($out == $writeData)}"; then
-    echo "modify success"
+    echo "Modification successful"
     exit 0
 else
-    echo "modify failed, expected: $writeData, got: $out"
+    echo "Modification failed, expected: $writeData, got: $out"
+    exit 1
 fi
