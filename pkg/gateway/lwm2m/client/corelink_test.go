@@ -61,7 +61,7 @@ func TestLink_String(t *testing.T) {
 			name:         "No attributes",
 			resourcePath: "/1/0",
 			attributes:   map[string]string{},
-			resultCheck:  func(s string) bool { return s == `</1/0>` },
+			resultCheck:  func(s string) bool { return s == `</1/0>;` },
 		},
 	}
 
