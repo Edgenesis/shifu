@@ -12,7 +12,7 @@ if [ -z "$pod_name" ]; then
 fi
 
 # Use curl with retry options to retrieve information from the LwM2M server
-out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --retry-max-time 15 --connect-timeout 5 deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value)
+out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --max-time 15 --connect-timeout 5 deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value)
 
 # Remove any whitespace and newline characters
 out=$(echo "$out" | tr -d '\r\n')
@@ -29,10 +29,10 @@ if [[ $out == "Error on reading object" ]]; then
 fi
 
 # Use deviceshifu to write data to the mock device with retry settings
-kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --retry-max-time 15 --connect-timeout 5 -X PUT deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value -d $writeData
+kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --max-time 15 --connect-timeout 5 -X PUT deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value -d $writeData
 
 # Retrieve the value again after writing to verify if it was successful
-out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --retry-max-time 15 --connect-timeout 5 deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value)
+out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --max-time 15 --connect-timeout 5 deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value)
 
 # Remove any whitespace and newline characters
 out=$(echo "$out" | tr -d '\r\n')
