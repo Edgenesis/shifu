@@ -9,7 +9,7 @@ spec:
   protocol: LwM2M
   protocolSettings:
     LwM2MSetting:
-      endpointName: test
+      endpointName: leshan-client
       securityMode: DTLS
       dtlsMode: PSK
       cipherSuites: 
