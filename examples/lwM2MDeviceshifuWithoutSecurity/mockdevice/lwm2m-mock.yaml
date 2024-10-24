@@ -18,5 +18,5 @@ spec:
       containers:
       - name: leshan-client
         image: edgenesis/lwm2m-demo-leshan-client:nightly
-        command: ["java", "-jar", "leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar", "-u", "coap://deviceshifu-lwm2m.deviceshifu.svc.cluster.local:5683", "-n", "leshan-client"]
+        command: ["java", "-jar", "leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar", "-u", "coap://deviceshifu-lwm2m-nosecurity.deviceshifu.svc.cluster.local:5683", "-n", "leshan-client"]
       restartPolicy: Always

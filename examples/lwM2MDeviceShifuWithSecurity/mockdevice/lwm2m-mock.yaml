@@ -20,7 +20,7 @@ spec:
         image: edgenesis/lwm2m-demo-leshan-client:nightly
         command: [
           "java", "-jar", "leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar", 
-          "-u", "coaps://deviceshifu-lwm2m.deviceshifu.svc.cluster.local:5684", 
+          "-u", "coaps://deviceshifu-lwm2m-security.deviceshifu.svc.cluster.local:5684", 
           "-n", "leshan-client",
           "--psk-identity", "hint", 
           "--psk-key", "ABC123"

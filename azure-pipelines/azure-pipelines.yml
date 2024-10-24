@@ -285,7 +285,6 @@ stages:
               kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity/lwM2M
               kubectl wait --for=condition=Available deploy/deviceshifu-lwm2m-deployment -n deviceshifu --timeout=150s
               kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-              sleep 3 # wait to ensure deviceshifu connects to the device
               kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity/mockdevice
               kubectl wait --for=condition=available --timeout=150s deployment/leshan-client -n deviceshifu
               bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.sh
@@ -295,7 +294,6 @@ stages:
               set -e 
               kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity/lwM2M
               kubectl wait --for=condition=Available deploy/deviceshifu-lwm2m-deployment -n deviceshifu --timeout=150s
-              sleep 3 # wait to ensure deviceshifu connects to the device
               kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity/mockdevice
               kubectl wait --for=condition=available --timeout=150s deployment/leshan-client -n deviceshifu
               bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.sh
