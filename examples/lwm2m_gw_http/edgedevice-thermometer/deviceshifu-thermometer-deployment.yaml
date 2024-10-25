@@ -17,6 +17,7 @@ spec:
     spec:
       containers:
       - image: edgehub/deviceshifu-http-http:nightly
+        imagePullPolicy: IfNotPresent
         name: deviceshifu-http
         ports:
         - containerPort: 8080
@@ -28,8 +29,9 @@ spec:
         - name: EDGEDEVICE_NAME
           value: "edgedevice-thermometer"
         - name: EDGEDEVICE_NAMESPACE
-          value: "deviceshifu"
+          value: "devices"
       - image: edgehub/gateway-lwm2m:nightly
+        imagePullPolicy: IfNotPresent
         name: gateway-lwm2m
         volumeMounts:
           - name: deviceshifu-config
@@ -39,7 +41,7 @@ spec:
         - name: EDGEDEVICE_NAME
           value: "edgedevice-thermometer"
         - name: EDGEDEVICE_NAMESPACE
-          value: "deviceshifu"
+          value: "devices"
       volumes:
       - name: deviceshifu-config
         configMap:
