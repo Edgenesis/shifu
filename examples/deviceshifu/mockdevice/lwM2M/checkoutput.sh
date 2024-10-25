@@ -5,7 +5,7 @@ writeData=88.8
 
 # Get the pod name of deviceshifu
 pod_name=$(kubectl get pods -n deviceshifu -l app=deviceshifu-lwm2m-deployment -o jsonpath='{.items[0].metadata.name}')
-service_name=$(kubectl get services -n deviceshifu -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
+service_name=$(kubectl get services -n deviceshifu -l app=deviceshifu-lwm2m-deployment -o jsonpath='{range .items[*]}{.metadata.name}{"\n"}{end}')
 
 if [ -z "$pod_name" ]; then
     echo "No deviceshifu-lwm2m pod found. Exiting..."
@@ -28,16 +28,16 @@ for i in {1..5}; do
     echo "Received value: $out"
     
     # Check if the server response indicates an error
-    if [[ $out != "Error on reading object" && -n "$out" ]]; then
+    if [[ -n "$out" && $out != "Error on reading object" ]]; then
         break
     fi
     
-    echo "Device is unhealthy. Attempting to reconnect... ($i/10)"
+    echo "Device is unhealthy. Attempting to reconnect... ($i/5)"
     sleep 3
 done
 
-if [[ $out == "Error on reading object" || -z "$out" ]]; then
-    echo "Device is still unhealthy after 10 attempts. Exiting..."
+if [[ -z "$out" || $out == "Error on reading object" ]]; then
+    echo "Device is still unhealthy after 5 attempts. Exiting..."
     kubectl logs -n deviceshifu $pod_name
     exit 1
 fi
