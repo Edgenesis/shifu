@@ -57,36 +57,6 @@ func TestCreateLwM2MInstructions(t *testing.T) {
 			},
 			expectingPanic: false,
 		},
-		// {
-		// 	InstructionName: "Empty ObjectId",
-		// 	input: &deviceshifubase.DeviceShifuInstructions{
-		// 		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{
-		// 			"instruction": {
-		// 				DeviceShifuProtocolProperties: map[string]string{
-		// 					objectIdStr:      "",
-		// 					enableObserveStr: "true",
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expected:       nil,
-		// 	expectingPanic: true,
-		// },
-		// {
-		// 	InstructionName: "Empty EnableObserve",
-		// 	input: &deviceshifubase.DeviceShifuInstructions{
-		// 		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{
-		// 			"instruction": {
-		// 				DeviceShifuProtocolProperties: map[string]string{
-		// 					objectIdStr:      "1",
-		// 					enableObserveStr: "",
-		// 				},
-		// 			},
-		// 		},
-		// 	},
-		// 	expected:       nil,
-		// 	expectingPanic: true,
-		// },
 	}
 
 	for _, tt := range tests {
