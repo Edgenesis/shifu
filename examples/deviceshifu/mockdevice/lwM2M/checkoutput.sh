@@ -11,28 +11,41 @@ if [ -z "$pod_name" ]; then
     exit 1
 fi
 
-# Use curl with retry options to retrieve information from the LwM2M server
-out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --retry-max-time 15 --connect-timeout 5 deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value)
+# Function to retrieve value from the LwM2M server
+get_value() {
+    kubectl exec -n deviceshifu nginx -- curl --connect-timeout 5 deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value
+}
 
-# Remove any whitespace and newline characters
-out=$(echo "$out" | tr -d '\r\n')
+# Attempt to get the value with retries
+for i in {1..5}; do
+    out=$(get_value)
+    
+    # Remove any whitespace and newline characters
+    out=$(echo "$out" | tr -d '\r\n')
+    
+    # Output the status
+    echo "Received value: $out"
+    
+    # Check if the server response indicates an error
+    if [[ $out != "Error on reading object" ]]; then
+        break
+    fi
+    
+    echo "Device is unhealthy. Attempting to reconnect... ($i/5)"
+    sleep 3
+done
 
-# Output the status
-echo "Received value: $out"
-
-# Check if the server response indicates an error
 if [[ $out == "Error on reading object" ]]; then
-    echo "Device is unhealthy"
+    echo "Device is still unhealthy after 5 attempts. Exiting..."
     kubectl logs -n deviceshifu $pod_name
-    echo "Timeout"
     exit 1
 fi
 
 # Use deviceshifu to write data to the mock device with retry settings
-kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --retry-max-time 15 --connect-timeout 5 -X PUT deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value -d $writeData
+kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --max-time 15 --connect-timeout 5 -X PUT deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value -d $writeData
 
 # Retrieve the value again after writing to verify if it was successful
-out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --retry-max-time 15 --connect-timeout 5 deviceshifu-lwm2m.deviceshifu.svc.cluster.local/float_value)
+out=$(get_value)
 
 # Remove any whitespace and newline characters
 out=$(echo "$out" | tr -d '\r\n')

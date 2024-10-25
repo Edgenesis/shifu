@@ -35,7 +35,7 @@ func TestLink_String(t *testing.T) {
 		name         string
 		resourcePath string
 		attributes   map[string]string
-		expected     string
+		resultCheck  func(string) bool
 	}{
 		{
 			name:         "Single attribute",
@@ -43,7 +43,7 @@ func TestLink_String(t *testing.T) {
 			attributes: map[string]string{
 				"rt": "oma.lwm2m",
 			},
-			expected: `</1/0>;rt="oma.lwm2m"`,
+			resultCheck: func(s string) bool { return s == `</1/0>;rt="oma.lwm2m"` },
 		},
 		{
 			name:         "Multiple attributes",
@@ -52,13 +52,15 @@ func TestLink_String(t *testing.T) {
 				"rt": "oma.lwm2m",
 				"ct": "0",
 			},
-			expected: `</1/0>;rt="oma.lwm2m",ct="0"`,
+			resultCheck: func(s string) bool {
+				return s == `</1/0>;rt="oma.lwm2m",ct="0"` || s == `</1/0>;ct="0",rt="oma.lwm2m"`
+			},
 		},
 		{
 			name:         "No attributes",
 			resourcePath: "/1/0",
 			attributes:   map[string]string{},
-			expected:     `</1/0>;`,
+			resultCheck:  func(s string) bool { return s == `</1/0>;` },
 		},
 	}
 
@@ -67,8 +69,8 @@ func TestLink_String(t *testing.T) {
 			link := NewLink(test.resourcePath, test.attributes)
 			result := link.String()
 
-			if result != test.expected {
-				t.Errorf("expected %s, got %s", test.expected, result)
+			if !test.resultCheck(result) {
+				t.Errorf("unexpected result: %s", result)
 			}
 		})
 	}

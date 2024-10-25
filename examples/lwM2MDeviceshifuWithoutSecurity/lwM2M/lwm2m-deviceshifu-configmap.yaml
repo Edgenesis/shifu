@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deviceshifu-lwm2m
+  namespace: deviceshifu
+data:
+  driverProperties: |
+    driverSku: LwM2M Device
+    driverImage: lwm2m-device:v0.0.1
+  leshanConfig: |
+    serverUrl: coap://leshan-service.deviceshifu.svc.cluster.local:5683
+  instructions: |
+    instructions:
+      float_value:
+        protocolPropertyList:
+          ObjectId: /3442/0/130
+          EnableObserve: false
+      reset:
+        protocolPropertyList:
+          ObjectId: /3303/0/5605
+          EnableObserve: false
