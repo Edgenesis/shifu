@@ -1,0 +1,18 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-lwm2m
+  namespace: devices
+spec:
+  sku: "LwM2M Device"
+  connection: Ethernet
+  protocol: LwM2M
+  protocolSettings:
+    LwM2MSetting:
+      endpointName: leshan-client
+      securityMode: DTLS
+      dtlsMode: PSK
+      cipherSuites: 
+        - TLS_PSK_WITH_AES_128_CCM_8
+      pskIdentity: hint
+      pskKey: ABC123

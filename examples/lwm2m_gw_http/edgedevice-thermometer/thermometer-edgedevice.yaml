@@ -1,0 +1,21 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-thermometer
+  namespace: deviceshifu  # 确保与 deployment 中设置的命名空间一致
+spec:
+  sku: "Thermometer" 
+  connection: Ethernet
+  address: thermometer.devices.svc.cluster.local:11111  # 确保服务地址正确
+  protocol: HTTP
+  gatewaySettings:
+    protocol: lwm2m
+    address: leshan.eclipseprojects.io:5684
+    LwM2MSetting:
+      endpointName: opcua-device
+      securityMode: DTLS
+      dtlsMode: PSK
+      cipherSuites: 
+        - TLS_PSK_WITH_AES_128_CCM_8
+      pskIdentity: hint
+      pskKey: ABC123

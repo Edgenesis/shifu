@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: deviceshifu-lwm2m-deployment
+  name: deviceshifu-lwm2m
+  namespace: deviceshifu
+spec:
+  ports:
+    - name: deviceshifu
+      port: 80
+      protocol: TCP
+      nodePort: 30080
+      targetPort: 8080
+    - name: lwm2mserver-coaps
+      port: 5684
+      protocol: UDP
+      nodePort: 30001
+      targetPort: 5684
+  selector:
+    app: deviceshifu-lwm2m-deployment
+  type: NodePort
