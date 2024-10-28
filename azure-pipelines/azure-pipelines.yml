@@ -211,6 +211,52 @@ stages:
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
             displayName: "Shifu demo device OPCUA E2E test"
 
+      - job: kind_e2e_test_lwm2m
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - script: |
+              tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
+            displayName: Set the tag name as an environment variable
+          - script: |
+              make buildx-build-image-shifu-controller
+            displayName: build edgehub/shifu-controller
+          - script: |
+              make buildx-build-image-deviceshifu-http-lwm2m
+            displayName: build edgehub/deviceshifu-http-lwm2m
+          - script: |
+              set -e
+              kind --version
+              kind delete cluster && kind create cluster
+              kind load docker-image edgehub/shifu-controller:$(tag)  
+              kind load docker-image edgehub/deviceshifu-http-lwm2m:$(tag)
+
+              kubectl version
+              kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
+              kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
+            displayName: "setup Kind cluster and install Shifu"
+          - script: |
+              set -e 
+              kubectl run nginx --image=nginx -n deviceshifu
+              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity/lwM2M
+              kubectl wait --for=condition=Available deploy/deviceshifu-lwm2m-deployment -n deviceshifu --timeout=150s
+              kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
+              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity/mockdevice
+              kubectl wait --for=condition=available --timeout=150s deployment/leshan-client -n deviceshifu
+              bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.sh
+              kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity
+            displayName: "Shifu demo device lwM2M E2E test with security"
+          - script: |
+              set -e 
+              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity/lwM2M
+              kubectl wait --for=condition=Available deploy/deviceshifu-lwm2m-deployment -n deviceshifu --timeout=150s
+              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity/mockdevice
+              kubectl wait --for=condition=available --timeout=150s deployment/leshan-client -n deviceshifu
+              bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.sh
+              kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity
+            displayName: "Shifu demo device lwM2M E2E test without security"
+
       - job: kind_e2e_test_socket
         steps:
           - task: GoTool@0
