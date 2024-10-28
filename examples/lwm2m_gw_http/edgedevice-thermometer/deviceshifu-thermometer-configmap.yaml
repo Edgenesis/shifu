@@ -13,7 +13,7 @@ data:
     instructions:
       read_value:
         gatewayPropertyList:
-          ObjectId: /3303/0/5700
+          ObjectId: /3442/0/130
           DataType: float
   telemetries: |
     telemetries:

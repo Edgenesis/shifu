@@ -9,11 +9,7 @@ data:
     driverImage: lwm2m-device:v0.0.1
   instructions: |
     instructions:
-      float_value:
+      read_value:
         protocolPropertyList:
           ObjectId: /3442/0/130
-          EnableObserve: false
-      reset:
-        protocolPropertyList:
-          ObjectId: /3303/0/5605
           EnableObserve: false

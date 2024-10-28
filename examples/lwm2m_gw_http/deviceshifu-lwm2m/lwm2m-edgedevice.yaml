@@ -9,10 +9,5 @@ spec:
   protocol: LwM2M
   protocolSettings:
     LwM2MSetting:
-      endpointName: leshan-client
-      securityMode: DTLS
-      dtlsMode: PSK
-      cipherSuites: 
-        - TLS_PSK_WITH_AES_128_CCM_8
-      pskIdentity: hint
-      pskKey: ABC123
+      endpointName: deviceshifu-thermometer
+      securityMode: None
