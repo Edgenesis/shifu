@@ -77,9 +77,10 @@ buildx-push-image-deviceshifu-http-lwm2m:
 		-t edgehub/deviceshifu-http-lwm2m:${IMAGE_VERSION} --push
 
 buildx-push-image-gateway-lwm2m:
-	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f $(PROJECT_ROOT)/dockerfiles/Dockerfile.gatewayLwM2M \
-          --build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
-          -t edgehub/gateway-lwm2m:$(IMAGE_VERSION) --push
+	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm \
+		-f $(PROJECT_ROOT)/dockerfiles/Dockerfile.gatewayLwM2M \
+		--build-arg PROJECT_ROOT="$(PROJECT_ROOT)" $(PROJECT_ROOT) \
+		-t edgehub/gateway-lwm2m:$(IMAGE_VERSION) --push
 
 buildx-push-image-shifu-controller:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f $(PROJECT_ROOT)/pkg/k8s/crd/Dockerfile \

@@ -536,7 +536,7 @@ stages:
               make buildx-push-image-deviceshifu-http-lwm2m
             displayName: build deviceshifu-http-lwm2m
 
-      - job: docker_push_deviceshifu_gateway_lwm2m
+      - job: docker_push_gateway_lwm2m
         steps:
           - task: GoTool@0
             inputs:
