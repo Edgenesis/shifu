@@ -6,32 +6,31 @@ set -e
 # Get the pod name of deviceshifu
 pod_name=$(kubectl get pods -n deviceshifu -l app=deviceshifu-lwm2m-deployment -o jsonpath='{.items[0].metadata.name}')
 
-# Execute a curl command inside the nginx pod in the deviceshifu namespace to read the value from the thermometer device service
-out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --max-time 15 --connect-timeout 5 http://deviceshifu-lwm2m-gateway.deviceshifu.svc.cluster.local/read_value)
+get_value() {
+    kubectl exec -n deviceshifu nginx -- curl --connect-timeout 5 http://deviceshifu-lwm2m-gateway.deviceshifu.svc.cluster.local/read_value
+}
 
-# Check if the kubectl exec command was successful
-if [ $? -ne 0 ]; then
-    echo "Failed to execute kubectl command"
-    exit 1
-fi
-
-# Remove carriage return and newline characters from the output
-out=$(echo "$out" | tr -d '\r\n')
-
-# Print the received value
-echo "Received value: $out"
-
-# Check if the output indicates an error
-if [[ $out == "Error on reading object" ]]; then
-    echo "Device is unhealthy"
-    # Ensure $pod_name is set before using it
-    if [ -z "$pod_name" ]; then
-        echo "\$pod_name is not set"
-        exit 1
+# Attempt to get the value with retries
+for i in {1..5}; do
+    out=$(get_value)
+    
+    # Remove any whitespace and newline characters
+    out=$(echo "$out" | tr -d '\r\n')
+    
+    # Output the status
+    echo "Received value: $out"
+    
+    # Check if the server response indicates an error
+    if [[ -n "$out" && $out != "Error on reading object" ]]; then
+        break
     fi
-    # Print the logs of the pod
+    
+    echo "Device is unhealthy. Attempting to reconnect... ($i/5)"
+    sleep 3
+done
+
+if [[ -z "$out" || $out == "Error on reading object" ]]; then
+    echo "Device is still unhealthy after 5 attempts. Exiting..."
     kubectl logs -n deviceshifu $pod_name
-    echo "Timeout"
-    # Exit with status 1 to indicate failure
     exit 1
 fi
