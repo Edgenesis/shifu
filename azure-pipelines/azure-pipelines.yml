@@ -551,8 +551,8 @@ stages:
               docker buildx create --use
             displayName: configure multi-arch and buildx
           - script: |
-              make buildx-push-image-deviceshifu-gateway-lwm2m
-            displayName: build deviceshifu-gateway-lwm2m
+              make buildx-push-image-gateway-lwm2m
+            displayName: build gateway-lwm2m
 
       - job: docker_push_deviceshifu_http_plc4x
         steps:
