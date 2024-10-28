@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: leshan-client
+  namespace: deviceshifu
+  labels:
+    app: leshan-client
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: leshan-client
+  template:
+    metadata:
+      labels:
+        app: leshan-client
+    spec:
+      containers:
+      - name: leshan-client
+        image: edgenesis/lwm2m-demo-leshan-client:nightly
+        command: [
+          "java", "-jar", "leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar", 
+          "-u", "coaps://deviceshifu-lwm2m-security.deviceshifu.svc.cluster.local:5684", 
+          "-n", "leshan-client",
+          "--psk-identity", "hint", 
+          "--psk-key", "ABC123"
+        ]
+      restartPolicy: Always

@@ -12,12 +12,12 @@ require (
 )
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.14.0
+	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.16.0
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/briandowns/spinner v1.23.1
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/microsoft/go-mssqldb v1.7.2
-	github.com/minio/minio-go/v7 v7.0.77
+	github.com/minio/minio-go/v7 v7.0.78
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
@@ -49,7 +49,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/inconshreveable/mousetrap v1.1.0 // indirect
-	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.8 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/pion/logging v0.2.2 // indirect
@@ -65,7 +65,7 @@ require (
 )
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/ai/azopenai v0.6.2
+	github.com/Azure/azure-sdk-for-go/sdk/ai/azopenai v0.7.0
 	github.com/IBM/netaddr v1.5.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
@@ -117,7 +117,7 @@ require (
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v2 v2.4.0
 	k8s.io/api v0.31.1
 	k8s.io/apiextensions-apiserver v0.31.0 // indirect
 	k8s.io/kube-openapi v0.0.0-20240228011516-70dd3763d340 // indirect

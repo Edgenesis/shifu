@@ -48,6 +48,7 @@ type DeviceShifuInstructionSettings struct {
 type DeviceShifuInstruction struct {
 	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
 	DeviceShifuProtocolProperties    map[string]string                `yaml:"protocolPropertyList,omitempty"`
+	DeviceShifuGatewayProperties     map[string]string                `yaml:"gatewayPropertyList,omitempty"`
 }
 
 // DeviceShifuInstructionProperty property of instruction

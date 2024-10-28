@@ -30,7 +30,7 @@ type Server struct {
 	settings             v1alpha1.LwM2MSetting
 	Conn                 mux.Conn
 	endpointName         string
-	liftTime             int
+	lifeTime             int
 	lastRegistrationTime time.Time
 	deviceTokenMap       map[string]string // map[token]device
 	observeCallback      map[string]func(interface{})
@@ -210,7 +210,7 @@ func (s *Server) handleRegister(w mux.ResponseWriter, r *mux.Message) {
 		return
 	}
 
-	s.liftTime, _ = strconv.Atoi(parsedQuery.Lifetime)
+	s.lifeTime, _ = strconv.Atoi(parsedQuery.Lifetime)
 	if err := w.SetResponse(codes.Created, message.TextPlain, nil,
 		message.Option{ID: message.LocationPath, Value: []byte(registerResponseValue)},
 		message.Option{ID: message.LocationPath, Value: []byte(deviceId)},
@@ -404,7 +404,7 @@ func (s *Server) Observe(objectId string, callback func(newData interface{})) er
 }
 
 func (s *Server) checkRegistrationStatus() error {
-	if time.Since(s.lastRegistrationTime) > time.Second*time.Duration(s.liftTime) {
+	if time.Since(s.lastRegistrationTime) > time.Second*time.Duration(s.lifeTime) {
 		// TODO: handle re-register
 		return errors.New("device is offline")
 	}
