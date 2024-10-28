@@ -10,7 +10,7 @@ spec:
   protocol: HTTP
   gatewaySettings:
     protocol: lwm2m
-    address: deviceshifu-lwm2m-gateway.deviceshifu.svc.cluster.local:5683
+    address: deviceshifu-lwm2m-service.deviceshifu.svc.cluster.local:5683
     LwM2MSetting:
-      endpointName: deviceshifu-lwm2m-gateway
+      endpointName: deviceshifu-lwm2m-service
       securityMode: None

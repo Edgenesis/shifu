@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app: deviceshifu-lwm2m-deployment
-  name: deviceshifu-lwm2m-gateway
+  name: deviceshifu-lwm2m-service
   namespace: deviceshifu
 spec:
   ports:
