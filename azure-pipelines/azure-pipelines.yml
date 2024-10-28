@@ -211,7 +211,7 @@ stages:
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
             displayName: "Shifu demo device OPCUA E2E test"
 
-      - job: kind_e2e_test_lwm2m_without_security
+      - job: kind_e2e_test_lwm2m
         steps:
           - task: GoTool@0
             inputs:
@@ -239,14 +239,23 @@ stages:
           - script: |
               set -e 
               kubectl run nginx --image=nginx -n deviceshifu
-              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity/lwM2M
+              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity/lwM2M
               kubectl wait --for=condition=Available deploy/deviceshifu-lwm2m-deployment -n deviceshifu --timeout=150s
               kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
+              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity/mockdevice
+              kubectl wait --for=condition=available --timeout=150s deployment/leshan-client -n deviceshifu
+              bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.sh
+              kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceShifuWithSecurity
+            displayName: "Shifu demo device lwM2M E2E test with security"
+          - script: |
+              set -e 
+              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity/lwM2M
+              kubectl wait --for=condition=Available deploy/deviceshifu-lwm2m-deployment -n deviceshifu --timeout=150s
               kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity/mockdevice
               kubectl wait --for=condition=available --timeout=150s deployment/leshan-client -n deviceshifu
               bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.sh
               kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity
-            displayName: "Shifu demo device lwM2M E2E test"
+            displayName: "Shifu demo device lwM2M E2E test without security"
 
       - job: kind_e2e_test_socket
         steps:
@@ -652,6 +661,24 @@ stages:
           - script: |
               make buildx-push-image-deviceshifu-http-lwm2m
             displayName: build deviceshifu-http-lwm2m
+
+      - job: docker_push_gateway_lwm2m
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-gateway-lwm2m
+            displayName: build gateway-lwm2m
 
       - job: docker_push_deviceshifu_http_plc4x
         steps:
