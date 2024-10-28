@@ -1,94 +1,66 @@
 package lwm2m
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/pion/dtls/v2"
 )
 
-var cipherSuiteStrs = []v1alpha1.CipherSuite{
-	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM,
-	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8,
-	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-	v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-	v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_CCM,
-	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_CCM_8,
-	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_256_CCM_8,
-	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_GCM_SHA256,
-	v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_CBC_SHA256,
-	v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-	v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-	v1alpha1.CipherSuite_TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256,
-}
-
-func TestCipherSuiteStringToCode(t *testing.T) {
-	var cipherSuiteMap = map[v1alpha1.CipherSuite]dtls.CipherSuiteID{
-		v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM:        TLS_ECDHE_ECDSA_WITH_AES_128_CCM,
-		v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:      TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8,
-		v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256: TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
-		v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:   TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
-		v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:    TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA,
-		v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:      TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
-		v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_CCM:                TLS_PSK_WITH_AES_128_CCM,
-		v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_CCM_8:              TLS_PSK_WITH_AES_128_CCM_8,
-		v1alpha1.CipherSuite_TLS_PSK_WITH_AES_256_CCM_8:              TLS_PSK_WITH_AES_256_CCM_8,
-		v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_GCM_SHA256:         TLS_PSK_WITH_AES_128_GCM_SHA256,
-		v1alpha1.CipherSuite_TLS_PSK_WITH_AES_128_CBC_SHA256:         TLS_PSK_WITH_AES_128_CBC_SHA256,
-		v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384,
-		v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:   TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
-		v1alpha1.CipherSuite_TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256:   TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256,
-	}
-
-	for _, cipherSuite := range cipherSuiteStrs {
-		res, err := CipherSuiteStringToCode(cipherSuite)
-		if err != nil {
-			t.Errorf("unknown cipher suite: %v", err)
-		}
-		if res != cipherSuiteMap[cipherSuite] {
-			t.Errorf("Error in mapping cipher suite: %v", cipherSuite)
-		}
-	}
-}
-
-var want = map[dtls.CipherSuiteID]bool{
-	TLS_ECDHE_ECDSA_WITH_AES_128_CCM:        true,
-	TLS_ECDHE_ECDSA_WITH_AES_128_CCM_8:      true,
-	TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256: true,
-	TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256:   true,
-	TLS_ECDHE_ECDSA_WITH_AES_256_GCM_SHA384: true,
-	TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384:   true,
-	TLS_ECDHE_ECDSA_WITH_AES_256_CBC_SHA:    true,
-	TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA:      true,
-	TLS_PSK_WITH_AES_128_CCM:                true,
-	TLS_PSK_WITH_AES_128_CCM_8:              true,
-	TLS_PSK_WITH_AES_256_CCM_8:              true,
-	TLS_PSK_WITH_AES_128_GCM_SHA256:         true,
-	TLS_PSK_WITH_AES_128_CBC_SHA256:         true,
-	TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256:   true,
-}
-
 func TestCipherSuiteStringsToCodes(t *testing.T) {
-	res, err := CipherSuiteStringsToCodes(cipherSuiteStrs)
-	if err != nil {
-		t.Errorf("unknown cipher suite: %v", err)
+	tests := []struct {
+		name           string
+		input          []v1alpha1.CipherSuite
+		expectedOutput []dtls.CipherSuiteID
+		expectError    bool
+	}{
+		{
+			name: "Valid cipher suites",
+			input: []v1alpha1.CipherSuite{
+				v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM,
+				v1alpha1.CipherSuite_TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			},
+			expectedOutput: []dtls.CipherSuiteID{
+				TLS_ECDHE_ECDSA_WITH_AES_128_CCM,
+				TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256,
+			},
+			expectError: false,
+		},
+		{
+			name: "Invalid cipher suite",
+			input: []v1alpha1.CipherSuite{
+				v1alpha1.CipherSuite("INVALID_CIPHER_SUITE"),
+			},
+			expectedOutput: nil,
+			expectError:    true,
+		},
+		{
+			name: "Mixed valid and invalid cipher suites",
+			input: []v1alpha1.CipherSuite{
+				v1alpha1.CipherSuite_TLS_ECDHE_ECDSA_WITH_AES_128_CCM,
+				v1alpha1.CipherSuite("INVALID_CIPHER_SUITE"),
+			},
+			expectedOutput: nil,
+			expectError:    true,
+		},
+		{
+			name:           "Empty input",
+			input:          []v1alpha1.CipherSuite{},
+			expectedOutput: []dtls.CipherSuiteID{},
+			expectError:    false,
+		},
 	}
 
-	if len(res) != len(want) {
-		t.Errorf("Error in mapping cipher suite: %v", res)
-	}
-
-	for _, v := range res {
-		t.Run("compare", func(t *testing.T) {
-			if !compareCipherSuites(v) {
-				t.Errorf("Error in mapping cipher suite")
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			output, err := CipherSuiteStringsToCodes(tt.input)
+			if (err != nil) != tt.expectError {
+				t.Errorf("expected error: %v, got: %v", tt.expectError, err)
+			}
+			if !tt.expectError && !reflect.DeepEqual(output, tt.expectedOutput) {
+				t.Errorf("expected output: %v, got: %v", tt.expectedOutput, output)
 			}
 		})
 	}
-}
-
-func compareCipherSuites(a dtls.CipherSuiteID) bool {
-	return want[a]
 }
