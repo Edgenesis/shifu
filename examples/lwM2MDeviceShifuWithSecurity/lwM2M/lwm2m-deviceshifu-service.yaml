@@ -3,7 +3,7 @@ kind: Service
 metadata:
   labels:
     app: deviceshifu-lwm2m-deployment
-  name: deviceshifu-lwm2m
+  name: deviceshifu-lwm2m-security
   namespace: deviceshifu
 spec:
   ports:
@@ -12,11 +12,6 @@ spec:
       protocol: TCP
       nodePort: 30080
       targetPort: 8080
-    - name: lwm2mserver-coap
-      port: 5683
-      protocol: UDP
-      nodePort: 30000
-      targetPort: 5683
     - name: lwm2mserver-coaps
       port: 5684
       protocol: UDP
