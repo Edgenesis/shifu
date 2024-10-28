@@ -1,6 +1,7 @@
 package deviceshifulwm2m
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
@@ -44,7 +45,9 @@ func TestCreateLwM2MInstructions(t *testing.T) {
 				assert.Panics(t, func() { CreateLwM2MInstructions(tt.input) })
 			} else {
 				result := CreateLwM2MInstructions(tt.input)
-				assert.Equal(t, tt.expected, result)
+				if !reflect.DeepEqual(tt.expected, result) {
+					t.Errorf("expected %v, got %v", tt.expected, result)
+				}
 			}
 		})
 	}
