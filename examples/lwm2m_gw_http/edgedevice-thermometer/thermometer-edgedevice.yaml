@@ -10,12 +10,7 @@ spec:
   protocol: HTTP
   gatewaySettings:
     protocol: lwm2m
-    address: leshan.eclipseprojects.io:5684
+    address: deviceshifu-lwm2m-gateway.deviceshifu.svc.cluster.local:5683
     LwM2MSetting:
-      endpointName: opcua-device
-      securityMode: DTLS
-      dtlsMode: PSK
-      cipherSuites: 
-        - TLS_PSK_WITH_AES_128_CCM_8
-      pskIdentity: hint
-      pskKey: ABC123
+      endpointName: deviceshifu-lwm2m-gateway
+      securityMode: None

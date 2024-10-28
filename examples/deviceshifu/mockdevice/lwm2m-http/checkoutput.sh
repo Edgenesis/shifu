@@ -4,10 +4,10 @@
 set -e
 
 # Get the pod name of deviceshifu
-pod_name=$(kubectl get pods -n deviceshifu -l app=deviceshifu-thermometer-deployment -o jsonpath='{.items[0].metadata.name}')
+pod_name=$(kubectl get pods -n deviceshifu -l app=deviceshifu-lwm2m-deployment -o jsonpath='{.items[0].metadata.name}')
 
 # Execute a curl command inside the nginx pod in the deviceshifu namespace to read the value from the thermometer device service
-out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --max-time 15 --connect-timeout 5 thermometer.devices.svc.cluster.local:11111/read_value)
+out=$(kubectl exec -n deviceshifu nginx -- curl --retry 5 --retry-delay 3 --max-time 15 --connect-timeout 5 http://deviceshifu-lwm2m-gateway.deviceshifu.svc.cluster.local/read_value)
 
 # Check if the kubectl exec command was successful
 if [ $? -ne 0 ]; then

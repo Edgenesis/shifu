@@ -9,5 +9,5 @@ spec:
   protocol: LwM2M
   protocolSettings:
     LwM2MSetting:
-      endpointName: deviceshifu-thermometer
+      endpointName: deviceshifu-lwm2m-gateway
       securityMode: None
