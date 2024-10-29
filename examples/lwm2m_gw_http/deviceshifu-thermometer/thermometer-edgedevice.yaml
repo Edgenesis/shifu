@@ -1,0 +1,16 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-thermometer
+  namespace: devices
+spec:
+  sku: "Thermometer" 
+  connection: Ethernet
+  address: thermometer.devices.svc.cluster.local:11111
+  protocol: HTTP
+  gatewaySettings:
+    protocol: lwm2m
+    address: deviceshifu-lwm2m-service.deviceshifu.svc.cluster.local:5683
+    LwM2MSetting:
+      endpointName: deviceshifu-lwm2m-service
+      securityMode: None

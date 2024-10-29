@@ -300,6 +300,47 @@ stages:
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
             displayName: "Shifu demo device Socket E2E test"
 
+      - job: kind_e2e_test_gateway_lwm2m_http
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - script: |
+              tag=`cat version.txt` && echo "##vso[task.setvariable variable=tag]$tag"
+            displayName: Set the tag name as an environment variable
+          - script: |
+              make buildx-build-image-shifu-controller
+            displayName: build edgehub/shifu-controller
+          - script: |
+              make buildx-build-image-deviceshifu-http-http
+            displayName: build edgehub/deviceshifu-http-http
+          - script: |
+              make buildx-build-image-gateway-lwm2m
+            displayName: build edgehub/gateway-lwm2m
+          - script: |
+              set -e
+              kind --version
+              kind delete cluster && kind create cluster
+              kind load docker-image edgehub/shifu-controller:$(tag)  
+              kind load docker-image edgehub/deviceshifu-http-http:$(tag)
+              kind load docker-image edgehub/gateway-lwm2m:$(tag)
+
+              kubectl version
+              kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
+              kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
+            displayName: "setup Kind cluster and install Shifu"
+          - script: |
+              set -e 
+              kubectl run nginx --image=nginx -n deviceshifu
+              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwm2m_gw_http/deviceshifu-lwm2m
+              kubectl wait --for=condition=available --timeout=150s deployment/deviceshifu-lwm2m-deployment -n deviceshifu --timeout=150s
+              kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
+              kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwm2m_gw_http/deviceshifu-thermometer
+              kubectl wait --for=condition=Available deployment/deviceshifu-thermometer-deployment -n deviceshifu --timeout=150s
+              bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwm2m-http/checkoutput.sh
+              kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwm2m_gw_http
+            displayName: "Shifu demo device lwM2M http E2E test"
+
       - job: kind_e2e_test_mqtt
         steps:
           - task: GoTool@0
@@ -581,6 +622,24 @@ stages:
           - script: |
               make buildx-push-image-deviceshifu-http-lwm2m
             displayName: build deviceshifu-http-lwm2m
+
+      - job: docker_push_gateway_lwm2m
+        steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
+          - task: Docker@2
+            displayName: Login to DockerHub
+            inputs:
+              command: login
+              containerRegistry: dockerhub-connection
+          - script: |
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
+          - script: |
+              make buildx-push-image-gateway-lwm2m
+            displayName: build gateway-lwm2m
 
       - job: docker_push_deviceshifu_http_plc4x
         steps:
