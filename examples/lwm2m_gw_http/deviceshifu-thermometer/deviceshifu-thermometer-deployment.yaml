@@ -30,7 +30,7 @@ spec:
           value: "edgedevice-thermometer"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
-      - image: edgehub/gateway-lwm2m:local
+      - image: edgehub/gateway-lwm2m:nightly
         imagePullPolicy: IfNotPresent
         name: gateway-lwm2m
         volumeMounts:
