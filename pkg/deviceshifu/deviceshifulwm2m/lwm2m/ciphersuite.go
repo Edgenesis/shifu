@@ -5,7 +5,7 @@ import (
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
-	"github.com/pion/dtls/v2"
+	"github.com/pion/dtls/v3"
 )
 
 // Reference:
