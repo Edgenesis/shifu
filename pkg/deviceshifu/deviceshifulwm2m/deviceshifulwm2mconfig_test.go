@@ -1,7 +1,6 @@
 package deviceshifulwm2m
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
@@ -9,46 +8,131 @@ import (
 )
 
 func TestCreateLwM2MInstructions(t *testing.T) {
-	tests := []struct {
-		name           string
-		input          *deviceshifubase.DeviceShifuInstructions
-		expected       *LwM2MInstruction
-		expectingPanic bool
-	}{
-		{
-			name: "Valid Instructions",
-			input: &deviceshifubase.DeviceShifuInstructions{
-				Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{
-					"instruction1": {
-						DeviceShifuProtocolProperties: map[string]string{
-							objectIdStr:      "1",
-							enableObserveStr: "true",
-						},
-					},
+	// 初始化测试数据
+	dsInstructions := &deviceshifubase.DeviceShifuInstructions{
+		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{
+			"instruction1": {
+				DeviceShifuProtocolProperties: map[string]string{
+					objectIdStr:      "123",
+					enableObserveStr: "true",
 				},
 			},
-			expected: &LwM2MInstruction{
-				Instructions: map[string]*LwM2MProtocolProperty{
-					"instruction1": {
-						ObjectId:      "1",
-						EnableObserve: true,
-					},
+			"instruction2": {
+				DeviceShifuProtocolProperties: map[string]string{
+					objectIdStr:      "456",
+					enableObserveStr: "false",
 				},
 			},
-			expectingPanic: false,
 		},
 	}
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			if tt.expectingPanic {
-				assert.Panics(t, func() { CreateLwM2MInstructions(tt.input) })
-			} else {
-				result := CreateLwM2MInstructions(tt.input)
-				if !reflect.DeepEqual(tt.expected, result) {
-					t.Errorf("expected %v, got %v", tt.expected, result)
-				}
-			}
-		})
+	// 调用待测试函数
+	result := CreateLwM2MInstructions(dsInstructions)
+
+	// 断言结果不为空
+	assert.NotNil(t, result)
+	assert.Equal(t, 2, len(result.Instructions))
+
+	// 检查每个指令的属性是否正确转换
+	instruction1 := result.Instructions["instruction1"]
+	assert.NotNil(t, instruction1)
+	assert.Equal(t, "123", instruction1.ObjectId)
+	assert.True(t, instruction1.EnableObserve)
+
+	instruction2 := result.Instructions["instruction2"]
+	assert.NotNil(t, instruction2)
+	assert.Equal(t, "456", instruction2.ObjectId)
+	assert.False(t, instruction2.EnableObserve)
+}
+
+func TestCreateLwM2MInstructions_EmptyProperties(t *testing.T) {
+	// 测试存在空的 objectId 或 enableObserve 的情况
+	dsInstructions := &deviceshifubase.DeviceShifuInstructions{
+		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{
+			"instruction1": {
+				DeviceShifuProtocolProperties: map[string]string{
+					objectIdStr:      "",
+					enableObserveStr: "true",
+				},
+			},
+		},
 	}
+
+	// 捕获日志的 Fatalf 输出
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic when expected")
+		}
+	}()
+
+	// 调用待测试函数，预期会因为空值而产生错误
+	CreateLwM2MInstructions(dsInstructions)
+}
+
+func TestCreateLwM2MInstructions_EmptyInstructions(t *testing.T) {
+	// 测试空的指令映射
+	dsInstructions := &deviceshifubase.DeviceShifuInstructions{
+		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{},
+	}
+
+	// 调用待测试函数
+	result := CreateLwM2MInstructions(dsInstructions)
+
+	// 断言结果不为空，且指令映射为空
+	assert.NotNil(t, result)
+	assert.Equal(t, 0, len(result.Instructions))
+}
+
+func TestCreateLwM2MInstructions_DuplicateObjectId(t *testing.T) {
+	// 测试重复的 objectId
+	dsInstructions := &deviceshifubase.DeviceShifuInstructions{
+		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{
+			"instruction1": {
+				DeviceShifuProtocolProperties: map[string]string{
+					objectIdStr:      "123",
+					enableObserveStr: "true",
+				},
+			},
+			"instruction2": {
+				DeviceShifuProtocolProperties: map[string]string{
+					objectIdStr:      "123",
+					enableObserveStr: "false",
+				},
+			},
+		},
+	}
+
+	// 捕获日志的 Fatalf 输出
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic when expected due to duplicate objectId")
+		}
+	}()
+
+	// 调用待测试函数，预期会因为重复的 objectId 而产生错误
+	CreateLwM2MInstructions(dsInstructions)
+}
+
+func TestCreateLwM2MInstructions_MissingEnableObserve(t *testing.T) {
+	// 测试存在空的 enableObserve 的情况
+	dsInstructions := &deviceshifubase.DeviceShifuInstructions{
+		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{
+			"instruction1": {
+				DeviceShifuProtocolProperties: map[string]string{
+					objectIdStr:      "123",
+					enableObserveStr: "",
+				},
+			},
+		},
+	}
+
+	// 捕获日志的 Fatalf 输出
+	defer func() {
+		if r := recover(); r == nil {
+			t.Errorf("The code did not panic when expected due to missing enableObserve")
+		}
+	}()
+
+	// 调用待测试函数，预期会因为空的 enableObserve 而产生错误
+	CreateLwM2MInstructions(dsInstructions)
 }
