@@ -1,10 +1,10 @@
 package deviceshifulwm2m
 
 import (
+	"reflect"
 	"testing"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestCreateLwM2MInstructions(t *testing.T) {
@@ -26,23 +26,27 @@ func TestCreateLwM2MInstructions(t *testing.T) {
 		},
 	}
 
+	// Expected result
+	expectedResult := &LwM2MInstruction{
+		Instructions: map[string]*LwM2MProtocolProperty{
+			"instruction1": {
+				ObjectId:      "123",
+				EnableObserve: true,
+			},
+			"instruction2": {
+				ObjectId:      "456",
+				EnableObserve: false,
+			},
+		},
+	}
+
 	// Call the function under test
 	result := CreateLwM2MInstructions(dsInstructions)
 
-	// Assert that the result is not nil
-	assert.NotNil(t, result)
-	assert.Equal(t, 2, len(result.Instructions))
-
-	// Check if each instruction's properties are correctly mapped
-	instruction1 := result.Instructions["instruction1"]
-	assert.NotNil(t, instruction1)
-	assert.Equal(t, "123", instruction1.ObjectId)
-	assert.True(t, instruction1.EnableObserve)
-
-	instruction2 := result.Instructions["instruction2"]
-	assert.NotNil(t, instruction2)
-	assert.Equal(t, "456", instruction2.ObjectId)
-	assert.False(t, instruction2.EnableObserve)
+	// Assert that the result matches the expected result using reflect.DeepEqual
+	if !reflect.DeepEqual(expectedResult, result) {
+		t.Errorf("Unexpected result. Expected: %+v, Got: %+v", expectedResult, result)
+	}
 }
 
 func TestCreateLwM2MInstructions_EmptyInstructions(t *testing.T) {
@@ -51,10 +55,16 @@ func TestCreateLwM2MInstructions_EmptyInstructions(t *testing.T) {
 		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{},
 	}
 
+	// Expected result
+	expectedResult := &LwM2MInstruction{
+		Instructions: map[string]*LwM2MProtocolProperty{},
+	}
+
 	// Call the function under test
 	result := CreateLwM2MInstructions(dsInstructions)
 
-	// Assert that the result is not nil and the instruction map is empty
-	assert.NotNil(t, result)
-	assert.Equal(t, 0, len(result.Instructions))
+	// Assert that the result matches the expected result using reflect.DeepEqual
+	if !reflect.DeepEqual(expectedResult, result) {
+		t.Errorf("Unexpected result. Expected: %+v, Got: %+v", expectedResult, result)
+	}
 }
