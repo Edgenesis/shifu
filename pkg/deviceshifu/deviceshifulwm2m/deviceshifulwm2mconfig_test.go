@@ -8,7 +8,7 @@ import (
 )
 
 func TestCreateLwM2MInstructions(t *testing.T) {
-	// 初始化测试数据
+	// Initialize test data
 	dsInstructions := &deviceshifubase.DeviceShifuInstructions{
 		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{
 			"instruction1": {
@@ -26,14 +26,14 @@ func TestCreateLwM2MInstructions(t *testing.T) {
 		},
 	}
 
-	// 调用待测试函数
+	// Call the function under test
 	result := CreateLwM2MInstructions(dsInstructions)
 
-	// 断言结果不为空
+	// Assert that the result is not nil
 	assert.NotNil(t, result)
 	assert.Equal(t, 2, len(result.Instructions))
 
-	// 检查每个指令的属性是否正确转换
+	// Check if each instruction's properties are correctly mapped
 	instruction1 := result.Instructions["instruction1"]
 	assert.NotNil(t, instruction1)
 	assert.Equal(t, "123", instruction1.ObjectId)
@@ -46,15 +46,15 @@ func TestCreateLwM2MInstructions(t *testing.T) {
 }
 
 func TestCreateLwM2MInstructions_EmptyInstructions(t *testing.T) {
-	// 测试空的指令映射
+	// Test the case of an empty instruction map
 	dsInstructions := &deviceshifubase.DeviceShifuInstructions{
 		Instructions: map[string]*deviceshifubase.DeviceShifuInstruction{},
 	}
 
-	// 调用待测试函数
+	// Call the function under test
 	result := CreateLwM2MInstructions(dsInstructions)
 
-	// 断言结果不为空，且指令映射为空
+	// Assert that the result is not nil and the instruction map is empty
 	assert.NotNil(t, result)
 	assert.Equal(t, 0, len(result.Instructions))
 }
