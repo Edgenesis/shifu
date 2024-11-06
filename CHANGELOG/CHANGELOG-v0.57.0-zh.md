@@ -4,9 +4,9 @@
 
 ## 新功能 🎉
 
-* Lwm2m 增加安全性 by @beingStrongeryqqq in [PR #1023](https://github.com/Edgenesis/shifu/pull/1023)
+* Lwm2m 增加安全性的测试用例 by @beingStrongeryqqq in [PR #1023](https://github.com/Edgenesis/shifu/pull/1023)
 
-* 网关持续部署 by @beingStrongeryqqq in [PR #1025](https://github.com/Edgenesis/shifu/pull/1025)
+* Lwm2m网关的CD by @beingStrongeryqqq in [PR #1025](https://github.com/Edgenesis/shifu/pull/1025)
 
 * 网关 http 端到端测试 by @beingStrongeryqqq in [PR #1031](https://github.com/Edgenesis/shifu/pull/1031)
 
