@@ -11,7 +11,7 @@ get_value() {
 }
 
 # Attempt to get the value with retries
-for i in {1..5}; do
+for i in {1..15}; do
     out=$(get_value)
     
     # Remove any whitespace and newline characters
