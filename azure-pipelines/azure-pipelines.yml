@@ -324,6 +324,7 @@ stages:
               kind load docker-image edgehub/shifu-controller:$(tag)  
               kind load docker-image edgehub/deviceshifu-http-http:$(tag)
               kind load docker-image edgehub/gateway-lwm2m:$(tag)
+              kind load docker-image edgehub/deviceshifu-http-lwm2m:$(tag)
 
               kubectl version
               kubectl apply -f $(System.DefaultWorkingDirectory)/pkg/k8s/crd/install/shifu_install.yml
