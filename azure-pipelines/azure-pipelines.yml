@@ -315,6 +315,9 @@ stages:
               make buildx-build-image-deviceshifu-http-http
             displayName: build edgehub/deviceshifu-http-http
           - script: |
+              make buildx-build-image-deviceshifu-http-lwm2m
+            displayName: build edgehub/deviceshifu-http-lwm2m
+          - script: |
               make buildx-build-image-gateway-lwm2m
             displayName: build edgehub/gateway-lwm2m
           - script: |
