@@ -18,8 +18,15 @@ package controllers
 
 import (
 	"context"
+
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/util/intstr"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
@@ -31,9 +38,16 @@ type TelemetryServiceReconciler struct {
 	Scheme *runtime.Scheme
 }
 
+var tsNamespacedName = types.NamespacedName{
+	Namespace: "shifu-service",
+	Name:      "telemetryservice",
+}
+
 //+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=telemetryservices,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=telemetryservices/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=telemetryservices/finalizers,verbs=update
+//+kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;watch;create;update;patch;delete
+//+kubebuilder:rbac:groups=core,resources=services,verbs=get;list;watch;create;update;patch;delete
 
 // Reconcile is part of the main kubernetes reconciliation loop which aims to
 // move the current state of the cluster closer to the desired state.
@@ -46,7 +60,6 @@ type TelemetryServiceReconciler struct {
 // - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.12.1/pkg/reconcile
 func (r *TelemetryServiceReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
 	rlog := log.FromContext(ctx)
-
 	ts := &v1alpha1.TelemetryService{}
 	if err := r.Get(ctx, req.NamespacedName, ts); err != nil {
 		rlog.Error(err, "Unable to fetch TelemetryService")
@@ -55,10 +68,23 @@ func (r *TelemetryServiceReconciler) Reconcile(ctx context.Context, req ctrl.Req
 		// on deleted requests.
 		return ctrl.Result{}, client.IgnoreNotFound(err)
 	}
-
-	// TODO: reconcile TelemetryService services
-	rlog.Info("Hello World! This is telemetryservice_controller reconciling")
-
+	deploy := &appsv1.Deployment{}
+	if err := r.Get(ctx, tsNamespacedName, deploy); err != nil {
+		if errors.IsNotFound(err) {
+			if err := CreateDeploymentIfNotExists(ctx, r, ts, req); err != nil {
+				rlog.Error(err, "Failed to create Deployment")
+				return ctrl.Result{}, err
+			}
+		}
+	}
+	service := &corev1.Service{}
+	if err := r.Get(ctx, tsNamespacedName, service); err != nil {
+		if err := CreateServiceIfNotExists(ctx, r, ts, req); err != nil {
+			rlog.Error(err, "Failed to create Service")
+			return ctrl.Result{}, err
+		}
+	}
+	rlog.Info("Reconciling TelemetryService")
 	return ctrl.Result{}, nil
 }
 
@@ -67,4 +93,79 @@ func (r *TelemetryServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		For(&v1alpha1.TelemetryService{}).
 		Complete(r)
+}
+
+func CreateServiceIfNotExists(ctx context.Context, r *TelemetryServiceReconciler, ts *v1alpha1.TelemetryService, req ctrl.Request) error {
+	rlog := log.FromContext(ctx)
+	svc := &corev1.Service{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      tsNamespacedName.Name,
+			Namespace: tsNamespacedName.Namespace,
+		},
+		Spec: corev1.ServiceSpec{
+			Selector: map[string]string{"app": tsNamespacedName.Name},
+			Ports: []corev1.ServicePort{
+				{
+					Port:       80,
+					Protocol:   corev1.ProtocolTCP,
+					TargetPort: intstr.IntOrString{IntVal: 8080},
+				},
+			},
+			Type: corev1.ServiceTypeLoadBalancer,
+		},
+	}
+	rlog.Info("Start Creating service")
+	if err := r.Create(ctx, svc); err != nil {
+		rlog.Error(err, "Failed to create new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+		return err
+	}
+	return nil
+}
+
+func CreateDeploymentIfNotExists(ctx context.Context, r *TelemetryServiceReconciler, ts *v1alpha1.TelemetryService, req ctrl.Request) error {
+	rlog := log.FromContext(ctx)
+	deploy := &appsv1.Deployment{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      tsNamespacedName.Name,
+			Namespace: tsNamespacedName.Namespace,
+		},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{"app": tsNamespacedName.Name},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{"app": tsNamespacedName.Namespace},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  tsNamespacedName.Name,
+							Image: "edgehub/telemetryservice:nightly",
+							Ports: []corev1.ContainerPort{
+								{ContainerPort: 8080},
+							},
+							Env: []corev1.EnvVar{
+								{
+									Name:  "SERVER_LISTEN_PORT",
+									Value: ":8080",
+								},
+								{
+									Name:  "EDGEDEVICE_NAMESPACE",
+									Value: "devices",
+								},
+							},
+						},
+					},
+					ServiceAccountName: "telemetry-service-sa",
+				},
+			},
+		},
+	}
+	rlog.Info("Start Creating Deployment")
+	if err := r.Create(ctx, deploy); err != nil {
+		rlog.Error(err, "Failed to create new Deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
+		return err
+	}
+	return nil
 }
