@@ -547,7 +547,7 @@ spec:
         - --source=default
         command:
         - /manager
-        image: edgehub/shifu-controller:v0.57.0
+        image: edgehub/shifu-controller:nightly
         livenessProbe:
           httpGet:
             path: /healthz
