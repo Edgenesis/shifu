@@ -138,7 +138,7 @@ func CreateTelemetryServiceDeployment(ctx context.Context, r *TelemetryServiceRe
 			},
 			Template: corev1.PodTemplateSpec{
 				ObjectMeta: metav1.ObjectMeta{
-					Labels: map[string]string{"app": tsNamespacedName.Namespace},
+					Labels: map[string]string{"app": tsNamespacedName.Name},
 				},
 				Spec: corev1.PodSpec{
 					Containers: []corev1.Container{
