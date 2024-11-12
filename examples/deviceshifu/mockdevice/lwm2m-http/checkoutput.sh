@@ -11,7 +11,7 @@ get_value() {
 }
 
 # Attempt to get the value with retries
-for i in {1..5}; do
+for i in {1..15}; do
     out=$(get_value)
     
     # Remove any whitespace and newline characters
@@ -25,12 +25,12 @@ for i in {1..5}; do
         break
     fi
     
-    echo "Device is unhealthy. Attempting to reconnect... ($i/5)"
+    echo "Device is unhealthy. Attempting to reconnect... ($i/15)"
     sleep 3
 done
 
 if [[ -z "$out" || $out == "Error on reading object" ]]; then
-    echo "Device is still unhealthy after 5 attempts. Exiting..."
+    echo "Device is still unhealthy after 15 attempts. Exiting..."
     kubectl logs -n deviceshifu $pod_name
     exit 1
 fi
