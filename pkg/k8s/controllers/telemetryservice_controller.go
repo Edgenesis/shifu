@@ -75,7 +75,7 @@ func (r *TelemetryServiceReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	if err := r.Get(ctx, tsNamespacedName, deploy); err != nil {
 		if errors.IsNotFound(err) {
 			if err := CreateTelemetryServiceDeployment(ctx, r, ts, req); err != nil {
-				rlog.Error(err, "Failed to create Deployment")
+				rlog.Error(err, "Failed to create TelemetryService deployment")
 				return ctrl.Result{}, err
 			}
 		}
@@ -83,7 +83,7 @@ func (r *TelemetryServiceReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	service := &corev1.Service{}
 	if err := r.Get(ctx, tsNamespacedName, service); err != nil {
 		if err := CreateTelemetryServiceService(ctx, r, ts, req); err != nil {
-			rlog.Error(err, "Failed to create Service")
+			rlog.Error(err, "Failed to create TelemetryService service")
 			return ctrl.Result{}, err
 		}
 	}
@@ -117,9 +117,9 @@ func CreateTelemetryServiceService(ctx context.Context, r *TelemetryServiceRecon
 			Type: corev1.ServiceTypeLoadBalancer,
 		},
 	}
-	rlog.Info("Start Creating service")
+	rlog.Info("Start creating TelemetryService service")
 	if err := r.Create(ctx, svc); err != nil {
-		rlog.Error(err, "Failed to create new Service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
+		rlog.Error(err, "Failed to create a new TelemetryService service", "Service.Namespace", svc.Namespace, "Service.Name", svc.Name)
 		return err
 	}
 	return nil
@@ -165,9 +165,9 @@ func CreateTelemetryServiceDeployment(ctx context.Context, r *TelemetryServiceRe
 			},
 		},
 	}
-	rlog.Info("Start Creating Deployment")
+	rlog.Info("Start creating TelemetryService deployment")
 	if err := r.Create(ctx, deploy); err != nil {
-		rlog.Error(err, "Failed to create new Deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
+		rlog.Error(err, "Failed to create a new TelemetryService deployment", "Deployment.Namespace", deploy.Namespace, "Deployment.Name", deploy.Name)
 		return err
 	}
 	return nil
