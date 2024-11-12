@@ -37,7 +37,7 @@ func setupScheme(scheme *runtime.Scheme) {
 	_ = corev1.AddToScheme(scheme)
 }
 
-func TestCreateServiceIfNotExists(t *testing.T) {
+func TestCreateService(t *testing.T) {
 	// Setup the test environment
 	scheme := runtime.NewScheme()
 	setupScheme(scheme)
@@ -58,8 +58,8 @@ func TestCreateServiceIfNotExists(t *testing.T) {
 		Scheme: scheme,
 	}
 
-	// Call CreateServiceIfNotExists function
-	err := CreateServiceIfNotExists(context.Background(), reconciler, ts, reconcile.Request{
+	// Call CreateTelemetryServiceService function
+	err := CreateTelemetryServiceService(context.Background(), reconciler, ts, reconcile.Request{
 		NamespacedName: types.NamespacedName{
 			Name:      "telemetryservice",
 			Namespace: "shifu-service",
@@ -76,7 +76,7 @@ func TestCreateServiceIfNotExists(t *testing.T) {
 	assert.NotNil(t, service)
 }
 
-func TestCreateDeploymentIfNotExists(t *testing.T) {
+func TestCreateDeployment(t *testing.T) {
 	// Setup the test environment
 	scheme := runtime.NewScheme()
 	setupScheme(scheme)
@@ -98,8 +98,8 @@ func TestCreateDeploymentIfNotExists(t *testing.T) {
 		Scheme: scheme,
 	}
 
-	// Call CreateDeploymentIfNotExists function
-	err := CreateDeploymentIfNotExists(context.Background(), reconciler, ts, reconcile.Request{
+	// Call CreateTelemetryServiceDeployment function
+	err := CreateTelemetryServiceDeployment(context.Background(), reconciler, ts, reconcile.Request{
 		NamespacedName: types.NamespacedName{
 			Name:      "telemetryservice",
 			Namespace: "shifu-service",

@@ -43,6 +43,9 @@ var tsNamespacedName = types.NamespacedName{
 	Name:      "telemetryservice",
 }
 
+// image of telemetryservice deployment
+const IMAGE = "edgehub/telemetryservice:nightly"
+
 //+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=telemetryservices,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=telemetryservices/status,verbs=get;update;patch
 //+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=telemetryservices/finalizers,verbs=update
@@ -71,7 +74,7 @@ func (r *TelemetryServiceReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	deploy := &appsv1.Deployment{}
 	if err := r.Get(ctx, tsNamespacedName, deploy); err != nil {
 		if errors.IsNotFound(err) {
-			if err := CreateDeploymentIfNotExists(ctx, r, ts, req); err != nil {
+			if err := CreateTelemetryServiceDeployment(ctx, r, ts, req); err != nil {
 				rlog.Error(err, "Failed to create Deployment")
 				return ctrl.Result{}, err
 			}
@@ -79,7 +82,7 @@ func (r *TelemetryServiceReconciler) Reconcile(ctx context.Context, req ctrl.Req
 	}
 	service := &corev1.Service{}
 	if err := r.Get(ctx, tsNamespacedName, service); err != nil {
-		if err := CreateServiceIfNotExists(ctx, r, ts, req); err != nil {
+		if err := CreateTelemetryServiceService(ctx, r, ts, req); err != nil {
 			rlog.Error(err, "Failed to create Service")
 			return ctrl.Result{}, err
 		}
@@ -95,7 +98,7 @@ func (r *TelemetryServiceReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		Complete(r)
 }
 
-func CreateServiceIfNotExists(ctx context.Context, r *TelemetryServiceReconciler, ts *v1alpha1.TelemetryService, req ctrl.Request) error {
+func CreateTelemetryServiceService(ctx context.Context, r *TelemetryServiceReconciler, ts *v1alpha1.TelemetryService, req ctrl.Request) error {
 	rlog := log.FromContext(ctx)
 	svc := &corev1.Service{
 		ObjectMeta: metav1.ObjectMeta{
@@ -122,7 +125,7 @@ func CreateServiceIfNotExists(ctx context.Context, r *TelemetryServiceReconciler
 	return nil
 }
 
-func CreateDeploymentIfNotExists(ctx context.Context, r *TelemetryServiceReconciler, ts *v1alpha1.TelemetryService, req ctrl.Request) error {
+func CreateTelemetryServiceDeployment(ctx context.Context, r *TelemetryServiceReconciler, ts *v1alpha1.TelemetryService, req ctrl.Request) error {
 	rlog := log.FromContext(ctx)
 	deploy := &appsv1.Deployment{
 		ObjectMeta: metav1.ObjectMeta{
@@ -141,7 +144,7 @@ func CreateDeploymentIfNotExists(ctx context.Context, r *TelemetryServiceReconci
 					Containers: []corev1.Container{
 						{
 							Name:  tsNamespacedName.Name,
-							Image: "edgehub/telemetryservice:nightly",
+							Image: IMAGE,
 							Ports: []corev1.ContainerPort{
 								{ContainerPort: 8080},
 							},
