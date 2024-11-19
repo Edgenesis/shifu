@@ -4,7 +4,7 @@
 
 ## 新功能 🎉
 
-* 当 TelemetryService 出现时自动部署部署清单和服务 by @lizzy-0323 in https://github.com/Edgenesis/shifu/pull/1043
+* 发现 TelemetryService 时自动部署 TelemetryService Deployment 和 Service by @lizzy-0323 in https://github.com/Edgenesis/shifu/pull/1043
 
 ## 新的贡献者 🌟
 
