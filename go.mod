@@ -21,7 +21,7 @@ require (
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.21.0
 	github.com/onsi/gomega v1.35.1
-	github.com/pion/dtls/v3 v3.0.2
+	github.com/pion/dtls/v3 v3.0.4
 	github.com/plgd-dev/go-coap/v3 v3.3.6
 	github.com/spf13/cobra v1.8.1
 	github.com/stretchr/testify v1.9.0
