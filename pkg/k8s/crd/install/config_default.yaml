@@ -379,6 +379,30 @@ metadata:
   name: shifu-crd-manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - services
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - apps
+  resources:
+  - deployments
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - shifu.edgenesis.io
   resources:
   - edgedevices
@@ -547,7 +571,7 @@ spec:
         - --source=default
         command:
         - /manager
-        image: edgehub/shifu-controller:nightly
+        image: edgehub/shifu-controller:v0.58.0-rc1
         livenessProbe:
           httpGet:
             path: /healthz
