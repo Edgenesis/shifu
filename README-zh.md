@@ -40,6 +40,10 @@ Shifu是一个k8s原生的，生产级的，支持多协议设备接入的开放
 
 [👉🙋‍♀️**职位点这里**👈🙋‍♂️](https://4g1tj81q9o.jobs.fbmms.cn/page/PSVAGacDW6xEEcT5qbbfRL0FR3)
 
+## Shifu的价值: 让大家开发应用，而不是基础设施
+<div align="center">
+<img width="900px" src="./img/iot-stack-with-shifu.svg"></img>
+</div>
 
 ## CNCF现场直播和演示
 
