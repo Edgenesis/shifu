@@ -16,7 +16,7 @@ spec:
         app: mockserver
     spec:
       containers:
-        - image: edgehub/mockserver:v0.58.0-rc1
+        - image: edgehub/mockserver:v0.58.0
           imagePullPolicy: Never
           name: mockserver
           ports:

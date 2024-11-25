@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-plc-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-http:v0.58.0-rc1
+      - image: edgehub/deviceshifu-http-http:v0.58.0
         name: deviceshifu-http
         ports:
         - containerPort: 8080
