@@ -16,14 +16,14 @@ import (
 
 func main() {
 	args := os.Args
-	if len(args) < 3 {
+	if len(args) < 4 {
 		panic("few parameters")
 	}
 
-	path, oldTag, newTag := args[1], args[2], args[3]
-	files, err := traverseDir(path)
+	workDir, oldTag, newTag := args[1], args[2], args[3]
+	files, err := traverseDir(workDir)
 	if err != nil {
-		fmt.Printf("err cannot get all deployment.yaml file! %v", err)
+		fmt.Printf("err cannot get all deployment.yaml and .go files! %v", err)
 		panic(err)
 	}
 
@@ -36,7 +36,7 @@ func main() {
 
 func traverseDir(workPath string) ([]string, error) {
 	var files []string
-	var yamls []string
+	var targetFiles []string
 	err := filepath.Walk(workPath, func(path string, info os.FileInfo, err error) error {
 		files = append(files, path)
 		return nil
@@ -47,16 +47,17 @@ func traverseDir(workPath string) ([]string, error) {
 	}
 
 	for _, file := range files {
-		if path.Ext(file) == ".yaml" {
+		if path.Ext(file) == ".yaml" || path.Ext(file) == ".go" {
 			filename := path.Base(file)
 			if strings.Contains(filename, "deployment") ||
-				strings.Contains(filename, "install") {
-				yamls = append(yamls, file)
+				strings.Contains(filename, "install") ||
+				filename == "telemetryservice_controller.go" {
+				targetFiles = append(targetFiles, file)
 			}
 		}
 	}
 
-	return yamls, nil
+	return targetFiles, nil
 }
 
 func updateTag(files []string, oldTag string, newTag string) error {
@@ -100,14 +101,16 @@ func replaceTag(file *os.File, oldTag string, newTag string) error {
 			return err
 		}
 
-		if strings.Contains(line, "image") &&
+		// Handle image updates in both deployment files and controller constants
+		if (strings.Contains(line, "image") &&
 			(strings.Contains(line, "deviceshifu") ||
 				strings.Contains(line, "mockdevice") ||
 				strings.Contains(line, "telemetryservice") ||
 				strings.Contains(line, "mockserver") ||
-				strings.Contains(line, "humidity")) ||
-			strings.Contains(line, "gateway") &&
-				strings.Contains(line, oldTag) {
+				strings.Contains(line, "humidity") ||
+				strings.Contains(line, "gateway"))) ||
+			(strings.Contains(line, "const IMAGE = ") &&
+				strings.Contains(line, "edgehub/telemetryservice")) {
 			line = strings.Replace(line, oldTag, newTag, 1)
 		}
 
