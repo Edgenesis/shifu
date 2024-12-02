@@ -25,14 +25,14 @@ const (
 	ConfigmapInstructionsStr = "instructions"
 	ObjectIdStr              = "ObjectId"
 	DataTypeStr              = "DataType"
-
-	pingIntervalSec = 10
 )
 
 type Gateway struct {
 	client     *lwm2mclient.Client
 	k8sClient  *rest.RESTClient
 	edgeDevice *v1alpha1.EdgeDevice
+
+	pingIntervalSec int64
 }
 
 func New() (*Gateway, error) {
@@ -67,6 +67,8 @@ func New() (*Gateway, error) {
 	if err := gateway.LoadConfiguration(); err != nil {
 		return nil, err
 	}
+
+	gateway.pingIntervalSec = edgedevice.Spec.GatewaySettings.LwM2MSetting.PingIntervalSec
 
 	return gateway, nil
 }
@@ -160,8 +162,8 @@ func (g *Gateway) Start() error {
 		return err
 	}
 
-	// Ping the client every 10 seconds
-	t := time.NewTicker(time.Second * pingIntervalSec)
+	// Ping the client every pingIntervalSec seconds, by default 30 seconds
+	t := time.NewTicker(time.Second * time.Duration(g.pingIntervalSec))
 	for range t.C {
 		if err := g.client.Ping(); err != nil {
 			logger.Errorf("Error pinging client: %v", err)
