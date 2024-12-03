@@ -63,6 +63,10 @@ spec:
                         type: string
                       endpointName:
                         type: string
+                      pingIntervalSec:
+                        default: 30
+                        format: int64
+                        type: integer
                       pskIdentity:
                         type: string
                       pskKey:
@@ -95,6 +99,10 @@ spec:
                         type: string
                       endpointName:
                         type: string
+                      pingIntervalSec:
+                        default: 30
+                        format: int64
+                        type: integer
                       pskIdentity:
                         type: string
                       pskKey:
