@@ -112,6 +112,9 @@ type LwM2MSetting struct {
 	CipherSuites []CipherSuite `json:"cipherSuites,omitempty"`
 	PSKIdentity  *string       `json:"pskIdentity,omitempty"`
 	PSKKey       *string       `json:"pskKey,omitempty"`
+
+	// +kubebuilder:default=30
+	PingIntervalSec int64 `json:"pingIntervalSec,omitempty"`
 }
 
 type CipherSuite string
