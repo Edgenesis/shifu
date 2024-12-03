@@ -115,6 +115,13 @@ type LwM2MSetting struct {
 
 	// +kubebuilder:default=30
 	PingIntervalSec int64 `json:"pingIntervalSec,omitempty"`
+	// +kubebuilder:default=300
+	LifeTimeSec int64 `json:"lifeTimeSec,omitempty"`
+	// +kubebuilder:default=60
+	UpdateIntervalSec int64 `json:"updateIntervalSec,omitempty"`
+
+	// +kubebuilder:default=30
+	ObserveIntervalSec int64 `json:"observeIntervalSec,omitempty"`
 }
 
 type CipherSuite string

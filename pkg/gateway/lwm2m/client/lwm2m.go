@@ -26,11 +26,8 @@ const (
 	lwM2MVersion       = "1.0"
 	defaultBindingMode = "U"
 
-	defaultIntervalSec    = 30
-	defaultLifeTime       = 300
-	defaultUpdateInterval = 60
-	rootObjectId          = "root"
-	registerPath          = "/rd"
+	rootObjectId = "root"
+	registerPath = "/rd"
 
 	observeTaskSuffix = "-ob"
 )
@@ -40,8 +37,6 @@ type Client struct {
 	Config
 
 	locationPath     string
-	updateInterval   int
-	lifeTime         int
 	object           Object
 	lastModifiedTime time.Time
 	lastUpdatedTime  time.Time
@@ -60,13 +55,11 @@ type Config struct {
 
 func NewClient(ctx context.Context, config Config) (*Client, error) {
 	var client = &Client{
-		ctx:            context.TODO(),
-		Config:         config,
-		lifeTime:       defaultLifeTime,
-		updateInterval: defaultUpdateInterval,
-		object:         *NewObject(rootObjectId, nil),
-		taskManager:    NewTaskManager(ctx),
-		dataCache:      make(map[string]interface{}),
+		ctx:         context.TODO(),
+		Config:      config,
+		object:      *NewObject(rootObjectId, nil),
+		taskManager: NewTaskManager(ctx),
+		dataCache:   make(map[string]interface{}),
 	}
 
 	return client, nil
@@ -142,7 +135,7 @@ func (c *Client) Register() error {
 	// set query params for register request
 	// example: /rd?ep=shifu-gateway&lt=300&lwm2m=1.0&b=U
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsEndpointName, c.EndpointName))
-	request.AddQuery(fmt.Sprintf("%s=%d", QueryParamslifeTime, c.lifeTime))
+	request.AddQuery(fmt.Sprintf("%s=%d", QueryParamslifeTime, c.Settings.LifeTimeSec))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsLwM2MVersion, lwM2MVersion))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsBindingMode, defaultBindingMode))
 	// only accept text/plain
@@ -197,7 +190,7 @@ func (c *Client) Delete() error {
 // AutoUpdate auto update registration
 // Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=30
 func (c *Client) AutoUpdate() error {
-	ticker := time.NewTicker(time.Duration(c.updateInterval) * time.Second)
+	ticker := time.NewTicker(time.Duration(c.Settings.UpdateIntervalSec) * time.Second)
 	for {
 		select {
 		case <-c.ctx.Done():
@@ -370,7 +363,7 @@ func (c *Client) observe(w mux.ResponseWriter, token message.Token, objectId str
 	// report new data with interval 30s
 	// TODO need to config it by read Attribute from object
 
-	c.taskManager.AddTask(objectId, time.Second*defaultIntervalSec, func() {
+	c.taskManager.AddTask(objectId, time.Second*time.Duration(c.Settings.ObserveIntervalSec), func() {
 		data, err := c.object.ReadAll(objectId)
 		if err != nil {
 			return
@@ -459,5 +452,5 @@ func (c *Client) CleanUp() {
 }
 
 func (c *Client) isActivity() bool {
-	return time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.lifeTime) * time.Second))
+	return time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.Settings.LifeTimeSec) * time.Second))
 }
