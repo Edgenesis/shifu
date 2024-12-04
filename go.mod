@@ -20,7 +20,7 @@ require (
 	github.com/minio/minio-go/v7 v7.0.80
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.22.0
-	github.com/onsi/gomega v1.35.1
+	github.com/onsi/gomega v1.36.0
 	github.com/pion/dtls/v3 v3.0.4
 	github.com/plgd-dev/go-coap/v3 v3.3.6
 	github.com/spf13/cobra v1.8.1
