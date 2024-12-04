@@ -12,7 +12,6 @@
 
 ## Enhancement
 
-* rebase changes from v0.58.0 back to main by @tomqin93 in https://github.com/Edgenesis/shifu/pull/1060
 
 * rebase LwM2M pingInterval update to main by @tomqin93 in https://github.com/Edgenesis/shifu/pull/1064
 

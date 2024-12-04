@@ -4,15 +4,14 @@
 
 ## 新功能 🎉
 
-* 更新自述文件以图表显示师傅的价值 @saiyan86 在 https://github.com/Edgenesis/shifu/pull/1056
+* 更新自述文件以图表显示Shifu的价值 @saiyan86 在 https://github.com/Edgenesis/shifu/pull/1056
 
-* 功能：更新标签脚本以处理控制器中的遥测服务图像更新 @tomqin93 在 https://github.com/Edgenesis/shifu/pull/1061
+* 功能：更新tag脚本以处理控制器中的遥测服务图像更新 @tomqin93 在 https://github.com/Edgenesis/shifu/pull/1061
 
 * 自定义 lwm2m 网关所有设置 @rhoninl 在 https://github.com/Edgenesis/shifu/pull/1065
 
 ## 改进
 
-* 将变更从 v0.58.0 重新基准到主分支 @tomqin93 在 https://github.com/Edgenesis/shifu/pull/1060
 
 * 将 LwM2M pingInterval 更新重新基准到主分支 @tomqin93 在 https://github.com/Edgenesis/shifu/pull/1064
 
