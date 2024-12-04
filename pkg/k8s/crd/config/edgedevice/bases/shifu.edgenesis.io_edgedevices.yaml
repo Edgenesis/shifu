@@ -63,6 +63,15 @@ spec:
                         type: string
                       endpointName:
                         type: string
+                      lifeTimeSec:
+                        default: 247
+                        description: reference https://datatracker.ietf.org/doc/html/rfc7252#section-4.8.2
+                        format: int64
+                        type: integer
+                      observeIntervalSec:
+                        default: 30
+                        format: int64
+                        type: integer
                       pingIntervalSec:
                         default: 30
                         format: int64
@@ -74,6 +83,10 @@ spec:
                       securityMode:
                         default: None
                         type: string
+                      updateIntervalSec:
+                        default: 60
+                        format: int64
+                        type: integer
                     required:
                     - endpointName
                     type: object
@@ -99,6 +112,15 @@ spec:
                         type: string
                       endpointName:
                         type: string
+                      lifeTimeSec:
+                        default: 247
+                        description: reference https://datatracker.ietf.org/doc/html/rfc7252#section-4.8.2
+                        format: int64
+                        type: integer
+                      observeIntervalSec:
+                        default: 30
+                        format: int64
+                        type: integer
                       pingIntervalSec:
                         default: 30
                         format: int64
@@ -110,6 +132,10 @@ spec:
                       securityMode:
                         default: None
                         type: string
+                      updateIntervalSec:
+                        default: 60
+                        format: int64
+                        type: integer
                     required:
                     - endpointName
                     type: object
