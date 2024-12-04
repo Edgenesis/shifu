@@ -115,7 +115,8 @@ type LwM2MSetting struct {
 
 	// +kubebuilder:default=30
 	PingIntervalSec int64 `json:"pingIntervalSec,omitempty"`
-	// +kubebuilder:default=300
+	// reference https://datatracker.ietf.org/doc/html/rfc7252#section-4.8.2
+	// +kubebuilder:default=247
 	LifeTimeSec int64 `json:"lifeTimeSec,omitempty"`
 	// +kubebuilder:default=60
 	UpdateIntervalSec int64 `json:"updateIntervalSec,omitempty"`

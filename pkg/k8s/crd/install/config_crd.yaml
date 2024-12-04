@@ -63,7 +63,8 @@ spec:
                       endpointName:
                         type: string
                       lifeTimeSec:
-                        default: 300
+                        default: 247
+                        description: reference https://datatracker.ietf.org/doc/html/rfc7252#section-4.8.2
                         format: int64
                         type: integer
                       observeIntervalSec:
@@ -111,7 +112,8 @@ spec:
                       endpointName:
                         type: string
                       lifeTimeSec:
-                        default: 300
+                        default: 247
+                        description: reference https://datatracker.ietf.org/doc/html/rfc7252#section-4.8.2
                         format: int64
                         type: integer
                       observeIntervalSec:
