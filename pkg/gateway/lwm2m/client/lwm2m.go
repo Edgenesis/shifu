@@ -30,6 +30,9 @@ const (
 	registerPath = "/rd"
 
 	observeTaskSuffix = "-ob"
+
+	reconnectInterval   = 5 * time.Second
+	maxReconnectBackoff = 60 * time.Second
 )
 
 type Client struct {
@@ -44,6 +47,10 @@ type Client struct {
 
 	udpConnection *udpClient.Conn
 	taskManager   *TaskManager
+
+	reconnectCh chan struct{}
+	stopCh      chan struct{}
+	connected   bool
 }
 
 type Config struct {
@@ -55,23 +62,102 @@ type Config struct {
 
 func NewClient(ctx context.Context, config Config) (*Client, error) {
 	var client = &Client{
-		ctx:         context.TODO(),
+		ctx:         ctx,
 		Config:      config,
 		object:      *NewObject(rootObjectId, nil),
 		taskManager: NewTaskManager(ctx),
 		dataCache:   make(map[string]interface{}),
+		reconnectCh: make(chan struct{}),
+		stopCh:      make(chan struct{}),
 	}
 
 	return client, nil
 }
 
 func (c *Client) Start() error {
+	// Start connection monitor
+	go c.connectionMonitor()
+
+	// Initial connection
+	if err := c.connect(); err != nil {
+		return err
+	}
+
+	return c.Register()
+}
+
+func (c *Client) connectionMonitor() {
+	backoff := reconnectInterval
+
+	for {
+		select {
+		case <-c.stopCh:
+			return
+
+		case <-c.reconnectCh:
+			logger.Info("Connection lost, attempting to reconnect...")
+
+			for {
+				// Try to reconnect
+				err := c.reconnect()
+				if err == nil {
+					logger.Info("Successfully reconnected")
+					backoff = reconnectInterval // Reset backoff on successful connection
+					break
+				}
+
+				logger.Errorf("Failed to reconnect: %v", err)
+
+				// Exponential backoff with max limit
+				backoff = time.Duration(float64(backoff) * 1.5)
+				if backoff > maxReconnectBackoff {
+					backoff = maxReconnectBackoff
+				}
+
+				select {
+				case <-c.stopCh:
+					return
+				case <-time.After(backoff):
+					continue
+				}
+			}
+		}
+	}
+}
+
+func (c *Client) reconnect() error {
+	// Close existing connection if any
+	if c.udpConnection != nil {
+		c.udpConnection.Close()
+		c.udpConnection = nil
+	}
+
+	// Establish new connection
+	if err := c.connect(); err != nil {
+		return err
+	}
+
+	// Re-register with the server
+	if err := c.Update(); err != nil {
+		return err
+	}
+
+	c.connected = true
+	return nil
+}
+
+func (c *Client) connect() error {
 	udpClientOpts := []udp.Option{}
 
 	udpClientOpts = append(
 		udpClientOpts,
 		options.WithInactivityMonitor(time.Minute, func(cc *udpClient.Conn) {
-			_ = cc.Close()
+			logger.Warn("Connection inactive, triggering reconnect")
+			c.connected = false
+			select {
+			case c.reconnectCh <- struct{}{}:
+			default:
+			}
 		}),
 		options.WithMux(c.handleRouter()),
 	)
@@ -106,6 +192,7 @@ func (c *Client) Start() error {
 	}
 
 	c.udpConnection = conn
+	c.connected = true
 	return nil
 }
 
@@ -133,12 +220,10 @@ func (c *Client) Register() error {
 	}
 
 	// set query params for register request
-	// example: /rd?ep=shifu-gateway&lt=300&lwm2m=1.0&b=U
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsEndpointName, c.EndpointName))
 	request.AddQuery(fmt.Sprintf("%s=%d", QueryParamslifeTime, c.Settings.LifeTimeSec))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsLwM2MVersion, lwM2MVersion))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsBindingMode, defaultBindingMode))
-	// only accept text/plain
 	request.SetAccept(message.TextPlain)
 	resp, err := c.udpConnection.Do(request)
 	if err != nil {
@@ -452,5 +537,13 @@ func (c *Client) CleanUp() {
 }
 
 func (c *Client) isActivity() bool {
-	return time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.Settings.LifeTimeSec) * time.Second))
+	return c.udpConnection != nil && time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.Settings.LifeTimeSec)*time.Second))
+}
+
+func (c *Client) Stop() error {
+	close(c.stopCh)
+	if c.udpConnection != nil {
+		return c.udpConnection.Close()
+	}
+	return nil
 }

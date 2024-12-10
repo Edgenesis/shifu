@@ -155,13 +155,6 @@ func (g *Gateway) Start() error {
 		return err
 	}
 
-	// Register the client to the server
-	err := g.client.Register()
-	if err != nil {
-		logger.Errorf("Error registering client: %v", err)
-		return err
-	}
-
 	// Ping the client every pingIntervalSec seconds, by default 30 seconds
 	t := time.NewTicker(time.Second * time.Duration(g.pingIntervalSec))
 	for range t.C {
