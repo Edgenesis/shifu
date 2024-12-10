@@ -50,7 +50,6 @@ type Client struct {
 
 	reconnectCh chan struct{}
 	stopCh      chan struct{}
-	connected   bool
 }
 
 type Config struct {
@@ -142,7 +141,6 @@ func (c *Client) reconnect() error {
 		return err
 	}
 
-	c.connected = true
 	return nil
 }
 
@@ -153,7 +151,6 @@ func (c *Client) connect() error {
 		udpClientOpts,
 		options.WithInactivityMonitor(time.Minute, func(cc *udpClient.Conn) {
 			logger.Warn("Connection inactive, triggering reconnect")
-			c.connected = false
 			select {
 			case c.reconnectCh <- struct{}{}:
 			default:
@@ -192,7 +189,6 @@ func (c *Client) connect() error {
 	}
 
 	c.udpConnection = conn
-	c.connected = true
 	return nil
 }
 
