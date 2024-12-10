@@ -136,7 +136,7 @@ func (c *Client) reconnect() error {
 		return err
 	}
 
-	// Re-register with the server
+	// Update with the server
 	if err := c.Update(); err != nil {
 		return err
 	}
