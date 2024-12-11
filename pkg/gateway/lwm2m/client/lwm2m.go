@@ -217,10 +217,12 @@ func (c *Client) Register() error {
 	}
 
 	// set query params for register request
+	// example: /rd?ep=shifu-gateway&lt=300&lwm2m=1.0&b=U
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsEndpointName, c.EndpointName))
 	request.AddQuery(fmt.Sprintf("%s=%d", QueryParamslifeTime, c.Settings.LifeTimeSec))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsLwM2MVersion, lwM2MVersion))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsBindingMode, defaultBindingMode))
+	// only accept text/plain
 	request.SetAccept(message.TextPlain)
 	resp, err := c.udpConnection.Do(request)
 	if err != nil {
