@@ -30,6 +30,10 @@ const (
 	registerPath = "/rd"
 
 	observeTaskSuffix = "-ob"
+
+	reconnectInterval   = 5 * time.Second
+	maxReconnectBackoff = 60 * time.Second
+	reconnectBackoffExp = 1.5
 )
 
 type Client struct {
@@ -44,6 +48,9 @@ type Client struct {
 
 	udpConnection *udpClient.Conn
 	taskManager   *TaskManager
+
+	reconnectCh chan struct{}
+	stopCh      chan struct{}
 }
 
 type Config struct {
@@ -55,23 +62,100 @@ type Config struct {
 
 func NewClient(ctx context.Context, config Config) (*Client, error) {
 	var client = &Client{
-		ctx:         context.TODO(),
+		ctx:         ctx,
 		Config:      config,
 		object:      *NewObject(rootObjectId, nil),
 		taskManager: NewTaskManager(ctx),
 		dataCache:   make(map[string]interface{}),
+		reconnectCh: make(chan struct{}),
+		stopCh:      make(chan struct{}),
 	}
 
 	return client, nil
 }
 
 func (c *Client) Start() error {
+	// Initial connection
+	if err := c.connect(); err != nil {
+		return err
+	}
+
+	// Start connection monitor
+	go c.connectionMonitor()
+
+	return c.Register()
+}
+
+func (c *Client) connectionMonitor() {
+	backoff := reconnectInterval
+
+	for {
+		select {
+		case <-c.stopCh:
+			return
+
+		case <-c.reconnectCh:
+			logger.Info("Connection lost, attempting to reconnect...")
+
+			for {
+				// Try to reconnect
+				err := c.reconnect()
+				if err == nil {
+					logger.Info("Successfully reconnected")
+					backoff = reconnectInterval // Reset backoff on successful connection
+					break
+				}
+
+				logger.Errorf("Failed to reconnect: %v", err)
+
+				// Exponential backoff with max limit
+				backoff = time.Duration(float64(backoff) * reconnectBackoffExp)
+				if backoff > maxReconnectBackoff {
+					backoff = maxReconnectBackoff
+				}
+
+				select {
+				case <-c.stopCh:
+					return
+				case <-time.After(backoff):
+					continue
+				}
+			}
+		}
+	}
+}
+
+func (c *Client) reconnect() error {
+	// Close existing connection if any
+	if c.udpConnection != nil {
+		c.udpConnection.Close()
+		c.udpConnection = nil
+	}
+
+	// Establish new connection
+	if err := c.connect(); err != nil {
+		return err
+	}
+
+	// Update with the server
+	if err := c.Update(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) connect() error {
 	udpClientOpts := []udp.Option{}
 
 	udpClientOpts = append(
 		udpClientOpts,
 		options.WithInactivityMonitor(time.Minute, func(cc *udpClient.Conn) {
-			_ = cc.Close()
+			logger.Warn("Connection inactive, triggering reconnect")
+			select {
+			case c.reconnectCh <- struct{}{}:
+			default:
+			}
 		}),
 		options.WithMux(c.handleRouter()),
 	)
@@ -366,13 +450,20 @@ func (c *Client) observe(w mux.ResponseWriter, token message.Token, objectId str
 	c.taskManager.AddTask(objectId, time.Second*time.Duration(c.Settings.ObserveIntervalSec), func() {
 		data, err := c.object.ReadAll(objectId)
 		if err != nil {
+			logger.Errorf("failed to read data from object %s, error: %v", objectId, err)
 			return
 		}
 
 		jsonData := data.ReadAsJSON()
 
+		// check if udp connection is nil
+		if c.udpConnection == nil {
+			logger.Errorf("udp connection is nil, ignore observe")
+			return
+		}
+
 		c.dataCache[objectId] = jsonData
-		err = sendResponse(w.Conn(), token, obs, jsonData)
+		err = sendResponse(c.udpConnection, token, obs, jsonData)
 		if err != nil {
 			logger.Errorf("failed to send response: %v", err)
 			return
@@ -392,6 +483,12 @@ func (c *Client) observe(w mux.ResponseWriter, token message.Token, objectId str
 
 		jsonData := data.ReadAsJSON()
 
+		// check if udp connection is nil
+		if c.udpConnection == nil {
+			logger.Errorf("udp connection is nil, ignore observe")
+			return
+		}
+
 		// check data is changed
 		if data, exists := c.dataCache[objectId]; exists {
 			if string(jsonData) == data {
@@ -401,10 +498,12 @@ func (c *Client) observe(w mux.ResponseWriter, token message.Token, objectId str
 		}
 
 		c.dataCache[objectId] = jsonData
-		err = sendResponse(w.Conn(), token, obs, jsonData)
+		err = sendResponse(c.udpConnection, token, obs, jsonData)
 		if err != nil {
+			logger.Errorf("failed to send response: %v", err)
 			return
 		}
+
 		obs++
 		c.taskManager.ResetTask(objectId)
 	})
@@ -449,8 +548,13 @@ func sendResponse(cc mux.Conn, token []byte, obs uint32, body string) error {
 func (c *Client) CleanUp() {
 	c.taskManager.CancelAllTasks()
 	_ = c.Delete()
+
+	close(c.stopCh)
+	if c.udpConnection != nil {
+		_ = c.udpConnection.Close()
+	}
 }
 
 func (c *Client) isActivity() bool {
-	return time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.Settings.LifeTimeSec) * time.Second))
+	return c.udpConnection != nil && time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.Settings.LifeTimeSec)*time.Second))
 }
