@@ -72,7 +72,7 @@ spec:
                         format: int64
                         type: integer
                       pingIntervalSec:
-                        default: 30
+                        default: -1
                         format: int64
                         type: integer
                       pskIdentity:
@@ -121,7 +121,7 @@ spec:
                         format: int64
                         type: integer
                       pingIntervalSec:
-                        default: 30
+                        default: -1
                         format: int64
                         type: integer
                       pskIdentity:

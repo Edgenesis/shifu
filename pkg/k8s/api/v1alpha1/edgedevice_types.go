@@ -113,7 +113,7 @@ type LwM2MSetting struct {
 	PSKIdentity  *string       `json:"pskIdentity,omitempty"`
 	PSKKey       *string       `json:"pskKey,omitempty"`
 
-	// +kubebuilder:default=30
+	// +kubebuilder:default=-1
 	PingIntervalSec int64 `json:"pingIntervalSec,omitempty"`
 	// reference https://datatracker.ietf.org/doc/html/rfc7252#section-4.8.2
 	// +kubebuilder:default=247
