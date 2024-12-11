@@ -155,7 +155,7 @@ func (g *Gateway) Start() error {
 		return err
 	}
 
-	if g.pingIntervalSec <= 0 {
+	if g.pingIntervalSec > 0 {
 		// Ping the client every pingIntervalSec seconds,by default disable
 		t := time.NewTicker(time.Second * time.Duration(g.pingIntervalSec))
 		for range t.C {
