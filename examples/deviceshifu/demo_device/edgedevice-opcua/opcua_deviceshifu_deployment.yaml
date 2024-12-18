@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-opcua-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-opcua:nightly
+      - image: edgehub/deviceshifu-http-opcua:v0.60.0-rc1
         name: deviceshifu-http
         ports:
         - containerPort: 8080
