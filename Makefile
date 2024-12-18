@@ -178,7 +178,7 @@ buildx-build-image-deviceshifu-http-opcua:
 buildx-build-image-deviceshifu-http-plc4x:
 	docker buildx build --platform=linux/$(shell go env GOARCH),linux/arm64 -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X\
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
-		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --load
+		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION}
 
 buildx-build-image-deviceshifu-tcp-tcp:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuTCP\
