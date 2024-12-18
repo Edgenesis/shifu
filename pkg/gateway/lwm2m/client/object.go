@@ -37,9 +37,9 @@ func (r *Resource) ReadAsJSON() string {
 }
 
 type ObjectData struct {
-	ParameterName string  `json:"n,omitempty"`
-	FloatValue    float64 `json:"v,omitempty"`
-	StringValue   string  `json:"sv,omitempty"`
+	ParameterName *string  `json:"n,omitempty"`
+	FloatValue    *float64 `json:"v,omitempty"`
+	StringValue   *string  `json:"sv,omitempty"`
 	// Pointer to avoid marshal false value
 	BoolValue *bool `json:"bv,omitempty"`
 }
@@ -113,16 +113,19 @@ func (o *Object) readAll(basePath string) ([]ObjectData, error) {
 
 		switch newData := data.(type) {
 		case int, int32, int64, int16, int8:
-			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, FloatValue: float64(newData.(int))})
+			var floatValue = float64(newData.(int))
+			objectDataList = append(objectDataList, ObjectData{ParameterName: &basePath, FloatValue: &floatValue})
 		case float32, float64:
-			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, FloatValue: newData.(float64)})
+			var floatValue = newData.(float64)
+			objectDataList = append(objectDataList, ObjectData{ParameterName: &basePath, FloatValue: &floatValue})
 		case string:
-			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, StringValue: newData})
+			objectDataList = append(objectDataList, ObjectData{ParameterName: &basePath, StringValue: &newData})
 		case bool:
-			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, BoolValue: &newData})
+			objectDataList = append(objectDataList, ObjectData{ParameterName: &basePath, BoolValue: &newData})
 		default:
 			// default to string
-			objectDataList = append(objectDataList, ObjectData{ParameterName: basePath, StringValue: fmt.Sprintf("%v", data)})
+			var stringValue = fmt.Sprintf("%v", data)
+			objectDataList = append(objectDataList, ObjectData{ParameterName: &basePath, StringValue: &stringValue})
 		}
 	}
 
