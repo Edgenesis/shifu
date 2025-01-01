@@ -19,7 +19,7 @@ require (
 	github.com/microsoft/go-mssqldb v1.8.0
 	github.com/minio/minio-go/v7 v7.0.82
 	github.com/mochi-co/mqtt v1.3.2
-	github.com/onsi/ginkgo/v2 v2.22.1
+	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
 	github.com/pion/dtls/v3 v3.0.4
 	github.com/plgd-dev/go-coap/v3 v3.3.6
