@@ -4,7 +4,7 @@
 
 ## 改进
 
-* 从 v0.60.0 重置修复 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/1096
+* 从 v0.60.0 rebase 修复 by @tomqin93 in https://github.com/Edgenesis/shifu/pull/1096
 
 ## Dependabot 自动更新 🤖
 
