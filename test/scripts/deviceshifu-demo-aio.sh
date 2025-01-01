@@ -7,7 +7,7 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-SHIFU_IMG_VERSION=v0.60.0
+SHIFU_IMG_VERSION=nightly
 BUILD_DIR=build_dir
 IMG_DIR=images
 RUN_DIR=run_dir
