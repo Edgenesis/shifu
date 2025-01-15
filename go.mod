@@ -28,7 +28,7 @@ require (
 	github.com/taosdata/driver-go/v3 v3.5.8
 	golang.org/x/crypto v0.32.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
-	sigs.k8s.io/controller-runtime v0.19.3
+	sigs.k8s.io/controller-runtime v0.19.4
 )
 
 require (
@@ -38,6 +38,7 @@ require (
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/fxamacker/cbor/v2 v2.7.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
