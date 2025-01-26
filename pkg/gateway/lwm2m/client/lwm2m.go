@@ -529,7 +529,3 @@ func (c *Client) CleanUp() {
 		_ = c.udpConnection.Close()
 	}
 }
-
-func (c *Client) isActivity() bool {
-	return c.udpConnection != nil && time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.Settings.LifeTimeSec)*time.Second))
-}
