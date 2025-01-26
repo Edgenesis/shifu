@@ -150,7 +150,7 @@ func (c *Client) connect() error {
 
 	udpClientOpts = append(
 		udpClientOpts,
-		options.WithInactivityMonitor(time.Minute, func(cc *udpClient.Conn) {
+		options.WithInactivityMonitor(time.Second*time.Duration(c.Settings.UpdateIntervalSec), func(cc *udpClient.Conn) {
 			logger.Warn("Connection inactive, triggering reconnect")
 			select {
 			case c.reconnectCh <- struct{}{}:
@@ -240,11 +240,6 @@ func (c *Client) Register() error {
 
 	c.locationPath = locationPath
 	c.lastUpdatedTime = time.Now()
-	go func() {
-		if err := c.AutoUpdate(); err != nil {
-			logger.Errorf("failed to auto update registration: %v", err)
-		}
-	}()
 
 	logger.Infof("register %v success", c.locationPath)
 	return nil
@@ -269,26 +264,6 @@ func (c *Client) Delete() error {
 
 	logger.Infof("delete %v success", c.locationPath)
 	return nil
-}
-
-// AutoUpdate auto update registration
-// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=30
-func (c *Client) AutoUpdate() error {
-	ticker := time.NewTicker(time.Duration(c.Settings.UpdateIntervalSec) * time.Second)
-	for {
-		select {
-		case <-c.ctx.Done():
-			return nil
-		case <-ticker.C:
-			if c.isActivity() {
-				if err := c.Update(); err != nil {
-					logger.Errorf("failed to update registration: %v", err)
-					continue
-				}
-				logger.Debug("update registration success")
-			}
-		}
-	}
 }
 
 // Update update registration
@@ -553,8 +528,4 @@ func (c *Client) CleanUp() {
 	if c.udpConnection != nil {
 		_ = c.udpConnection.Close()
 	}
-}
-
-func (c *Client) isActivity() bool {
-	return c.udpConnection != nil && time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.Settings.LifeTimeSec)*time.Second))
 }
