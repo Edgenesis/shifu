@@ -2,7 +2,7 @@
 
 # Changelog since [v0.62.0](https://github.com/Edgenesis/shifu/releases/tag/v0.62.0)
 
-## New Features 🎉
+## Enhancement
 
 * remove duplicate update logic in gateway lwm2m by @rhoninl in https://github.com/Edgenesis/shifu/pull/1092
 

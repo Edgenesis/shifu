@@ -2,7 +2,7 @@
 
 # 自 [v0.62.0](https://github.com/Edgenesis/shifu/releases/tag/v0.62.0) 以来的变更
 
-## 新功能 🎉
+## 改进
 
 * 移除网关 lwm2m 中的重复更新逻辑，由 @rhoninl 提交 https://github.com/Edgenesis/shifu/pull/1092
 
