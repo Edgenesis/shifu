@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-plc4x-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-plc4x:v0.63.0-rc1
+      - image: edgehub/deviceshifu-http-plc4x:v0.63.0
         name: deviceshifu-http
         ports:
         - containerPort: 8080
