@@ -9,5 +9,11 @@ spec:
   protocol: LwM2M
   protocolSettings:
     LwM2MSetting:
-      endpointName: deviceshifu-lwm2m-service
+      endpointName: leshan-client
+      securityMode: None
+  gatewaySettings:
+    protocol: lwm2m
+    address: deviceshifu-lwm2m-service.deviceshifu.svc.cluster.local:5683
+    LwM2MSetting:
+      endpointName: leshan-client
       securityMode: None

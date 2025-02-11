@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deviceshifu-lwm2m-deployment
+  name: deviceshifu-lwm2m-deployment
+  namespace: deviceshifu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deviceshifu-lwm2m-deployment
+  template:
+    metadata:
+      labels:
+        app: deviceshifu-lwm2m-deployment
+    spec:
+      containers:
+        - image: edgehub/deviceshifu-http-lwm2m:nightly
+          imagePullPolicy: IfNotPresent
+          name: deviceshifu-lwm2m
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: deviceshifu-config
+              mountPath: "/etc/edgedevice/config"
+              readOnly: true
+          env:
+            - name: EDGEDEVICE_NAME
+              value: "edgedevice-lwm2m"
+            - name: EDGEDEVICE_NAMESPACE
+              value: "devices"
+        - image: edgehub/gateway-lwm2m:nightly
+          imagePullPolicy: IfNotPresent
+          name: gateway-lwm2m
+          volumeMounts:
+            - name: deviceshifu-config
+              mountPath: "/etc/edgedevice/config"
+              readOnly: true
+          env:
+            - name: EDGEDEVICE_NAME
+              value: "edgedevice-lwm2m"
+            - name: EDGEDEVICE_NAMESPACE
+              value: "devices"
+      volumes:
+        - name: deviceshifu-config
+          configMap:
+            name: lwm2m-configmap
+      serviceAccountName: edgedevice-sa
