@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: mockdevice-opcua
-        image: edgehub/mockdevice-opcua:v0.63.0
+        image: edgehub/mockdevice-opcua:v0.64.0-rc1
         ports:
         - containerPort: 4840
         readinessProbe:

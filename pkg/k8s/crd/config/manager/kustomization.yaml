@@ -13,4 +13,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: edgehub/shifu-controller
-  newTag: v0.63.0
+  newTag: v0.64.0-rc1
