@@ -16,9 +16,9 @@ spec:
         app: deviceshifu-lwm2m-deployment
     spec:
       containers:
-        - image: edgehub/deviceshifu-http-lwm2m:nightly
+        - image: edgehub/deviceshifu-http-http:nightly
           imagePullPolicy: IfNotPresent
-          name: deviceshifu-lwm2m
+          name: deviceshifu-http
           ports:
             - containerPort: 8080
           volumeMounts:
