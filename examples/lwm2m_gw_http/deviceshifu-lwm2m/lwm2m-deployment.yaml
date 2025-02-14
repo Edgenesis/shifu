@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: leshan-client
-  namespace: deviceshifu
+  namespace: devices
   labels:
     app: leshan-client
 spec:
@@ -24,7 +24,7 @@ spec:
               "-jar",
               "leshan-client-demo-2.0.0-SNAPSHOT-jar-with-dependencies.jar",
               "-u",
-              "coap://deviceshifu-lwm2m-nosecurity.deviceshifu.svc.cluster.local:5683",
+              "coap://edgedevice-lwm2m.deviceshifu.svc.cluster.local:5683",
               "-n",
               "leshan-client",
             ]

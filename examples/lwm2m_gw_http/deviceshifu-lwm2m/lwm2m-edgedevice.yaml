@@ -13,7 +13,7 @@ spec:
       securityMode: None
   gatewaySettings:
     protocol: lwm2m
-    address: deviceshifu-lwm2m-service.deviceshifu.svc.cluster.local:5683
+    address: coap://leshan.eclipseprojects.io:5683
     LwM2MSetting:
       endpointName: leshan-client
       securityMode: None

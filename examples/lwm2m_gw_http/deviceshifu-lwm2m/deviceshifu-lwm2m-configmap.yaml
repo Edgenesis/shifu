@@ -15,5 +15,3 @@ data:
         gatewayPropertyList:
           ObjectId: /3442/0/130
           DataType: float
-  leshanConfig: |
-    serverUrl: coap://leshan-service.deviceshifu.svc.cluster.local:5683
