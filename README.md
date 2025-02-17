@@ -1,6 +1,6 @@
 <div align="right">
 
-[中文](README-zh.md) | English
+[中文](README-zh.md) | English | [日本語](README-ja.md)
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat&logo=github&color=2370ff&labelColor=454545)](http://makeapullrequest.com)
 [![Go Report Card](https://goreportcard.com/badge/github.com/Edgenesis/shifu)](https://goreportcard.com/report/github.com/Edgenesis/shifu)
