@@ -35,11 +35,6 @@ ShifuはKubernetesネイティブで、プロトコルやベンダーに依存�
     <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height="25"></a>
 </div>
 
-## ✨採用情報✨
-現在、採用を行っています！Shifuファミリーへようこそ！
-
-[👉🙋‍♀️**詳細はこちら**👈🙋‍♂️](https://4g1tj81q9o.jobs.fbmms.cn/page/PSVAGacDW6xEEcT5qbbfRL0FR3)
-
 ## Shifuの価値: アプリケーションを開発し、インフラを構築しない
 
 <div align="center">
@@ -56,7 +51,7 @@ ShifuはKubernetesネイティブで、プロトコルやベンダーに依存�
 
 **オープンプラットフォーム** — ベンダーロックインなしで、Shifuをパブリッククラウド、プライベートクラウド、ハイブリッドクラウドのいずれでも簡単に展開できます。ShifuはKubernetesをIoTエッジコンピューティングシーンに導入し、IoTアプリケーションのスケーラビリティと高可用性を実現します。
 
-**多プロトコル対応** — HTTP、MQTT、RTSP、Siemens S7、TCPソケット、OPC UAなど、Shifuのマイクロサービスアーキテクチャにより、新しいプロトコルの迅速な統合が可能です。
+**プロトコルに依存しない** — HTTP、MQTT、RTSP、Siemens S7、TCPソケット、OPC UAなど、Shifuのマイクロサービスアーキテクチャにより、新しいプロトコルの迅速な統合が可能です。
 
 ## 用語集
 
@@ -77,16 +72,19 @@ ShifuはKubernetesネイティブで、プロトコルやベンダーに依存�
 ## コミュニティ
 
 Shifuコミュニティに参加し、あなたの考えやアイデアをシェアしてください。あなたの意見は非常に貴重です。
+皆さんの参加を心待ちにしています。
 
-[Discordで参加](https://discord.gg/CkRwsJ7raw) | [Twitterでフォロー](https://twitter.com/ShifuFramework) | [GitHub Discussionsで議論](https://github.com/Edgenesis/shifu/discussions)
+[![Discordで参加](https://img.shields.io/badge/Discord-join-brightgreen)](https://discord.gg/CkRwsJ7raw)
+[![Twitterでフォロー](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
+[![GitHub Discussionsで議論](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
 
 ## はじめに
 
 詳細な情報は[Shifuドキュメント](https://shifu.dev/)をチェックしてください：
-- [Shifuのインストール](https://shifu.dev/zh-Hans/docs/guides/install/install-shifu-dev)
-- [デバイスの接続](https://shifu.dev/zh-Hans/docs/guides/cases/)
-- [アプリケーション開発](https://shifu.dev/zh-Hans/docs/guides/application/)
-- [KillerCodaデモを試す](https://killercoda.com/shifu/shifu-demo)
+- 🔧[Shifuのインストール](https://shifu.dev/docs/guides/install/install-shifu-dev)
+- 🔌[デバイスの接続](https://shifu.dev/docs/guides/cases/)
+- 👨‍💻[アプリケーション開発](https://shifu.dev/docs/guides/application/)
+- 🎮[KillerCodaデモを試す](https://killercoda.com/shifu/shifu-demo)
 
 ## 貢献
 
