@@ -65,7 +65,7 @@ require (
 )
 
 require (
-	github.com/Azure/azure-sdk-for-go/sdk/ai/azopenai v0.7.1
+	github.com/Azure/azure-sdk-for-go/sdk/ai/azopenai v0.7.2
 	github.com/IBM/netaddr v1.5.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
