@@ -48,13 +48,6 @@ func New() (*Gateway, error) {
 		return nil, fmt.Errorf("GatewaySettings not found in EdgeDevice spec")
 	}
 
-	if edgedevice.Spec.GatewaySettings.LwM2MSetting == nil {
-		return nil, fmt.Errorf("LwM2MSetting not found in EdgeDevice spec.GatewaySettings")
-	}
-	if edgedevice.Spec.GatewaySettings.LwM2MSetting.UpdateIntervalSec <= 0 {
-		return nil, fmt.Errorf("LwM2MSetting UpdateIntervalSec must be greater than 0, current value: %d", edgedevice.Spec.GatewaySettings.LwM2MSetting.UpdateIntervalSec)
-	}
-
 	client, err := lwm2mclient.NewClient(context.TODO(), lwm2mclient.Config{
 		EndpointName:    edgedevice.Spec.GatewaySettings.LwM2MSetting.EndpointName,
 		EndpointUrl:     *edgedevice.Spec.GatewaySettings.Address,
