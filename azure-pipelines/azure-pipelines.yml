@@ -343,8 +343,8 @@ stages:
               kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
               kubectl apply -f $(System.DefaultWorkingDirectory)/examples/lwm2m_gw_http/deviceshifu-thermometer
               kubectl wait --for=condition=Available deployment/deviceshifu-thermometer-deployment -n deviceshifu --timeout=150s
-              bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwm2m-http/checkoutput.sh
-              kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwm2m_gw_http
+              bash $(System.DefaultWorkingDirectory)/examples/lwm2m_gw_http/eviceshifu-thermometer/checkoutput.sh
+              kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwm2m_gw_http/deviceshifu-thermometer
             displayName: "Shifu demo device lwM2M http E2E test"
 
       - job: kind_e2e_test_mqtt
