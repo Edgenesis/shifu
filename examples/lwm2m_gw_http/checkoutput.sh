@@ -4,10 +4,10 @@
 set -e
 
 # Get the pod name of deviceshifu
-pod_name=$(kubectl get pods -n deviceshifu -l app=deviceshifu-thermometer-deployment -o jsonpath='{.items[0].metadata.name}')
+pod_name=$(kubectl get pods -n deviceshifu -l app=deviceshifu-lwm2m-deployment -o jsonpath='{.items[0].metadata.name}')
 
 get_value() {
-    kubectl exec -n deviceshifu nginx -- curl --connect-timeout 5 http://deviceshifu-thermometer.deviceshifu.svc.cluster.local/read_value
+    kubectl exec -n deviceshifu nginx -- curl --connect-timeout 5 http://deviceshifu-lwm2m-service.deviceshifu.svc.cluster.local/read_value
 }
 
 # Attempt to get the value with retries
