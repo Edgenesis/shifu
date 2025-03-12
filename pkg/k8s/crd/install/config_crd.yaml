@@ -85,6 +85,7 @@ spec:
                       updateIntervalSec:
                         default: 60
                         format: int64
+                        minimum: 1
                         type: integer
                     required:
                     - endpointName
@@ -134,6 +135,7 @@ spec:
                       updateIntervalSec:
                         default: 60
                         format: int64
+                        minimum: 1
                         type: integer
                     required:
                     - endpointName
