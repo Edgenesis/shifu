@@ -9,7 +9,7 @@ spec:
   address: thermometer.devices.svc.cluster.local:11111
   protocol: HTTP
   gatewaySettings:
-    protocol: lwm2m
+    protocol: LwM2M
     address: deviceshifu-lwm2m-service.deviceshifu.svc.cluster.local:5683
     LwM2MSetting:
       endpointName: deviceshifu-lwm2m-service
