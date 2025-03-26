@@ -19,7 +19,7 @@ require (
 	github.com/microsoft/go-mssqldb v1.8.0
 	github.com/minio/minio-go/v7 v7.0.85
 	github.com/mochi-co/mqtt v1.3.2
-	github.com/onsi/ginkgo/v2 v2.22.2
+	github.com/onsi/ginkgo/v2 v2.23.3
 	github.com/onsi/gomega v1.36.2
 	github.com/pion/dtls/v3 v3.0.4
 	github.com/plgd-dev/go-coap/v3 v3.3.6
@@ -59,7 +59,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948 // indirect
-	golang.org/x/tools v0.28.0 // indirect
+	golang.org/x/tools v0.30.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 )
