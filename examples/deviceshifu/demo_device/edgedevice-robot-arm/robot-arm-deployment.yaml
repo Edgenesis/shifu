@@ -16,7 +16,7 @@ spec:
         app: robotarm
     spec:
       containers:
-      - image: edgehub/mockdevice-robot-arm:nightly
+      - image: edgehub/mockdevice-robot-arm:v0.68.0-rc1
         name: robotarm
         ports:
         - containerPort: 11111
