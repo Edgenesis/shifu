@@ -1,5 +1,3 @@
-markdown
-
 # 自 [v0.68.0](https://github.com/Edgenesis/shifu/releases/tag/v0.68.0) 以来的变更
 
 ## Dependabot 自动更新 🤖
