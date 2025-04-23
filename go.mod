@@ -21,7 +21,7 @@ require (
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
-	github.com/pion/dtls/v3 v3.0.4
+	github.com/pion/dtls/v3 v3.0.6
 	github.com/plgd-dev/go-coap/v3 v3.3.6
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
@@ -52,7 +52,7 @@ require (
 	github.com/klauspost/compress v1.17.11 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
-	github.com/pion/logging v0.2.2 // indirect
+	github.com/pion/logging v0.2.3 // indirect
 	github.com/pion/transport/v3 v3.0.7 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rs/xid v1.6.0 // indirect
