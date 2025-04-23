@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-tcp-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-tcp-tcp:nightly
+      - image: edgehub/deviceshifu-tcp-tcp:v0.69.0-rc1
         name: deviceshifu-tcp
         ports:
         - containerPort: 8081
