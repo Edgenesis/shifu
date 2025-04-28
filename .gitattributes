@@ -1,8 +1,0 @@
-*.go -text diff=golang
-
-# 排除 examples 中的所有文件（示例、构建、部署等内容）
-examples export-ignore
-
-# 排除不必要的文档和配置文件
-*.md export-ignore
-.gitignore export-ignore
