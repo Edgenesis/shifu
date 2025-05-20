@@ -1,0 +1,122 @@
+---
+# Source: deviceshifuchart/templates/configmap.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  labels:
+    app: deviceshifu-robotcar
+    workspace_id: e532308f-d57c-4fe7-ba95-ab53e6cc9d66
+    device_id: 25027055-d84c-4da5-905b-c9fd440022e0
+  name: deviceshifu-robotcar-configmap
+  namespace: deviceshifu
+data:
+  driverProperties: |
+    driverSku: robotcar-HTTP-driver
+    driverImage:
+  instructions: |
+    instructions:
+      "turn/right":
+      "odom":
+        gatewayPropertyList:
+          Mode: publisher
+          PubGetIntervalMs: 1
+      "power":
+      "scan":
+      "capture_raw":
+      "move/forward":
+      "turn/left":
+      "stop":
+      "imu":
+      "capture":
+      "move/backward":
+  telemetries: |
+    telemetries:
+---
+# Source: deviceshifuchart/templates/service.yaml
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: deviceshifu-robotcar
+    workspace_id: e532308f-d57c-4fe7-ba95-ab53e6cc9d66
+    device_id: 25027055-d84c-4da5-905b-c9fd440022e0
+  name: deviceshifu-robotcar-service
+  namespace: deviceshifu
+spec:
+  ports:
+    - name: http-service
+      port: 80
+      protocol: TCP
+      targetPort: 8080
+  selector:
+    app: deviceshifu-robotcar-deployment
+  type: LoadBalancer
+---
+# Source: deviceshifuchart/templates/deployment.yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: deviceshifu-robotcar
+    workspace_id: e532308f-d57c-4fe7-ba95-ab53e6cc9d66
+    device_id: 25027055-d84c-4da5-905b-c9fd440022e0
+  name: deviceshifu-robotcar-deployment
+  namespace: deviceshifu
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deviceshifu-robotcar-deployment
+  template:
+    metadata:
+      labels:
+        app: deviceshifu-robotcar-deployment
+    spec:
+      containers:
+        - image: edgehub/gateway-natsio:v0.0.1
+          name: gateway-natsio
+          volumeMounts:
+            - name: deviceshifu-robotcar-configmap
+              mountPath: /etc/edgedevice/config
+              readOnly: true
+          env:
+            - name: EDGEDEVICE_NAME
+              value: "deviceshifu-robotcar-edgedevice"
+            - name: EDGEDEVICE_NAMESPACE
+              value: "devices"
+            - name: NATS_URL
+              value: "192.168.2.192:4222"
+        - image: edgehub/deviceshifu-http-http:v0.70.0-rc1
+          name: deviceshifu-http
+          ports:
+            - containerPort: 8080
+          volumeMounts:
+            - name: deviceshifu-robotcar-configmap
+              mountPath: /etc/edgedevice/config
+              readOnly: true
+          env:
+            - name: EDGEDEVICE_NAME
+              value: "deviceshifu-robotcar-edgedevice"
+            - name: EDGEDEVICE_NAMESPACE
+              value: "devices"
+      volumes:
+        - name: deviceshifu-robotcar-configmap
+          configMap:
+            name: deviceshifu-robotcar-configmap
+      serviceAccountName: edgedevice-sa
+---
+# Source: deviceshifuchart/templates/edgedevice.yaml
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  labels:
+    app: deviceshifu-robotcar
+    workspace_id: e532308f-d57c-4fe7-ba95-ab53e6cc9d66
+    device_id: 25027055-d84c-4da5-905b-c9fd440022e0
+  name: deviceshifu-robotcar-edgedevice
+  namespace: devices
+spec:
+  sku: "robotcar"
+  connection: "Ethernet"
+  address: "192.168.2.192:11234"
+  protocol: "HTTP"
