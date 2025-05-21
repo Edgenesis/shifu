@@ -51,7 +51,7 @@ func New() (*Gateway, error) {
 		return nil, err
 	}
 
-	natsClient, err := client.New()
+	natsClient, err := client.New(*edgedevice.Spec.GatewaySettings.Address)
 	if err != nil {
 		return nil, err
 	}
@@ -171,13 +171,14 @@ func (g *Gateway) RegisterPublisher(instructionName string) {
 				logger.Errorf("Error registering publisher for instruction %v: %v", instructionName, err)
 				continue
 			}
-			defer resp.Body.Close()
 			if resp.StatusCode != http.StatusOK {
 				logger.Errorf("Error registering publisher for instruction %v: %v", instructionName, resp.StatusCode)
+				resp.Body.Close()
 				continue
 			}
 
 			body, err := io.ReadAll(resp.Body)
+			resp.Body.Close()
 			if err != nil {
 				logger.Errorf("Error reading response body for instruction %v: %v", instructionName, err)
 				continue

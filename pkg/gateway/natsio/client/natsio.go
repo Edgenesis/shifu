@@ -1,8 +1,6 @@
 package client
 
 import (
-	"os"
-
 	"github.com/nats-io/nats.go"
 )
 
@@ -10,8 +8,8 @@ type Client struct {
 	natsClient *nats.Conn
 }
 
-func New() (*Client, error) {
-	natsClient, err := nats.Connect(os.Getenv("NATS_URL"))
+func New(address string) (*Client, error) {
+	natsClient, err := nats.Connect(address)
 	if err != nil {
 		return nil, err
 	}
