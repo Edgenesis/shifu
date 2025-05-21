@@ -166,7 +166,6 @@ func (g *Gateway) Start() error {
 }
 
 func (g *Gateway) ShutDown() {
-	return
 }
 
 func (g *Gateway) RegisterPublisher(instructionName string, topic string) {
