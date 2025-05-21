@@ -5,8 +5,6 @@ kind: ConfigMap
 metadata:
   labels:
     app: deviceshifu-robotcar
-    workspace_id: e532308f-d57c-4fe7-ba95-ab53e6cc9d66
-    device_id: 25027055-d84c-4da5-905b-c9fd440022e0
   name: deviceshifu-robotcar-configmap
   namespace: deviceshifu
 data:
@@ -38,8 +36,6 @@ kind: Service
 metadata:
   labels:
     app: deviceshifu-robotcar
-    workspace_id: e532308f-d57c-4fe7-ba95-ab53e6cc9d66
-    device_id: 25027055-d84c-4da5-905b-c9fd440022e0
   name: deviceshifu-robotcar-service
   namespace: deviceshifu
 spec:
@@ -58,8 +54,6 @@ kind: Deployment
 metadata:
   labels:
     app: deviceshifu-robotcar
-    workspace_id: e532308f-d57c-4fe7-ba95-ab53e6cc9d66
-    device_id: 25027055-d84c-4da5-905b-c9fd440022e0
   name: deviceshifu-robotcar-deployment
   namespace: deviceshifu
 spec:
@@ -111,8 +105,6 @@ kind: EdgeDevice
 metadata:
   labels:
     app: deviceshifu-robotcar
-    workspace_id: e532308f-d57c-4fe7-ba95-ab53e6cc9d66
-    device_id: 25027055-d84c-4da5-905b-c9fd440022e0
   name: deviceshifu-robotcar-edgedevice
   namespace: devices
 spec:

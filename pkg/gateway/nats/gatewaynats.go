@@ -1,4 +1,4 @@
-package natsio
+package nats
 
 import (
 	"bytes"
@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/gateway/natsio/client"
+	"github.com/edgenesis/shifu/pkg/gateway/nats/client"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 
@@ -25,12 +25,21 @@ const (
 	ConfigmapInstructionsStr = "instructions"
 	deviceShifuHost          = "http://localhost:8080"
 	ModeStr                  = "Mode"
-	PubGetIntervalMsStr      = "PubGetIntervalMs"
+	PublisherIntervalMsStr   = "PublisherIntervalMs"
+	TopicStr                 = "Topic"
+)
+
+type Mode string
+
+const (
+	ModePublisher  Mode = "publisher"
+	ModeSubscriber Mode = "subscriber"
 )
 
 type InstructionConfig struct {
-	Mode             string `yaml:"mode"`
-	PubGetIntervalMs int    `yaml:"pubGetIntervalMs"`
+	Topic               string `yaml:"topic"`
+	Mode                Mode   `yaml:"mode"`
+	PublisherIntervalMs int    `yaml:"publisherIntervalMs"`
 }
 
 type Gateway struct {
@@ -38,7 +47,7 @@ type Gateway struct {
 	k8sClient  *rest.RESTClient
 	edgeDevice *v1alpha1.EdgeDevice
 
-	natsioClient *client.Client
+	natsClient   *client.Client
 	instructions map[string]InstructionConfig
 }
 
@@ -59,7 +68,7 @@ func New() (*Gateway, error) {
 	var gateway = &Gateway{
 		k8sClient:    krclient,
 		edgeDevice:   edgedevice,
-		natsioClient: natsClient,
+		natsClient:   natsClient,
 		instructions: make(map[string]InstructionConfig),
 		ctx:          context.Background(),
 	}
@@ -96,20 +105,26 @@ func (g *Gateway) LoadConfiguration() error {
 
 		ic := InstructionConfig{}
 
+		topic, exists := instruction.DeviceShifuGatewayProperties[TopicStr]
+		if !exists {
+			continue
+		}
+		ic.Topic = topic
+
 		// Skip if instruction does not set the Mode
 		mode, exists := instruction.DeviceShifuGatewayProperties[ModeStr]
 		if exists {
-			ic.Mode = mode
+			ic.Mode = Mode(mode)
 		}
 
-		pubGetIntervalMs, exists := instruction.DeviceShifuGatewayProperties[PubGetIntervalMsStr]
+		publisherIntervalMs, exists := instruction.DeviceShifuGatewayProperties[PublisherIntervalMsStr]
 		if exists {
-			pubGetIntervalMsInt, err := strconv.Atoi(pubGetIntervalMs)
+			publisherIntervalMsInt, err := strconv.Atoi(publisherIntervalMs)
 			if err != nil {
-				logger.Errorf("Instruction %v has an invalid PubGetIntervalMs: %v", instructionName, err)
+				logger.Errorf("Instruction %v has an invalid PublisherIntervalMs: %v", instructionName, err)
 				continue
 			}
-			ic.PubGetIntervalMs = pubGetIntervalMsInt
+			ic.PublisherIntervalMs = publisherIntervalMsInt
 		}
 
 		g.instructions[instructionName] = ic
@@ -123,12 +138,12 @@ func (g *Gateway) LoadConfiguration() error {
 func (g *Gateway) Start() error {
 	for instructionName, instruction := range g.instructions {
 		switch instruction.Mode {
-		case "publisher":
-			logger.Infof("Instruction %v is a NATSIO instruction", instructionName)
-			go g.RegisterPublisher(instructionName)
-		case "subscriber":
-			logger.Infof("Instruction %v is a NATSIO instruction", instructionName)
-			err := g.natsioClient.Subscribe(instructionName, func(msg *nats.Msg) {
+		case ModePublisher:
+			logger.Infof("Instruction %v is a NATS instruction", instructionName)
+			go g.RegisterPublisher(instructionName, instruction.Topic)
+		case ModeSubscriber:
+			logger.Infof("Instruction %v is a NATS instruction", instructionName)
+			err := g.natsClient.Subscribe(instruction.Topic, func(msg *nats.Msg) {
 				logger.Infof("Received message: %v", string(msg.Data))
 				resp, err := http.Post(deviceShifuHost+instructionName, "plain/text", bytes.NewBuffer(msg.Data))
 				if err != nil {
@@ -154,8 +169,8 @@ func (g *Gateway) ShutDown() {
 	return
 }
 
-func (g *Gateway) RegisterPublisher(instructionName string) {
-	interval := g.instructions[instructionName].PubGetIntervalMs
+func (g *Gateway) RegisterPublisher(instructionName string, topic string) {
+	interval := g.instructions[instructionName].PublisherIntervalMs
 	if interval == 0 {
 		interval = 1000
 	}
@@ -184,7 +199,7 @@ func (g *Gateway) RegisterPublisher(instructionName string) {
 				continue
 			}
 
-			if err := g.natsioClient.Publish(instructionName, body); err != nil {
+			if err := g.natsClient.Publish(topic, body); err != nil {
 				logger.Errorf("Error publishing message for instruction %v: %v", instructionName, err)
 			}
 		case <-g.ctx.Done():

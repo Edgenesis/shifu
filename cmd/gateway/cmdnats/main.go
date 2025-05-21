@@ -5,12 +5,12 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/edgenesis/shifu/pkg/gateway/natsio"
+	"github.com/edgenesis/shifu/pkg/gateway/nats"
 	"github.com/edgenesis/shifu/pkg/logger"
 )
 
 func main() {
-	client, err := natsio.New()
+	client, err := nats.New()
 	if err != nil {
 		logger.Fatal(err)
 	}
