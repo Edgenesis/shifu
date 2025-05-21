@@ -1,5 +1,3 @@
-markdown
-
 # Changelog since [v0.70.0](https://github.com/Edgenesis/shifu/releases/tag/v0.70.0)
 
 ## Dependabot 🤖
