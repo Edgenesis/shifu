@@ -19,6 +19,7 @@ require (
 	github.com/microsoft/go-mssqldb v1.8.1
 	github.com/minio/minio-go/v7 v7.0.91
 	github.com/mochi-co/mqtt v1.3.2
+	github.com/nats-io/nats.go v1.42.0
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
 	github.com/pion/dtls/v3 v3.0.6
@@ -53,6 +54,8 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.10 // indirect
 	github.com/minio/crc64nvme v1.0.1 // indirect
 	github.com/minio/md5-simd v1.1.2 // indirect
+	github.com/nats-io/nkeys v0.4.11 // indirect
+	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/pion/logging v0.2.3 // indirect
 	github.com/pion/transport/v3 v3.0.7 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect

@@ -155,6 +155,17 @@ const (
 	CipherSuite_TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256 CipherSuite = "TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256"
 )
 
+type NATSSetting struct {
+	// +kubebuilder:default=true
+	Reconnect *bool `json:"reconnect,omitempty"`
+	// +kubebuilder:default=60
+	MaxReconnectTimes *int `json:"maxReconnectTimes,omitempty"`
+	// +kubebuilder:default=2
+	ReconnectWaitSec *int `json:"reconnectWaitSec,omitempty"`
+	// +kubebuilder:default=2
+	TimeoutSec *int `json:"timeoutSec,omitempty"`
+}
+
 // ProtocolSettings defines protocol settings when connecting to an EdgeDevice
 type ProtocolSettings struct {
 	MQTTSetting   *MQTTSetting   `json:"MQTTSetting,omitempty"`
@@ -170,6 +181,7 @@ type GatewaySettings struct {
 	Protocol     *string       `json:"protocol,omitempty"`
 	Address      *string       `json:"address,omitempty"`
 	LwM2MSetting *LwM2MSetting `json:"LwM2MSetting,omitempty"`
+	NATSSetting  *NATSSetting  `json:"NATSSetting,omitempty"`
 }
 
 // EdgeDeviceSpec defines the desired state of EdgeDevice
