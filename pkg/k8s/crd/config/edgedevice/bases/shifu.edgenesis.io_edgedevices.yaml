@@ -91,6 +91,21 @@ spec:
                     required:
                     - endpointName
                     type: object
+                  NATSSetting:
+                    properties:
+                      maxReconnectTimes:
+                        default: 60
+                        type: integer
+                      reconnect:
+                        default: true
+                        type: boolean
+                      reconnectWaitSec:
+                        default: 2
+                        type: integer
+                      timeoutSec:
+                        default: 2
+                        type: integer
+                    type: object
                   address:
                     type: string
                   protocol:

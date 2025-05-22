@@ -17,7 +17,7 @@ data:
       "odom":
         gatewayPropertyList:
           Mode: publisher
-          PubGetIntervalMs: 1
+          PublisherIntervalMs: 1
       "power":
       "scan":
       "capture_raw":
@@ -112,3 +112,11 @@ spec:
   connection: "Ethernet"
   address: "192.168.2.192:11234"
   protocol: "HTTP"
+  gatewaySettings:
+    protocol: nats
+    address: 192.168.0.100:4222
+    NATSSetting:
+      reconnect: true
+      maxReconnectTimes: 20
+      reconnectWaitSec: 20
+      timeoutSec: 2

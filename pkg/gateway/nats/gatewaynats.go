@@ -3,6 +3,7 @@ package nats
 import (
 	"bytes"
 	"context"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -43,7 +44,9 @@ type InstructionConfig struct {
 }
 
 type Gateway struct {
-	ctx        context.Context
+	ctx    context.Context
+	cancel context.CancelFunc
+
 	k8sClient  *rest.RESTClient
 	edgeDevice *v1alpha1.EdgeDevice
 
@@ -60,7 +63,25 @@ func New() (*Gateway, error) {
 		return nil, err
 	}
 
-	natsClient, err := client.New(*edgedevice.Spec.GatewaySettings.Address)
+	var options client.ClientOption
+	options.Name = edgedevice.Name
+	options.Address = *edgedevice.Spec.GatewaySettings.Address
+
+	natsSetting := edgedevice.Spec.GatewaySettings.NATSSetting
+	if natsSetting.Reconnect != nil {
+		options.EnableReconnect = *natsSetting.Reconnect
+	}
+	if natsSetting.MaxReconnectTimes != nil {
+		options.MaxReconnectTimes = *natsSetting.MaxReconnectTimes
+	}
+	if natsSetting.ReconnectWaitSec != nil {
+		options.ReconnectWaitSec = *natsSetting.ReconnectWaitSec
+	}
+	if natsSetting.TimeoutSec != nil {
+		options.TimeoutSec = *natsSetting.TimeoutSec
+	}
+
+	natsClient, err := client.New(options)
 	if err != nil {
 		return nil, err
 	}
@@ -70,7 +91,6 @@ func New() (*Gateway, error) {
 		edgeDevice:   edgedevice,
 		natsClient:   natsClient,
 		instructions: make(map[string]InstructionConfig),
-		ctx:          context.Background(),
 	}
 
 	err = gateway.LoadConfiguration()
@@ -135,7 +155,9 @@ func (g *Gateway) LoadConfiguration() error {
 	return nil
 }
 
-func (g *Gateway) Start() error {
+func (g *Gateway) Start(ctx context.Context) error {
+	g.ctx, g.cancel = context.WithCancel(ctx)
+
 	for instructionName, instruction := range g.instructions {
 		switch instruction.Mode {
 		case ModePublisher:
@@ -145,7 +167,7 @@ func (g *Gateway) Start() error {
 			logger.Infof("Instruction %v is a NATS instruction", instructionName)
 			err := g.natsClient.Subscribe(instruction.Topic, func(msg *nats.Msg) {
 				logger.Infof("Received message: %v", string(msg.Data))
-				resp, err := http.Post(deviceShifuHost+instructionName, "plain/text", bytes.NewBuffer(msg.Data))
+				resp, err := http.Post(fmt.Sprintf("%s/%s", deviceShifuHost, instructionName), "plain/text", bytes.NewBuffer(msg.Data))
 				if err != nil {
 					logger.Errorf("Error sending message to deviceShifu: %v", err)
 				}
@@ -166,6 +188,12 @@ func (g *Gateway) Start() error {
 }
 
 func (g *Gateway) ShutDown() {
+	if g.cancel != nil {
+		g.cancel()
+	}
+	if g.natsClient != nil {
+		g.natsClient.Close()
+	}
 }
 
 func (g *Gateway) RegisterPublisher(instructionName string, topic string) {

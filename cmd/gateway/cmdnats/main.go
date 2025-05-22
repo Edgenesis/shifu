@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"os"
 	"os/signal"
 	"syscall"
@@ -20,7 +21,7 @@ func main() {
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		if err := client.Start(); err != nil {
+		if err := client.Start(context.Background()); err != nil {
 			logger.Errorf("Error starting client: %v", err)
 		}
 	}()
