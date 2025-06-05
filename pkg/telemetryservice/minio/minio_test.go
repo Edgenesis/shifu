@@ -32,12 +32,12 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 		},
 		{
 			name:        "testCase2 MinIOSetting is nil",
-			expectResp:  "MinIOSetting cant be nil\n",
+			expectResp:  "MinIOSetting can't be nil\n",
 			requestBody: &v1alpha1.TelemetryRequest{},
 		},
 		{
 			name:       "testCase3 missing parameter",
-			expectResp: "Bucket or EndPoint or FileExtension cant be nil\n",
+			expectResp: "Bucket or EndPoint or FileExtension can't be nil\n",
 			requestBody: &v1alpha1.TelemetryRequest{
 				MinIOSetting: &v1alpha1.MinIOSetting{
 					Bucket: unitest.ToPointer("test-bucket"),
