@@ -251,7 +251,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			return
 		}
 
-		// TODO: For now, just write tht instruction to the response
+		// TODO: For now, just write the instruction to the response
 		logger.Warnf("resp is nil")
 		_, err := w.Write([]byte(handlerInstruction))
 		if err != nil {
