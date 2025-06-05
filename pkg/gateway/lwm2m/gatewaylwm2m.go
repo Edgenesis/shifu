@@ -231,7 +231,7 @@ func (si *ShifuInstruction) Write(data interface{}) error {
 }
 
 func (si *ShifuInstruction) Execute() error {
-	resp, err := http.Post(si.Endpoint, "plain/text", nil)
+	resp, err := http.Post(si.Endpoint, "text/plain", nil)
 	if err != nil {
 		return err
 	}
