@@ -14,7 +14,7 @@ import (
 // for url.Query() cannot parse symbol like % + and etc
 func ParseHTTPGetParams(urlStr string) (map[string]string, error) {
 	var paramStr string
-	logger.Infof("url: ", urlStr)
+	logger.Infof("url: %s", urlStr)
 	url := strings.Split(urlStr, "?")
 
 	if len(url) <= 0 {
