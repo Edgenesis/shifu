@@ -128,7 +128,16 @@ func toPointer[T any](v T) *T {
 }
 
 func removeChar(s string) string {
-	// remove all "```"
-	str := "```"
-	return strings.ReplaceAll(s, str, "")
+	// remove all "```" and "```markdown"
+	s = strings.ReplaceAll(s, "```markdown", "")
+	s = strings.ReplaceAll(s, "```", "")
+	s = strings.TrimSpace(s)
+	
+	// remove "markdown" at the beginning of the string if it exists
+	if strings.HasPrefix(s, "markdown") {
+		s = strings.TrimPrefix(s, "markdown")
+		s = strings.TrimSpace(s)
+	}
+	
+	return s
 }
