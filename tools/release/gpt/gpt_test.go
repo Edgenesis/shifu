@@ -34,7 +34,7 @@ func TestConfigValidation(t *testing.T) {
 			errorMsg:    "AZURE_OPENAI_APIKEY",
 		},
 		{
-			name: "Invalid host URL",
+			name: "Invalid host URL - HTTP instead of HTTPS",
 			config: Config{
 				APIKey:         "test-key",
 				Host:           "http://invalid.com/",
@@ -42,7 +42,29 @@ func TestConfigValidation(t *testing.T) {
 				Version:        "v1.0.0",
 			},
 			expectError: true,
-			errorMsg:    "host must be a valid HTTPS URL",
+			errorMsg:    "host must use HTTPS scheme",
+		},
+		{
+			name: "Invalid host URL - malformed URL",
+			config: Config{
+				APIKey:         "test-key",
+				Host:           "://invalid-url",
+				DeploymentName: "gpt-4",
+				Version:        "v1.0.0",
+			},
+			expectError: true,
+			errorMsg:    "invalid host URL format",
+		},
+		{
+			name: "Invalid host URL - missing hostname",
+			config: Config{
+				APIKey:         "test-key",
+				Host:           "https://",
+				DeploymentName: "gpt-4",
+				Version:        "v1.0.0",
+			},
+			expectError: true,
+			errorMsg:    "host URL must have a valid hostname",
 		},
 		{
 			name: "Missing deployment name",
