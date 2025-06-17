@@ -59,7 +59,7 @@ func TestConfigValidation(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			err := tt.config.Validate()
-			
+
 			if tt.expectError {
 				if err == nil {
 					t.Errorf("Expected error but got none")
@@ -119,7 +119,7 @@ func TestNewConfigFromEnv(t *testing.T) {
 
 func TestProcessContent(t *testing.T) {
 	generator := &ChangelogGenerator{}
-	
+
 	tests := []struct {
 		name     string
 		input    string
@@ -154,14 +154,14 @@ func TestProcessContent(t *testing.T) {
 
 func TestBuildMessages(t *testing.T) {
 	generator := &ChangelogGenerator{}
-	
+
 	releaseNotes := "Test release notes"
 	messages := generator.buildMessages(releaseNotes)
-	
+
 	if len(messages) != 5 {
 		t.Errorf("Expected 5 messages, got %d", len(messages))
 	}
-	
+
 	// The last message should be the release notes
 	// Note: We can't easily test the exact content due to the opaque message structure
 	// but we can verify the count and that the function doesn't panic
@@ -171,7 +171,7 @@ func TestBuildMessages(t *testing.T) {
 func BenchmarkProcessContent(b *testing.B) {
 	generator := &ChangelogGenerator{}
 	content := strings.Repeat("```\nTest content\n\n\nMore content\n```\n", 100)
-	
+
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		generator.processContent(content)

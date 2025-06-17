@@ -3,6 +3,7 @@ package gpt
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,11 +19,11 @@ const (
 	// Azure OpenAI API configuration
 	DefaultAPIVersion = "2024-06-01"
 	DefaultTimeout    = 60 * time.Second
-	
+
 	// File configuration
 	DefaultChangelogDir = "CHANGELOG"
 	FilePermissions     = 0644
-	
+
 	// Content processing
 	LanguageSeparator = "--------"
 	CodeBlockMarker   = "```"
@@ -72,19 +73,26 @@ func (c *Config) Validate() error {
 	if c.Version == "" {
 		return fmt.Errorf("VERSION environment variable is required")
 	}
-	
+
 	// Validate host URL format
-	if !strings.HasPrefix(c.Host, "https://") {
-		return fmt.Errorf("host must be a valid HTTPS URL, got: %s", c.Host)
+	parsedURL, err := url.Parse(c.Host)
+	if err != nil {
+		return fmt.Errorf("invalid host URL format: %w", err)
 	}
-	
+	if parsedURL.Scheme != "https" {
+		return fmt.Errorf("host must use HTTPS scheme, got: %s", parsedURL.Scheme)
+	}
+	if parsedURL.Host == "" {
+		return fmt.Errorf("host URL must have a valid hostname")
+	}
+
 	return nil
 }
 
 // ChangelogGenerator handles the generation of changelogs using OpenAI
 type ChangelogGenerator struct {
 	config *Config
-	client *openai.Client
+	client openai.Client
 }
 
 // NewChangelogGenerator creates a new changelog generator
@@ -96,7 +104,7 @@ func NewChangelogGenerator(config *Config) (*ChangelogGenerator, error) {
 
 	return &ChangelogGenerator{
 		config: config,
-		client: &client,
+		client: client,
 	}, nil
 }
 
@@ -200,7 +208,7 @@ func (cg *ChangelogGenerator) processAndSaveContent(content string) error {
 func (cg *ChangelogGenerator) processContent(content string) string {
 	// Remove code block markers
 	content = strings.ReplaceAll(content, CodeBlockMarker, "")
-	
+
 	// Split into lines and remove empty lines
 	lines := strings.Split(content, "\n")
 	var processedLines []string
