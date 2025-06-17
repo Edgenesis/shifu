@@ -6,11 +6,10 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/ai/azopenai"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/edgenesis/shifu/tools/release/prompts"
+	"github.com/openai/openai-go"
+	"github.com/openai/openai-go/azure"
 )
 
 var (
@@ -18,25 +17,23 @@ var (
 	HOST            = os.Getenv("AZURE_OPENAI_HOST")
 	DEPLOYMENT_NAME = os.Getenv("DEPLOYMENT_NAME")
 	VERSION         = os.Getenv("VERSION")
+	API_VERSION     = "2024-06-01" // Latest Azure OpenAI API version
 )
 
 type Helper struct {
-	client   *azopenai.Client
-	messages []azopenai.ChatRequestMessageClassification
+	client   *openai.Client
+	messages []openai.ChatCompletionMessageParamUnion
 }
 
 func Start(releaseNoteResp string) error {
 	helper := &Helper{}
-	client, err := newGPT()
-	if err != nil {
-		return err
-	}
+	client := newGPT()
 
 	helper.client = client
 
 	helper.generateMessages(releaseNoteResp)
 
-	err = helper.generateChangelog()
+	err := helper.generateChangelog()
 	if err != nil {
 		return err
 	}
@@ -44,47 +41,35 @@ func Start(releaseNoteResp string) error {
 	return nil
 }
 
-func newGPT() (*azopenai.Client, error) {
-	keyCredential := azcore.NewKeyCredential(API_KEY)
-
-	client, err := azopenai.NewClientWithKeyCredential(HOST, keyCredential, nil)
-	if err != nil {
-		return nil, fmt.Errorf("error new azure client %s", err.Error())
-	}
-	return client, nil
+func newGPT() *openai.Client {
+	client := openai.NewClient(
+		azure.WithEndpoint(HOST, API_VERSION),
+		azure.WithAPIKey(API_KEY),
+	)
+	return &client
 }
 
 func (h *Helper) generateMessages(releaseNoteResp string) {
-	h.messages = []azopenai.ChatRequestMessageClassification{
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(prompts.GreetingPrompts),
-		},
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(prompts.TemplateENPrompts),
-		},
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(prompts.TemplateZHPrompts),
-		},
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(prompts.GeneratePrompts),
-		},
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(releaseNoteResp),
-		},
+	h.messages = []openai.ChatCompletionMessageParamUnion{
+		openai.UserMessage(prompts.GreetingPrompts),
+		openai.UserMessage(prompts.TemplateENPrompts),
+		openai.UserMessage(prompts.TemplateZHPrompts),
+		openai.UserMessage(prompts.GeneratePrompts),
+		openai.UserMessage(releaseNoteResp),
 	}
 }
 
 func (h *Helper) generateChangelog() error {
-	resp, err := h.client.GetChatCompletions(context.Background(), azopenai.ChatCompletionsOptions{
-		Messages:       h.messages,
-		DeploymentName: to.Ptr(DEPLOYMENT_NAME),
-		Temperature:    toPointer(float32(0)),
-	}, nil)
+	resp, err := h.client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
+		Messages:    h.messages,
+		Model:       openai.ChatModel(DEPLOYMENT_NAME),
+		Temperature: openai.Float(0.0),
+	})
 	if err != nil {
 		return fmt.Errorf("error get chat completions %s", err.Error())
 	}
 
-	content := *resp.Choices[0].Message.Content
+	content := resp.Choices[0].Message.Content
 	parts := strings.Split(content, "--------")
 
 	if len(parts) < 2 {
@@ -123,9 +108,6 @@ func createMarkdownFile(path, content string) error {
 	return os.WriteFile(path, []byte(content), 0644)
 }
 
-func toPointer[T any](v T) *T {
-	return &v
-}
 
 func removeChar(s string) string {
 	// remove all "```"
