@@ -41,9 +41,8 @@ jobs:
           echo $response
           go run tools/release/release.go "$response"
         env:
-          AZURE_OPENAI_APIKEY: ${{ secrets.AZURE_OPENAI_APIKEY }}
-          AZURE_OPENAI_HOST: ${{ secrets.AZURE_OPENAI_HOST }}
-          DEPLOYMENT_NAME: ${{secrets.DEPLOYMENT_NAME}}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ secrets.OPENAI_MODEL }}
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v5
         with:

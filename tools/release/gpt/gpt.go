@@ -6,23 +6,29 @@ import (
 	"os"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/sdk/ai/azopenai"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore"
-	"github.com/Azure/azure-sdk-for-go/sdk/azcore/to"
+	"github.com/openai/openai-go"
+	"github.com/openai/openai-go/option"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/edgenesis/shifu/tools/release/prompts"
 )
 
 var (
-	API_KEY         = os.Getenv("AZURE_OPENAI_APIKEY")
-	HOST            = os.Getenv("AZURE_OPENAI_HOST")
-	DEPLOYMENT_NAME = os.Getenv("DEPLOYMENT_NAME")
-	VERSION         = os.Getenv("VERSION")
+	API_KEY = os.Getenv("OPENAI_API_KEY")
+	MODEL   = getModel()
+	VERSION = os.Getenv("VERSION")
 )
 
+func getModel() string {
+	model := os.Getenv("OPENAI_MODEL")
+	if model == "" {
+		return "gpt-4" // default model
+	}
+	return model
+}
+
 type Helper struct {
-	client   *azopenai.Client
-	messages []azopenai.ChatRequestMessageClassification
+	client   *openai.Client
+	messages []openai.ChatCompletionMessageParamUnion
 }
 
 func Start(releaseNoteResp string) error {
@@ -44,47 +50,41 @@ func Start(releaseNoteResp string) error {
 	return nil
 }
 
-func newGPT() (*azopenai.Client, error) {
-	keyCredential := azcore.NewKeyCredential(API_KEY)
-
-	client, err := azopenai.NewClientWithKeyCredential(HOST, keyCredential, nil)
-	if err != nil {
-		return nil, fmt.Errorf("error new azure client %s", err.Error())
+func newGPT() (*openai.Client, error) {
+	if API_KEY == "" {
+		return nil, fmt.Errorf("OPENAI_API_KEY environment variable is required")
 	}
-	return client, nil
+
+	client := openai.NewClient(
+		option.WithAPIKey(API_KEY),
+	)
+	return &client, nil
 }
 
 func (h *Helper) generateMessages(releaseNoteResp string) {
-	h.messages = []azopenai.ChatRequestMessageClassification{
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(prompts.GreetingPrompts),
-		},
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(prompts.TemplateENPrompts),
-		},
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(prompts.TemplateZHPrompts),
-		},
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(prompts.GeneratePrompts),
-		},
-		&azopenai.ChatRequestUserMessage{
-			Content: azopenai.NewChatRequestUserMessageContent(releaseNoteResp),
-		},
+	h.messages = []openai.ChatCompletionMessageParamUnion{
+		openai.UserMessage(prompts.GreetingPrompts),
+		openai.UserMessage(prompts.TemplateENPrompts),
+		openai.UserMessage(prompts.TemplateZHPrompts),
+		openai.UserMessage(prompts.GeneratePrompts),
+		openai.UserMessage(releaseNoteResp),
 	}
 }
 
 func (h *Helper) generateChangelog() error {
-	resp, err := h.client.GetChatCompletions(context.Background(), azopenai.ChatCompletionsOptions{
-		Messages:       h.messages,
-		DeploymentName: to.Ptr(DEPLOYMENT_NAME),
-		Temperature:    toPointer(float32(0)),
-	}, nil)
+	resp, err := h.client.Chat.Completions.New(context.Background(), openai.ChatCompletionNewParams{
+		Messages: h.messages,
+		Model:    MODEL,
+	})
 	if err != nil {
 		return fmt.Errorf("error get chat completions %s", err.Error())
 	}
 
-	content := *resp.Choices[0].Message.Content
+	if len(resp.Choices) == 0 {
+		return fmt.Errorf("no response choices received from OpenAI")
+	}
+
+	content := resp.Choices[0].Message.Content
 	parts := strings.Split(content, "--------")
 
 	if len(parts) < 2 {
@@ -123,12 +123,17 @@ func createMarkdownFile(path, content string) error {
 	return os.WriteFile(path, []byte(content), 0644)
 }
 
-func toPointer[T any](v T) *T {
-	return &v
-}
-
 func removeChar(s string) string {
-	// remove all "```"
-	str := "```"
-	return strings.ReplaceAll(s, str, "")
+	// remove all "```" and "```markdown"
+	s = strings.ReplaceAll(s, "```markdown", "")
+	s = strings.ReplaceAll(s, "```", "")
+	s = strings.TrimSpace(s)
+	
+	// remove "markdown" at the beginning of the string if it exists
+	if strings.HasPrefix(s, "markdown") {
+		s = strings.TrimPrefix(s, "markdown")
+		s = strings.TrimSpace(s)
+	}
+	
+	return s
 }
