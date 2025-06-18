@@ -46,7 +46,7 @@ func TestInstructionHandler(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			resp, err := http.Get(c.url)
 			assert.Nil(t, err)
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 			body, _ := io.ReadAll(resp.Body)
 
 			switch {
@@ -60,9 +60,5 @@ func TestInstructionHandler(t *testing.T) {
 }
 
 func check(Result interface{}) bool {
-	res := true
-	if Result == nil {
-		res = false
-	}
-	return res
+	return Result != nil
 }

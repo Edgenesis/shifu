@@ -25,9 +25,9 @@ func instructionHandler(functionName string) http.HandlerFunc {
 		case "read_value":
 			min := 10
 			max := 30
-			fmt.Fprint(w, strconv.Itoa(rand.Intn(max-min+1)+min))
+			_, _ = fmt.Fprint(w, strconv.Itoa(rand.Intn(max-min+1)+min))
 		case "get_status":
-			fmt.Fprint(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
+			_, _ = fmt.Fprint(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}
 }

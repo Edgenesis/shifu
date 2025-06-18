@@ -45,7 +45,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			ListenAddress := ":" + listenPort
 			Listener, err := net.Listen(ProtocolTCPStr, ListenAddress)
 			if err != nil {
-				return nil, fmt.Errorf("Listen error")
+				return nil, fmt.Errorf("listen error")
 			}
 			cm = &ConnectionMetaData{
 				ForwardAddress: *base.EdgeDevice.Spec.Address,
@@ -65,7 +65,7 @@ func (m *ConnectionMetaData) handleTCPConnection(conn net.Conn) {
 		logger.Errorf(err.Error())
 		return
 	}
-	defer forwardConn.Close()
+	defer func() { _ = forwardConn.Close() }()
 	// Copy data between bi-directional connections.
 	done := make(chan string)
 	createCon := func(name string, dst io.Writer, src io.Reader) {
@@ -96,7 +96,7 @@ func (ds *DeviceShifu) collectTcpTelemetry() (bool, error) {
 				logger.Errorf("error checking telemetry: error: %v", err.Error())
 				return false, err
 			}
-			defer conn.Close()
+			defer func() { _ = conn.Close() }()
 			return true, nil
 		default:
 			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
