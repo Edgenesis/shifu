@@ -26,12 +26,12 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			for i := 0; i < 8; i++ {
 				for j := 0; j < 12; j++ {
 					num := fmt.Sprintf("%.2f", rand.Float32()*readingRange)
-					fmt.Fprint(w, num+" ")
+					_, _ = fmt.Fprint(w, num+" ")
 				}
-				fmt.Fprint(w, "\n")
+				_, _ = fmt.Fprint(w, "\n")
 			}
 		case "get_status":
-			fmt.Fprint(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
+			_, _ = fmt.Fprint(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}
 }

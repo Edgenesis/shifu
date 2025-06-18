@@ -27,9 +27,9 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			yrange := 200
 			xpos := strconv.Itoa(rand.Intn(xrange))
 			ypos := strconv.Itoa(rand.Intn(yrange))
-			fmt.Fprintf(w, "xpos: %v, ypos: %v", xpos, ypos)
+			_, _ = fmt.Fprintf(w, "xpos: %v, ypos: %v", xpos, ypos)
 		case "get_status":
-			fmt.Fprint(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
+			_, _ = fmt.Fprint(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}
 }

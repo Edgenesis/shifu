@@ -39,7 +39,7 @@ func TestMain(m *testing.M) {
 	go func() {
 		_, _ = listener.Accept()
 	}()
-	defer listener.Close()
+	defer func() { _ = listener.Close() }()
 	m.Run()
 	err = os.RemoveAll(MockDeviceConfigPath)
 	if err != nil {
@@ -95,7 +95,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Errorf("unable to read response body, error: %v", err.Error())

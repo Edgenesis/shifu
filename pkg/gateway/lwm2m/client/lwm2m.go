@@ -128,7 +128,7 @@ func (c *Client) connectionMonitor() {
 func (c *Client) reconnect() error {
 	// Close existing connection if any
 	if c.udpConnection != nil {
-		c.udpConnection.Close()
+		_ = c.udpConnection.Close()
 		c.udpConnection = nil
 	}
 

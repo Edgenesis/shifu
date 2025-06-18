@@ -33,7 +33,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 	var connectionResult plc4go.PlcConnectionConnectResult
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		if *base.EdgeDevice.Spec.Protocol != v1alpha1.ProtocolPLC4X {
-			return nil, fmt.Errorf("Protocol not support in plc4x")
+			return nil, fmt.Errorf("protocol not support in plc4x")
 		}
 
 		protocol := base.EdgeDevice.Spec.ProtocolSettings.PLC4XSetting.Protocol
@@ -79,7 +79,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 		if !connection.IsConnected() {
 			logger.Errorf("Cannot Connected to %v", *base.EdgeDevice.Spec.Address)
-			return nil, fmt.Errorf("Cannot Connect to %v", *base.EdgeDevice.Spec.Address)
+			return nil, fmt.Errorf("cannot connect to %v", *base.EdgeDevice.Spec.Address)
 		}
 
 		ds.conn = &connectionResult

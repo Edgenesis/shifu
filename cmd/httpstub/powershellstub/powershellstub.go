@@ -128,11 +128,11 @@ func httpFileServeHandler(resp http.ResponseWriter, req *http.Request) {
 	} else if errors.Is(err, os.ErrNotExist) {
 		logger.Errorf("File does not exist: %v", fileLocationString)
 		resp.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(resp, "File does not exist: "+fileLocationString+"\n")
+		_, _ = fmt.Fprint(resp, "File does not exist: "+fileLocationString+"\n")
 	} else {
 		logger.Errorf("File may not exist: %v", fileLocationString)
 		resp.WriteHeader(http.StatusNotFound)
-		fmt.Fprint(resp, "File may not exist: "+fileLocationString+"\n")
+		_, _ = fmt.Fprint(resp, "File may not exist: "+fileLocationString+"\n")
 	}
 }
 

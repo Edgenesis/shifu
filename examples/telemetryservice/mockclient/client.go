@@ -27,7 +27,7 @@ func main() {
 	mux.HandleFunc("/mysql", sendToMySQL)
 	mux.HandleFunc("/sqlserver", sendToSQLServer)
 
-	http.ListenAndServe(":9090", mux)
+	_ = http.ListenAndServe(":9090", mux)
 
 }
 
@@ -65,7 +65,7 @@ func sendToTDengine(w http.ResponseWriter, r *http.Request) {
 		},
 		RawData: []byte("testData"),
 	}
-	sendRequest(req, "/sql")
+	_ = sendRequest(req, "/sql")
 }
 
 func sendToMySQL(w http.ResponseWriter, r *http.Request) {
@@ -83,7 +83,7 @@ func sendToMySQL(w http.ResponseWriter, r *http.Request) {
 		},
 		RawData: []byte("testData"),
 	}
-	sendRequest(req, "/sql")
+	_ = sendRequest(req, "/sql")
 }
 
 func sendToSQLServer(w http.ResponseWriter, r *http.Request) {
@@ -101,7 +101,7 @@ func sendToSQLServer(w http.ResponseWriter, r *http.Request) {
 		},
 		RawData: []byte("testData"),
 	}
-	sendRequest(req, "/sql")
+	_ = sendRequest(req, "/sql")
 }
 
 func sendRequest(request *v1alpha1.TelemetryRequest, path string) error {

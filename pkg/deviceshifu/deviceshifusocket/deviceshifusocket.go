@@ -44,12 +44,12 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			connectionType := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
 			if connectionType == nil || *connectionType != "tcp" {
 				// todo need to validate in crd ( kubebuilder )
-				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
+				return nil, fmt.Errorf("sorry!, Shifu currently only support TCP Socket")
 			}
 
 			socketConnection, err := net.Dial(*connectionType, *base.EdgeDevice.Spec.Address)
 			if err != nil {
-				return nil, fmt.Errorf("Cannot connect to %v", *base.EdgeDevice.Spec.Address)
+				return nil, fmt.Errorf("cannot connect to %v", *base.EdgeDevice.Spec.Address)
 			}
 
 			logger.Infof("Connected to '%v'", *base.EdgeDevice.Spec.Address)
@@ -170,7 +170,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 
 func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 	if ds.base.EdgeDevice.Spec.Address == nil {
-		return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
+		return false, fmt.Errorf("device %v does not have an address", ds.base.Name)
 	}
 
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
@@ -182,7 +182,7 @@ func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 				return false, err
 			}
 
-			defer conn.Close()
+			defer func() { _ = conn.Close() }()
 			return true, nil
 		default:
 			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)

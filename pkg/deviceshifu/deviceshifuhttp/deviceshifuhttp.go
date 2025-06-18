@@ -222,7 +222,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		}
 
 		if resp != nil {
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 			// Handling deviceshifu stuck when responseBody is a stream
 			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 			if !shouldUsePythonCustomProcessing {
@@ -275,7 +275,7 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 	for parameterName, parameterValues := range values {
 		if parameterName == "flags_no_parameter" {
 			if len(parameterValues) == 1 {
-				flagsStr = " " + strings.Replace(parameterValues[0], ",", " ", -1)
+				flagsStr = " " + strings.ReplaceAll(parameterValues[0], ",", " ")
 			} else {
 				for _, parameterValue := range parameterValues {
 					flagsStr += " " + parameterValue
@@ -293,9 +293,10 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 		}
 	}
 
-	if instruction == deviceshifubase.DeviceDefaultCMDDoNotExec {
+	switch instruction {
+	case deviceshifubase.DeviceDefaultCMDDoNotExec:
 		return strings.TrimSpace(flagsStr)
-	} else if instruction == deviceshifubase.DeviceDefaultCMDStubHealth {
+	case deviceshifubase.DeviceDefaultCMDStubHealth:
 		return "ls"
 	}
 
@@ -386,7 +387,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		}
 
 		if resp != nil {
-			defer resp.Body.Close()
+			defer func() { _ = resp.Body.Close() }()
 			utils.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 
@@ -430,11 +431,11 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 			deviceName := ds.base.EdgeDevice.Name
 			for telemetry, telemetryProperties := range telemetries {
 				if ds.base.EdgeDevice.Spec.Address == nil {
-					return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
+					return false, fmt.Errorf("device %v does not have an address", ds.base.Name)
 				}
 
 				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
-					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					return false, fmt.Errorf("device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
 				}
 
 				var (
@@ -465,7 +466,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				}
 
 				if resp != nil {
-					defer resp.Body.Close()
+					defer func() { _ = resp.Body.Close() }()
 					if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 						instructionFuncName, pythonCustomExist := deviceshifubase.CustomInstructionsPython[instruction]
 						if pythonCustomExist {

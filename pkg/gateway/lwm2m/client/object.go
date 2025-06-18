@@ -56,7 +56,7 @@ func NewObject(Id string, data ObjectAPI) *Object {
 // GetChildObject returns the child object at the given path if it exists.
 func (o Object) GetChildObject(path string) *Object {
 	paths := strings.Split(path, "/")
-	var obj *Object = &o
+	var obj = &o
 	for _, subPath := range paths {
 		if len(subPath) == 0 {
 			continue
@@ -138,7 +138,7 @@ func (o *Object) readAll(basePath string) ([]ObjectData, error) {
 func (o *Object) AddObject(path string, childObject ObjectAPI) {
 	paths := strings.Split(path, "/")
 	pathEnd := len(paths) - 1
-	var obj *Object = o
+	var obj = o
 	// iterate through the path and set the object to the last path
 	for _, subPath := range paths[:pathEnd] {
 		if len(subPath) == 0 {
@@ -208,7 +208,7 @@ func (o *Object) GetCoRELinkString() string {
 	// Add the root path and only support json format for now
 	// ct=11543 is the content format for application/vnd.oma.lwm2m+json
 	// reference to https://www.iana.org/assignments/core-parameters/core-parameters.xhtml#content-formats
-	var links []string = []string{defaultCoRELinkRoot}
+	var links = []string{defaultCoRELinkRoot}
 	for _, path := range childPaths {
 		links = append(links, fmt.Sprintf("<%s>", path))
 	}

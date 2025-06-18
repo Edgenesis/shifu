@@ -156,7 +156,8 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 		// handlerEdgeDeviceSpec := handler.HandlerMetaData.edgeDeviceSpec
 		reqType := r.Method
 		topic := handler.HandlerMetaData.properties.MQTTTopic
-		if reqType == http.MethodGet {
+		switch reqType {
+		case http.MethodGet:
 			returnMessage := ReturnBody{
 				MQTTMessage:   mqttMessageInstructionMap[topic],
 				MQTTTimestamp: mqttMessageReceiveTimestampMap[topic].String(),
@@ -187,7 +188,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				logger.Errorf("Cannot Encode message to json")
 				return
 			}
-		} else if reqType == http.MethodPost || reqType == http.MethodPut {
+		case http.MethodPost, http.MethodPut:
 			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
 			logger.Infof("the controlMsgs is %v", controlMsgs)
 			if mutexBlocking {
@@ -220,7 +221,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			}
 			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
 			return
-		} else {
+		default:
 			http.Error(w, "must be GET or PUT method", http.StatusBadRequest)
 			logger.Errorf("Request type %v is not supported yet!", reqType)
 			return
@@ -234,7 +235,7 @@ func (ds *DeviceShifu) getMQTTTopicFromInstructionName(instructionName string) (
 		return instructionProperties.MQTTProtocolProperty.MQTTTopic, nil
 	}
 
-	return "", fmt.Errorf("Instruction %v not found in list of deviceshifu instructions", instructionName)
+	return "", fmt.Errorf("instruction %v not found in list of deviceshifu instructions", instructionName)
 }
 
 // TODO: update configs
@@ -258,7 +259,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
 			for telemetry, telemetryProperties := range telemetries {
 				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
-					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					return false, fmt.Errorf("device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
 				}
 
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName

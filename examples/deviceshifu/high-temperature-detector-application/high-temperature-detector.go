@@ -22,7 +22,7 @@ func main() {
 		} else {
 			log.Println("Low temperature:", temperature)
 		}
-		res.Body.Close()
+		_ = res.Body.Close()
 		time.Sleep(2 * time.Second)
 	}
 }
