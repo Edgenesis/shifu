@@ -44,7 +44,7 @@ var tsNamespacedName = types.NamespacedName{
 }
 
 // image of telemetryservice deployment
-const IMAGE = "edgehub/telemetryservice:nightly"
+const IMAGE = "edgehub/telemetryservice:v0.74.0-rc1"
 
 //+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=telemetryservices,verbs=get;list;watch;create;update;patch;delete
 //+kubebuilder:rbac:groups=shifu.edgenesis.io,resources=telemetryservices/status,verbs=get;update;patch
