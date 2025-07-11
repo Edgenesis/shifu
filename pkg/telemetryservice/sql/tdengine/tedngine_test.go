@@ -97,9 +97,9 @@ func TestInsertDataToDB(t *testing.T) {
 			db, sm, err := sqlmock.New()
 			assert.Nil(t, err)
 			if tC.preCloseDB {
-				db.Close()
+				_ = db.Close()
 			} else {
-				defer db.Close()
+				defer func() { _ = db.Close() }()
 			}
 
 			sm.ExpectExec(tC.expectSQL).WillReturnResult(tC.expectResult)

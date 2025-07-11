@@ -33,7 +33,7 @@ const (
 func TestMain(m *testing.M) {
 	stop := make(chan struct{}, 1)
 	wg := sync.WaitGroup{}
-	os.Setenv("SERVER_LISTEN_PORT", ":18926")
+	_ = os.Setenv("SERVER_LISTEN_PORT", ":18926")
 	wg.Add(1)
 	go func() {
 		mockMQTTServer(stop)
@@ -43,7 +43,7 @@ func TestMain(m *testing.M) {
 	m.Run()
 	stop <- struct{}{}
 	wg.Wait()
-	os.Unsetenv("SERVER_LISTEN_PORT")
+	_ = os.Unsetenv("SERVER_LISTEN_PORT")
 }
 
 func TestConnectToMQTT(t *testing.T) {
@@ -116,7 +116,7 @@ func mockMQTTServer(stop <-chan struct{}) {
 	}
 	go func() {
 		<-stop
-		server.Close()
+		_ = server.Close()
 	}()
 
 	err = server.Serve()

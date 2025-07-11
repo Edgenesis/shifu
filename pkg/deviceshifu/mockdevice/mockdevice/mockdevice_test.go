@@ -23,7 +23,7 @@ func TestStartMockDevice(t *testing.T) {
 			logger.Infof("Handling: %v", functionName)
 			switch functionName {
 			case "get_status":
-				fmt.Fprintf(w, "Running")
+				_, _ = fmt.Fprintf(w, "Running")
 			}
 		}
 	}
@@ -36,7 +36,7 @@ func TestStartMockDevice(t *testing.T) {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
 
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Errorf("cannot read body from response, %+v", err)
