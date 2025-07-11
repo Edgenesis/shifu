@@ -20,7 +20,7 @@ require (
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
-	github.com/openai/openai-go v1.6.0
+	github.com/openai/openai-go v1.10.1
 	github.com/pion/dtls/v3 v3.0.6
 	github.com/plgd-dev/go-coap/v3 v3.3.6
 	github.com/spf13/cobra v1.9.1
