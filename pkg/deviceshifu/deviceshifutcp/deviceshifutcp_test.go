@@ -45,11 +45,11 @@ func TestMain(m *testing.M) {
 				if err != nil {
 					logger.Error(err)
 				}
-				_ = conn.Close()
+				conn.Close()
 			}(conn)
 		}
 	}()
-	defer func() { _ = listener.Close() }()
+	defer listener.Close()
 	m.Run()
 }
 
@@ -226,7 +226,7 @@ func TestHandleTCPConnection(t *testing.T) {
 	if err != nil {
 		logger.Fatalf("Cannot Read due to: %v", err.Error())
 	}
-	_ = clientConn.Close()
+	clientConn.Close()
 	assert.Equal(t, readByte, writeByte)
 }
 

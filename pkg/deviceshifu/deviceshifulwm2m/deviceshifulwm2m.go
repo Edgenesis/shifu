@@ -172,7 +172,7 @@ func (handler DeviceCommandHandlerLwM2M) commandHandleFunc() http.HandlerFunc {
 			logger.Debugf("Instruction %v has a python customized handler configured.", handlerInstruction)
 			respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, respString, deviceshifubase.PythonScriptDir)
 		}
-		_, _ = fmt.Fprintf(w, "%v", respString)
+		fmt.Fprintf(w, "%v", respString)
 	}
 }
 

@@ -99,7 +99,7 @@ func TestDeviceHealthHandler(t *testing.T) {
 		t.Errorf("HTTP GET returns an error %v", err.Error())
 	}
 
-	defer func() { _ = resp.Body.Close() }()
+	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		t.Errorf("unable to read response body, error: %v", err.Error())

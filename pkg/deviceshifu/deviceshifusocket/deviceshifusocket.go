@@ -182,7 +182,7 @@ func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 				return false, err
 			}
 
-			defer func() { _ = conn.Close() }()
+			defer conn.Close()
 			return true, nil
 		default:
 			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)

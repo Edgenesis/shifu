@@ -241,7 +241,7 @@ func (handler DeviceCommandHandlerOPCUA) read(w http.ResponseWriter, r *http.Req
 		logger.Infof("Instruction %v has a python customized handler configured.\n", handlerInstruction)
 		respString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
 	}
-	_, _ = fmt.Fprintf(w, "%v", respString)
+	fmt.Fprintf(w, "%v", respString)
 }
 
 func (handler DeviceCommandHandlerOPCUA) readByNodeId(ctx context.Context, nodeId *ua.NodeID) (*ua.ReadResponse, error) {

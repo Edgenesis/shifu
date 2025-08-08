@@ -9,8 +9,8 @@ func main() {
 	http.HandleFunc("/get_file_mp4", func(w http.ResponseWriter, r *http.Request) {
 		// you need copy a mp4 file to here first
 		fileContent, _ := os.ReadFile("test.mp4")
-		_, _ = w.Write(fileContent)
+		w.Write(fileContent)
 	})
 
-	_ = http.ListenAndServe(":12345", nil)
+	http.ListenAndServe(":12345", nil)
 }

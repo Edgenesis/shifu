@@ -16,7 +16,7 @@ func main() {
 		log.Println("save data from telemetry service", string(data))
 	})
 	http.HandleFunc("/data/read", func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = fmt.Fprint(writer, string(data))
+		fmt.Fprint(writer, string(data))
 		log.Println("read data")
 	})
 	http.HandleFunc("/custom_data/save", func(writer http.ResponseWriter, request *http.Request) {
@@ -24,9 +24,9 @@ func main() {
 		log.Println("save customData from telemetry service", string(customData))
 	})
 	http.HandleFunc("/custom_data/read", func(writer http.ResponseWriter, request *http.Request) {
-		_, _ = fmt.Fprint(writer, string(customData))
+		fmt.Fprint(writer, string(customData))
 		log.Println("read customData")
 	})
 
-	_ = http.ListenAndServe(":11111", nil)
+	http.ListenAndServe(":11111", nil)
 }

@@ -65,7 +65,7 @@ func (m *ConnectionMetaData) handleTCPConnection(conn net.Conn) {
 		logger.Errorf(err.Error())
 		return
 	}
-	defer func() { _ = forwardConn.Close() }()
+	defer forwardConn.Close()
 	// Copy data between bi-directional connections.
 	done := make(chan string)
 	createCon := func(name string, dst io.Writer, src io.Reader) {
@@ -96,7 +96,7 @@ func (ds *DeviceShifu) collectTcpTelemetry() (bool, error) {
 				logger.Errorf("error checking telemetry: error: %v", err.Error())
 				return false, err
 			}
-			defer func() { _ = conn.Close() }()
+			defer conn.Close()
 			return true, nil
 		default:
 			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)

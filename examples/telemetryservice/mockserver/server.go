@@ -46,7 +46,7 @@ func GetLatestData(w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "empty", http.StatusInternalServerError)
 		return
 	}
-	_, _ = fmt.Fprintf(w, "%s", string(tmpMessage))
+	fmt.Fprintf(w, "%s", string(tmpMessage))
 }
 
 func subTopic(client *mqtt.Client) {
