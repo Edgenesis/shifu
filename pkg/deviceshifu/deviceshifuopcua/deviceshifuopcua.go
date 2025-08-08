@@ -115,10 +115,14 @@ func establishOPCUAConnection(ctx context.Context, address string, setting *v1al
 	}
 
 	// TODO implement other option here
-	ep := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeNone)
+	ep, err := opcua.SelectEndpoint(endpoints, ua.SecurityPolicyURINone, ua.MessageSecurityModeNone)
+	if err != nil {
+		logger.Error("Failed to select endpoint: " + err.Error())
+		return nil, err
+	}
 	if ep == nil {
 		logger.Error("Failed to find suitable endpoint")
-		return nil, err
+		return nil, fmt.Errorf("no suitable endpoint found")
 	}
 
 	var options = make([]opcua.Option, 0)
