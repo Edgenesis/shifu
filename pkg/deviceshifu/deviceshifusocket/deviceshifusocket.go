@@ -170,7 +170,7 @@ func deviceCommandHandlerSocket(HandlerMetaData *HandlerMetaData) http.HandlerFu
 
 func (ds *DeviceShifu) collectSocketTelemetry() (bool, error) {
 	if ds.base.EdgeDevice.Spec.Address == nil {
-		return false, fmt.Errorf("device %v does not have an address", ds.base.Name)
+		return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
 	}
 
 	if ds.base.EdgeDevice.Spec.Protocol != nil {

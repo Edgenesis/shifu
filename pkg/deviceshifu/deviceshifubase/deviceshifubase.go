@@ -80,7 +80,7 @@ func New(deviceShifuMetadata *DeviceShifuMetaData) (*DeviceShifuBase, *http.Serv
 
 	deviceShifuConfig, err := NewDeviceShifuConfig(deviceShifuMetadata.ConfigFilePath)
 	if err != nil {
-		return nil, nil, fmt.Errorf("error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
+		return nil, nil, fmt.Errorf("Error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
 	mux := http.NewServeMux()
@@ -127,7 +127,7 @@ func BindDefaultHandler(mux *http.ServeMux) {
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	_, _ = fmt.Fprint(w, DeviceIsHealthyStr)
+	fmt.Fprint(w, DeviceIsHealthyStr)
 }
 
 func instructionNotFoundHandler(w http.ResponseWriter, r *http.Request) {

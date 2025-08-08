@@ -66,14 +66,14 @@ func main() {
 	if err != nil {
 		logger.Fatalf("unable to connect: %v", err)
 	}
-	defer func() { _ = sshClient.Close() }()
+	defer sshClient.Close()
 	logger.Infof("Driver SSH established")
 
 	sshListener, err := sshClient.Listen("tcp", "localhost:"+driverHTTPPort)
 	if err != nil {
 		logger.Fatalf("unable to register tcp forward: %v", err)
 	}
-	defer func() { _ = sshListener.Close() }()
+	defer sshListener.Close()
 	logger.Infof("Driver HTTP listener established")
 
 	err = http.Serve(sshListener, httpCmdlinePostHandler(sshClient))
@@ -92,7 +92,7 @@ func httpCmdlinePostHandler(sshConnection *ssh.Client) http.HandlerFunc {
 			logger.Fatalf("Failed to create session: %v", err)
 		}
 
-		defer func() { _ = session.Close() }()
+		defer session.Close()
 		httpCommand, err := io.ReadAll(req.Body)
 		if err != nil {
 			panic(err)

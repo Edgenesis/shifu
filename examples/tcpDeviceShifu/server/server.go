@@ -12,7 +12,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	defer func() { _ = listener.Close() }()
+	defer listener.Close()
 	log.Println("listening at ", addr)
 	for {
 		conn, err := listener.Accept()
@@ -34,6 +34,6 @@ func handleReq(conn net.Conn) {
 			return
 		}
 
-		_, _ = conn.Write(data)
+		conn.Write(data)
 	}
 }

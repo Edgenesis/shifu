@@ -193,7 +193,7 @@ func TestCollectSocketTelemetry(t *testing.T) {
 				},
 			},
 			expected:  false,
-			expErrStr: "device testDevice does not have an address",
+			expErrStr: "Device testDevice does not have an address",
 		}, {
 			Name: "case3 Protocol is not Socket",
 			deviceShifu: &DeviceShifu{

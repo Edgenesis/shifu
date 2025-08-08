@@ -119,7 +119,7 @@ func TestNew(t *testing.T) {
 			&DeviceShifuMetaData{
 				Name: "test",
 			},
-			"error parsing ConfigMap at /etc/edgedevice/config",
+			"Error parsing ConfigMap at /etc/edgedevice/config",
 			func(t *testing.T) {},
 		},
 		{
