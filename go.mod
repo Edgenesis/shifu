@@ -7,26 +7,26 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/gopcua/opcua v0.5.3
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/apimachinery v0.33.1
-	k8s.io/client-go v0.33.1
+	k8s.io/apimachinery v0.33.2
+	k8s.io/client-go v0.33.2
 )
 
 require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/briandowns/spinner v1.23.2
-	github.com/go-sql-driver/mysql v1.9.2
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/microsoft/go-mssqldb v1.8.2
 	github.com/minio/minio-go/v7 v7.0.94
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
-	github.com/openai/openai-go v1.6.0
+	github.com/openai/openai-go v1.10.3
 	github.com/pion/dtls/v3 v3.0.6
 	github.com/plgd-dev/go-coap/v3 v3.3.6
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/taosdata/driver-go/v3 v3.5.8
-	golang.org/x/crypto v0.38.0
+	golang.org/x/crypto v0.39.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
 	sigs.k8s.io/controller-runtime v0.20.4
 )
@@ -68,7 +68,7 @@ require (
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
 	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948 // indirect
-	golang.org/x/tools v0.31.0 // indirect
+	golang.org/x/tools v0.33.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
 	sigs.k8s.io/randfill v1.0.0 // indirect
@@ -114,16 +114,16 @@ require (
 	go.uber.org/zap v1.27.0
 	golang.org/x/net v0.40.0
 	golang.org/x/oauth2 v0.27.0 // indirect
-	golang.org/x/sync v0.14.0 // indirect
+	golang.org/x/sync v0.15.0 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/term v0.32.0 // indirect
-	golang.org/x/text v0.25.0 // indirect
+	golang.org/x/text v0.26.0 // indirect
 	golang.org/x/time v0.9.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.4.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/yaml.v2 v2.4.0
-	k8s.io/api v0.33.1
+	k8s.io/api v0.33.2
 	k8s.io/apiextensions-apiserver v0.32.1 // indirect
 	k8s.io/kube-openapi v0.0.0-20250318190949-c8a335a9a2ff // indirect
 	k8s.io/utils v0.0.0-20241104100929-3ea5e8cea738 // indirect
