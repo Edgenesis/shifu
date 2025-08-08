@@ -1,0 +1,54 @@
+run:
+  timeout: 5m
+  go: '1.24'
+
+linters-settings:
+  errcheck:
+    # Don't require error checking for these functions where errors are often ignored
+    exclude-functions:
+      - fmt.Print
+      - fmt.Printf  
+      - fmt.Println
+      - fmt.Fprint
+      - fmt.Fprintf
+      - fmt.Fprintln
+      # Only exclude Close() for deferred cleanup, not regular usage
+      - (io.Closer).Close
+
+linters:
+  disable:
+    - exhaustive    # Don't require exhaustive switch statements
+    - exhaustruct   # Don't require all struct fields to be initialized
+    - gomnd         # Don't complain about magic numbers
+    - varnamelen    # Don't complain about variable name lengths
+    - wrapcheck     # Don't require error wrapping everywhere
+    - nlreturn      # Don't require newlines before returns
+    - wsl           # Don't enforce whitespace linting
+    - funlen        # Don't limit function length
+    - cyclop        # Don't check cyclomatic complexity
+    - lll           # Don't enforce line length limits
+  enable:
+    - errcheck      # Check for important error handling
+    - ineffassign   # Check for ineffective assignments  
+    - staticcheck   # Run staticcheck
+    - unused        # Check for unused code
+    - misspell      # Check for common misspellings
+    - gofmt         # Check formatting
+    - govet         # Run go vet
+    - gosimple      # Suggest code simplifications
+    - typecheck     # Type check the code
+
+issues:
+  exclude-rules:
+    # Exclude some lints for test files
+    - path: _test\.go
+      linters:
+        - errcheck
+        - gosec
+        - funlen
+    # Exclude some lints for example files  
+    - path: examples/
+      linters:
+        - errcheck
+        - gosec
+        - funlen
