@@ -32,6 +32,6 @@ func SendUserMetrics(telemetry types.UserMetricsResponse) error {
 		return err
 	}
 
-	defer func() { _ = resp.Body.Close() }()
+	defer resp.Body.Close()
 	return nil
 }

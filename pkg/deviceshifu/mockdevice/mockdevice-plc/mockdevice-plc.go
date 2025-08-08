@@ -49,12 +49,12 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			if _, ok := dataStorage[rootaddress]; !ok {
 				logger.Warnf("Nonexistent memory area: %v", rootaddress)
 				w.WriteHeader(http.StatusBadRequest)
-				_, _ = fmt.Fprintf(w, "Nonexistent memory area")
+				fmt.Fprintf(w, "Nonexistent memory area")
 				return
 			}
 
 			w.WriteHeader(http.StatusOK)
-			_, _ = fmt.Fprint(w, dataStorage[rootaddress])
+			fmt.Fprint(w, dataStorage[rootaddress])
 		case "sendsinglebit":
 			query := r.URL.Query()
 			rootaddress := query.Get(rootAddress)
@@ -71,7 +71,7 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			if _, ok := dataStorage[rootaddress]; !ok {
 				logger.Warnf("Nonexistent memory area: %v", rootaddress)
 				w.WriteHeader(http.StatusBadRequest)
-				_, _ = fmt.Fprintf(w, "Nonexistent memory area")
+				fmt.Fprintf(w, "Nonexistent memory area")
 				return
 			}
 
@@ -83,11 +83,11 @@ func instructionHandler(functionName string) http.HandlerFunc {
 			dataStorage[rootaddress] = string(responseValue)
 			logger.Infof("%v", responseValue)
 			w.WriteHeader(http.StatusOK)
-			_, _ = fmt.Fprint(w, dataStorage[rootaddress])
+			fmt.Fprint(w, dataStorage[rootaddress])
 		case "get_status":
 			rand.Seed(time.Now().UnixNano())
 			w.WriteHeader(http.StatusOK)
-			_, _ = fmt.Fprint(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
+			fmt.Fprint(w, mockdevice.StatusSetList[(rand.Intn(len(mockdevice.StatusSetList)))])
 		}
 	}
 }

@@ -99,7 +99,7 @@ func TestInsertDataToDB(t *testing.T) {
 			if tC.preCloseDB {
 				_ = db.Close()
 			} else {
-				defer func() { _ = db.Close() }()
+				defer db.Close()
 			}
 
 			sm.ExpectExec(tC.expectSQL).WillReturnResult(tC.expectResult)

@@ -46,7 +46,7 @@ func TestInstructionHandler(t *testing.T) {
 		t.Run(c.name, func(t *testing.T) {
 			resp, err := http.Get(c.url)
 			assert.Nil(t, err)
-			defer func() { _ = resp.Body.Close() }()
+			defer resp.Body.Close()
 			body, _ := io.ReadAll(resp.Body)
 
 			switch {

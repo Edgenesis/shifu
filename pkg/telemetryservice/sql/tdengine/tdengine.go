@@ -28,7 +28,7 @@ func (db *DBHelper) SendToDB(ctx context.Context, deviceName string, rawData []b
 		return err
 	}
 
-	defer func() { _ = db.DB.Close() }()
+	defer db.DB.Close()
 
 	err = db.InsertDataToDB(ctx, deviceName, rawData)
 	if err != nil {

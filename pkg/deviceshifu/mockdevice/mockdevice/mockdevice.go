@@ -52,7 +52,7 @@ func (md *MockDevice) startHTTPServer(stopCh <-chan struct{}) error {
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {
-	_, _ = fmt.Fprintf(w, "Healthy")
+	fmt.Fprintf(w, "Healthy")
 }
 
 // New new mock device
