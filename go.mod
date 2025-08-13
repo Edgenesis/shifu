@@ -7,7 +7,7 @@ require (
 	github.com/eclipse/paho.mqtt.golang v1.5.0
 	github.com/gopcua/opcua v0.8.0
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/apimachinery v0.33.2
+	k8s.io/apimachinery v0.33.3
 	k8s.io/client-go v0.33.2
 )
 
@@ -15,17 +15,17 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/briandowns/spinner v1.23.2
 	github.com/go-sql-driver/mysql v1.9.3
-	github.com/microsoft/go-mssqldb v1.8.2
+	github.com/microsoft/go-mssqldb v1.9.2
 	github.com/minio/minio-go/v7 v7.0.94
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
 	github.com/openai/openai-go v1.10.3
 	github.com/pion/dtls/v3 v3.0.6
-	github.com/plgd-dev/go-coap/v3 v3.3.6
+	github.com/plgd-dev/go-coap/v3 v3.4.0
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
-	github.com/taosdata/driver-go/v3 v3.5.8
+	github.com/taosdata/driver-go/v3 v3.7.3
 	golang.org/x/crypto v0.39.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
 	sigs.k8s.io/controller-runtime v0.20.4
@@ -34,7 +34,7 @@ require (
 require (
 	filippo.io/edwards25519 v1.1.0 // indirect
 	github.com/Azure/azure-sdk-for-go/sdk/azcore v1.18.0 // indirect
-	github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.0 // indirect
+	github.com/Azure/azure-sdk-for-go/sdk/internal v1.11.1 // indirect
 	github.com/dsnet/golib/memfile v1.0.0 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/evanphx/json-patch v5.6.0+incompatible // indirect
