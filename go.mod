@@ -22,7 +22,7 @@ require (
 	github.com/onsi/gomega v1.37.0
 	github.com/openai/openai-go v1.10.3
 	github.com/pion/dtls/v3 v3.0.6
-	github.com/plgd-dev/go-coap/v3 v3.3.6
+	github.com/plgd-dev/go-coap/v3 v3.4.0
 	github.com/spf13/cobra v1.9.1
 	github.com/stretchr/testify v1.10.0
 	github.com/taosdata/driver-go/v3 v3.7.3
@@ -67,7 +67,7 @@ require (
 	github.com/x448/float16 v0.8.4 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/automaxprocs v1.6.0 // indirect
-	golang.org/x/exp v0.0.0-20240823005443-9b4947da3948 // indirect
+	golang.org/x/exp v0.0.0-20240904232852-e7e105dedf7e // indirect
 	golang.org/x/tools v0.33.0 // indirect
 	gopkg.in/evanphx/json-patch.v4 v4.12.0 // indirect
 	k8s.io/klog/v2 v2.130.1 // indirect
