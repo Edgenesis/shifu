@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-thermometer-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-http:nightly
+      - image: edgehub/deviceshifu-http-http:v0.77.0-rc1
         imagePullPolicy: IfNotPresent
         name: deviceshifu-http
         ports:
@@ -30,7 +30,7 @@ spec:
           value: "edgedevice-thermometer"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
-      - image: edgehub/gateway-lwm2m:nightly
+      - image: edgehub/gateway-lwm2m:v0.77.0-rc1
         imagePullPolicy: IfNotPresent
         name: gateway-lwm2m
         volumeMounts:
