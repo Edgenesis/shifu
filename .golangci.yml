@@ -1,3 +1,5 @@
+version: "2"
+
 run:
   timeout: 5m
   go: '1.24'
@@ -19,7 +21,7 @@ linters:
   disable:
     - exhaustive    # Don't require exhaustive switch statements
     - exhaustruct   # Don't require all struct fields to be initialized
-    - gomnd         # Don't complain about magic numbers
+    - mnd           # Don't complain about magic numbers (was gomnd)
     - varnamelen    # Don't complain about variable name lengths
     - wrapcheck     # Don't require error wrapping everywhere
     - nlreturn      # Don't require newlines before returns
@@ -33,10 +35,7 @@ linters:
     - staticcheck   # Run staticcheck
     - unused        # Check for unused code
     - misspell      # Check for common misspellings
-    - gofmt         # Check formatting
     - govet         # Run go vet
-    - gosimple      # Suggest code simplifications
-    - typecheck     # Type check the code
 
 issues:
   exclude-rules:
