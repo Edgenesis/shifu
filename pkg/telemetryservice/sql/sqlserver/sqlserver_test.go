@@ -94,7 +94,7 @@ func TestInsertDataToDB(t *testing.T) {
 			db, sm, err := sqlmock.New()
 			assert.Nil(t, err)
 			if tC.preCloseDB {
-				_ = db.Close()
+				db.Close()
 			} else {
 				defer db.Close()
 			}

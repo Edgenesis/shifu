@@ -128,7 +128,7 @@ func (c *Client) connectionMonitor() {
 func (c *Client) reconnect() error {
 	// Close existing connection if any
 	if c.udpConnection != nil {
-		_ = c.udpConnection.Close()
+		c.udpConnection.Close()
 		c.udpConnection = nil
 	}
 
@@ -526,6 +526,6 @@ func (c *Client) CleanUp() {
 
 	close(c.stopCh)
 	if c.udpConnection != nil {
-		_ = c.udpConnection.Close()
+		c.udpConnection.Close()
 	}
 }

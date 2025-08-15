@@ -112,18 +112,18 @@ func TestNewConfigFromEnv(t *testing.T) {
 	defer func() {
 		for key, value := range originalVars {
 			if value == "" {
-				_ = os.Unsetenv(key)
+				os.Unsetenv(key)
 			} else {
-				_ = os.Setenv(key, value)
+				os.Setenv(key, value)
 			}
 		}
 	}()
 
 	// Test with valid environment
-	_ = os.Setenv("AZURE_OPENAI_APIKEY", "test-key")
-	_ = os.Setenv("AZURE_OPENAI_HOST", "https://test.openai.azure.com/")
-	_ = os.Setenv("DEPLOYMENT_NAME", "gpt-4")
-	_ = os.Setenv("VERSION", "v1.0.0")
+	os.Setenv("AZURE_OPENAI_APIKEY", "test-key")
+	os.Setenv("AZURE_OPENAI_HOST", "https://test.openai.azure.com/")
+	os.Setenv("DEPLOYMENT_NAME", "gpt-4")
+	os.Setenv("VERSION", "v1.0.0")
 
 	config, err := NewConfigFromEnv()
 	if err != nil {

@@ -45,7 +45,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			ListenAddress := ":" + listenPort
 			Listener, err := net.Listen(ProtocolTCPStr, ListenAddress)
 			if err != nil {
-				return nil, fmt.Errorf("listen error")
+				return nil, fmt.Errorf("Listen error")
 			}
 			cm = &ConnectionMetaData{
 				ForwardAddress: *base.EdgeDevice.Spec.Address,

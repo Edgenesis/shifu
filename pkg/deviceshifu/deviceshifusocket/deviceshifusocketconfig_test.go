@@ -37,7 +37,7 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
 		TelemetryMs1000Int64 int64 = 1000
 		TelemetryMs3000Int64 int64 = 3000
-		TelemetryBoolFalse = false
+		TelemetryBoolFalse   bool  = false
 	)
 
 	var DriverProperties = deviceshifubase.DeviceShifuDriverProperties{

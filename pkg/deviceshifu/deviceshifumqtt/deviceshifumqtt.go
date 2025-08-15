@@ -235,7 +235,7 @@ func (ds *DeviceShifu) getMQTTTopicFromInstructionName(instructionName string) (
 		return instructionProperties.MQTTProtocolProperty.MQTTTopic, nil
 	}
 
-	return "", fmt.Errorf("instruction %v not found in list of deviceshifu instructions", instructionName)
+	return "", fmt.Errorf("Instruction %v not found in list of deviceshifu instructions", instructionName)
 }
 
 // TODO: update configs
@@ -259,7 +259,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
 			for telemetry, telemetryProperties := range telemetries {
 				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
-					return false, fmt.Errorf("device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
 				}
 
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName

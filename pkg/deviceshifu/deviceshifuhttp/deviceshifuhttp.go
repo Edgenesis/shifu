@@ -431,11 +431,11 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 			deviceName := ds.base.EdgeDevice.Name
 			for telemetry, telemetryProperties := range telemetries {
 				if ds.base.EdgeDevice.Spec.Address == nil {
-					return false, fmt.Errorf("device %v does not have an address", ds.base.Name)
+					return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
 				}
 
 				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
-					return false, fmt.Errorf("device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
 				}
 
 				var (

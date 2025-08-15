@@ -193,21 +193,21 @@ func (ds *DeviceShifuLwM2M) collectHTTPTelemtries() (bool, error) {
 			instructions := ds.base.DeviceShifuConfig.Instructions
 			for telemetry, telemetryProperties := range telemetries {
 				if ds.base.EdgeDevice.Spec.Address == nil {
-					return false, fmt.Errorf("device %v does not have an address", ds.base.Name)
+					return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
 				}
 
 				instructionName := telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				if instructionName == nil {
-					return false, fmt.Errorf("device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
 				}
 
 				if instructions.Instructions[*instructionName] == nil {
-					return false, fmt.Errorf("device %v telemetry %v instruction %v does not exist", ds.base.Name, telemetry, *instructionName)
+					return false, fmt.Errorf("Device %v telemetry %v instruction %v does not exist", ds.base.Name, telemetry, *instructionName)
 				}
 
 				objectId := instructions.Instructions[*instructionName].DeviceShifuProtocolProperties["ObjectId"]
 				if objectId == "" {
-					return false, fmt.Errorf("device %v telemetry %v does not have an object id", ds.base.Name, telemetry)
+					return false, fmt.Errorf("Device %v telemetry %v does not have an object id", ds.base.Name, telemetry)
 				}
 				data, err := ds.server.Read(objectId)
 				if err != nil {

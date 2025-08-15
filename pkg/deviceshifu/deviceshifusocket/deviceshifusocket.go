@@ -44,12 +44,12 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			connectionType := base.EdgeDevice.Spec.ProtocolSettings.SocketSetting.NetworkType
 			if connectionType == nil || *connectionType != "tcp" {
 				// todo need to validate in crd ( kubebuilder )
-				return nil, fmt.Errorf("sorry!, Shifu currently only support TCP Socket")
+				return nil, fmt.Errorf("Sorry!, Shifu currently only support TCP Socket")
 			}
 
 			socketConnection, err := net.Dial(*connectionType, *base.EdgeDevice.Spec.Address)
 			if err != nil {
-				return nil, fmt.Errorf("cannot connect to %v", *base.EdgeDevice.Spec.Address)
+				return nil, fmt.Errorf("Cannot connect to %v", *base.EdgeDevice.Spec.Address)
 			}
 
 			logger.Infof("Connected to '%v'", *base.EdgeDevice.Spec.Address)
