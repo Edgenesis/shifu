@@ -60,9 +60,5 @@ func TestInstructionHandler(t *testing.T) {
 }
 
 func check(Result interface{}) bool {
-	res := true
-	if Result == nil {
-		res = false
-	}
-	return res
+	return Result != nil
 }

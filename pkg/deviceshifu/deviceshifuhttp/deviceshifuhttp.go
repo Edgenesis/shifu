@@ -275,7 +275,7 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 	for parameterName, parameterValues := range values {
 		if parameterName == "flags_no_parameter" {
 			if len(parameterValues) == 1 {
-				flagsStr = " " + strings.Replace(parameterValues[0], ",", " ", -1)
+				flagsStr = " " + strings.ReplaceAll(parameterValues[0], ",", " ")
 			} else {
 				for _, parameterValue := range parameterValues {
 					flagsStr += " " + parameterValue
@@ -293,9 +293,10 @@ func createHTTPCommandlineRequestString(r *http.Request, driverExecution string,
 		}
 	}
 
-	if instruction == deviceshifubase.DeviceDefaultCMDDoNotExec {
+	switch instruction {
+	case deviceshifubase.DeviceDefaultCMDDoNotExec:
 		return strings.TrimSpace(flagsStr)
-	} else if instruction == deviceshifubase.DeviceDefaultCMDStubHealth {
+	case deviceshifubase.DeviceDefaultCMDStubHealth:
 		return "ls"
 	}
 

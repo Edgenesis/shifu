@@ -1,0 +1,25 @@
+version: "2"
+
+run:
+  timeout: 5m
+  go: '1.24'
+
+linters:
+  disable:
+    - exhaustive    # Don't require exhaustive switch statements
+    - exhaustruct   # Don't require all struct fields to be initialized
+    - mnd           # Don't complain about magic numbers
+    - varnamelen    # Don't complain about variable name lengths
+    - wrapcheck     # Don't require error wrapping everywhere
+    - nlreturn      # Don't require newlines before returns
+    - wsl           # Don't enforce whitespace linting
+    - funlen        # Don't limit function length
+    - cyclop        # Don't check cyclomatic complexity
+    - lll           # Don't enforce line length limits
+  enable:
+    - errcheck      # Check for important error handling
+    - ineffassign   # Check for ineffective assignments  
+    - staticcheck   # Run staticcheck
+    - unused        # Check for unused code
+    - misspell      # Check for common misspellings
+    - govet         # Run go vet

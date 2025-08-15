@@ -117,10 +117,10 @@ func (s *Server) Run() error {
 	switch *s.settings.SecurityMode {
 	case v1alpha1.SecurityModeDTLS:
 		return s.startDTLSServer()
+	case v1alpha1.SecurityModeNone:
 	default:
 		logger.Infof("securityMode not set or not support, using none security mode")
-	// default using none security mode
-	case v1alpha1.SecurityModeNone:
+		// default using none security mode
 	}
 	return s.startUDPServer()
 }

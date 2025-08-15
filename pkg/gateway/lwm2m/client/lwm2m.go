@@ -526,6 +526,6 @@ func (c *Client) CleanUp() {
 
 	close(c.stopCh)
 	if c.udpConnection != nil {
-		_ = c.udpConnection.Close()
+		c.udpConnection.Close()
 	}
 }
