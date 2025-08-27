@@ -24,7 +24,7 @@ require (
 	github.com/pion/dtls/v3 v3.0.6
 	github.com/plgd-dev/go-coap/v3 v3.4.0
 	github.com/spf13/cobra v1.9.1
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	github.com/taosdata/driver-go/v3 v3.7.3
 	golang.org/x/crypto v0.39.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
