@@ -1,0 +1,1 @@
+# Changelog since [v0.x.0](https://github.com/Edgenesis/shifu/releases/tag/v0.x.0)
