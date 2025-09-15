@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-camera-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-http:v0.79.0-rc1
+      - image: edgehub/deviceshifu-http-http:v0.79.0
         name: deviceshifu-http
         ports:
         - containerPort: 8080
