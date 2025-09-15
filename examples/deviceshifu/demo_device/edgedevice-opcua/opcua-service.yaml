@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: opcua-device
+  namespace: devices
+spec:
+  selector:
+    app: opcua-device
+  ports:
+  - port: 4840
+    targetPort: 4840
