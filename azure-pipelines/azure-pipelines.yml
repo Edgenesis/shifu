@@ -911,56 +911,23 @@ stages:
 
       - job: docker_push_shifu_demo_mac
         pool:
-          vmImage: "macOS-latest"
+          vmImage: "ubuntu-latest"
         steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
           - script: |
-              brew --version
-              brew update
-              brew --version
-              dockerInstallationScriptName='docker.rb'
-              dockerInstallationScriptUrl="https://raw.githubusercontent.com/Homebrew/homebrew-cask/fe866ec0765de141599745f03e215452db7f511b/Casks/$dockerInstallationScriptName"
-              # dockerInstallationScriptUrl="https://raw.githubusercontent.com/Homebrew/homebrew-cask/master/Casks/$dockerInstallationScriptName"
-              curl -L  $dockerInstallationScriptUrl > $dockerInstallationScriptName && brew install --cask $dockerInstallationScriptName
-              echo 'Installing Docker Desktop for Mac ...'
-              start=$SECONDS
-              sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --install-privileged-components
-              open -a /Applications/Docker.app --args --unattended --accept-license
-              end=$SECONDS
-              duration=$(( end - start ))
-              echo "Docker Desktop for Mac has been installed in $duration seconds"
-              echo 'Starting Docker service ...'
-              start=$SECONDS
-              retries=0
-              maxRetries=100
-              sudo bash -c `
-              set -x
-              command -v docker || echo 'test docker command 1: not found'
-              i=0
-              while ! /Applications/Docker.app/Contents/Resources/bin/docker system info &>/dev/null; do
-              (( i++ == 0 )) && printf %s '-- Waiting for Docker to finish starting up...' || printf '.'
-              command -v docker || echo 'test docker command loop: not found'
-              sleep 5
-              if [ $i -gt 180 ];then sudo /Applications/Docker.app/Contents/MacOS/com.docker.diagnose check;uname -a;system_profiler SPHardwareDataType;echo "::error::-- Wait docker start $i s too long, exit"; exit 1; fi
-              done
-              echo "::notice::-- Docker is ready.Wait time is $i s"
-              uname -a || true
-              system_profiler SPHardwareDataType || true
-              `
-              end=$SECONDS
-              duration=$(( end - start ))
-              echo "Docker service has started after $duration seconds"
-              docker --version
-              docker-compose --version
-            displayName: Install and start Docker
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+            displayName: configure multi-arch and buildx
           - script: |
               set -e
-              bash ./test/scripts/deviceshifu-demo-aio.sh build_demo amd64
-              bash ./test/scripts/deviceshifu-demo-aio.sh build_demo arm64
+              bash ./test/scripts/deviceshifu-demo-aio.sh build_demo arm64 darwin
               ls -al
-            displayName: "Run the build script"
+            displayName: "Build macOS ARM64 demo"
           - script: |
               set -e
-              mkdir testdir && tar -xvf shifu_demo_aio_darwin_amd64.tar -C testdir && cd testdir
+              mkdir testdir && tar -xvf shifu_demo_aio_darwin_arm64.tar -C testdir && cd testdir
               chmod +x ./test/scripts/deviceshifu-demo-aio.sh && sudo ./test/scripts/deviceshifu-demo-aio.sh run_demo
             displayName: "test run_demo"
           - script: |
@@ -977,7 +944,6 @@ stages:
             inputs:
               sshEndpoint: "shifurun-ssh"
               contents: |
-                shifu_demo_aio_darwin_amd64.tar
                 shifu_demo_aio_darwin_arm64.tar
               targetFolder: "/home/ubuntu/demo-files"
               readyTimeout: "20000"
@@ -996,7 +962,6 @@ stages:
             inputs:
               sshEndpoint: "shifu.dev"
               contents: |
-                shifu_demo_aio_darwin_amd64.tar
                 shifu_demo_aio_darwin_arm64.tar
               targetFolder: "/home/ubuntu/demo-files"
               readyTimeout: "20000"
@@ -1008,3 +973,4 @@ stages:
               runOptions: "inline"
               inline: "sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content"
               readyTimeout: "20000"
+
