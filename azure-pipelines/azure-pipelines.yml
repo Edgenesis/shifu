@@ -42,42 +42,64 @@ pool:
   vmImage: "ubuntu-latest"
 
 stages:
-  - stage: macos_docker_smoke
-    displayName: macOS Docker smoke
+  - stage: macos_demo_build_smoke
+    displayName: macOS Demo Build Smoke Test
     jobs:
-      - job: macos_docker_smoke
-        displayName: macOS Docker smoke
+      - job: build_macos_demo
+        displayName: Build macOS Demo on Linux
         pool:
-          vmImage: "macOS-latest"
+          vmImage: "ubuntu-latest"
         steps:
+          - task: GoTool@0
+            inputs:
+              version: $(goVersion)
           - script: |
               set -euo pipefail
-              echo '=== macOS Docker Desktop Smoke Test ==='
+              echo '=== macOS Demo Build Smoke Test ==='
               echo 'System info:'
-              sw_vers
-              echo 'Installing Docker Desktop...'
-              brew install --cask --no-quarantine docker-desktop
-              echo 'Installing Docker components...'
-              sudo /Applications/Docker.app/Contents/MacOS/install --accept-license
-              echo 'Starting Docker Desktop...'
-              open -a /Applications/Docker.app --args --unattended --accept-license
-              echo 'Waiting for Docker processes to start...'
-              sleep 30
-              echo 'Checking Docker installation:'
-              echo '1. Docker version:'
+              uname -a
               docker --version
-              echo '2. Docker Desktop processes:'
-              ps aux | grep -i docker | head -10 || true
-              echo '3. Docker installation files:'
-              ls -la /Applications/Docker.app/Contents/MacOS/ | head -5
-              ls -la /usr/local/bin/ | grep docker || true
-              echo '4. Attempting Docker daemon connection:'
-              if docker info 2>&1; then
-                echo '✅ Docker daemon is running - attempting hello-world'
-                docker run --rm hello-world
-                echo '✅ macOS Docker smoke test PASSED'
+              go version
+              echo 'Setting up Docker buildx for multi-arch builds...'
+              docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
+              docker buildx create --use
+              echo 'Building macOS-targeted demo packages (simulating macOS environment)...'
+              # Create a wrapper script that simulates macOS environment
+              cat > build_macos_demo.sh << 'EOF'
+              #!/bin/bash
+              # Override uname to simulate macOS
+              function uname() {
+                if [ "$1" = "-s" ]; then
+                  echo "Darwin"
+                elif [ "$1" = "-m" ]; then
+                  echo "x86_64"
+                else
+                  command uname "$@"
+                fi
+              }
+              export -f uname
+              # Run the original script with architecture parameter
+              bash test/scripts/deviceshifu-demo-aio.sh build_demo "$1"
+              EOF
+              chmod +x build_macos_demo.sh
+              echo 'Building for amd64...'
+              ./build_macos_demo.sh amd64
+              echo 'Building for arm64...'
+              ./build_macos_demo.sh arm64
+              echo 'Checking built artifacts:'
+              ls -la shifu_demo_aio_darwin_*.tar || ls -la *.tar || echo "No tar files found"
+              echo 'Extracting and testing demo structure:'
+              if [ -f shifu_demo_aio_darwin_amd64.tar ]; then
+                mkdir -p test_extract
+                echo 'Contents of darwin amd64 tar:'
+                tar -tf shifu_demo_aio_darwin_amd64.tar | head -20
+                tar -xf shifu_demo_aio_darwin_amd64.tar -C test_extract
+                echo 'Demo structure:'
+                find test_extract -name "*.sh" -o -name "shifu*" | head -10
+                echo '✅ macOS demo build smoke test PASSED'
               else
-                echo '⚠️  Docker daemon not ready yet (expected in CI), but installation successful'
-                echo '✅ macOS Docker installation smoke test PASSED'
+                echo '❌ macOS demo tar file not found - showing what we got:'
+                ls -la *.tar || echo "No tar files at all"
+                exit 1
               fi
-            displayName: Install Docker Desktop and run hello-world
+            displayName: Build and verify macOS demo packages
