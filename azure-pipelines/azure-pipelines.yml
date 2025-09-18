@@ -55,26 +55,27 @@ stages:
               DOCKER_CLI="/Applications/Docker.app/Contents/Resources/bin/docker"
               echo 'Installing Docker Desktop...'
               brew install --cask --no-quarantine docker-desktop
-              echo 'Starting Docker Desktop...'
-              open -a /Applications/Docker.app --args --unattended --accept-license
-              echo 'Waiting for Docker to start...'
+              echo 'Installing Docker components...'
+              sudo /Applications/Docker.app/Contents/MacOS/install --accept-license
+              echo 'Starting Docker daemon...'
+              sudo /Applications/Docker.app/Contents/MacOS/com.docker.backend &
+              echo 'Waiting for Docker daemon to be ready...'
               i=0
-              while ! "$DOCKER_CLI" system info &>/dev/null; do
+              while ! "$DOCKER_CLI" version &>/dev/null; do
                 if [ $i -eq 0 ]; then
-                  printf '%s' '-- Waiting for Docker to finish starting up...'
+                  printf '%s' '-- Waiting for Docker daemon...'
                 else
                   printf '.'
                 fi
-                sleep 10
+                sleep 5
                 i=$((i + 1))
-                if [ $i -gt 60 ]; then
-                  echo '\n::error::Docker did not start within expected time';
-                  ls -la /Applications/Docker.app/Contents/MacOS/ || true
-                  ls -la /Applications/Docker.app/Contents/Resources/bin/ || true
+                if [ $i -gt 120 ]; then
+                  echo '\n::error::Docker daemon did not start within expected time';
+                  ps aux | grep docker || true
                   exit 1
                 fi
               done
-              printf '\nDocker Desktop is ready\n'
+              printf '\nDocker daemon is ready\n'
               "$DOCKER_CLI" --version
               "$DOCKER_CLI" run --rm hello-world
             displayName: Install Docker Desktop and run hello-world
