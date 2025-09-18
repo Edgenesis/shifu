@@ -44,7 +44,6 @@ pool:
 stages:
   - stage: macos_docker_smoke
     displayName: macOS Docker smoke
-    condition: contains(variables['Build.SourceBranch'], 'macos-docker-smoke')
     jobs:
       - job: macos_docker_smoke
         displayName: macOS Docker smoke
