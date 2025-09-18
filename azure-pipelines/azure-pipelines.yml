@@ -43,6 +43,7 @@ pool:
 
 stages:
   - stage: go_test_and_kind_e2e_test
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/macos-docker-smoke'))
     jobs:
       - job: go_build_and_test
         steps:
@@ -848,7 +849,7 @@ stages:
             displayName: push edgehub/telemetryservice
 
   - stage: docker_build_shifu_demo_push
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.SourceBranch'],'refs/tags'), not(contains(variables['Build.SourceBranchName'],'rc')))
+    condition: and(succeeded(), ne(variables['Build.SourceBranch'], 'refs/heads/macos-docker-smoke'), ne(variables['Build.Reason'], 'PullRequest'), contains(variables['Build.SourceBranch'],'refs/tags'), not(contains(variables['Build.SourceBranchName'],'rc')))
     jobs:
       - job: docker_push_shifu_demo
         steps:
@@ -917,10 +918,7 @@ stages:
               brew --version
               brew update
               brew --version
-              dockerInstallationScriptName='docker.rb'
-              dockerInstallationScriptUrl="https://raw.githubusercontent.com/Homebrew/homebrew-cask/fe866ec0765de141599745f03e215452db7f511b/Casks/$dockerInstallationScriptName"
-              # dockerInstallationScriptUrl="https://raw.githubusercontent.com/Homebrew/homebrew-cask/master/Casks/$dockerInstallationScriptName"
-              curl -L  $dockerInstallationScriptUrl > $dockerInstallationScriptName && brew install --cask $dockerInstallationScriptName
+              brew install --cask --no-quarantine docker
               echo 'Installing Docker Desktop for Mac ...'
               start=$SECONDS
               sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --install-privileged-components
@@ -1008,3 +1006,45 @@ stages:
               runOptions: "inline"
               inline: "sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content"
               readyTimeout: "20000"
+
+  - stage: macos_docker_smoke
+    displayName: macOS Docker smoke
+    condition: eq(variables['Build.SourceBranch'], 'refs/heads/macos-docker-smoke')
+    jobs:
+      - job: macos_docker_smoke
+        displayName: macOS Docker smoke
+        pool:
+          vmImage: "macOS-latest"
+        steps:
+          - script: |
+              set -euo pipefail
+              DOCKER_CLI="/Applications/Docker.app/Contents/Resources/bin/docker"
+              brew --version
+              brew update
+              brew --version
+              brew install --cask --no-quarantine docker
+              echo 'Installing Docker Desktop for Mac ...'
+              start=$SECONDS
+              sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --install-privileged-components
+              open -a /Applications/Docker.app --args --unattended --accept-license
+              i=0
+              while ! "$DOCKER_CLI" system info &>/dev/null; do
+                if [ $i -eq 0 ]; then
+                  printf '%s' '-- Waiting for Docker to finish starting up...'
+                else
+                  printf '.'
+                fi
+                sleep 5
+                i=$((i + 1))
+                if [ $i -gt 180 ]; then
+                  echo '\n::error::Docker did not start within expected time';
+                  sudo /Applications/Docker.app/Contents/MacOS/com.docker.diagnose check || true
+                  exit 1
+                fi
+              done
+              end=$SECONDS
+              duration=$(( end - start ))
+              printf '\nDocker Desktop started after %s seconds\n' "$duration"
+              "$DOCKER_CLI" --version
+              "$DOCKER_CLI" run --rm hello-world
+            displayName: Install Docker Desktop and run hello-world
