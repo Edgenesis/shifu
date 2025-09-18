@@ -53,14 +53,11 @@ stages:
           - script: |
               set -euo pipefail
               DOCKER_CLI="/Applications/Docker.app/Contents/Resources/bin/docker"
-              brew --version
-              brew update
-              brew --version
-              brew install --cask --no-quarantine docker
-              echo 'Installing Docker Desktop for Mac ...'
-              start=$SECONDS
-              sudo /Applications/Docker.app/Contents/MacOS/Docker --unattended --install-privileged-components
+              echo 'Installing Docker Desktop...'
+              brew install --cask --no-quarantine docker-desktop
+              echo 'Starting Docker Desktop...'
               open -a /Applications/Docker.app --args --unattended --accept-license
+              echo 'Waiting for Docker to start...'
               i=0
               while ! "$DOCKER_CLI" system info &>/dev/null; do
                 if [ $i -eq 0 ]; then
@@ -68,17 +65,16 @@ stages:
                 else
                   printf '.'
                 fi
-                sleep 5
+                sleep 10
                 i=$((i + 1))
-                if [ $i -gt 180 ]; then
+                if [ $i -gt 60 ]; then
                   echo '\n::error::Docker did not start within expected time';
-                  sudo /Applications/Docker.app/Contents/MacOS/com.docker.diagnose check || true
+                  ls -la /Applications/Docker.app/Contents/MacOS/ || true
+                  ls -la /Applications/Docker.app/Contents/Resources/bin/ || true
                   exit 1
                 fi
               done
-              end=$SECONDS
-              duration=$(( end - start ))
-              printf '\nDocker Desktop started after %s seconds\n' "$duration"
+              printf '\nDocker Desktop is ready\n'
               "$DOCKER_CLI" --version
               "$DOCKER_CLI" run --rm hello-world
             displayName: Install Docker Desktop and run hello-world
