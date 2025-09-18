@@ -1009,7 +1009,7 @@ stages:
 
   - stage: macos_docker_smoke
     displayName: macOS Docker smoke
-    condition: eq(variables['Build.SourceBranch'], 'refs/heads/macos-docker-smoke')
+    condition: or(eq(variables['Build.SourceBranch'], 'refs/heads/macos-docker-smoke'), contains(variables['Build.SourceBranch'], 'macos-docker-smoke'))
     jobs:
       - job: macos_docker_smoke
         displayName: macOS Docker smoke
