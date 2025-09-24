@@ -19,6 +19,7 @@ package controllers
 import (
 	"context"
 	"testing"
+	"time"
 
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/stretchr/testify/assert"
@@ -153,7 +154,7 @@ func TestTelemetryServiceReconcile(t *testing.T) {
 	// Assert that there were no errors
 	assert.NoError(t, err)
 	// Assert that the result does not requeue
-	assert.False(t, result.Requeue)
+	assert.Equal(t, time.Duration(0), result.RequeueAfter)
 
 	// Check if Deployment and Service instances were created
 	deployment := &appsv1.Deployment{}
