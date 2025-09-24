@@ -64,7 +64,21 @@ func TestInstructionHandler(t *testing.T) {
 
 	go mockdevice.StartMockDevice(availableFuncs, instructionHandler)
 
-	time.Sleep(100 * time.Microsecond)
+	// Wait for server to be ready with proper health check
+	serverReady := false
+	for i := 0; i < 50; i++ {
+		resp, err := http.Get("http://localhost:12345/get_status")
+		if err == nil && resp != nil {
+			resp.Body.Close()
+			serverReady = true
+			break
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	
+	if !serverReady {
+		t.Fatal("Mock device server failed to start within timeout")
+	}
 
 	for _, c := range mocks {
 		t.Run(c.name, func(t *testing.T) {
