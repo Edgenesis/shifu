@@ -25,7 +25,7 @@ require (
 	github.com/plgd-dev/go-coap/v3 v3.4.0
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
-	github.com/taosdata/driver-go/v3 v3.7.3
+	github.com/taosdata/driver-go/v3 v3.7.5
 	golang.org/x/crypto v0.41.0
 	knative.dev/pkg v0.0.0-20221010143036-21d3b47e2efe
 	sigs.k8s.io/controller-runtime v0.22.1

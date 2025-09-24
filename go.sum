@@ -223,8 +223,8 @@ github.com/stretchr/testify v1.8.1/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o
 github.com/stretchr/testify v1.8.2/go.mod h1:w2LPCIKwWwSfY2zedu0+kehJoqGctiVI29o6fzry7u4=
 github.com/stretchr/testify v1.11.1 h1:7s2iGBzp5EwR7/aIZr8ao5+dra3wiQyKjjFuvgVKu7U=
 github.com/stretchr/testify v1.11.1/go.mod h1:wZwfW3scLgRK+23gO65QZefKpKQRnfz6sD981Nm4B6U=
-github.com/taosdata/driver-go/v3 v3.7.3 h1:bnzHF/GsChvzhgjkKrZCpCQrOe2LjwluC7l2bPtRjUM=
-github.com/taosdata/driver-go/v3 v3.7.3/go.mod h1:gSxBEPOueMg0rTmMO1Ug6aeD7AwGdDGvUtLrsDTTpYc=
+github.com/taosdata/driver-go/v3 v3.7.5 h1:Vk7Rs3K0T6Bg59AXPB5RZso7lnJIG9lOPmlcaAHbkC8=
+github.com/taosdata/driver-go/v3 v3.7.5/go.mod h1:gSxBEPOueMg0rTmMO1Ug6aeD7AwGdDGvUtLrsDTTpYc=
 github.com/tidwall/gjson v1.14.2/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
 github.com/tidwall/gjson v1.14.4 h1:uo0p8EbA09J7RQaflQ1aBRffTR7xedD2bcIVSYxLnkM=
 github.com/tidwall/gjson v1.14.4/go.mod h1:/wbyibRr2FHMks5tjHJ5F8dMZh3AcwJEMf5vlfC0lxk=
