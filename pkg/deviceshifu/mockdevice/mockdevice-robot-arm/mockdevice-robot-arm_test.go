@@ -51,7 +51,7 @@ func TestInstructionHandler(t *testing.T) {
 		}
 		time.Sleep(10 * time.Millisecond)
 	}
-	
+
 	if !serverReady {
 		t.Fatal("Mock device server failed to start within timeout")
 	}
