@@ -16,4 +16,8 @@
 
 - Bump k8s.io/api from 0.33.4 to 0.34.1 by @dependabot[bot] in https://github.com/Edgenesis/shifu/pull/1268
 
+## 注意⚠️
+
+- [问题 #1271](https://github.com/Edgenesis/shifu/issues/1271) 自 v0.80.0 起将 PLC4X DeviceShifu 支持标记为弃用，并计划在 v0.81.0 正式移除
+
 **完整变更日志**: https://github.com/Edgenesis/shifu/compare/v0.79.0...v0.80.0
