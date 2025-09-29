@@ -578,6 +578,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app.kubernetes.io/name: crd
     control-plane: controller-manager
   name: shifu-crd-controller-manager
   namespace: shifu-crd-system
@@ -585,10 +586,12 @@ spec:
   replicas: 1
   selector:
     matchLabels:
+      app.kubernetes.io/name: crd
       control-plane: controller-manager
   template:
     metadata:
       labels:
+        app.kubernetes.io/name: crd
         control-plane: controller-manager
     spec:
       containers:
