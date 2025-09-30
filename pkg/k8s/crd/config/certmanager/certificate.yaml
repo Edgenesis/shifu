@@ -1,0 +1,41 @@
+# The following manifests contain a self-signed issuer CR and a certificate CR for metrics server.
+# More document can be found at https://docs.cert-manager.io
+# WARNING: Requires cert-manager to be installed in your cluster.
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  labels:
+    app.kubernetes.io/name: certificate
+    app.kubernetes.io/instance: metrics-certs
+    app.kubernetes.io/component: certificate
+    app.kubernetes.io/created-by: shifu-crd
+    app.kubernetes.io/part-of: shifu-crd
+    app.kubernetes.io/managed-by: kustomize
+  name: selfsigned-issuer
+  namespace: system
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  labels:
+    app.kubernetes.io/name: certificate
+    app.kubernetes.io/instance: metrics-certs
+    app.kubernetes.io/component: certificate
+    app.kubernetes.io/created-by: shifu-crd
+    app.kubernetes.io/part-of: shifu-crd
+    app.kubernetes.io/managed-by: kustomize
+  name: metrics-certs
+  namespace: system
+spec:
+  # Service names need to be in the format: <service-name>.<namespace>.svc
+  # The service name and namespace will be substituted by kustomize
+  dnsNames:
+  - controller-manager-metrics-service.system.svc
+  - controller-manager-metrics-service.system.svc.cluster.local
+  issuerRef:
+    kind: Issuer
+    name: selfsigned-issuer
+  secretName: metrics-server-cert

@@ -3,12 +3,16 @@ kind: Service
 metadata:
   labels:
     control-plane: controller-manager
+    app.kubernetes.io/name: crd
+    app.kubernetes.io/managed-by: kustomize
   name: controller-manager-metrics-service
   namespace: system
 spec:
   ports:
   - name: https
     port: 8443
-    targetPort: https
+    protocol: TCP
+    targetPort: 8443
   selector:
     control-plane: controller-manager
+    app.kubernetes.io/name: crd
