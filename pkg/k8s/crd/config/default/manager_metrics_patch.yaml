@@ -1,4 +1,9 @@
-# This patch adds the args to allow exposing the metrics endpoint using HTTPS
+# This patch adds the args to allow exposing the metrics endpoint.
+# By default, metrics are served on HTTP (:8080) to avoid x509 errors when cert-manager is not enabled.
+# For HTTPS metrics, enable cert-manager and uncomment cert_metrics_manager_patch.yaml
 - op: add
   path: /spec/template/spec/containers/0/args/0
-  value: --metrics-bind-address=:8443
+  value: --metrics-bind-address=:8080
+- op: add
+  path: /spec/template/spec/containers/0/args/1
+  value: --metrics-secure=false

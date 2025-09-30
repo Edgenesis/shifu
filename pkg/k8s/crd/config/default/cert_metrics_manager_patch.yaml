@@ -1,4 +1,15 @@
-# This patch adds the args, volumes, and ports to allow the manager to use the metrics-server certs.
+# This patch enables HTTPS metrics with cert-manager certificates.
+# When this patch is applied, it overrides the default HTTP configuration and enables secure metrics.
+
+# Override metrics bind address to use HTTPS port
+- op: replace
+  path: /spec/template/spec/containers/0/args/0
+  value: --metrics-bind-address=:8443
+
+# Override metrics-secure to enable HTTPS
+- op: replace
+  path: /spec/template/spec/containers/0/args/1
+  value: --metrics-secure=true
 
 # Add the volumeMount for the metrics-server certs
 - op: add

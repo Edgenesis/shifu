@@ -574,10 +574,10 @@ metadata:
   namespace: shifu-crd-system
 spec:
   ports:
-  - name: https
-    port: 8443
+  - name: http
+    port: 8080
     protocol: TCP
-    targetPort: 8443
+    targetPort: 8080
   selector:
     app.kubernetes.io/name: crd
     control-plane: controller-manager
@@ -604,7 +604,8 @@ spec:
     spec:
       containers:
       - args:
-        - --metrics-bind-address=:8443
+        - --metrics-bind-address=:8080
+        - --metrics-secure=false
         - --leader-elect
         - --enable-user-metrics
         - --user-metrics-interval=60
