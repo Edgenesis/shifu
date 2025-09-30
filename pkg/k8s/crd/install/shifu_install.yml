@@ -593,7 +593,7 @@ spec:
         - --upstream=http://127.0.0.1:8080/
         - --logtostderr=true
         - --v=10
-        image: bitnami/kube-rbac-proxy:0.14.1
+        image: bitnamilegacy/kube-rbac-proxy:0.14.1
         name: kube-rbac-proxy
         ports:
         - containerPort: 8443
