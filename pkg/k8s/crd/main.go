@@ -139,14 +139,11 @@ func main() {
 		BindAddress:   metricsAddr,
 		SecureServing: secureMetrics,
 		TLSOpts:       tlsOpts,
-	}
-
-	if secureMetrics {
 		// FilterProvider is used to protect the metrics endpoint with authn/authz.
-		// These configurations ensure that only authorized users and service accounts
-		// can access the metrics endpoint. The RBAC are configured in 'config/rbac/kustomization.yaml'. More info:
-		// https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.22.1/pkg/metrics/filters#WithAuthenticationAndAuthorization
-		metricsServerOptions.FilterProvider = filters.WithAuthenticationAndAuthorization
+		// This ensures that only authorized users and service accounts can access the metrics endpoint,
+		// regardless of whether TLS is enabled or not. The RBAC are configured in 'config/rbac/kustomization.yaml'.
+		// More info: https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.22.1/pkg/metrics/filters#WithAuthenticationAndAuthorization
+		FilterProvider: filters.WithAuthenticationAndAuthorization,
 	}
 
 	// If the certificate is not specified, controller-runtime will automatically
