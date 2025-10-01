@@ -24,7 +24,6 @@ SHIFU_IMG_LIST=(
     'edgehub/deviceshifu-http-socket'
     'edgehub/deviceshifu-http-mqtt'
     'edgehub/deviceshifu-http-opcua'
-    'edgehub/deviceshifu-http-plc4x'
     'edgehub/shifu-controller'
     'edgehub/mockdevice-thermometer'
     'edgehub/mockdevice-robot-arm'
