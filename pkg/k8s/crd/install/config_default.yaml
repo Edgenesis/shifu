@@ -9,7 +9,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: edgedevices.shifu.edgenesis.io
 spec:
   group: shifu.edgenesis.io
@@ -240,7 +240,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: telemetryservices.shifu.edgenesis.io
 spec:
   group: shifu.edgenesis.io
@@ -417,6 +417,14 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - pods
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - ""
+  resources:
   - services
   verbs:
   - create
@@ -471,17 +479,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: shifu-crd-metrics-reader
-rules:
-- nonResourceURLs:
-  - /metrics
-  verbs:
-  - get
----
-apiVersion: rbac.authorization.k8s.io/v1
-kind: ClusterRole
-metadata:
-  name: shifu-crd-proxy-role
+  name: shifu-crd-metrics-auth-role
 rules:
 - apiGroups:
   - authentication.k8s.io
@@ -495,6 +493,16 @@ rules:
   - subjectaccessreviews
   verbs:
   - create
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shifu-crd-metrics-reader
+rules:
+- nonResourceURLs:
+  - /metrics
+  verbs:
+  - get
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -526,11 +534,11 @@ subjects:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: shifu-crd-proxy-rolebinding
+  name: shifu-crd-metrics-auth-rolebinding
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
-  name: shifu-crd-proxy-role
+  name: shifu-crd-metrics-auth-role
 subjects:
 - kind: ServiceAccount
   name: shifu-crd-controller-manager
@@ -559,21 +567,26 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/name: crd
     control-plane: controller-manager
   name: shifu-crd-controller-manager-metrics-service
   namespace: shifu-crd-system
 spec:
   ports:
-  - name: https
-    port: 8443
-    targetPort: https
+  - name: http
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
   selector:
+    app.kubernetes.io/name: crd
     control-plane: controller-manager
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
+    app.kubernetes.io/name: crd
     control-plane: controller-manager
   name: shifu-crd-controller-manager
   namespace: shifu-crd-system
@@ -581,26 +594,18 @@ spec:
   replicas: 1
   selector:
     matchLabels:
+      app.kubernetes.io/name: crd
       control-plane: controller-manager
   template:
     metadata:
       labels:
+        app.kubernetes.io/name: crd
         control-plane: controller-manager
     spec:
       containers:
       - args:
-        - --secure-listen-address=0.0.0.0:8443
-        - --upstream=http://127.0.0.1:8080/
-        - --logtostderr=true
-        - --v=10
-        image: bitnami/kube-rbac-proxy:0.14.1
-        name: kube-rbac-proxy
-        ports:
-        - containerPort: 8443
-          name: https
-      - args:
-        - --health-probe-bind-address=:8081
-        - --metrics-bind-address=127.0.0.1:8080
+        - --metrics-bind-address=:8080
+        - --metrics-secure=false
         - --leader-elect
         - --enable-user-metrics
         - --user-metrics-interval=60
@@ -630,7 +635,9 @@ spec:
             memory: 20Mi
         securityContext:
           allowPrivilegeEscalation: false
+        volumeMounts: []
       securityContext:
         runAsNonRoot: true
       serviceAccountName: shifu-crd-controller-manager
       terminationGracePeriodSeconds: 10
+      volumes: []

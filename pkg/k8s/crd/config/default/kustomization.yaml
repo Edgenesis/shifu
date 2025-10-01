@@ -9,10 +9,12 @@ namespace: shifu-crd-system
 namePrefix: shifu-crd-
 
 # Labels to add to all resources and selectors.
-#commonLabels:
-#  someName: someValue
+#labels:
+#- includeSelectors: true
+#  pairs:
+#    someName: someValue
 
-bases:
+resources:
 - ../edgedevice
 - ../rbac
 - ../manager
@@ -23,52 +25,98 @@ bases:
 #- ../certmanager
 # [PROMETHEUS] To enable prometheus monitor, uncomment all sections with 'PROMETHEUS'.
 #- ../prometheus
+# [METRICS] Expose the controller manager metrics service.
+- metrics_service.yaml
+# [NETWORK POLICY] Protect the /metrics endpoint and Webhook Server with NetworkPolicy.
+# Only Pod(s) running a namespace labeled with 'metrics: enabled' will be able to gather the metrics.
+# Only CR(s) which requires webhooks and are applied on namespaces labeled with 'webhooks: enabled' will
+# be able to communicate with the Webhook Server.
+#- ../network-policy
 
-patchesStrategicMerge:
-# Protect the /metrics endpoint by putting it behind auth.
-# If you want your controller-manager to expose the /metrics
-# endpoint w/o any authn/z, please comment the following line.
-- manager_auth_proxy_patch.yaml
+# Uncomment the patches line if you enable Metrics
+patches:
+# [METRICS] The following patch will enable the metrics endpoint using HTTPS and the port :8443.
+# More info: https://book.kubebuilder.io/reference/metrics
+- path: manager_metrics_patch.yaml
+  target:
+    kind: Deployment
 
-# Mount the controller config file for loading manager configurations
-# through a ComponentConfig type
-#- manager_config_patch.yaml
+# Uncomment the patches line if you enable Metrics and CertManager
+# [METRICS-WITH-CERTS] To enable HTTPS metrics with cert-manager, uncomment the following patches.
+# This will configure the controller to use port 8443 with TLS certificates.
+#- path: cert_metrics_manager_patch.yaml
+#  target:
+#    kind: Deployment
+#- path: cert_metrics_service_patch.yaml
+#  target:
+#    kind: Service
+#    name: controller-manager-metrics-service
 
 # [WEBHOOK] To enable webhook, uncomment all the sections with [WEBHOOK] prefix including the one in
 # crd/kustomization.yaml
-#- manager_webhook_patch.yaml
+#- path: manager_webhook_patch.yaml
+#  target:
+#    kind: Deployment
 
-# [CERTMANAGER] To enable cert-manager, uncomment all sections with 'CERTMANAGER'.
-# Uncomment 'CERTMANAGER' sections in crd/kustomization.yaml to enable the CA injection in the admission webhooks.
-# 'CERTMANAGER' needs to be enabled to use ca injection
-#- webhookcainjection_patch.yaml
-
-# the following config is for teaching kustomize how to do var substitution
-vars:
 # [CERTMANAGER] To enable cert-manager, uncomment all sections with 'CERTMANAGER' prefix.
-#- name: CERTIFICATE_NAMESPACE # namespace of the certificate CR
-#  objref:
-#    kind: Certificate
-#    group: cert-manager.io
-#    version: v1
-#    name: serving-cert # this name should match the one in certificate.yaml
-#  fieldref:
-#    fieldpath: metadata.namespace
-#- name: CERTIFICATE_NAME
-#  objref:
-#    kind: Certificate
-#    group: cert-manager.io
-#    version: v1
-#    name: serving-cert # this name should match the one in certificate.yaml
-#- name: SERVICE_NAMESPACE # namespace of the service
-#  objref:
+# Uncomment the following replacements to add the cert-manager CA injection annotations
+#replacements:
+#- source: # Uncomment the following block to enable certificates for metrics
 #    kind: Service
 #    version: v1
-#    name: webhook-service
-#  fieldref:
-#    fieldpath: metadata.namespace
-#- name: SERVICE_NAME
-#  objref:
+#    name: controller-manager-metrics-service
+#    fieldPath: metadata.name
+#  targets:
+#    - select:
+#        kind: Certificate
+#        group: cert-manager.io
+#        version: v1
+#        name: metrics-certs
+#      fieldPaths:
+#        - spec.dnsNames.0
+#        - spec.dnsNames.1
+#      options:
+#        delimiter: '.'
+#        index: 0
+#        create: true
+#    - select: # Set the Service name for TLS config in Prometheus ServiceMonitor
+#        kind: ServiceMonitor
+#        group: monitoring.coreos.com
+#        version: v1
+#        name: controller-manager-metrics-monitor
+#      fieldPaths:
+#        - spec.endpoints.0.tlsConfig.serverName
+#      options:
+#        delimiter: '.'
+#        index: 0
+#        create: true
+#
+#- source:
 #    kind: Service
 #    version: v1
-#    name: webhook-service
+#    name: controller-manager-metrics-service
+#    fieldPath: metadata.namespace
+#  targets:
+#    - select:
+#        kind: Certificate
+#        group: cert-manager.io
+#        version: v1
+#        name: metrics-certs
+#      fieldPaths:
+#        - spec.dnsNames.0
+#        - spec.dnsNames.1
+#      options:
+#        delimiter: '.'
+#        index: 1
+#        create: true
+#    - select: # Set the Service namespace for TLS in Prometheus ServiceMonitor
+#        kind: ServiceMonitor
+#        group: monitoring.coreos.com
+#        version: v1
+#        name: controller-manager-metrics-monitor
+#      fieldPaths:
+#        - spec.endpoints.0.tlsConfig.serverName
+#      options:
+#        delimiter: '.'
+#        index: 1
+#        create: true

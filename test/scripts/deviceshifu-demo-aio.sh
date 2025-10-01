@@ -39,7 +39,6 @@ KIND_IMG="kindest/node:v1.31.0"
 KIND_VERSION="v0.24.0"
 
 UTIL_IMG_LIST=(
-    'bitnami/kube-rbac-proxy:0.14.1'
     $KIND_IMG
     'nginx:1.21'
     'eclipse-mosquitto:2.0.14'

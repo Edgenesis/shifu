@@ -1,6 +1,6 @@
 domain: edgenesis.io
 layout:
-- go.kubebuilder.io/v3
+- go.kubebuilder.io/v4
 projectName: crd
 repo: edgenesis.io/shifu
 resources:

@@ -13,7 +13,6 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
                 make download-demo-files
                 kind delete cluster && kind create cluster --image=kindest/node:v1.24.0
                 kind load docker-image nginx:1.21
-                kind load docker-image bitnami/kube-rbac-proxy:0.14.1
                 kind load docker-image edgehub/deviceshifu-http-http:$TAG
                 kind load docker-image edgehub/shifu-controller:$TAG
                 kind load docker-image edgehub/mockdevice-agv:$TAG
@@ -26,7 +25,6 @@ if [ "$1" == "apply" ] || [ "$1" == "delete" ]; then
                 docker rmi $(docker images | grep 'edgehub/mockdevice' | awk '{print $3}')
                 docker rmi $(docker images | grep 'edgehub/deviceshifu-http-http' | awk '{print $3}')
                 docker rmi $(docker images | grep 'edgehub/shifu-controller' | awk '{print $3}')
-                docker rmi bitnami/kube-rbac-proxy:0.14.1
                 docker rmi $(docker images | grep 'kindest/node' | awk '{print $3}')
                 docker rmi nginx:1.21
         fi
