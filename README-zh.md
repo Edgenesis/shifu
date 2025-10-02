@@ -26,13 +26,15 @@ Shifu是一个k8s原生的，生产级的，支持多协议设备接入的开放
 <br/><br/>
 
 <div align="center">
-    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/-Discord-424549?style=social&logo=discord" height=25></a>
+    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height=25></a>
     &nbsp;
-    <a href="https://twitter.com/ShifuFramework"><img src="https://img.shields.io/badge/-Twitter-red?style=social&logo=twitter" height=25></a>
+    <a href="https://x.com/ShifuFramework"><img src="https://img.shields.io/twitter/follow/ShifuFramework" height=25></a>
     &nbsp;
-    <a href="https://www.linkedin.com/company/76257633/admin/"><img src="https://img.shields.io/badge/-Linkedin-red?style=social&logo=linkedin" height=25></a>
-     &nbsp;
-    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height=25></a>
+    <a href="https://www.linkedin.com/company/edgenesis/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" height=25></a>
+    &nbsp;
+    <a href="https://www.youtube.com/channel/UCsaj5f4IKKKn9OMiTVYCvRA"><img src="https://img.shields.io/youtube/channel/subscribers/UCsaj5f4IKKKn9OMiTVYCvRA" height=25></a>
+    &nbsp;
+    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu" height=25></a>
 </div>
 
 ## ✨招聘✨
@@ -80,10 +82,11 @@ Shifu是一个k8s原生的，生产级的，支持多协议设备接入的开放
 
 您的意见对我们来说无比宝贵。 我们无比欢迎您的到来！
 
-[![Discord](https://img.shields.io/badge/Discord-join-brightgreen)](https://discord.gg/CkRwsJ7raw)
-[![Twitter](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
+[![加入 Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/CkRwsJ7raw)
+[![关注 X](https://img.shields.io/twitter/follow/ShifuFramework)](https://x.com/ShifuFramework)
 [![Reddit](https://img.shields.io/badge/Reddit-post-orange)](https://www.reddit.com/r/Shifu/)
 [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
+[![YouTube 订阅](https://img.shields.io/youtube/channel/subscribers/UCsaj5f4IKKKn9OMiTVYCvRA)](https://www.youtube.com/channel/UCsaj5f4IKKKn9OMiTVYCvRA)
 
 ## 开始上手
 欢迎参考🗒️[Shifu技术文档](https://shifu.dev/)获取更详细的信息:

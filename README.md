@@ -25,13 +25,15 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT g
 </div>
 
 <div align="center">
-    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/-Discord-424549?style=social&logo=discord" height=25></a>
+    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height=25></a>
     &nbsp;
-    <a href="https://twitter.com/ShifuFramework"><img src="https://img.shields.io/badge/-Twitter-red?style=social&logo=twitter" height=25></a>
+    <a href="https://x.com/ShifuFramework"><img src="https://img.shields.io/twitter/follow/ShifuFramework" height=25></a>
     &nbsp;
-    <a href="https://www.linkedin.com/company/76257633/admin/"><img src="https://img.shields.io/badge/-Linkedin-red?style=social&logo=linkedin" height=25></a>
-     &nbsp;
-    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height=25></a>
+    <a href="https://www.linkedin.com/company/edgenesis/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" height=25></a>
+    &nbsp;
+    <a href="https://www.youtube.com/channel/UCsaj5f4IKKKn9OMiTVYCvRA"><img src="https://img.shields.io/youtube/channel/subscribers/UCsaj5f4IKKKn9OMiTVYCvRA" height=25></a>
+    &nbsp;
+    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu" height=25></a>
 </div>
 
 ## Shifu's value: Let's develop APPs, not infra
@@ -72,9 +74,10 @@ Shifu is a Kubernetes native, production-grade, protocol & vendor agnostic IoT g
 Welcome to the Shifu community to share your thoughts and ideas! Any suggestion will be deeply valued.
 We couldn't be more excited to have you.
 
-[![Discord](https://img.shields.io/badge/Discord-join-brightgreen)](https://discord.gg/CkRwsJ7raw)
-[![Twitter](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
+[![Join Discord](https://img.shields.io/badge/Discord-Join-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/CkRwsJ7raw)
+[![Follow X](https://img.shields.io/twitter/follow/ShifuFramework)](https://x.com/ShifuFramework)
 [![GitHub Discussions](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
+[![YouTube Subscribers](https://img.shields.io/youtube/channel/subscribers/UCsaj5f4IKKKn9OMiTVYCvRA)](https://www.youtube.com/channel/UCsaj5f4IKKKn9OMiTVYCvRA)
 
 ## Get Started
 
