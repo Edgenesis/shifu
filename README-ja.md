@@ -26,13 +26,15 @@ ShifuはKubernetesネイティブで、プロトコルやベンダーに依存�
 <br/><br/>
 
 <div align="center">
-    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/-Discord-424549?style=social&logo=discord" height="25"></a>
+    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height="25"></a>
     &nbsp;
-    <a href="https://twitter.com/ShifuFramework"><img src="https://img.shields.io/badge/-Twitter-red?style=social&logo=twitter" height="25"></a>
+    <a href="https://x.com/ShifuFramework"><img src="https://img.shields.io/twitter/follow/ShifuFramework" height="25"></a>
     &nbsp;
-    <a href="https://www.linkedin.com/company/76257633/admin/"><img src="https://img.shields.io/badge/-Linkedin-red?style=social&logo=linkedin" height="25"></a>
-     &nbsp;
-    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu?style=social" height="25"></a>
+    <a href="https://www.linkedin.com/company/edgenesis/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" height="25"></a>
+    &nbsp;
+    <a href="https://www.youtube.com/channel/UCsaj5f4IKKKn9OMiTVYCvRA"><img src="https://img.shields.io/youtube/channel/subscribers/UCsaj5f4IKKKn9OMiTVYCvRA" height="25"></a>
+    &nbsp;
+    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu" height="25"></a>
 </div>
 
 ## Shifuの価値: アプリケーションを開発し、インフラを構築しない
@@ -74,9 +76,10 @@ ShifuはKubernetesネイティブで、プロトコルやベンダーに依存�
 Shifuコミュニティに参加し、あなたの考えやアイデアをシェアしてください。あなたの意見は非常に貴重です。
 皆さんの参加を心待ちにしています。
 
-[![Discordで参加](https://img.shields.io/badge/Discord-join-brightgreen)](https://discord.gg/CkRwsJ7raw)
-[![Twitterでフォロー](https://img.shields.io/badge/Twitter-follow-blue)](https://twitter.com/ShifuFramework)
+[![Discordに参加](https://img.shields.io/badge/Discord-Join-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/CkRwsJ7raw)
+[![Xをフォロー](https://img.shields.io/twitter/follow/ShifuFramework)](https://x.com/ShifuFramework)
 [![GitHub Discussionsで議論](https://img.shields.io/badge/GitHub%20Discussions-post-orange)](https://github.com/Edgenesis/shifu/discussions)
+[![YouTubeを登録](https://img.shields.io/youtube/channel/subscribers/UCsaj5f4IKKKn9OMiTVYCvRA)](https://www.youtube.com/channel/UCsaj5f4IKKKn9OMiTVYCvRA)
 
 ## はじめに
 
