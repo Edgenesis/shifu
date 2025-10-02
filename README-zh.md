@@ -26,15 +26,15 @@ Shifu是一个k8s原生的，生产级的，支持多协议设备接入的开放
 <br/><br/>
 
 <div align="center">
-    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height=25></a>
+    <a href="https://discord.gg/2tbdBrkGHv"><img src="https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white" height="25"></a>
     &nbsp;
-    <a href="https://x.com/ShifuFramework"><img src="https://img.shields.io/twitter/follow/ShifuFramework" height=25></a>
+    <a href="https://x.com/ShifuFramework"><img src="https://img.shields.io/twitter/follow/ShifuFramework" height="25"></a>
     &nbsp;
-    <a href="https://www.linkedin.com/company/edgenesis/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" height=25></a>
+    <a href="https://www.linkedin.com/company/edgenesis/"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" height="25"></a>
     &nbsp;
-    <a href="https://www.youtube.com/channel/UCsaj5f4IKKKn9OMiTVYCvRA"><img src="https://img.shields.io/youtube/channel/subscribers/UCsaj5f4IKKKn9OMiTVYCvRA" height=25></a>
+    <a href="https://www.youtube.com/channel/UCsaj5f4IKKKn9OMiTVYCvRA"><img src="https://img.shields.io/youtube/channel/subscribers/UCsaj5f4IKKKn9OMiTVYCvRA" height="25"></a>
     &nbsp;
-    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu" height=25></a>
+    <a href="https://github.com/Edgenesis/shifu"><img src="https://img.shields.io/github/stars/Edgenesis/shifu" height="25"></a>
 </div>
 
 ## ✨招聘✨
