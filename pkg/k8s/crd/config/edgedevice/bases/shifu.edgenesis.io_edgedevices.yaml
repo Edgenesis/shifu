@@ -184,11 +184,6 @@ spec:
                       Username:
                         type: string
                     type: object
-                  PLC4XSetting:
-                    properties:
-                      protocol:
-                        type: string
-                    type: object
                   SocketSetting:
                     description: SocketSetting defines Socket specific settings when
                       connecting to an EdgeDevice
