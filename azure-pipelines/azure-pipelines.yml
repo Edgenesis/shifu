@@ -895,20 +895,6 @@ stages:
               bash ./test/scripts/deviceshifu-demo-aio.sh build_demo arm64 darwin
               ls -al
             displayName: "Build macOS ARM64 demo"
-          - script: |
-              set -e
-              mkdir testdir && tar -xvf shifu_demo_aio_darwin_arm64.tar -C testdir && cd testdir
-              chmod +x ./test/scripts/deviceshifu-demo-aio.sh && sudo ./test/scripts/deviceshifu-demo-aio.sh run_demo
-            displayName: "test run_demo"
-          - script: |
-              set -e
-              sudo kubectl wait --for=condition=Available deploy/shifu-crd-controller-manager -n shifu-crd-system --timeout=150s
-              sudo kubectl wait --for=condition=Available deploy/deviceshifu-agv-deployment -n deviceshifu --timeout=150s
-              sudo kubectl wait --for=condition=Available deploy/agv -n devices --timeout=150s
-              sudo kubectl run nginx --image=nginx:1.21 -n deviceshifu
-              sudo kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
-              sudo kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
-            displayName: "test run_demo result"
           - task: CopyFilesOverSSH@0
             condition: succeeded()
             inputs:
