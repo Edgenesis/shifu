@@ -12,7 +12,15 @@
 
 - 将 Kubebuilder 从 v3 升级到 v4，利用新特性并保持兼容性
 
-- 移除 PLC4X DeviceShifu，简化代码库并减少维护负担
+## Breaking Change 💥
+
+- **移除 PLC4X DeviceShifu 模块** (#1271)
+  - 移除 PLC4X 集成模块，包括 `pkg/deviceshifu/deviceshifuplc4x/`、`cmd/deviceshifu/cmdplc4x/` 及相关示例
+  - 从 EdgeDevice CRD 中移除 `v1alpha1.ProtocolPLC4X` 协议类型
+  - 移除 `deviceshifu-http-plc4x` Docker 镜像及构建基础设施
+  - 移除 PLC4X Go 模块依赖 (`github.com/apache/plc4x/plc4go`)
+  - **迁移指南**：用户可以继续使用 Shifu v0.81.0 之前的版本以获得 PLC4X 支持,或联系 info@edgenesis.com 请求协议支持。我们将在未来通过替代实现方式继续支持工业协议(如 Modbus TCP/RTU、BACnet)
+  - **移除原因**：使用率低、构建复杂度高、依赖过时。协议支持将根据实际用户需求按需实现
 
 ## 文档更新 📚
 

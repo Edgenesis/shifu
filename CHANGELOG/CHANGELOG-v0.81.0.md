@@ -12,7 +12,15 @@
 
 - Migrate Kubebuilder from v3 to v4 to leverage new features and maintain compatibility
 
-- Remove PLC4X DeviceShifu to streamline codebase and reduce maintenance overhead
+## Breaking Changes 💥
+
+- **Remove PLC4X DeviceShifu Module** (#1271)
+  - Removed PLC4X integration module including `pkg/deviceshifu/deviceshifuplc4x/`, `cmd/deviceshifu/cmdplc4x/`, and related examples
+  - Removed `v1alpha1.ProtocolPLC4X` protocol type from EdgeDevice CRD
+  - Removed `deviceshifu-http-plc4x` Docker images and build infrastructure
+  - Removed PLC4X Go module dependency (`github.com/apache/plc4x/plc4go`)
+  - **Migration**: Users can continue using Shifu versions <v0.81.0 for PLC4X support, or contact info@edgenesis.com for protocol support requests. We will continue to support industrial protocols (such as Modbus TCP/RTU, BACnet) in the future through alternative implementations
+  - **Rationale**: Low usage, build complexity, and outdated dependencies. Protocol support will be implemented on-demand based on actual user requirements
 
 ## Documentation 📚
 
