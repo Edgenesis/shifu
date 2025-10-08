@@ -2,7 +2,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: edgedevices.shifu.edgenesis.io
 spec:
   group: shifu.edgenesis.io
@@ -62,6 +62,19 @@ spec:
                         type: string
                       endpointName:
                         type: string
+                      lifeTimeSec:
+                        default: 247
+                        description: reference https://datatracker.ietf.org/doc/html/rfc7252#section-4.8.2
+                        format: int64
+                        type: integer
+                      observeIntervalSec:
+                        default: 30
+                        format: int64
+                        type: integer
+                      pingIntervalSec:
+                        default: -1
+                        format: int64
+                        type: integer
                       pskIdentity:
                         type: string
                       pskKey:
@@ -69,6 +82,11 @@ spec:
                       securityMode:
                         default: None
                         type: string
+                      updateIntervalSec:
+                        default: 60
+                        format: int64
+                        minimum: 1
+                        type: integer
                     required:
                     - endpointName
                     type: object
@@ -94,6 +112,19 @@ spec:
                         type: string
                       endpointName:
                         type: string
+                      lifeTimeSec:
+                        default: 247
+                        description: reference https://datatracker.ietf.org/doc/html/rfc7252#section-4.8.2
+                        format: int64
+                        type: integer
+                      observeIntervalSec:
+                        default: 30
+                        format: int64
+                        type: integer
+                      pingIntervalSec:
+                        default: -1
+                        format: int64
+                        type: integer
                       pskIdentity:
                         type: string
                       pskKey:
@@ -101,6 +132,11 @@ spec:
                       securityMode:
                         default: None
                         type: string
+                      updateIntervalSec:
+                        default: 60
+                        format: int64
+                        minimum: 1
+                        type: integer
                     required:
                     - endpointName
                     type: object
@@ -145,11 +181,6 @@ spec:
                       SecurityPolicy:
                         type: string
                       Username:
-                        type: string
-                    type: object
-                  PLC4XSetting:
-                    properties:
-                      protocol:
                         type: string
                     type: object
                   SocketSetting:
@@ -197,7 +228,7 @@ apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.16.3
+    controller-gen.kubebuilder.io/version: v0.19.0
   name: telemetryservices.shifu.edgenesis.io
 spec:
   group: shifu.edgenesis.io

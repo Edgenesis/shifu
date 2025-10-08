@@ -251,6 +251,10 @@ func TestCommandHandleHTTPFunc(t *testing.T) {
 	r = dc.Post().Do(context.TODO())
 	assert.Nil(t, r.Error())
 
+	// test put method
+	r = dc.Put().Do(context.TODO())
+	assert.Nil(t, r.Error())
+
 	// test not supported http method case
 	r = dc.Delete().Do(context.TODO())
 	assert.Equal(t, "the server rejected our request for an unknown reason", r.Error().Error())

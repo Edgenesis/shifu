@@ -25,14 +25,14 @@ const (
 	ConfigmapInstructionsStr = "instructions"
 	ObjectIdStr              = "ObjectId"
 	DataTypeStr              = "DataType"
-
-	pingIntervalSec = 10
 )
 
 type Gateway struct {
 	client     *lwm2mclient.Client
 	k8sClient  *rest.RESTClient
 	edgeDevice *v1alpha1.EdgeDevice
+
+	pingIntervalSec int64
 }
 
 func New() (*Gateway, error) {
@@ -67,6 +67,8 @@ func New() (*Gateway, error) {
 	if err := gateway.LoadConfiguration(); err != nil {
 		return nil, err
 	}
+
+	gateway.pingIntervalSec = edgedevice.Spec.GatewaySettings.LwM2MSetting.PingIntervalSec
 
 	return gateway, nil
 }
@@ -153,22 +155,18 @@ func (g *Gateway) Start() error {
 		return err
 	}
 
-	// Register the client to the server
-	err := g.client.Register()
-	if err != nil {
-		logger.Errorf("Error registering client: %v", err)
-		return err
-	}
-
-	// Ping the client every 10 seconds
-	t := time.NewTicker(time.Second * pingIntervalSec)
-	for range t.C {
-		if err := g.client.Ping(); err != nil {
-			logger.Errorf("Error pinging client: %v", err)
-			g.ShutDown()
-			return err
+	if g.pingIntervalSec > 0 {
+		// Ping the client every pingIntervalSec seconds,by default disable
+		t := time.NewTicker(time.Second * time.Duration(g.pingIntervalSec))
+		for range t.C {
+			if err := g.client.Ping(); err != nil {
+				logger.Errorf("Error pinging client: %v", err)
+				g.ShutDown()
+				return err
+			}
 		}
 	}
+
 	return nil
 }
 
@@ -233,7 +231,7 @@ func (si *ShifuInstruction) Write(data interface{}) error {
 }
 
 func (si *ShifuInstruction) Execute() error {
-	resp, err := http.Post(si.Endpoint, "plain/text", nil)
+	resp, err := http.Post(si.Endpoint, "text/plain", nil)
 	if err != nil {
 		return err
 	}

@@ -26,13 +26,14 @@ const (
 	lwM2MVersion       = "1.0"
 	defaultBindingMode = "U"
 
-	defaultIntervalSec    = 30
-	defaultLifeTime       = 300
-	defaultUpdateInterval = 60
-	rootObjectId          = "root"
-	registerPath          = "/rd"
+	rootObjectId = "root"
+	registerPath = "/rd"
 
 	observeTaskSuffix = "-ob"
+
+	reconnectInterval   = 5 * time.Second
+	maxReconnectBackoff = 60 * time.Second
+	reconnectBackoffExp = 1.5
 )
 
 type Client struct {
@@ -40,8 +41,6 @@ type Client struct {
 	Config
 
 	locationPath     string
-	updateInterval   int
-	lifeTime         int
 	object           Object
 	lastModifiedTime time.Time
 	lastUpdatedTime  time.Time
@@ -49,6 +48,9 @@ type Client struct {
 
 	udpConnection *udpClient.Conn
 	taskManager   *TaskManager
+
+	reconnectCh chan struct{}
+	stopCh      chan struct{}
 }
 
 type Config struct {
@@ -60,25 +62,100 @@ type Config struct {
 
 func NewClient(ctx context.Context, config Config) (*Client, error) {
 	var client = &Client{
-		ctx:            context.TODO(),
-		Config:         config,
-		lifeTime:       defaultLifeTime,
-		updateInterval: defaultUpdateInterval,
-		object:         *NewObject(rootObjectId, nil),
-		taskManager:    NewTaskManager(ctx),
-		dataCache:      make(map[string]interface{}),
+		ctx:         ctx,
+		Config:      config,
+		object:      *NewObject(rootObjectId, nil),
+		taskManager: NewTaskManager(ctx),
+		dataCache:   make(map[string]interface{}),
+		reconnectCh: make(chan struct{}),
+		stopCh:      make(chan struct{}),
 	}
 
 	return client, nil
 }
 
 func (c *Client) Start() error {
+	// Initial connection
+	if err := c.connect(); err != nil {
+		return err
+	}
+
+	// Start connection monitor
+	go c.connectionMonitor()
+
+	return c.Register()
+}
+
+func (c *Client) connectionMonitor() {
+	backoff := reconnectInterval
+
+	for {
+		select {
+		case <-c.stopCh:
+			return
+
+		case <-c.reconnectCh:
+			logger.Info("Connection lost, attempting to reconnect...")
+
+			for {
+				// Try to reconnect
+				err := c.reconnect()
+				if err == nil {
+					logger.Info("Successfully reconnected")
+					backoff = reconnectInterval // Reset backoff on successful connection
+					break
+				}
+
+				logger.Errorf("Failed to reconnect: %v", err)
+
+				// Exponential backoff with max limit
+				backoff = time.Duration(float64(backoff) * reconnectBackoffExp)
+				if backoff > maxReconnectBackoff {
+					backoff = maxReconnectBackoff
+				}
+
+				select {
+				case <-c.stopCh:
+					return
+				case <-time.After(backoff):
+					continue
+				}
+			}
+		}
+	}
+}
+
+func (c *Client) reconnect() error {
+	// Close existing connection if any
+	if c.udpConnection != nil {
+		c.udpConnection.Close()
+		c.udpConnection = nil
+	}
+
+	// Establish new connection
+	if err := c.connect(); err != nil {
+		return err
+	}
+
+	// Update with the server
+	if err := c.Update(); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Client) connect() error {
 	udpClientOpts := []udp.Option{}
 
 	udpClientOpts = append(
 		udpClientOpts,
-		options.WithInactivityMonitor(time.Minute, func(cc *udpClient.Conn) {
-			_ = cc.Close()
+		options.WithInactivityMonitor(time.Second*time.Duration(c.Settings.UpdateIntervalSec), func(cc *udpClient.Conn) {
+			logger.Warn("Connection inactive, triggering reconnect")
+			select {
+			case c.reconnectCh <- struct{}{}:
+			default:
+			}
 		}),
 		options.WithMux(c.handleRouter()),
 	)
@@ -142,7 +219,7 @@ func (c *Client) Register() error {
 	// set query params for register request
 	// example: /rd?ep=shifu-gateway&lt=300&lwm2m=1.0&b=U
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsEndpointName, c.EndpointName))
-	request.AddQuery(fmt.Sprintf("%s=%d", QueryParamslifeTime, c.lifeTime))
+	request.AddQuery(fmt.Sprintf("%s=%d", QueryParamslifeTime, c.Settings.LifeTimeSec))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsLwM2MVersion, lwM2MVersion))
 	request.AddQuery(fmt.Sprintf("%s=%s", QueryParamsBindingMode, defaultBindingMode))
 	// only accept text/plain
@@ -163,11 +240,6 @@ func (c *Client) Register() error {
 
 	c.locationPath = locationPath
 	c.lastUpdatedTime = time.Now()
-	go func() {
-		if err := c.AutoUpdate(); err != nil {
-			logger.Errorf("failed to auto update registration: %v", err)
-		}
-	}()
 
 	logger.Infof("register %v success", c.locationPath)
 	return nil
@@ -192,26 +264,6 @@ func (c *Client) Delete() error {
 
 	logger.Infof("delete %v success", c.locationPath)
 	return nil
-}
-
-// AutoUpdate auto update registration
-// Reference: https://www.openmobilealliance.org/release/LightweightM2M/V1_0-20170208-A/OMA-TS-LightweightM2M-V1_0-20170208-A.pdf#page=30
-func (c *Client) AutoUpdate() error {
-	ticker := time.NewTicker(time.Duration(c.updateInterval) * time.Second)
-	for {
-		select {
-		case <-c.ctx.Done():
-			return nil
-		case <-ticker.C:
-			if c.isActivity() {
-				if err := c.Update(); err != nil {
-					logger.Errorf("failed to update registration: %v", err)
-					continue
-				}
-				logger.Debug("update registration success")
-			}
-		}
-	}
 }
 
 // Update update registration
@@ -370,16 +422,23 @@ func (c *Client) observe(w mux.ResponseWriter, token message.Token, objectId str
 	// report new data with interval 30s
 	// TODO need to config it by read Attribute from object
 
-	c.taskManager.AddTask(objectId, time.Second*defaultIntervalSec, func() {
+	c.taskManager.AddTask(objectId, time.Second*time.Duration(c.Settings.ObserveIntervalSec), func() {
 		data, err := c.object.ReadAll(objectId)
 		if err != nil {
+			logger.Errorf("failed to read data from object %s, error: %v", objectId, err)
 			return
 		}
 
 		jsonData := data.ReadAsJSON()
 
+		// check if udp connection is nil
+		if c.udpConnection == nil {
+			logger.Errorf("udp connection is nil, ignore observe")
+			return
+		}
+
 		c.dataCache[objectId] = jsonData
-		err = sendResponse(w.Conn(), token, obs, jsonData)
+		err = sendResponse(c.udpConnection, token, obs, jsonData)
 		if err != nil {
 			logger.Errorf("failed to send response: %v", err)
 			return
@@ -399,6 +458,12 @@ func (c *Client) observe(w mux.ResponseWriter, token message.Token, objectId str
 
 		jsonData := data.ReadAsJSON()
 
+		// check if udp connection is nil
+		if c.udpConnection == nil {
+			logger.Errorf("udp connection is nil, ignore observe")
+			return
+		}
+
 		// check data is changed
 		if data, exists := c.dataCache[objectId]; exists {
 			if string(jsonData) == data {
@@ -408,10 +473,12 @@ func (c *Client) observe(w mux.ResponseWriter, token message.Token, objectId str
 		}
 
 		c.dataCache[objectId] = jsonData
-		err = sendResponse(w.Conn(), token, obs, jsonData)
+		err = sendResponse(c.udpConnection, token, obs, jsonData)
 		if err != nil {
+			logger.Errorf("failed to send response: %v", err)
 			return
 		}
+
 		obs++
 		c.taskManager.ResetTask(objectId)
 	})
@@ -456,8 +523,9 @@ func sendResponse(cc mux.Conn, token []byte, obs uint32, body string) error {
 func (c *Client) CleanUp() {
 	c.taskManager.CancelAllTasks()
 	_ = c.Delete()
-}
 
-func (c *Client) isActivity() bool {
-	return time.Now().Before(c.lastUpdatedTime.Add(time.Duration(c.lifeTime) * time.Second))
+	close(c.stopCh)
+	if c.udpConnection != nil {
+		_ = c.udpConnection.Close()
+	}
 }

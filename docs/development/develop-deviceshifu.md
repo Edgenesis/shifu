@@ -306,4 +306,4 @@ For mockdevice you can check `pkg/deviceshifu/mockdevice` and for how to write e
 
 ## Miscellaneous
 
-If you are interested in more detailed guides on how to develop a `deviceshifu`, you can reference to the commit [65e124d9](https://github.com/Edgenesis/shifu/commit/65e124d9823afeca9640a7514c893224f67508a0) on how we created `deviceshifuplc4x`, a deviceshifu that utilizes plc4x library.
+If you are interested in more detailed guides on how to develop a `deviceshifu`, you can reference the historical commit [65e124d9](https://github.com/Edgenesis/shifu/commit/65e124d9823afeca9640a7514c893224f67508a0) that introduced the now-retired `deviceshifuplc4x` implementation.

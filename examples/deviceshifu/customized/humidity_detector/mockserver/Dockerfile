@@ -1,4 +1,4 @@
-FROM golang:1.23.1-alpine AS builder
+FROM golang:1.24.2-alpine AS builder
 WORKDIR /mockserver
 COPY *.go ./
 RUN go mod init mockserver

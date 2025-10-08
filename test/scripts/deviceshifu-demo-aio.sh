@@ -3,7 +3,10 @@
 set -e
 
 if [ $# -eq 0 ]; then
-    echo "No arguments provided, use 'run_demo', 'build_demo' or 'delete_demo'"
+    echo "Usage: $0 <action> [arch] [os]"
+    echo "  action: 'run_demo', 'build_demo' or 'delete_demo'"
+    echo "  arch: 'amd64' or 'arm64' (optional, defaults to system arch)"
+    echo "  os: 'linux' or 'darwin' (optional, defaults to system os)"
     exit 1
 fi
 
@@ -21,7 +24,6 @@ SHIFU_IMG_LIST=(
     'edgehub/deviceshifu-http-socket'
     'edgehub/deviceshifu-http-mqtt'
     'edgehub/deviceshifu-http-opcua'
-    'edgehub/deviceshifu-http-plc4x'
     'edgehub/shifu-controller'
     'edgehub/mockdevice-thermometer'
     'edgehub/mockdevice-robot-arm'
@@ -36,15 +38,15 @@ KIND_IMG="kindest/node:v1.31.0"
 KIND_VERSION="v0.24.0"
 
 UTIL_IMG_LIST=(
-    'bitnami/kube-rbac-proxy:0.14.1'
     $KIND_IMG
     'nginx:1.21'
     'eclipse-mosquitto:2.0.14'
 )
 
+# Determine architecture
 arch=$(uname -m)
 build_arch=""
-if [[ ($# -eq 2 && ($2 == "amd64" || $2 == "arm64")) ]]; then
+if [[ ($# -ge 2 && ($2 == "amd64" || $2 == "arm64")) ]]; then
     build_arch=$2
 elif [[ $arch == x86_64* ]]; then
     build_arch="amd64"
@@ -55,14 +57,32 @@ else
     exit 1
 fi
 
+# Determine OS
 os=$(uname -s)
 build_os=""
-if [[ $os == Linux* ]]; then
+if [[ ($# -ge 3 && ($3 == "linux" || $3 == "darwin")) ]]; then
+    build_os=$3
+elif [[ $os == Linux* ]]; then
     build_os="linux"
-elif  [[ $os == Darwin* ]]; then
+elif [[ $os == Darwin* ]]; then
     build_os="darwin"
 else
-    echo "No support for CPU arch: $os, exiting..."
+    echo "No support for OS: $os, exiting..."
+    exit 1
+fi
+
+# Validate supported combinations (only linux/amd64, linux/arm64, darwin/arm64)
+if [[ $build_os == "darwin" && $build_arch == "amd64" ]]; then
+    echo "Error: Darwin amd64 is not supported. Only darwin/arm64 is supported for macOS."
+    exit 1
+fi
+
+# Supported combinations: linux/amd64, linux/arm64, darwin/arm64
+supported_combinations=("linux/amd64" "linux/arm64" "darwin/arm64")
+current_combo="$build_os/$build_arch"
+if [[ ! " ${supported_combinations[@]} " =~ " ${current_combo} " ]]; then
+    echo "Unsupported combination: $current_combo"
+    echo "Supported combinations: ${supported_combinations[*]}"
     exit 1
 fi
 

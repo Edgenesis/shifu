@@ -9,7 +9,7 @@
 This is done by writing a YAML file to describe the device and its capabilities. We'd like to switch our definition to TD defined in WoT.
 
 Currently, If the device supports public protocols, we can support it seamlessly with our framework.
-We currently support: **MQTT, OPCUA, HTTP, Socket, TCP, Modbus, Simens s7 and all the protocl supported by plc4x (AB-Ethernet, ADS /AMS, BACnet/IP, CANopen, DeltaV, DF1, EtherNet/IP, Firmata, KNXnet/IP, Modbus, OPC-UA, S7)**
+We currently support: **MQTT, OPCUA, HTTP, Socket, TCP, Modbus, Simens s7, PLC4X** *(PLC4X DeviceShifu is deprecated as of v0.81.0 and scheduled for removal in a future release; see https://github.com/Edgenesis/shifu/issues/1271 for details.)*
 If the device only supports proprietary protocols, we would create a reusable driver for the device to abstract its capabilities and package it into a docker container, and then make the container a completely reusable digital twin called *deviceShifu*. Whenever you have a new project, you can just mix&match *deviceShifu* and configure it with the necessary parameters, just like how you play with lego blocks.
 
 An example for this scenario can be found [here](https://github.com/Edgenesis/shifu/tree/main/examples/rtspDeviceShifu):
@@ -142,7 +142,6 @@ type ProtocolSettings struct {
 	MQTTSetting   *MQTTSetting   `json:"MQTTSetting,omitempty"`
 	OPCUASetting  *OPCUASetting  `json:"OPCUASetting,omitempty"`
 	SocketSetting *SocketSetting `json:"SocketSetting,omitempty"`
-	PLC4XSetting  *PLC4XSetting  `json:"PLC4XSetting,omitempty"`
 	TCPSetting    *TCPSetting    `json:"TCPSetting,omitempty"`
 }
 

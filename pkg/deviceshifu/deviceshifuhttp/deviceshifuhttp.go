@@ -181,7 +181,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		}
 
 		switch reqType {
-		case http.MethodPost:
+		case http.MethodPost, http.MethodPut:
 			requestBody, parseErr = io.ReadAll(r.Body)
 			if parseErr != nil {
 				http.Error(w, "Error on parsing body", http.StatusBadRequest)
@@ -222,6 +222,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 		}
 
 		if resp != nil {
+			defer resp.Body.Close()
 			// Handling deviceshifu stuck when responseBody is a stream
 			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 			if !shouldUsePythonCustomProcessing {
@@ -250,7 +251,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			return
 		}
 
-		// TODO: For now, just write tht instruction to the response
+		// TODO: For now, just write the instruction to the response
 		logger.Warnf("resp is nil")
 		_, err := w.Write([]byte(handlerInstruction))
 		if err != nil {
@@ -385,6 +386,7 @@ func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.Hand
 		}
 
 		if resp != nil {
+			defer resp.Body.Close()
 			utils.CopyHeader(w.Header(), resp.Header)
 			w.WriteHeader(resp.StatusCode)
 
@@ -463,6 +465,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 				}
 
 				if resp != nil {
+					defer resp.Body.Close()
 					if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 						instructionFuncName, pythonCustomExist := deviceshifubase.CustomInstructionsPython[instruction]
 						if pythonCustomExist {

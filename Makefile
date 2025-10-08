@@ -1,12 +1,13 @@
 PROJECT_ROOT := $(abspath $(dir $(lastword $(MAKEFILE_LIST))))
 IMAGE_VERSION = $(shell cat version.txt)
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.31.0
-# Controller-Runtime branch `release-0.19` has the implementation of the setup-envtest's code responsible
-# for downloading the tarball from the correct location.
-ENVTEST_VERSION ?= release-0.19
+# This is automatically detected from the k8s.io/api version in go.mod
+ENVTEST_K8S_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "1.%d", $$3}')
+# ENVTEST_VERSION is the version of controller-runtime release branch to fetch the envtest setup script
+# This is automatically detected from the sigs.k8s.io/controller-runtime version in go.mod
+ENVTEST_VERSION ?= $(shell go list -m -f "{{ .Version }}" sigs.k8s.io/controller-runtime | awk -F'[v.]' '{printf "release-%d.%d", $$2, $$3}')
 
-DEVICESHIFU_CMDS := deviceshifu/cmdhttp deviceshifu/cmdmqtt deviceshifu/cmdopcua deviceshifu/cmdplc4x deviceshifu/cmdsocket
+DEVICESHIFU_CMDS := deviceshifu/cmdhttp deviceshifu/cmdmqtt deviceshifu/cmdopcua deviceshifu/cmdsocket
 HTTPSTUB_CMDS := httpstub/powershellstub httpstub/sshstub
 SHIFUCTL_CMD := shifuctl
 TELEMETRYSERVICE_CMD := telemetryservice
@@ -38,7 +39,7 @@ build:
 
 .PHONY: test
 test: fmt envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" go test -v -race -coverprofile=coverage.out -covermode=atomic $(shell go list ./... | grep -v -E '/cmd|/mockdevice|/pkg/telemetryservice')
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path)" go test -v -race -coverprofile=coverage.out -covermode=atomic $(shell go list ./... | grep -v -E '/cmd|/mockdevice|/pkg/telemetryservice')
 	go test -v -coverprofile=coverage_tdengine.out -covermode=atomic ./pkg/telemetryservice/...
 	
 buildx-push-image-deviceshifu-http-http:
@@ -60,11 +61,6 @@ buildx-push-image-deviceshifu-http-opcua:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuOPCUA \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --push
-
-buildx-push-image-deviceshifu-http-plc4x:
-	docker buildx build --platform=linux/amd64 -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X \
-		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
-		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --push
 
 buildx-push-image-deviceshifu-tcp-tcp:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuTCP\
@@ -135,8 +131,9 @@ buildx-push-image-deviceshifu: \
 	buildx-push-image-deviceshifu-http-mqtt \
 	buildx-push-image-deviceshifu-http-socket \
 	buildx-push-image-deviceshifu-http-opcua \
-	buildx-push-image-deviceshifu-http-plc4x \
-	buildx-push-image-deviceshifu-tcp-tcp
+	buildx-push-image-deviceshifu-tcp-tcp \
+	buildx-push-image-deviceshifu-http-lwm2m \
+	buildx-push-image-gateway-lwm2m
 
 buildx-push-image-telemetry-service:
 	docker buildx build --platform=linux/amd64,linux/arm64,linux/arm -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice \
@@ -172,11 +169,6 @@ buildx-build-image-deviceshifu-http-opcua:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuOPCUA \
 		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
 		-t edgehub/deviceshifu-http-opcua:${IMAGE_VERSION} --load
-
-buildx-build-image-deviceshifu-http-plc4x:
-	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuPLC4X\
-		--build-arg PROJECT_ROOT="${PROJECT_ROOT}" ${PROJECT_ROOT} \
-		-t edgehub/deviceshifu-http-plc4x:${IMAGE_VERSION} --load
 
 buildx-build-image-deviceshifu-tcp-tcp:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.deviceshifuTCP\
@@ -230,8 +222,9 @@ buildx-build-image-deviceshifu: \
 	buildx-build-image-deviceshifu-http-mqtt \
 	buildx-build-image-deviceshifu-http-socket \
 	buildx-build-image-deviceshifu-http-opcua \
-	buildx-build-image-deviceshifu-http-plc4x \
-	buildx-build-image-deviceshifu-tcp-tcp
+	buildx-build-image-deviceshifu-tcp-tcp \
+	buildx-build-image-deviceshifu-http-lwm2m \
+	buildx-build-image-gateway-lwm2m
 
 buildx-build-image-telemetry-service:
 	docker buildx build --platform=linux/$(shell go env GOARCH) -f ${PROJECT_ROOT}/dockerfiles/Dockerfile.telemetryservice\
@@ -252,7 +245,6 @@ download-demo-files:
 	docker pull edgehub/mockdevice-thermometer:${IMAGE_VERSION}
 	docker pull edgehub/deviceshifu-http-http:${IMAGE_VERSION}
 	docker pull edgehub/shifu-controller:${IMAGE_VERSION}
-	docker pull bitnami/kube-rbac-proxy:0.14.1
 	docker pull nginx:1.21
 
 docker-push-image-deviceshifu:
@@ -288,8 +280,8 @@ CONTROLLER_GEN ?= $(LOCALBIN)/controller-gen
 ENVTEST ?= $(LOCALBIN)/setup-envtest
 
 ## Tool Versions
-KUSTOMIZE_VERSION ?= v5.4.3
-CONTROLLER_TOOLS_VERSION ?= v0.16.3
+KUSTOMIZE_VERSION ?= v5.7.1
+CONTROLLER_TOOLS_VERSION ?= v0.19.0
 
 KUSTOMIZE_INSTALL_SCRIPT ?= "https://raw.githubusercontent.com/kubernetes-sigs/kustomize/master/hack/install_kustomize.sh"
 .PHONY: kustomize
@@ -306,3 +298,27 @@ $(CONTROLLER_GEN): $(LOCALBIN)
 envtest: $(ENVTEST) ## Download setup-envtest locally if necessary.
 $(ENVTEST): $(LOCALBIN)
 	$(call go-install-tool,$(ENVTEST),sigs.k8s.io/controller-runtime/tools/setup-envtest,$(ENVTEST_VERSION))
+
+.PHONY: setup-envtest
+setup-envtest: envtest ## Download the binaries required for ENVTEST in the local bin directory.
+	@echo "Setting up envtest binaries for Kubernetes version $(ENVTEST_K8S_VERSION)..."
+	@$(ENVTEST) use $(ENVTEST_K8S_VERSION) --bin-dir $(LOCALBIN) -p path || { \
+		echo "Error: Failed to set up envtest binaries for version $(ENVTEST_K8S_VERSION)."; \
+		exit 1; \
+	}
+
+# go-install-tool will 'go install' any package with custom target and name of binary, if it doesn't exist
+# $1 - target path with name of binary
+# $2 - package url which can be installed
+# $3 - specific version of package
+define go-install-tool
+@[ -f "$(1)-$(3)" ] && [ "$$(readlink -- "$(1)" 2>/dev/null)" = "$(1)-$(3)" ] || { \
+set -e; \
+package=$(2)@$(3) ;\
+echo "Downloading $${package}" ;\
+rm -f $(1) ;\
+GOBIN=$(LOCALBIN) go install $${package} ;\
+mv $(1) $(1)-$(3) ;\
+} ;\
+ln -sf $$(realpath $(1)-$(3)) $(1)
+endef

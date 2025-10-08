@@ -1,0 +1,16 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  labels:
+    app: edgedevice-lwm2m
+  name: edgedevice-lwm2m
+  namespace: devices
+spec:
+  sku: "test"
+  connection: "Ethernet"
+  address: ""
+  protocol: "LwM2M"
+  protocolSettings:
+    LwM2MSetting:
+      endpointName: deviceshifu-lwm2m-service
+      securityMode: None
