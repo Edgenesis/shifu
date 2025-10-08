@@ -53,22 +53,22 @@ var cipherSuiteMap = map[v1alpha1.CipherSuite]dtls.CipherSuiteID{
 }
 
 func CipherSuiteStringToCode(cipherSuitesStr v1alpha1.CipherSuite) (dtls.CipherSuiteID, error) {
-	ciperSuitCode, ok := cipherSuiteMap[cipherSuitesStr]
+	cipherSuiteCode, ok := cipherSuiteMap[cipherSuitesStr]
 	if !ok {
 		logger.Errorf("unknown cipher suite: %v", cipherSuitesStr)
 		return 0, errors.New("unknown cipher suite")
 	}
-	return ciperSuitCode, nil
+	return cipherSuiteCode, nil
 }
 
 func CipherSuiteStringsToCodes(cipherSuiteStrs []v1alpha1.CipherSuite) ([]dtls.CipherSuiteID, error) {
 	var cipherSuiteCodes = make([]dtls.CipherSuiteID, 0, len(cipherSuiteStrs))
-	for _, ciperSuitStr := range cipherSuiteStrs {
-		ciperSuitCode, err := CipherSuiteStringToCode(ciperSuitStr)
+	for _, cipherSuiteStr := range cipherSuiteStrs {
+		cipherSuiteCode, err := CipherSuiteStringToCode(cipherSuiteStr)
 		if err != nil {
 			return nil, err
 		}
-		cipherSuiteCodes = append(cipherSuiteCodes, ciperSuitCode)
+		cipherSuiteCodes = append(cipherSuiteCodes, cipherSuiteCode)
 	}
 	return cipherSuiteCodes, nil
 }
