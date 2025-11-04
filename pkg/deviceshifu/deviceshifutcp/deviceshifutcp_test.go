@@ -2,6 +2,7 @@ package deviceshifutcp
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
@@ -31,6 +32,9 @@ func TestMain(m *testing.M) {
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
+				if errors.Is(err, net.ErrClosed) {
+					return
+				}
 				logger.Error(err)
 				continue
 			}

@@ -4,6 +4,7 @@
 package telemetryservice
 
 import (
+	"net"
 	"net/http"
 	"testing"
 	"time"
@@ -11,44 +12,52 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-const (
-	unitTestServerAddress = "localhost:18927"
-)
-
 func TestStart(t *testing.T) {
 	testCases := []struct {
-		name     string
-		mux      *http.ServeMux
-		stopChan chan struct{}
-		addr     string
+		name string
+		mux  *http.ServeMux
 	}{
 		{
-			name:     "case1 pass",
-			mux:      http.NewServeMux(),
-			addr:     unitTestServerAddress,
-			stopChan: make(chan struct{}, 1),
+			name: "case1 pass",
+			mux:  http.NewServeMux(),
 		}, {
-			name:     "case2 without mux",
-			addr:     unitTestServerAddress,
-			stopChan: make(chan struct{}, 1),
+			name: "case2 without mux",
 		},
 	}
 
 	for _, c := range testCases {
-		go func() {
-			time.Sleep(time.Microsecond * 100)
-			c.stopChan <- struct{}{}
-		}()
-		err := Start(c.stopChan, c.mux, c.addr)
-		assert.Nil(t, err)
+		c := c
+		t.Run(c.name, func(t *testing.T) {
+			addr := getFreeLocalAddr(t)
+			stopChan := make(chan struct{}, 1)
+			go func(ch chan struct{}) {
+				time.Sleep(10 * time.Millisecond)
+				ch <- struct{}{}
+			}(stopChan)
+			err := Start(stopChan, c.mux, addr)
+			assert.Nil(t, err)
+		})
 	}
 }
 
 func TestNew(t *testing.T) {
 	stop := make(chan struct{}, 1)
 	go func() {
-		time.After(time.Millisecond * 100)
+		time.Sleep(100 * time.Millisecond)
 		stop <- struct{}{}
 	}()
 	New(stop)
+}
+
+func getFreeLocalAddr(t *testing.T) string {
+	t.Helper()
+	l, err := net.Listen("tcp", "127.0.0.1:0")
+	if err != nil {
+		t.Fatalf("failed to find free port: %v", err)
+	}
+	addr := l.Addr().String()
+	if err := l.Close(); err != nil {
+		t.Fatalf("failed to release listener: %v", err)
+	}
+	return addr
 }
