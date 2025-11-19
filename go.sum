@@ -194,8 +194,8 @@ github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c h1:+mdjkGKdHQG3305AYmd
 github.com/pkg/browser v0.0.0-20240102092130-5ac0b6a4141c/go.mod h1:7rwL4CYBLnjLxUqIJNnCWiEdr3bn6IUYi15bNlnbCCU=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
-github.com/plgd-dev/go-coap/v3 v3.4.0 h1:ZoGYFDv94xboP+41yW458fLDuYui+4eTgamqp3XJ7k4=
-github.com/plgd-dev/go-coap/v3 v3.4.0/go.mod h1:azpceqoHFeGzzNVm3RX4ox6xKHLOJ+pD0emPpr7FDXA=
+github.com/plgd-dev/go-coap/v3 v3.4.1 h1:1WzhqbzFf6Hh7sclKpbbx1K5NkNARf51IRTut8WiF9s=
+github.com/plgd-dev/go-coap/v3 v3.4.1/go.mod h1:2aZ1qXAYCtflx7KLvBr2/FjqYtaz0ByngZDHebOgqqM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 h1:Jamvg5psRIccs7FGNTlIRMkT8wgtp5eCXdBlqhYGL6U=
 github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
