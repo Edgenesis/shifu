@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-lwm2m-deployment
     spec:
       containers:
-        - image: edgehub/deviceshifu-http-lwm2m:v0.84.0-rc1
+        - image: edgehub/deviceshifu-http-lwm2m:v0.84.0
           name: deviceshifu-lwm2m
           ports:
             - containerPort: 8080
