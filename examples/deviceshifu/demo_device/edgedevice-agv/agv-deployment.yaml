@@ -16,7 +16,7 @@ spec:
         app: agv
     spec:
       containers:
-      - image: edgehub/mockdevice-agv:nightly
+      - image: edgehub/mockdevice-agv:v0.85.0-rc1
         name: agv
         ports:
         - containerPort: 11111
