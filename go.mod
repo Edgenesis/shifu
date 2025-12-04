@@ -20,7 +20,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.27.2
 	github.com/onsi/gomega v1.38.2
 	github.com/openai/openai-go v1.12.0
-	github.com/pion/dtls/v3 v3.0.7
+	github.com/pion/dtls/v3 v3.0.8
 	github.com/plgd-dev/go-coap/v3 v3.4.1
 	github.com/spf13/cobra v1.10.1
 	github.com/stretchr/testify v1.11.1
@@ -63,7 +63,7 @@ require (
 	github.com/minio/md5-simd v1.1.2 // indirect
 	github.com/philhofer/fwd v1.2.0 // indirect
 	github.com/pion/logging v0.2.4 // indirect
-	github.com/pion/transport/v3 v3.0.7 // indirect
+	github.com/pion/transport/v3 v3.1.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/rs/xid v1.6.0 // indirect
 	github.com/stoewer/go-strcase v1.3.0 // indirect
