@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-helloworld-deployment
     spec:
       containers:
-        - image: edgehub/deviceshifu-http-http:nightly
+        - image: edgehub/deviceshifu-http-http:v0.86.0-rc1
           name: deviceshifu-http
           ports:
             - containerPort: 8080
