@@ -167,6 +167,7 @@ type EdgeDeviceSpec struct {
 	GatewaySettings  *GatewaySettings   `json:"gatewaySettings,omitempty"`
 	CustomMetadata   *map[string]string `json:"customMetadata,omitempty"`
 
+	State *string `json:"state,omitempty"`
 	// TODO: add other fields like disconnectTimemoutInSeconds
 }
 
