@@ -25,8 +25,7 @@ const (
 	FilePermissions     = 0644
 
 	// Content processing
-	LanguageSeparator = "--------"
-	CodeBlockMarker   = "```"
+	CodeBlockMarker = "```"
 )
 
 // Config holds all configuration for the changelog generator
@@ -139,7 +138,6 @@ func (cg *ChangelogGenerator) buildMessages(releaseNotes string) []openai.ChatCo
 	return []openai.ChatCompletionMessageParamUnion{
 		openai.UserMessage(prompts.GreetingPrompts),
 		openai.UserMessage(prompts.TemplateENPrompts),
-		openai.UserMessage(prompts.TemplateZHPrompts),
 		openai.UserMessage(prompts.GeneratePrompts),
 		openai.UserMessage(releaseNotes),
 	}
@@ -173,15 +171,7 @@ func (cg *ChangelogGenerator) callOpenAI(messages []openai.ChatCompletionMessage
 
 // processAndSaveContent processes the AI response and saves changelog files
 func (cg *ChangelogGenerator) processAndSaveContent(content string) error {
-	// Split content into English and Chinese versions
-	parts := strings.Split(content, LanguageSeparator)
-	if len(parts) < 2 {
-		return fmt.Errorf("invalid content format: expected separator '%s' to split English and Chinese versions", LanguageSeparator)
-	}
-
-	// Process content for both languages
-	enContent := cg.processContent(parts[0])
-	zhContent := cg.processContent(parts[1])
+	enContent := cg.processContent(content)
 
 	// Ensure changelog directory exists
 	if err := cg.ensureChangelogDir(); err != nil {
@@ -194,13 +184,7 @@ func (cg *ChangelogGenerator) processAndSaveContent(content string) error {
 		return fmt.Errorf("failed to save English changelog: %w", err)
 	}
 
-	// Save Chinese changelog
-	zhPath := filepath.Join(cg.config.ChangelogDir, fmt.Sprintf("CHANGELOG-%s-zh.md", cg.config.Version))
-	if err := cg.saveFile(zhPath, zhContent); err != nil {
-		return fmt.Errorf("failed to save Chinese changelog: %w", err)
-	}
-
-	logger.Infof("Saved changelogs: %s, %s", enPath, zhPath)
+	logger.Infof("Saved changelog: %s", enPath)
 	return nil
 }
 

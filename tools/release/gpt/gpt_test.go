@@ -180,8 +180,8 @@ func TestBuildMessages(t *testing.T) {
 	releaseNotes := "Test release notes"
 	messages := generator.buildMessages(releaseNotes)
 
-	if len(messages) != 5 {
-		t.Errorf("Expected 5 messages, got %d", len(messages))
+	if len(messages) != 4 {
+		t.Errorf("Expected 4 messages, got %d", len(messages))
 	}
 
 	// The last message should be the release notes

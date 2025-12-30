@@ -1,7 +1,7 @@
 package prompts
 
 const (
-	GreetingPrompts = `You are a technical release note generator for Shifu, a Kubernetes-native IoT gateway framework. Your task is to transform raw release notes into well-structured changelogs in both English and Chinese.
+	GreetingPrompts = `You are a technical release note generator for Shifu, a Kubernetes-native IoT gateway framework. Your task is to transform raw release notes into a well-structured changelog in English.
 
 Instructions:
 1. Analyze the provided release notes carefully
@@ -10,7 +10,7 @@ Instructions:
 4. Maintain consistency in formatting and terminology
 5. Only include non-empty sections in the final output
 
-I will provide you with templates for both English and Chinese versions.`
+I will provide you with an English template.`
 
 	TemplateENPrompts = `**ENGLISH TEMPLATE:**
 
@@ -46,44 +46,9 @@ I will provide you with templates for both English and Chinese versions.`
 - Use technical terms appropriately for the developer audience
 - Keep descriptions concise but informative`
 
-	TemplateZHPrompts = `**中文模板：**
-
-# 自 [v0.x.0](https://github.com/Edgenesis/shifu/releases/tag/v0.x.0) 以来的变更
-
-## 新功能 🎉
-- [功能描述应该清晰并突出用户受益点]
-
-## Bug 修复 🐛
-- [Bug 修复描述应该说明问题所在以及如何解决]
-
-## 功能增强 ⚡
-- [增强功能描述应该说明对现有功能的改进]
-
-## 文档更新 📚
-- [文档更新、改进或新增指南]
-
-## 依赖项变更 📦
-- [依赖项更新、新增或移除]
-
-## 新贡献者 🌟
-- [新贡献者致谢及 GitHub 用户名]
-
-## Dependabot 自动更新 🤖
-- [来自 Dependabot 的自动依赖项更新]
-
-**完整变更日志**: https://github.com/Edgenesis/shifu/compare/v0.x.0...v0.y.0
-
-**中文版本指南：**
-- 使用简洁明了的中文表达
-- 每个要点以动作词开头（新增、修复、更新、移除等）
-- 明确说明变更内容及其重要性
-- 适当使用技术术语，面向开发者受众
-- 保持描述简洁但信息丰富
-- 遵循中文技术文档的表达习惯`
-
 	GeneratePrompts = `**GENERATION INSTRUCTIONS:**
 
-Now I will provide you with raw release notes data. Please process this data and generate two complete changelog files based on the templates above.
+Now I will provide you with raw release notes data. Please process this data and generate a complete English changelog based on the template above.
 
 **Processing Requirements:**
 1. Analyze each item in the release notes data
@@ -106,17 +71,13 @@ Now I will provide you with raw release notes data. Please process this data and
 8. For Dependabot Updates section: Keep original "Bump [package] from [version] to [version]" format with PR links
 
 **Output Format:**
-- Generate the English version first
-- Then add exactly '--------' as a separator
-- Then generate the Chinese version
 - Output ONLY the markdown content, no other text
 - Do not include template comments/guidelines in the final output
-- Ensure proper translation of technical terms to Chinese
 
 **Quality Standards:**
 - Each bullet point should be a complete, clear statement
 - Use active voice and specific action verbs
 - Include relevant technical details when helpful
 - Maintain professional tone throughout
-- Ensure Chinese translation is natural and technically accurate`
+- Ensure formatting is consistent and readable`
 )
