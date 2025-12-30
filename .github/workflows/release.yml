@@ -1,17 +1,7 @@
-name: Auto Generate Release Log
+name: Prepare Release Changelog
 
 on:
   workflow_dispatch:
-    inputs:
-      tag_name:
-        required: true
-        type: string
-      previous_tag_name:
-        required: true
-        type: string
-      target_commitish:
-        required: true
-        type: string
 
 permissions:
   contents: write
@@ -22,33 +12,76 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - uses: actions/setup-go@v5
         with:
-          go-version: "1.24.2"
-      - name: set version
+          go-version-file: go.mod
+
+      - name: Determine next release version
+        id: version
+        shell: bash
         run: |
-          echo "VERSION=$(echo "${{inputs.tag_name}}" | cut -d '-' -f1)" >> "$GITHUB_ENV"
-      - name: generate changelog
+          set -euo pipefail
+          git fetch --tags --force
+
+          latest_tag="$(git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+[.][0-9]+[.][0-9]+$' | head -n 1)"
+          if [[ -z "${latest_tag}" ]]; then
+            echo "No stable semver tags found (expected vX.Y.Z)" >&2
+            exit 1
+          fi
+
+          version="${latest_tag#v}"
+          IFS='.' read -r major minor patch <<< "${version}"
+          if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
+            echo "Latest tag ${latest_tag} is not numeric semver" >&2
+            exit 1
+          fi
+
+          next_tag="v${major}.$((minor + 1)).0"
+          echo "previous_tag=${latest_tag}" >> "$GITHUB_OUTPUT"
+          echo "next_tag=${next_tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Generate changelog
+        id: changelog
+        shell: bash
         run: |
-          set -e
-          response=$(curl -L \
-          -X POST \
-          -H "Accept: application/vnd.github+json" \
-          -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-          -H "X-GitHub-Api-Version: 2022-11-28" \
-          https://api.github.com/repos/Edgenesis/shifu/releases/generate-notes \
-          -d '{"tag_name":"${{inputs.tag_name}}","target_commitish":"${{inputs.target_commitish}}","previous_tag_name":"${{inputs.previous_tag_name}}"}')
-          echo $response
-          go run tools/release/release.go "$response"
+          set -euo pipefail
+
+          repo="${{ github.repository }}"
+          previous_tag="${{ steps.version.outputs.previous_tag }}"
+          next_tag="${{ steps.version.outputs.next_tag }}"
+
+          response="$(curl -sSL -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/${repo}/releases/generate-notes" \
+            -d "$(jq -nc --arg tag "${next_tag}" --arg prev "${previous_tag}" --arg target "main" '{tag_name:$tag,target_commitish:$target,previous_tag_name:$prev}')")"
+
+          if [[ -z "$(echo "${response}" | jq -r '.body // empty')" ]]; then
+            echo "Failed to get release notes body from generate-notes API" >&2
+            echo "${response}" >&2
+            exit 1
+          fi
+
+          go run tools/release/release.go "${response}"
+
+          echo "file=CHANGELOG/CHANGELOG-${next_tag}.md" >> "$GITHUB_OUTPUT"
         env:
           AZURE_OPENAI_APIKEY: ${{ secrets.AZURE_OPENAI_APIKEY }}
           AZURE_OPENAI_HOST: ${{ secrets.AZURE_OPENAI_HOST }}
-          DEPLOYMENT_NAME: ${{secrets.DEPLOYMENT_NAME}}
+          DEPLOYMENT_NAME: ${{ secrets.DEPLOYMENT_NAME }}
+          VERSION: ${{ steps.version.outputs.next_tag }}
+
       - name: Create Pull Request
-        uses: peter-evans/create-pull-request@v5
+        uses: peter-evans/create-pull-request@v6
         with:
-          commit-message: add changelog for ${{env.VERSION}}
-          title: add changelog for ${{env.VERSION}}
-          body: add changelog for ${{env.VERSION}}
-          branch: changelog-${{env.VERSION}}
+          commit-message: "chore: add changelog for ${{ steps.version.outputs.next_tag }}"
+          title: "chore: add changelog for ${{ steps.version.outputs.next_tag }}"
+          body: "add changelog for ${{ steps.version.outputs.next_tag }}"
+          branch: changelog-${{ steps.version.outputs.next_tag }}
           base: main
+          add-paths: |
+            CHANGELOG/CHANGELOG-${{ steps.version.outputs.next_tag }}.md
