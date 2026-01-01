@@ -5,10 +5,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
@@ -40,6 +42,8 @@ const (
 	DeviceSecretPasswordPath       string = "/etc/edgedevice/secret/password"
 
 	DefaultOPCUARequestMaxAge = 2000
+
+	DeviceNameHeaderField = "Device-Name"
 )
 
 // New This function creates a new Device Shifu based on the configuration
@@ -397,6 +401,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolOPCUA:
 			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
+			deviceName := ds.base.EdgeDevice.Name
 			for telemetry, telemetryProperties := range telemetries {
 				if ds.base.EdgeDevice.Spec.Address == nil {
 					return false, fmt.Errorf("Device %v does not have an address", ds.base.Name)
@@ -413,11 +418,47 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 					return false, err
 				}
 
-				if err = ds.requestOPCUANodeID(nodeID); err != nil {
+				id, err := ua.ParseNodeID(nodeID)
+				if err != nil {
+					logger.Errorf("Failed to parse NodeID, error: %v", err)
+					return false, err
+				}
+
+				ctx := context.Background()
+				ctx, cancel := context.WithTimeout(ctx, time.Duration(deviceshifubase.DeviceDefaultRequestTimeoutInMS)*time.Millisecond)
+				defer cancel()
+
+				readResp, err := ds.opcuaClient.Read(ctx, &ua.ReadRequest{
+					MaxAge: DefaultOPCUARequestMaxAge,
+					NodesToRead: []*ua.ReadValueID{
+						{NodeID: id},
+					},
+					TimestampsToReturn: ua.TimestampsToReturnBoth,
+				})
+				if err != nil {
 					logger.Errorf("error checking telemetry: %v, error: %v", telemetry, err.Error())
 					return false, err
 				}
 
+				if readResp.Results[0].Status != ua.StatusOK {
+					logger.Errorf("OPC UA response status is not OK, status: %v", readResp.Results[0].Status)
+					return false, fmt.Errorf("OPC UA response status is not OK: %v", readResp.Results[0].Status)
+				}
+
+				rawValue := fmt.Sprintf("%v", readResp.Results[0].Value.Value())
+				resp := &http.Response{
+					Header: make(http.Header),
+					Body:   io.NopCloser(strings.NewReader(rawValue)),
+				}
+
+				telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
+				if exist && *telemetryCollectionService.TelemetryServiceEndpoint != "" {
+					resp.Header.Add(DeviceNameHeaderField, deviceName)
+					err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
+					if err != nil {
+						return false, err
+					}
+				}
 			}
 		default:
 			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
@@ -426,7 +467,6 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 	}
 
 	return true, nil
-
 }
 
 // Start start opcua telemetry
