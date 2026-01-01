@@ -16,6 +16,10 @@ import (
 	"github.com/edgenesis/shifu/pkg/logger"
 )
 
+const (
+	DeviceNameHeaderField = "Device-Name"
+)
+
 // DeviceShifu implemented from deviceshifuBase
 type DeviceShifu struct {
 	base             *deviceshifubase.DeviceShifuBase
@@ -237,15 +241,12 @@ func (ds *DeviceShifu) getMQTTTopicFromInstructionName(instructionName string) (
 	return "", fmt.Errorf("Instruction %v not found in list of deviceshifu instructions", instructionName)
 }
 
-// TODO: update configs
-// TODO: update status based on telemetry
-
 func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
-
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
 			telemetrySettings := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetrySettings
+			deviceName := ds.base.EdgeDevice.Name
 			if ds.base.EdgeDevice.Spec.Address == nil {
 				return false, fmt.Errorf("device %v does not have an address", ds.base.Name)
 			}
@@ -274,6 +275,21 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				// return false if the time interval of all topics is abnormal
 				nowTime := time.Now()
 				if int64(nowTime.Sub(mqttMessageReceiveTimestampMap[mqttTopic]).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
+					message := mqttMessageInstructionMap[mqttTopic]
+					resp := &http.Response{
+						Header: make(http.Header),
+						Body:   io.NopCloser(strings.NewReader(message)),
+					}
+
+					telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
+					if exist && *telemetryCollectionService.TelemetryServiceEndpoint != "" {
+						resp.Header.Add(DeviceNameHeaderField, deviceName)
+						err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
+						if err != nil {
+							return false, err
+						}
+					}
+
 					return true, nil
 				}
 			}
