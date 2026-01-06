@@ -20,11 +20,17 @@ import (
 	"github.com/gopcua/opcua/ua"
 )
 
+// OPCUAClient defines the interface for OPC UA client operations to allow mocking
+type OPCUAClient interface {
+	Read(ctx context.Context, req *ua.ReadRequest) (*ua.ReadResponse, error)
+	Write(ctx context.Context, req *ua.WriteRequest) (*ua.WriteResponse, error)
+}
+
 // DeviceShifu implemented from deviceshifuBase and OPC UA Setting and client
 type DeviceShifu struct {
 	base              *deviceshifubase.DeviceShifuBase
 	opcuaInstructions *OPCUAInstructions
-	opcuaClient       *opcua.Client
+	opcuaClient       OPCUAClient
 }
 
 // HandlerMetaData MetaData for OPC UA handler
@@ -58,7 +64,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, fmt.Errorf("error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
-	var opcuaClient *opcua.Client
+	var opcuaClient OPCUAClient
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		// switch for different Shifu Protocols
@@ -184,7 +190,7 @@ func establishOPCUAConnection(ctx context.Context, address string, setting *v1al
 
 // DeviceCommandHandlerOPCUA handler for opcua
 type DeviceCommandHandlerOPCUA struct {
-	client          *opcua.Client
+	client          OPCUAClient
 	timeout         *int64
 	HandlerMetaData *HandlerMetaData
 }
@@ -384,7 +390,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 
 	if resp.Results[0].Status != ua.StatusOK {
 		logger.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
-		return err
+		return fmt.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
 	}
 
 	logger.Infof("%#v", resp.Results[0].Value.Value())
