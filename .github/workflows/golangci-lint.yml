@@ -16,12 +16,12 @@ jobs:
     steps:
       - uses: actions/setup-go@v5
         with:
-          go-version: 1.24.2
+          go-version: 1.25.5
       - name: Install pcap
         run: sudo apt-get install libpcap-dev
       - uses: actions/checkout@v4
       - name: golangci-lint
-        uses: golangci/golangci-lint-action@v6
+        uses: golangci/golangci-lint-action@v9
         with:
-          version: latest
+          version: v2.7.2
           args: --timeout=5m
