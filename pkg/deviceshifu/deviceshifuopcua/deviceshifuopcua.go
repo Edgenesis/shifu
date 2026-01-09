@@ -5,10 +5,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
@@ -364,7 +366,7 @@ func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string)
 	return "", fmt.Errorf("Instruction %v not found in list of deviceshifu instructions", instructionName)
 }
 
-func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
+func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) (*ua.ReadResponse, error) {
 	id, err := ua.ParseNodeID(nodeID)
 	if err != nil {
 		logger.Fatalf("invalid node id: %v", err)
@@ -385,17 +387,17 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 	resp, err := ds.opcuaClient.Read(ctx, req)
 	if err != nil {
 		logger.Errorf("Failed to read message from Server, error: %v " + err.Error())
-		return err
+		return nil, err
 	}
 
 	if resp.Results[0].Status != ua.StatusOK {
 		logger.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
-		return fmt.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
+		return nil, fmt.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
 	}
 
 	logger.Infof("%#v", resp.Results[0].Value.Value())
 
-	return nil
+	return resp, nil
 }
 
 func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
@@ -419,11 +421,35 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 					return false, err
 				}
 
-				if err = ds.requestOPCUANodeID(nodeID); err != nil {
+				opcuaResp, err := ds.requestOPCUANodeID(nodeID)
+				if err != nil {
 					logger.Errorf("error checking telemetry: %v, error: %v", telemetry, err.Error())
 					return false, err
 				}
 
+				rawRespBody := opcuaResp.Results[0].Value.Value()
+				rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
+
+				instructionFuncName, pythonCustomExist := deviceshifubase.CustomInstructionsPython[instruction]
+				if pythonCustomExist {
+					logger.Infof("Instruction %v is custom: %v, has a python customized handler configured.\n", instruction, pythonCustomExist)
+					rawRespBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
+				}
+
+				resp := &http.Response{
+					StatusCode: http.StatusOK,
+					Header:     make(http.Header),
+					Body:       io.NopCloser(strings.NewReader(rawRespBodyString)),
+				}
+
+				telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
+				if exist && *telemetryCollectionService.TelemetryServiceEndpoint != "" {
+					resp.Header.Add(deviceshifubase.DeviceNameHeaderField, ds.base.EdgeDevice.Name)
+					err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
+					if err != nil {
+						return false, err
+					}
+				}
 			}
 		default:
 			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)

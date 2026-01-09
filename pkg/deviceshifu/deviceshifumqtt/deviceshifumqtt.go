@@ -1,7 +1,6 @@
 package deviceshifumqtt
 
 import (
-
 	"encoding/json"
 	"fmt"
 	"io"
@@ -68,7 +67,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 			if base.DeviceShifuConfig.ControlMsgs != nil {
 				mqttState.controlMsgs = base.DeviceShifuConfig.ControlMsgs
 			}
-			
+
 			mqttProtocolSetting := base.EdgeDevice.Spec.ProtocolSettings
 			if mqttProtocolSetting != nil {
 				if mqttProtocolSetting.MQTTSetting != nil && mqttProtocolSetting.MQTTSetting.MQTTServerSecret != nil {
@@ -88,9 +87,9 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 			if token := client.Connect(); token.Wait() && token.Error() != nil {
 				logger.Errorf("Error connecting to MQTT broker: %v", token.Error())
-				// We don't panic here, but return error or let it retry? 
+				// We don't panic here, but return error or let it retry?
 				// The original code panicked. Let's return error.
-				// panic(token.Error()) 
+				// panic(token.Error())
 				return nil, token.Error()
 			}
 
@@ -128,10 +127,10 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 func (s *MQTTState) messagePubHandler(client mqtt.Client, msg mqtt.Message) {
 	logger.Infof("Received message: %v from topic: %v", msg.Payload(), msg.Topic())
 	rawMqttMessageStr := string(msg.Payload())
-	
+
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	s.mqttMessageInstructionMap[msg.Topic()] = rawMqttMessageStr
 	s.mqttMessageReceiveTimestampMap[msg.Topic()] = time.Now()
 	logger.Infof("MESSAGE_STR updated")
@@ -162,7 +161,7 @@ func (s *MQTTState) receiver(client mqtt.Client, msg mqtt.Message) {
 func (s *MQTTState) mutexProcess(topic string, message string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	
+
 	if s.mutexBlocking && strings.Contains(message, s.controlMsgs[s.currentControlMsg]) {
 		logger.Infof("Resetting mutex")
 		s.mutexBlocking = false
@@ -180,13 +179,13 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		reqType := r.Method
 		topic := handler.HandlerMetaData.properties.MQTTTopic
-		
+
 		if reqType == http.MethodGet {
 			handler.state.mu.RLock()
 			msg, exists := handler.state.mqttMessageInstructionMap[topic]
 			ts := handler.state.mqttMessageReceiveTimestampMap[topic]
 			handler.state.mu.RUnlock()
-			
+
 			if !exists {
 				// Handle case where no message received yet
 				// return empty or error? Original code would probably return empty string
@@ -224,7 +223,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			}
 		} else if reqType == http.MethodPost || reqType == http.MethodPut {
 			mqttTopic := handler.HandlerMetaData.properties.MQTTTopic
-			
+
 			handler.state.mu.RLock()
 			isBlocked := handler.state.mutexBlocking
 			blockMsg := handler.state.currentControlMsg
@@ -236,7 +235,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				http.Error(w, blockedMessage, http.StatusConflict)
 				return
 			}
-			
+
 			body, err := io.ReadAll(r.Body)
 			if err != nil {
 				logger.Errorf("Error when Read Data From Body, error: %v", err)
@@ -253,7 +252,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
 				return
 			}
-			
+
 			handler.state.mu.Lock()
 			if _, isMutexState := handler.state.controlMsgs[string(requestBody)]; isMutexState {
 				handler.state.mutexBlocking = true
@@ -261,7 +260,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 				logger.Infof("Message %s is mutex, blocking.", requestBody)
 			}
 			handler.state.mu.Unlock()
-			
+
 			logger.Infof("Info: Success To publish a message %v to MQTTServer!", requestBody)
 			return
 		} else {
@@ -282,6 +281,7 @@ func (ds *DeviceShifu) getMQTTTopicFromInstructionName(instructionName string) (
 }
 
 func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
+	telemetryCollectionResult := false
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolMQTT:
@@ -310,17 +310,38 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 
 				ds.state.mu.RLock()
 				lastTime, exists := ds.state.mqttMessageReceiveTimestampMap[mqttTopic]
+				rawMqttMessageStr := ds.state.mqttMessageInstructionMap[mqttTopic]
 				ds.state.mu.RUnlock()
-				
+
 				if !exists {
-					// No message received yet, unsure if we should fail or wait. 
+					// No message received yet, unsure if we should fail or wait.
 					// Assuming failure/disconnect if we rely on telemetry.
-					return false, nil
+					continue
 				}
 
 				nowTime := time.Now()
 				if int64(nowTime.Sub(lastTime).Milliseconds()) < *telemetrySettings.DeviceShifuTelemetryUpdateIntervalInMilliseconds {
-					return true, nil
+					instructionFuncName, pythonCustomExist := deviceshifubase.CustomInstructionsPython[instruction]
+					if pythonCustomExist {
+						logger.Infof("Topic %v has a python customized handler configured.", mqttTopic)
+						rawMqttMessageStr = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawMqttMessageStr, deviceshifubase.PythonScriptDir)
+					}
+
+					resp := &http.Response{
+						StatusCode: http.StatusOK,
+						Header:     make(http.Header),
+						Body:       io.NopCloser(strings.NewReader(rawMqttMessageStr)),
+					}
+
+					telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
+					if exist && *telemetryCollectionService.TelemetryServiceEndpoint != "" {
+						resp.Header.Add(deviceshifubase.DeviceNameHeaderField, ds.base.EdgeDevice.Name)
+						err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
+						if err != nil {
+							return false, err
+						}
+					}
+					telemetryCollectionResult = true
 				}
 			}
 		default:
@@ -329,7 +350,7 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 		}
 	}
 
-	return false, nil
+	return telemetryCollectionResult, nil
 }
 
 // Start start Mqtt Telemetry

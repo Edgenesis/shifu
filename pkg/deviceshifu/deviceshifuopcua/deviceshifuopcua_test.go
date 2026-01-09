@@ -212,7 +212,7 @@ func TestCollectOPCUATelemetry(t *testing.T) {
 			},
 		},
 	}
-	
+
 	opcuaInstructions := &OPCUAInstructions{
 		Instructions: map[string]*OPCUAInstruction{
 			instruction: {
@@ -266,7 +266,7 @@ func TestCollectOPCUATelemetry(t *testing.T) {
 		},
 	}
 	ds.opcuaClient = mockClientError
-	
+
 	ok, err = ds.collectOPCUATelemetry()
 	assert.NotNil(t, err)
 	assert.False(t, ok)
@@ -283,7 +283,7 @@ func TestCollectOPCUATelemetry(t *testing.T) {
 		},
 	}
 	ds.opcuaClient = mockClientBadStatus
-	
+
 	ok, err = ds.collectOPCUATelemetry()
 	assert.NotNil(t, err)
 	assert.False(t, ok)
