@@ -1,0 +1,8 @@
+# golangci-lint v2 configuration
+# Disables linters that weren't enforced in v1.x to avoid breaking changes
+version: "2"
+
+linters:
+  disable:
+    - errcheck    # TODO: Enable and fix ~48 unchecked error returns
+    - staticcheck # TODO: Enable and fix ~16 static analysis issues
