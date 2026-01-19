@@ -16,7 +16,7 @@ spec:
         app: deviceshifu-opcua-deployment
     spec:
       containers:
-      - image: edgehub/deviceshifu-http-opcua:v0.88.0-rc1
+      - image: edgehub/deviceshifu-http-opcua:v0.88.0
         name: deviceshifu-http
         ports:
         - containerPort: 8080
@@ -35,7 +35,7 @@ spec:
           value: "edgedevice-opcua"
         - name: EDGEDEVICE_NAMESPACE
           value: "devices"
-      - image: edgehub/gateway-lwm2m:v0.88.0-rc1
+      - image: edgehub/gateway-lwm2m:v0.88.0
         name: gateway-lwm2m
         volumeMounts:
           - name: deviceshifu-config
