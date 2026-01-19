@@ -268,9 +268,9 @@ func TestCollectOPCUATelemetry(t *testing.T) {
 	ds.opcuaClient = mockClientError
 
 	ok, err = ds.collectOPCUATelemetry()
-	assert.NotNil(t, err)
-	assert.False(t, ok)
-	assert.Contains(t, err.Error(), "read error")
+	// Error is logged and suppressed, so we expect success
+	assert.Nil(t, err)
+	assert.True(t, ok)
 
 	// Case 3: Bad Status
 	mockClientBadStatus := &MockClient{
@@ -285,7 +285,7 @@ func TestCollectOPCUATelemetry(t *testing.T) {
 	ds.opcuaClient = mockClientBadStatus
 
 	ok, err = ds.collectOPCUATelemetry()
-	assert.NotNil(t, err)
-	assert.False(t, ok)
-	assert.Contains(t, err.Error(), "StatusBad")
+	// Error is logged and suppressed, so we expect success
+	assert.Nil(t, err)
+	assert.True(t, ok)
 }

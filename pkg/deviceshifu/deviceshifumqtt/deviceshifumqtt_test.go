@@ -146,8 +146,6 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 		wg.Done()
 	}()
 
-
-
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", *unitest.ToPointer(unitTestServerAddress)))
 	opts.SetClientID("shifu-service")
@@ -181,7 +179,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	// ConfigFiniteStateMachine(map[string]string{"moving_the_device": "device_finish_moving"})
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error())
-	
+
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.NotNil(t, r.Error()) // should be blocked
 	// reset mutex
@@ -435,7 +433,7 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 					mu:                             sync.RWMutex{},
 				}
 			}
-			
+
 			if c.Name == "case 3 DeviceShifuTelemetry Update" {
 				c.inputDevice.state.mqttMessageReceiveTimestampMap["test/test1"] = time.Now()
 				// Also need mqttMessageInstructionMap to be populated for the new logic

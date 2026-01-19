@@ -87,10 +87,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 
 			if token := client.Connect(); token.Wait() && token.Error() != nil {
 				logger.Errorf("Error connecting to MQTT broker: %v", token.Error())
-				// We don't panic here, but return error or let it retry?
-				// The original code panicked. Let's return error.
-				// panic(token.Error())
-				return nil, token.Error()
+				panic(token.Error())
 			}
 
 			// Subscriptions
@@ -147,6 +144,10 @@ var connectLostHandler mqtt.ConnectionLostHandler = func(client mqtt.Client, err
 func sub(client mqtt.Client, topic string, s *MQTTState) {
 	token := client.Subscribe(topic, 1, s.receiver)
 	token.Wait()
+	if token.Error() != nil {
+		logger.Errorf("Error subscribing to topic %s, error: %v", topic, token.Error())
+		return
+	}
 	logger.Infof("Subscribed to topic: %s", topic)
 }
 
@@ -247,6 +248,7 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			logger.Infof("requestBody: %v", requestBody)
 
 			token := handler.state.client.Publish(mqttTopic, 1, false, body)
+			token.Wait()
 			if token.Error() != nil {
 				logger.Errorf("Error when publish Data to MQTTServer,%v", token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
@@ -298,14 +300,15 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 			telemetries := ds.base.DeviceShifuConfig.Telemetries.DeviceShifuTelemetries
 			for telemetry, telemetryProperties := range telemetries {
 				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
-					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					logger.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					continue
 				}
 
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				mqttTopic, err := ds.getMQTTTopicFromInstructionName(instruction)
 				if err != nil {
 					logger.Errorf("%v", err.Error())
-					return false, err
+					continue
 				}
 
 				ds.state.mu.RLock()
@@ -338,7 +341,8 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 						resp.Header.Add(deviceshifubase.DeviceNameHeaderField, ds.base.EdgeDevice.Name)
 						err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
 						if err != nil {
-							return false, err
+							logger.Errorf("Error pushing telemetry collection service: %v", err)
+							continue
 						}
 					}
 					telemetryCollectionResult = true

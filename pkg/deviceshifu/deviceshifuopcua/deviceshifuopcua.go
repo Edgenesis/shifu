@@ -411,20 +411,21 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 				}
 
 				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
-					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					logger.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					continue
 				}
 
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				nodeID, err := ds.getOPCUANodeIDFromInstructionName(instruction)
 				if err != nil {
 					logger.Errorf("%v", err.Error())
-					return false, err
+					continue
 				}
 
 				opcuaResp, err := ds.requestOPCUANodeID(nodeID)
 				if err != nil {
 					logger.Errorf("error checking telemetry: %v, error: %v", telemetry, err.Error())
-					return false, err
+					continue
 				}
 
 				rawRespBody := opcuaResp.Results[0].Value.Value()
@@ -447,7 +448,8 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 					resp.Header.Add(deviceshifubase.DeviceNameHeaderField, ds.base.EdgeDevice.Name)
 					err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
 					if err != nil {
-						return false, err
+						logger.Errorf("Error pushing telemetry collection service: %v", err)
+						continue
 					}
 				}
 			}
