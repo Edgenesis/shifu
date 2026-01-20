@@ -1,0 +1,107 @@
+# Release RC Tag Workflow
+# Creates pre-release tag when RC PR is merged to release branch
+name: Release RC Tag
+
+on:
+  pull_request:
+    branches:
+      - 'release_*'
+    types:
+      - closed
+
+permissions:
+  contents: write
+
+jobs:
+  tag_rc:
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'rc_')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from branch
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Get the base branch (e.g., release_v1.2.3)
+          base_branch="${{ github.base_ref }}"
+          echo "Base branch: ${base_branch}"
+
+          # Extract version from branch name (release_vX.Y.Z -> vX.Y.Z)
+          if ! [[ "${base_branch}" =~ ^release_(v[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "::error::Cannot parse version from branch ${base_branch}"
+            exit 1
+          fi
+
+          version="${BASH_REMATCH[1]}"
+          rc_tag="${version}-rc1"
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "rc_tag=${rc_tag}" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: ${version}, RC tag: ${rc_tag}"
+
+      - name: Calculate previous minor version
+        id: prev_version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.version.outputs.version }}"
+          # Parse version components (vX.Y.Z -> X Y Z)
+          version_num="${version#v}"
+          IFS='.' read -r major minor patch <<< "${version_num}"
+
+          # Calculate previous minor version for release notes baseline
+          if [[ "${minor}" -eq 0 ]]; then
+            if [[ "${major}" -eq 0 ]]; then
+              echo "::error::No previous version available for release notes (v0.0.x)"
+              exit 1
+            fi
+            # For vX.0.Z, use v(X-1).0.0 as baseline
+            prev_tag="v$((major - 1)).0.0"
+          else
+            # For vX.Y.Z, use vX.(Y-1).0 as baseline
+            prev_tag="v${major}.$((minor - 1)).0"
+          fi
+
+          echo "prev_tag=${prev_tag}" >> "$GITHUB_OUTPUT"
+          echo "Previous version for release notes: ${prev_tag}"
+
+      - name: Create RC tag and release
+        id: release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          rc_tag="${{ steps.version.outputs.rc_tag }}"
+          prev_tag="${{ steps.prev_version.outputs.prev_tag }}"
+          target_sha="${{ github.event.pull_request.merge_commit_sha }}"
+
+          echo "Creating pre-release tag: ${rc_tag}"
+          echo "Release notes baseline: ${prev_tag}"
+          echo "Tag target commit: ${target_sha}"
+
+          # Fetch all tags to ensure we have the baseline
+          git fetch --tags --force
+
+          # Create the release with auto-generated notes
+          release_url=$(gh release create "${rc_tag}" \
+            --prerelease \
+            --generate-notes \
+            --notes-start-tag "${prev_tag}" \
+            --target "${target_sha}" \
+            --title "Release ${rc_tag}")
+
+          if [[ -z "${release_url}" ]]; then
+            echo "::error::Failed to create release"
+            exit 1
+          fi
+
+          echo "release_url=${release_url}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Pre-release created: ${release_url}"

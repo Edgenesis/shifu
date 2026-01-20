@@ -1,0 +1,194 @@
+# Release RC Workflow
+# Creates release branch and RC pull request when changelog PR is merged
+name: Release RC
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - closed
+  workflow_dispatch:
+    inputs:
+      version_override:
+        description: 'Override version (e.g., v1.3.0). Leave empty for auto-detection.'
+        required: false
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release_rc:
+    if: |
+      github.event_name == 'workflow_dispatch' ||
+      (github.event.pull_request.merged == true &&
+       startsWith(github.head_ref, 'changelog-'))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Determine release version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Check for version override from workflow_dispatch
+          override="${{ github.event.inputs.version_override }}"
+          if [[ -n "${override}" ]]; then
+            # Validate override format
+            if ! [[ "${override}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+              echo "::error::Invalid version_override format: ${override}. Expected vX.Y.Z"
+              exit 1
+            fi
+            echo "Using version override: ${override}"
+            version="${override}"
+            echo "version=${version}" >> "$GITHUB_OUTPUT"
+            echo "release_branch=release_${version}" >> "$GITHUB_OUTPUT"
+            echo "rc_version=${version}-rc1" >> "$GITHUB_OUTPUT"
+            echo "rc_branch=rc_${version}-rc1" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          # Auto-detect version from latest stable tag
+          git fetch --tags --force
+
+          latest_tag="$(git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+[.][0-9]+[.][0-9]+$' | head -n 1)"
+          if [[ -z "${latest_tag}" ]]; then
+            echo "::error::No stable semver tags found (expected vX.Y.Z)"
+            exit 1
+          fi
+
+          # Parse version components
+          version="${latest_tag#v}"
+          IFS='.' read -r major minor patch <<< "${version}"
+
+          # Validate numeric components
+          if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
+            echo "::error::Latest tag ${latest_tag} is not numeric semver"
+            exit 1
+          fi
+
+          # Calculate next version (increment minor, reset patch)
+          next_version="v${major}.$((minor + 1)).0"
+          echo "Detected latest tag: ${latest_tag}"
+          echo "Next version: ${next_version}"
+          echo "version=${next_version}" >> "$GITHUB_OUTPUT"
+          echo "release_branch=release_${next_version}" >> "$GITHUB_OUTPUT"
+          echo "rc_version=${next_version}-rc1" >> "$GITHUB_OUTPUT"
+          echo "rc_branch=rc_${next_version}-rc1" >> "$GITHUB_OUTPUT"
+
+      - name: Check branches do not exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_branch="${{ steps.version.outputs.release_branch }}"
+          rc_branch="${{ steps.version.outputs.rc_branch }}"
+
+          for branch in "${release_branch}" "${rc_branch}"; do
+            if git ls-remote --exit-code --heads origin "${branch}" > /dev/null 2>&1; then
+              echo "::error::Branch ${branch} already exists"
+              exit 1
+            fi
+          done
+
+          echo "Branches ${release_branch} and ${rc_branch} do not exist. Proceeding..."
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create and push release branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_branch="${{ steps.version.outputs.release_branch }}"
+
+          echo "Creating release branch: ${release_branch}"
+          git checkout -b "${release_branch}"
+          git push -u origin "${release_branch}"
+
+      - name: Create RC branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          rc_branch="${{ steps.version.outputs.rc_branch }}"
+
+          echo "Creating RC branch: ${rc_branch}"
+          git checkout -b "${rc_branch}"
+
+      - name: Update version files (RC)
+        shell: bash
+        run: |
+          set -euo pipefail
+          rc_version="${{ steps.version.outputs.rc_version }}"
+
+          echo "Running make tag VERSION=${rc_version}"
+          if ! make tag VERSION="${rc_version}"; then
+            echo "::error::Failed to run make tag"
+            exit 1
+          fi
+
+      - name: Commit and push RC branch
+        id: push
+        shell: bash
+        run: |
+          set -euo pipefail
+          rc_branch="${{ steps.version.outputs.rc_branch }}"
+          rc_version="${{ steps.version.outputs.rc_version }}"
+
+          # Check for changes
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git commit -am "chore: prepare release ${rc_version}"
+          fi
+
+          # Push the RC branch
+          git push -u origin "${rc_branch}"
+          echo "rc_branch=${rc_branch}" >> "$GITHUB_OUTPUT"
+          echo "RC branch ${rc_branch} pushed successfully"
+
+      - name: Create RC Pull Request
+        id: pr
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          release_branch="${{ steps.version.outputs.release_branch }}"
+          rc_branch="${{ steps.push.outputs.rc_branch }}"
+          rc_version="${{ steps.version.outputs.rc_version }}"
+
+          # Read PR template
+          pr_body=""
+          if [[ -f ".github/pull-request-template.md" ]]; then
+            pr_body="$(cat .github/pull-request-template.md)"
+          fi
+
+          # Create PR from RC branch to release branch
+          pr_url=$(gh pr create \
+            --base "${release_branch}" \
+            --head "${rc_branch}" \
+            --title "chore: release ${rc_version}" \
+            --body "${pr_body}")
+
+          if [[ -z "${pr_url}" ]]; then
+            echo "::error::Failed to create PR"
+            exit 1
+          fi
+
+          # Extract PR number from URL
+          pr_number="${pr_url##*/}"
+
+          echo "pr_url=${pr_url}" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
+          echo "::notice::RC PR created: ${pr_url}"
