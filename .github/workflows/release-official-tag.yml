@@ -1,0 +1,92 @@
+# Release Official Tag Workflow
+# Creates stable tag and GitHub release when official PR is merged to release branch
+name: Release Official Tag
+
+on:
+  pull_request:
+    branches:
+      - 'release_*'
+    types:
+      - closed
+
+permissions:
+  contents: write
+
+jobs:
+  tag_official:
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'official_')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Extract version from branch
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          # Get the base branch (e.g., release_v1.2.3)
+          base_branch="${{ github.base_ref }}"
+          echo "Base branch: ${base_branch}"
+
+          # Extract version from branch name (release_vX.Y.Z -> vX.Y.Z)
+          if ! [[ "${base_branch}" =~ ^release_(v[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+            echo "::error::Cannot parse version from branch ${base_branch}"
+            exit 1
+          fi
+
+          version="${BASH_REMATCH[1]}"
+
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "Extracted version: ${version}"
+
+      - name: Generate release notes body
+        id: notes
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.version.outputs.version }}"
+
+          # Generate release body with changelog link (matches existing release format)
+          release_body="## See [CHANGELOG-${version}.md](CHANGELOG/CHANGELOG-${version}.md) for details"
+
+          # Use heredoc to preserve formatting
+          echo "release_body<<EOF" >> "$GITHUB_OUTPUT"
+          echo "${release_body}" >> "$GITHUB_OUTPUT"
+          echo "EOF" >> "$GITHUB_OUTPUT"
+
+          echo "Release notes body generated"
+
+      - name: Create official tag and release
+        id: release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.version.outputs.version }}"
+          target_sha="${{ github.event.pull_request.merge_commit_sha }}"
+          release_body="${{ steps.notes.outputs.release_body }}"
+
+          echo "Creating official release tag: ${version}"
+          echo "Tag target commit: ${target_sha}"
+
+          # Create the release (NOT pre-release, becomes "Latest")
+          release_url=$(gh release create "${version}" \
+            --title "${version}" \
+            --notes "${release_body}" \
+            --target "${target_sha}" \
+            --discussion-category "Announcements")
+
+          if [[ -z "${release_url}" ]]; then
+            echo "::error::Failed to create release"
+            exit 1
+          fi
+
+          echo "release_url=${release_url}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Official release created: ${release_url}"
+          echo "::notice::Release ${version} is now the Latest release"

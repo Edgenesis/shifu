@@ -1,0 +1,217 @@
+# Release Official Workflow
+# Creates official release PR when manually triggered (promotes RC to stable)
+name: Release Official
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release_official:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Find latest RC release
+        id: rc
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+
+          # Get latest RC pre-release tag using semantic version sorting
+          echo "Finding latest RC pre-release..."
+
+          # Fetch all tags for proper version sorting
+          git fetch --tags --force
+
+          # Get RC tags sorted by semantic version (descending)
+          latest_rc=$(git tag --list 'v*-rc*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$' | head -n 1)
+
+          if [[ -z "${latest_rc}" ]]; then
+            echo "::error::No RC tags found. Run the RC workflow first."
+            exit 1
+          fi
+
+          # Verify it's actually a pre-release in GitHub
+          is_prerelease=$(gh release view "${latest_rc}" --json isPrerelease --jq '.isPrerelease' 2>/dev/null || echo "not_found")
+          if [[ "${is_prerelease}" == "not_found" ]]; then
+            echo "::error::Tag ${latest_rc} exists but has no GitHub release. Run the RC workflow first."
+            exit 1
+          fi
+          if [[ "${is_prerelease}" != "true" ]]; then
+            echo "::error::Tag ${latest_rc} is not marked as pre-release in GitHub."
+            exit 1
+          fi
+
+          echo "Latest RC: ${latest_rc}"
+          echo "rc_tag=${latest_rc}" >> "$GITHUB_OUTPUT"
+
+      - name: Extract base version
+        id: version
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          rc_tag="${{ steps.rc.outputs.rc_tag }}"
+
+          # Extract base version (vX.Y.Z) from RC tag (vX.Y.Z-rcN)
+          if ! [[ "${rc_tag}" =~ ^(v[0-9]+\.[0-9]+\.[0-9]+)-rc[0-9]+$ ]]; then
+            echo "::error::Cannot parse version from RC tag ${rc_tag}"
+            exit 1
+          fi
+
+          base_version="${BASH_REMATCH[1]}"
+          release_branch="release_${base_version}"
+          official_branch="official_${base_version}"
+
+          echo "Base version: ${base_version}"
+          echo "Release branch: ${release_branch}"
+          echo "Official branch: ${official_branch}"
+
+          echo "base_version=${base_version}" >> "$GITHUB_OUTPUT"
+          echo "release_branch=${release_branch}" >> "$GITHUB_OUTPUT"
+          echo "official_branch=${official_branch}" >> "$GITHUB_OUTPUT"
+
+      - name: Verify release branch exists
+        shell: bash
+        run: |
+          set -euo pipefail
+          release_branch="${{ steps.version.outputs.release_branch }}"
+
+          if ! git ls-remote --exit-code --heads origin "${release_branch}" > /dev/null 2>&1; then
+            echo "::error::Release branch ${release_branch} does not exist. Run the RC workflow first."
+            exit 1
+          fi
+
+          echo "Release branch ${release_branch} exists. Proceeding..."
+
+      - name: Check official branch does not exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          official_branch="${{ steps.version.outputs.official_branch }}"
+
+          if git ls-remote --exit-code --heads origin "${official_branch}" > /dev/null 2>&1; then
+            echo "::error::Official branch ${official_branch} already exists. Delete it first or the PR may already exist."
+            exit 1
+          fi
+
+          echo "Official branch ${official_branch} does not exist. Proceeding..."
+
+      - name: Check official tag does not exist
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_version="${{ steps.version.outputs.base_version }}"
+
+          if git ls-remote --exit-code --tags origin "refs/tags/${base_version}" > /dev/null 2>&1; then
+            echo "::error::Tag ${base_version} already exists. Cannot create official release."
+            exit 1
+          fi
+
+          echo "Tag ${base_version} does not exist. Proceeding..."
+
+      - name: Configure git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+      - name: Create official branch from RC tag
+        shell: bash
+        run: |
+          set -euo pipefail
+          rc_tag="${{ steps.rc.outputs.rc_tag }}"
+          official_branch="${{ steps.version.outputs.official_branch }}"
+
+          # Create official branch from RC tag to ensure release integrity
+          # This guarantees we're promoting exactly what was tested as the RC
+          echo "Fetching RC tag: ${rc_tag}"
+          git fetch origin "refs/tags/${rc_tag}:refs/tags/${rc_tag}"
+
+          echo "Creating official branch from RC tag: ${official_branch}"
+          git checkout -b "${official_branch}" "${rc_tag}"
+
+      - name: Update version files (remove RC suffix)
+        shell: bash
+        run: |
+          set -euo pipefail
+          base_version="${{ steps.version.outputs.base_version }}"
+
+          echo "Running make tag VERSION=${base_version}"
+          if ! make tag VERSION="${base_version}"; then
+            echo "::error::Failed to run make tag"
+            exit 1
+          fi
+
+      - name: Commit and push official branch
+        id: push
+        shell: bash
+        run: |
+          set -euo pipefail
+          official_branch="${{ steps.version.outputs.official_branch }}"
+          base_version="${{ steps.version.outputs.base_version }}"
+
+          # Check for changes
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git commit -am "chore: prepare official release ${base_version}"
+          fi
+
+          # Push the official branch
+          git push -u origin "${official_branch}"
+          echo "official_branch=${official_branch}" >> "$GITHUB_OUTPUT"
+          echo "Official branch ${official_branch} pushed successfully"
+
+      - name: Create Official Release PR
+        id: pr
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          release_branch="${{ steps.version.outputs.release_branch }}"
+          official_branch="${{ steps.push.outputs.official_branch }}"
+          base_version="${{ steps.version.outputs.base_version }}"
+          rc_tag="${{ steps.rc.outputs.rc_tag }}"
+
+          # Create PR from official branch to release branch
+          # Use --body-file if template exists for safer handling
+          if [[ -f ".github/pull-request-template.md" ]]; then
+            echo "Using PR template from .github/pull-request-template.md"
+            pr_url=$(gh pr create \
+              --base "${release_branch}" \
+              --head "${official_branch}" \
+              --title "chore: release ${base_version}" \
+              --body-file ".github/pull-request-template.md")
+          else
+            echo "No PR template found, using empty body"
+            pr_url=$(gh pr create \
+              --base "${release_branch}" \
+              --head "${official_branch}" \
+              --title "chore: release ${base_version}" \
+              --body "")
+          fi
+
+          if [[ -z "${pr_url}" ]]; then
+            echo "::error::Failed to create PR"
+            exit 1
+          fi
+
+          # Extract PR number from URL
+          pr_number="${pr_url##*/}"
+
+          echo "pr_url=${pr_url}" >> "$GITHUB_OUTPUT"
+          echo "pr_number=${pr_number}" >> "$GITHUB_OUTPUT"
+          echo "::notice::Official release PR created: ${pr_url}"
+          echo "::notice::Promoting ${rc_tag} to ${base_version}"
