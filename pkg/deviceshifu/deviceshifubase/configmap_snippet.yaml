@@ -42,3 +42,24 @@ data:
           intervalMs: 1000
           pushSettings:
             pushToServer: false
+  fsm: |
+    states:
+      red: 
+        actions:
+          go:
+            next_state: green
+        forbid:
+          - caution    
+      green:
+        actions:
+          caution:
+            next_state: yellow
+        forbid:
+          - stop
+      yellow:
+        actions:
+          stop:
+            next_state: red     
+        forbid:
+          - go
+    startingState: red

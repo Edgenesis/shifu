@@ -37,6 +37,7 @@ type ConfigMapData struct {
 		DriverProperties string `yaml:"driverProperties"`
 		Instructions     string `yaml:"instructions"`
 		Telemetries      string `yaml:"telemetries"`
+		FSM              string `yaml:"fsm"`
 	} `yaml:"data"`
 }
 
@@ -76,6 +77,30 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		},
 	}
 
+	var mockDeviceFSM = &DeviceShifuFSM{
+		States: map[string]DeviceShifuState{
+			"red": {
+				Actions: map[string]DeviceShifuAction{
+					"go": {NextState: "green"},
+				},
+				Forbid: []string{"caution"},
+			},
+			"green": {
+				Actions: map[string]DeviceShifuAction{
+					"caution": {NextState: "yellow"},
+				},
+				Forbid: []string{"stop"},
+			},
+			"yellow": {
+				Actions: map[string]DeviceShifuAction{
+					"stop": {NextState: "red"},
+				},
+				Forbid: []string{"go"},
+			},
+		},
+		StartingState: "red",
+	}
+
 	mockdsc, err := NewDeviceShifuConfig(MockDeviceConfigFolder)
 	if err != nil {
 		t.Errorf("Error: %v", err)
@@ -97,6 +122,10 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		t.Errorf("Telemetries mismatch")
 	}
 
+	eq = reflect.DeepEqual(mockDeviceFSM, mockdsc.FSM)
+	if !eq {
+		t.Errorf("FSM mismatch")
+	}
 }
 
 func GenerateConfigMapFromSnippet(fileName string, folder string) error {
@@ -116,6 +145,7 @@ func GenerateConfigMapFromSnippet(fileName string, folder string) error {
 		path.Join(MockDeviceConfigFolder, ConfigmapDriverPropertiesStr): cmData.Data.DriverProperties,
 		path.Join(MockDeviceConfigFolder, ConfigmapInstructionsStr):     cmData.Data.Instructions,
 		path.Join(MockDeviceConfigFolder, ConfigmapTelemetriesStr):      cmData.Data.Telemetries,
+		path.Join(MockDeviceConfigFolder, FSMStr):                       cmData.Data.FSM,
 	}
 
 	err = os.MkdirAll(MockDeviceConfigFolder, os.ModePerm)
