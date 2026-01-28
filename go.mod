@@ -21,7 +21,7 @@ require (
 	github.com/onsi/gomega v1.39.0
 	github.com/openai/openai-go v1.12.0
 	github.com/pion/dtls/v3 v3.0.10
-	github.com/plgd-dev/go-coap/v3 v3.4.1
+	github.com/plgd-dev/go-coap/v3 v3.4.2
 	github.com/spf13/cobra v1.10.2
 	github.com/stretchr/testify v1.11.1
 	github.com/taosdata/driver-go/v3 v3.7.8
