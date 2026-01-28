@@ -44,10 +44,6 @@ var (
 	instructionSettings *deviceshifubase.DeviceShifuInstructionSettings
 )
 
-const (
-	DeviceNameHeaderField = "Device-Name"
-)
-
 // New This function creates a new Device Shifu based on the configuration
 func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifuHTTP, error) {
 	if deviceShifuMetadata.Namespace == "" {
@@ -485,7 +481,7 @@ func (ds *DeviceShifuHTTP) collectHTTPTelemtries() (bool, error) {
 
 						telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
 						if exist && *telemetryCollectionService.TelemetryServiceEndpoint != "" {
-							resp.Header.Add(DeviceNameHeaderField, deviceName)
+							resp.Header.Add(deviceshifubase.DeviceNameHeaderField, deviceName)
 							err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
 							if err != nil {
 								return false, err
