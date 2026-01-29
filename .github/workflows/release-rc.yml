@@ -33,6 +33,13 @@ jobs:
         with:
           app-id: ${{ secrets.RELEASE_APP_ID }}
           private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Validate GitHub App token
+        if: ${{ steps.app-token.outputs.token == '' }}
+        run: |
+          echo "::error::Failed to generate GitHub App token. Check RELEASE_APP_ID and RELEASE_APP_PRIVATE_KEY secrets."
+          exit 1
 
       - uses: actions/checkout@v6
         with:
