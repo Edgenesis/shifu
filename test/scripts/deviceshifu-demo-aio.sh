@@ -10,7 +10,7 @@ if [ $# -eq 0 ]; then
     exit 1
 fi
 
-SHIFU_IMG_VERSION=v0.89.0-rc1
+SHIFU_IMG_VERSION=v0.89.0
 BUILD_DIR=build_dir
 IMG_DIR=images
 RUN_DIR=run_dir
