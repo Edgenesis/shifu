@@ -12,16 +12,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v6
+      - uses: actions/setup-go@v6
         with:
-          go-version: "1.24.2"
+          go-version: "1.25.5"
       - name: Install pcap
         run: sudo apt-get install libpcap-dev
       - name: Run coverage
         run: make test
       - name: Codecov
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         with:
           files: ./coverage_tdengine.out,./coverage.out
           name: codecov-shifu

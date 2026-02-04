@@ -390,6 +390,10 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) (*ua.ReadResponse, erro
 		return nil, err
 	}
 
+	if resp == nil || len(resp.Results) == 0 || resp.Results[0] == nil {
+		return nil, fmt.Errorf("invalid OPC UA read response: empty or nil Results")
+	}
+
 	if resp.Results[0].Status != ua.StatusOK {
 		logger.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
 		return nil, fmt.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
