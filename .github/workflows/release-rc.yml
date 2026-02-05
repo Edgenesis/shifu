@@ -27,10 +27,25 @@ jobs:
        startsWith(github.head_ref, 'changelog-'))
     runs-on: ubuntu-latest
     steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          repositories: ${{ github.event.repository.name }}
+
+      - name: Validate GitHub App token
+        if: ${{ steps.app-token.outputs.token == '' }}
+        run: |
+          echo "::error::Failed to generate GitHub App token. Check RELEASE_APP_ID and RELEASE_APP_PRIVATE_KEY secrets."
+          exit 1
+
       - uses: actions/checkout@v6
         with:
           fetch-depth: 0
           ref: main
+          token: ${{ steps.app-token.outputs.token }}
 
       - uses: actions/setup-go@v6
         with:
@@ -161,7 +176,7 @@ jobs:
         id: pr
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
           release_branch="${{ steps.version.outputs.release_branch }}"

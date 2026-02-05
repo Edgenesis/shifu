@@ -11,6 +11,7 @@ on:
 
 permissions:
   contents: write
+  discussions: write
 
 jobs:
   tag_official:
