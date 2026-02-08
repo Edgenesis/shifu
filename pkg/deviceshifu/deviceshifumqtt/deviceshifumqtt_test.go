@@ -176,7 +176,6 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	assert.Nil(t, token.Error())
 
 	state.controlMsgs = map[string]string{"moving_the_device": "device_finish_moving"}
-	// ConfigFiniteStateMachine(map[string]string{"moving_the_device": "device_finish_moving"})
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error())
 
@@ -422,7 +421,6 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 		},
 	}
 
-	// mqttMessageReceiveTimestampMap["test/test1"] = time.Now()
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
 			if c.inputDevice.state == nil {

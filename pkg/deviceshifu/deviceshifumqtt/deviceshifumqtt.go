@@ -45,6 +45,7 @@ type HandlerMetaData struct {
 // Str and default value
 const (
 	DefaultUpdateIntervalInMS int64 = 3000
+	DefaultWaitTimeoutS       int64 = 5
 )
 
 // New new MQTT Deviceshifu
@@ -188,8 +189,8 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			handler.state.mu.RUnlock()
 
 			if !exists {
-				// Handle case where no message received yet
-				// return empty or error? Original code would probably return empty string
+				msg = ""
+				ts = time.Time{}
 			}
 
 			returnMessage := ReturnBody{
@@ -248,7 +249,11 @@ func (handler DeviceCommandHandlerMQTT) commandHandleFunc() http.HandlerFunc {
 			logger.Infof("requestBody: %v", requestBody)
 
 			token := handler.state.client.Publish(mqttTopic, 1, false, body)
-			token.Wait()
+			if !token.WaitTimeout(time.Duration(DefaultWaitTimeoutS) * time.Second) {
+				logger.Errorf("Publish to %s timed out", mqttTopic)
+				http.Error(w, "Publish timed out", http.StatusGatewayTimeout)
+				return
+			}
 			if token.Error() != nil {
 				logger.Errorf("Error when publish Data to MQTTServer,%v", token.Error())
 				http.Error(w, "Error to publish a message to server", http.StatusBadRequest)
@@ -317,8 +322,6 @@ func (ds *DeviceShifu) collectMQTTTelemetry() (bool, error) {
 				ds.state.mu.RUnlock()
 
 				if !exists {
-					// No message received yet, unsure if we should fail or wait.
-					// Assuming failure/disconnect if we rely on telemetry.
 					continue
 				}
 

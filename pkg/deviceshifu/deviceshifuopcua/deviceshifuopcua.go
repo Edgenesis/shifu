@@ -405,6 +405,7 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) (*ua.ReadResponse, erro
 }
 
 func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
+	telemetryCollectionResult := false
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolOPCUA:
@@ -456,6 +457,8 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 						continue
 					}
 				}
+
+				telemetryCollectionResult = true
 			}
 		default:
 			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
@@ -463,7 +466,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 		}
 	}
 
-	return true, nil
+	return telemetryCollectionResult, nil
 
 }
 
