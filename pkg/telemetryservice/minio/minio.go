@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifuhttp"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
@@ -63,7 +62,7 @@ func BindMinIOServiceHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	// Get device name, build file path ([device_name]/[time].[fileExtension])
-	if deviceName, ok := r.Header[deviceshifuhttp.DeviceNameHeaderField]; ok && len(deviceName) > 0 {
+	if deviceName, ok := r.Header[deviceshifubase.DeviceNameHeaderField]; ok && len(deviceName) > 0 {
 		fileName := fmt.Sprintf("%v/%v.%v", deviceName[0], time.Now().Format(time.RFC3339), *request.MinIOSetting.FileExtension)
 		// Upload file to MinIO
 		err = uploadObject(client, *request.MinIOSetting.Bucket, fileName, request.RawData)

@@ -36,6 +36,11 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 		TelemetrySettingInterval  int64 = 1000
 	)
 
+	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
+	if err != nil {
+		t.Errorf("error when generateConfigMapFromSnippet, error: %v", err)
+	}
+
 	var DriverProperties = deviceshifubase.DeviceShifuDriverProperties{
 		DriverSku:       "Edgenesis Mock Device",
 		DriverImage:     "edgenesis/mockdevice:v0.0.1",

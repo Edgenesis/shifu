@@ -41,6 +41,7 @@ type DeviceShifu interface {
 // Str and default value
 const (
 	ConfigmapDriverPropertiesStr                 = "driverProperties"
+	DeviceNameHeaderField                        = "Device-Name"
 	ConfigmapInstructionsStr                     = "instructions"
 	ConfigmapTelemetriesStr                      = "telemetries"
 	ConfigmapCustomizedInstructionsStr           = "customInstructionsPython"

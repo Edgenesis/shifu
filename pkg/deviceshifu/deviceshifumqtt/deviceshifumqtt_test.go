@@ -117,6 +117,12 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	properties := &MQTTProtocolProperty{
 		MQTTTopic: "test/test1",
 	}
+	state := &MQTTState{
+		mqttMessageInstructionMap:      make(map[string]string),
+		mqttMessageReceiveTimestampMap: make(map[string]time.Time),
+		controlMsgs:                    make(map[string]string),
+	}
+
 	mockHandlerHTTP := &DeviceCommandHandlerMQTT{
 		HandlerMetaData: &HandlerMetaData{
 			edgeDeviceSpec: v1alpha1.EdgeDeviceSpec{
@@ -124,6 +130,7 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 			},
 			properties: properties,
 		},
+		state: state,
 	}
 
 	ds := mockDeviceServer(mockHandlerHTTP, t)
@@ -142,10 +149,11 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	opts := mqtt.NewClientOptions()
 	opts.AddBroker(fmt.Sprintf("tcp://%s", *unitest.ToPointer(unitTestServerAddress)))
 	opts.SetClientID("shifu-service")
-	opts.SetDefaultPublishHandler(messagePubHandler)
+	opts.SetDefaultPublishHandler(state.messagePubHandler)
 	opts.OnConnect = connectHandler
 	opts.OnConnectionLost = connectLostHandler
-	client = mqtt.NewClient(opts)
+	client := mqtt.NewClient(opts)
+	state.client = client
 
 	requestBody := "moving_the_device"
 
@@ -167,18 +175,19 @@ func TestCommandHandleMQTTFunc(t *testing.T) {
 	}
 	assert.Nil(t, token.Error())
 
-	ConfigFiniteStateMachine(map[string]string{"moving_the_device": "device_finish_moving"})
+	state.controlMsgs = map[string]string{"moving_the_device": "device_finish_moving"}
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error())
+
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.NotNil(t, r.Error()) // should be blocked
 	// reset mutex
-	MutexProcess("test/test1", "device_finish_moving")
+	state.mutexProcess("test/test1", "device_finish_moving")
 	r = dc.Post().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error()) // not blocked
 
 	// test put method
-	MutexProcess("test/test1", "device_finish_moving")
+	state.mutexProcess("test/test1", "device_finish_moving")
 	r = dc.Put().Body([]byte(requestBody)).Do(context.TODO())
 	assert.Nil(t, r.Error()) // not blocked
 
@@ -412,9 +421,31 @@ func TestCollectMQTTTelemetry(t *testing.T) {
 		},
 	}
 
-	mqttMessageReceiveTimestampMap["test/test1"] = time.Now()
 	for _, c := range testCases {
 		t.Run(c.Name, func(t *testing.T) {
+			if c.inputDevice.state == nil {
+				c.inputDevice.state = &MQTTState{
+					mqttMessageInstructionMap:      make(map[string]string),
+					mqttMessageReceiveTimestampMap: make(map[string]time.Time),
+					controlMsgs:                    make(map[string]string),
+					mu:                             sync.RWMutex{},
+				}
+			}
+
+			if c.Name == "case 3 DeviceShifuTelemetry Update" {
+				c.inputDevice.state.mqttMessageReceiveTimestampMap["test/test1"] = time.Now()
+				// Also need mqttMessageInstructionMap to be populated for the new logic
+				c.inputDevice.state.mqttMessageInstructionMap["test/test1"] = "test_value"
+			} else if c.Name == "case 5 interval is nil" {
+				// case 5 also expects success (true), so it needs valid timestamp?
+				// The original test said "case 5 interval is nil", returns true.
+				// Logic: if interval is nil, it uses default.
+				// Logic: if int64(now.Sub(last).Milli()) < interval
+				// So it needs 'last' time to be recent.
+				c.inputDevice.state.mqttMessageReceiveTimestampMap["test/test1"] = time.Now()
+				c.inputDevice.state.mqttMessageInstructionMap["test/test1"] = "test_value"
+			}
+
 			got, err := c.inputDevice.collectMQTTTelemetry()
 			if got {
 				assert.Equal(t, c.expected, got)

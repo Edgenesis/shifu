@@ -5,10 +5,12 @@ import (
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"path"
 	"reflect"
+	"strings"
 	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/utils"
@@ -20,11 +22,17 @@ import (
 	"github.com/gopcua/opcua/ua"
 )
 
+// OPCUAClient defines the interface for OPC UA client operations to allow mocking
+type OPCUAClient interface {
+	Read(ctx context.Context, req *ua.ReadRequest) (*ua.ReadResponse, error)
+	Write(ctx context.Context, req *ua.WriteRequest) (*ua.WriteResponse, error)
+}
+
 // DeviceShifu implemented from deviceshifuBase and OPC UA Setting and client
 type DeviceShifu struct {
 	base              *deviceshifubase.DeviceShifuBase
 	opcuaInstructions *OPCUAInstructions
-	opcuaClient       *opcua.Client
+	opcuaClient       OPCUAClient
 }
 
 // HandlerMetaData MetaData for OPC UA handler
@@ -58,7 +66,7 @@ func New(deviceShifuMetadata *deviceshifubase.DeviceShifuMetaData) (*DeviceShifu
 		return nil, fmt.Errorf("error parsing ConfigMap at %v", deviceShifuMetadata.ConfigFilePath)
 	}
 
-	var opcuaClient *opcua.Client
+	var opcuaClient OPCUAClient
 
 	if deviceShifuMetadata.KubeConfigPath != deviceshifubase.DeviceKubeconfigDoNotLoadStr {
 		// switch for different Shifu Protocols
@@ -184,7 +192,7 @@ func establishOPCUAConnection(ctx context.Context, address string, setting *v1al
 
 // DeviceCommandHandlerOPCUA handler for opcua
 type DeviceCommandHandlerOPCUA struct {
-	client          *opcua.Client
+	client          OPCUAClient
 	timeout         *int64
 	HandlerMetaData *HandlerMetaData
 }
@@ -358,7 +366,7 @@ func (ds *DeviceShifu) getOPCUANodeIDFromInstructionName(instructionName string)
 	return "", fmt.Errorf("Instruction %v not found in list of deviceshifu instructions", instructionName)
 }
 
-func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
+func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) (*ua.ReadResponse, error) {
 	id, err := ua.ParseNodeID(nodeID)
 	if err != nil {
 		logger.Fatalf("invalid node id: %v", err)
@@ -379,20 +387,25 @@ func (ds *DeviceShifu) requestOPCUANodeID(nodeID string) error {
 	resp, err := ds.opcuaClient.Read(ctx, req)
 	if err != nil {
 		logger.Errorf("Failed to read message from Server, error: %v " + err.Error())
-		return err
+		return nil, err
+	}
+
+	if resp == nil || len(resp.Results) == 0 || resp.Results[0] == nil {
+		return nil, fmt.Errorf("invalid OPC UA read response: empty or nil Results")
 	}
 
 	if resp.Results[0].Status != ua.StatusOK {
 		logger.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
-		return err
+		return nil, fmt.Errorf("OPC UA response status is not OK, status: %v", resp.Results[0].Status)
 	}
 
 	logger.Infof("%#v", resp.Results[0].Value.Value())
 
-	return nil
+	return resp, nil
 }
 
 func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
+	telemetryCollectionResult := false
 	if ds.base.EdgeDevice.Spec.Protocol != nil {
 		switch protocol := *ds.base.EdgeDevice.Spec.Protocol; protocol {
 		case v1alpha1.ProtocolOPCUA:
@@ -403,21 +416,49 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 				}
 
 				if telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName == nil {
-					return false, fmt.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					logger.Errorf("Device %v telemetry %v does not have an instruction name", ds.base.Name, telemetry)
+					continue
 				}
 
 				instruction := *telemetryProperties.DeviceShifuTelemetryProperties.DeviceInstructionName
 				nodeID, err := ds.getOPCUANodeIDFromInstructionName(instruction)
 				if err != nil {
 					logger.Errorf("%v", err.Error())
-					return false, err
+					continue
 				}
 
-				if err = ds.requestOPCUANodeID(nodeID); err != nil {
+				opcuaResp, err := ds.requestOPCUANodeID(nodeID)
+				if err != nil {
 					logger.Errorf("error checking telemetry: %v, error: %v", telemetry, err.Error())
-					return false, err
+					continue
 				}
 
+				rawRespBody := opcuaResp.Results[0].Value.Value()
+				rawRespBodyString := fmt.Sprintf("%v", rawRespBody)
+
+				instructionFuncName, pythonCustomExist := deviceshifubase.CustomInstructionsPython[instruction]
+				if pythonCustomExist {
+					logger.Infof("Instruction %v is custom: %v, has a python customized handler configured.\n", instruction, pythonCustomExist)
+					rawRespBodyString = utils.ProcessInstruction(deviceshifubase.PythonHandlersModuleName, instructionFuncName, rawRespBodyString, deviceshifubase.PythonScriptDir)
+				}
+
+				resp := &http.Response{
+					StatusCode: http.StatusOK,
+					Header:     make(http.Header),
+					Body:       io.NopCloser(strings.NewReader(rawRespBodyString)),
+				}
+
+				telemetryCollectionService, exist := deviceshifubase.TelemetryCollectionServiceMap[telemetry]
+				if exist && *telemetryCollectionService.TelemetryServiceEndpoint != "" {
+					resp.Header.Add(deviceshifubase.DeviceNameHeaderField, ds.base.EdgeDevice.Name)
+					err = deviceshifubase.PushTelemetryCollectionService(&telemetryCollectionService, &ds.base.EdgeDevice.Spec, resp)
+					if err != nil {
+						logger.Errorf("Error pushing telemetry collection service: %v", err)
+						continue
+					}
+				}
+
+				telemetryCollectionResult = true
 			}
 		default:
 			logger.Warnf("EdgeDevice protocol %v not supported in deviceshifu", protocol)
@@ -425,7 +466,7 @@ func (ds *DeviceShifu) collectOPCUATelemetry() (bool, error) {
 		}
 	}
 
-	return true, nil
+	return telemetryCollectionResult, nil
 
 }
 

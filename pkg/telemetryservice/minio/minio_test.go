@@ -3,7 +3,7 @@ package minio
 import (
 	"bytes"
 	"encoding/json"
-	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifuhttp"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/deviceshifubase"
 	"github.com/edgenesis/shifu/pkg/deviceshifu/unitest"
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/telemetryservice/utils"
@@ -96,7 +96,7 @@ func TestBindMinIOServiceHandler(t *testing.T) {
 			}
 			if testCase.deviceName != "" {
 				req.Header = map[string][]string{
-					deviceshifuhttp.DeviceNameHeaderField: {testCase.deviceName},
+					deviceshifubase.DeviceNameHeaderField: {testCase.deviceName},
 				}
 			}
 			recoder := httptest.NewRecorder()
