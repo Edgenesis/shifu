@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/testutil"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/stretchr/testify/require"
 )
@@ -35,6 +36,7 @@ func TestStartMockDevice(t *testing.T) {
 	})
 
 	require.NoError(t, md.Start(stopCh))
+	testutil.WaitForHTTPServer(t, md.URL()+"/health")
 
 	resp, err := http.Get(md.URL() + "/get_status")
 	require.NoError(t, err)
