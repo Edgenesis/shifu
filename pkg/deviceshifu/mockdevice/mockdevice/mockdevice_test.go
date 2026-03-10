@@ -6,17 +6,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/testutil"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/stretchr/testify/require"
 )
 
 func TestStartMockDevice(t *testing.T) {
-	port := testutil.MustLocalhostPort(t)
-	baseURL := "http://127.0.0.1:" + port
-
-	t.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
-	t.Setenv("MOCKDEVICE_PORT", port)
 	availableFuncs := []string{
 		"get_position",
 		"get_status",
@@ -32,11 +26,17 @@ func TestStartMockDevice(t *testing.T) {
 		}
 	}
 
-	go StartMockDevice(availableFuncs, instructionHandler)
+	md, err := New("mockdevice_test", "0", availableFuncs, instructionHandler)
+	require.NoError(t, err)
 
-	testutil.WaitForHTTPServer(t, baseURL+"/get_status")
+	stopCh := make(chan struct{})
+	t.Cleanup(func() {
+		close(stopCh)
+	})
 
-	resp, err := http.Get(baseURL + "/get_status")
+	require.NoError(t, md.Start(stopCh))
+
+	resp, err := http.Get(md.URL() + "/get_status")
 	require.NoError(t, err)
 
 	defer resp.Body.Close()

@@ -13,9 +13,6 @@ import (
 )
 
 func TestInstructionHandler(t *testing.T) {
-	port := testutil.MustLocalhostPort(t)
-	baseURL := "http://127.0.0.1:" + port
-
 	dataStorage = make(map[string]string)
 	for _, v := range memoryArea {
 		dataStorage[v] = originalCharacter
@@ -26,8 +23,17 @@ func TestInstructionHandler(t *testing.T) {
 		"sendsinglebit",
 		"get_status",
 	}
-	t.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
-	t.Setenv("MOCKDEVICE_PORT", port)
+	md, err := mockdevice.New("mockdevice_test", "0", availableFuncs, instructionHandler)
+	require.NoError(t, err)
+
+	stopCh := make(chan struct{})
+	t.Cleanup(func() {
+		close(stopCh)
+	})
+
+	require.NoError(t, md.Start(stopCh))
+
+	baseURL := md.URL()
 	mocks := []struct {
 		name       string
 		url        string
@@ -66,9 +72,7 @@ func TestInstructionHandler(t *testing.T) {
 		},
 	}
 
-	go mockdevice.StartMockDevice(availableFuncs, instructionHandler)
-
-	testutil.WaitForHTTPServer(t, mocks[len(mocks)-1].url)
+	testutil.WaitForHTTPServer(t, baseURL+"/health")
 
 	for _, c := range mocks {
 		t.Run(c.name, func(t *testing.T) {
