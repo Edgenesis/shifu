@@ -6,19 +6,23 @@ import (
 	"strconv"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/testutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInstructionHandler(t *testing.T) {
+	port := testutil.MustLocalhostPort(t)
+	baseURL := "http://127.0.0.1:" + port
+
 	availableFuncs := []string{
 		"read_value",
 		"get_status",
 	}
 	t.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
-	t.Setenv("MOCKDEVICE_PORT", "12345")
+	t.Setenv("MOCKDEVICE_PORT", port)
 	mocks := []struct {
 		name       string
 		url        string
@@ -26,14 +30,14 @@ func TestInstructionHandler(t *testing.T) {
 		expResult  interface{}
 	}{
 		{
-			"case 1 port 12345 read_value",
-			"http://localhost:12345/read_value",
+			"case 1 read_value",
+			baseURL + "/read_value",
 			200,
 			true,
 		},
 		{
-			"case 2 port 12345 get_status",
-			"http://localhost:12345/get_status",
+			"case 2 get_status",
+			baseURL + "/get_status",
 			200,
 			[]string{"Running", "Idle", "Busy", "Error"},
 		},
@@ -41,13 +45,14 @@ func TestInstructionHandler(t *testing.T) {
 
 	go mockdevice.StartMockDevice(availableFuncs, instructionHandler)
 
-	time.Sleep(100 * time.Microsecond)
+	testutil.WaitForHTTPServer(t, mocks[1].url)
 
 	for _, c := range mocks {
 		t.Run(c.name, func(t *testing.T) {
 			resp, err := http.Get(c.url)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			defer resp.Body.Close()
+			require.Equal(t, c.StatusCode, resp.StatusCode)
 			body, _ := io.ReadAll(resp.Body)
 
 			switch {
