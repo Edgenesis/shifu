@@ -5,14 +5,13 @@ import (
 	"io"
 	"net/http"
 	"testing"
-	"time"
 
+	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/testutil"
 	"github.com/edgenesis/shifu/pkg/logger"
+	"github.com/stretchr/testify/require"
 )
 
 func TestStartMockDevice(t *testing.T) {
-	t.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
-	t.Setenv("MOCKDEVICE_PORT", "12345")
 	availableFuncs := []string{
 		"get_position",
 		"get_status",
@@ -28,19 +27,23 @@ func TestStartMockDevice(t *testing.T) {
 		}
 	}
 
-	go StartMockDevice(availableFuncs, instructionHandler)
+	md, err := New("mockdevice_test", "0", availableFuncs, instructionHandler)
+	require.NoError(t, err)
 
-	time.Sleep(1 * time.Second)
-	resp, err := http.Get("http://localhost:12345/get_status")
-	if err != nil {
-		t.Errorf("HTTP GET returns an error %v", err.Error())
-	}
+	stopCh := make(chan struct{})
+	t.Cleanup(func() {
+		close(stopCh)
+	})
+
+	require.NoError(t, md.Start(stopCh))
+	testutil.WaitForHTTPServer(t, md.URL()+"/health")
+
+	resp, err := http.Get(md.URL() + "/get_status")
+	require.NoError(t, err)
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("cannot read body from response, %+v", err)
-	}
+	require.NoError(t, err)
 
 	if string(body) != "Running" {
 		t.Errorf("Body is not running: %+v", string(body))
