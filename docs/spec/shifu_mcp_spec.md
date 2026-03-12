@@ -805,8 +805,8 @@ This resolution happens in `pkg/deviceapi/resolver.go`.
 
 | Dependency | Version | Notes |
 |------------|---------|-------|
-| Go | 1.25.5 | Match existing project |
-| `k8s.io/client-go` | v0.35.1 | Match existing project |
+| Go | (match `go.mod`) | Match existing project |
+| `k8s.io/client-go` | (match `go.mod`) | Match existing project |
 | `github.com/modelcontextprotocol/go-sdk` | v1.4.0+ | Official MCP Go SDK |
 
 Tool input types:
