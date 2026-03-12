@@ -104,8 +104,8 @@ The MCP server runs as a **sidecar container** in the `shifu-crd-controller-mana
 │  │ CRDs         │                   └─────────┼─────────┘       │
 │  │              │                             │                 │
 │  │ ConfigMaps   │                             │                 │
-│  │ (interac-    │                             ▼                 │
-│  │  tionDocs)   │                     DeviceShifu Pods          │
+│  │ (instruc-    │                             ▼                 │
+│  │  tions)      │                     DeviceShifu Pods          │
 │  │              │                             │                 │
 │  │ Services     │                             ▼                 │
 │  └──────────────┘                     Physical Devices          │
@@ -118,99 +118,153 @@ The MCP server runs as a **sidecar container** in the `shifu-crd-controller-mana
                                  └───────────┘
 ```
 
-The MCP server is **stateless**. All device information is read live from Kubernetes (EdgeDevice CRDs + ConfigMaps with `interactionDocs` key). It never caches or stores device state.
+The MCP server is **stateless**. All device information is read live from Kubernetes (EdgeDevice CRDs + ConfigMaps). It never caches or stores device state.
 
 ## 4. Device Metadata Model
 
-The MCP server reads device metadata from two sources:
+The MCP server reads device metadata from two sources — both are **extensions to existing Shifu resources** (no new resource types):
 
-1. **Operational config** (existing, unchanged) — EdgeDevice CRDs and DeviceShifu ConfigMaps that define instructions, protocol settings, and telemetry. These are mounted into DeviceShifu pods and parsed at runtime.
-2. **Interaction documentation** (new) — an `interactionDocs` key added to the existing DeviceShifu ConfigMap, containing free-form descriptions (markdown) of what the device is, how to connect, and how each interaction works. Only read by the MCP server, never by DeviceShifu.
+1. **EdgeDevice CRD** (existing, extended) — already has `protocol`, `address`, `sku`. New optional fields: `description` (free-form markdown about the device) and `connectionInfo` (free-form markdown about how apps connect).
+2. **DeviceShifu ConfigMap `instructions` key** (existing, extended) — already defines instruction names and `argumentPropertyList`. New optional fields per instruction: `description` (free-form markdown), `readWrite` (R/W/RW), `safe` (bool).
 
-### 4.1 Why a ConfigMap Key
+### 4.1 Why Extend Existing Resources
 
-The interaction documentation is structured metadata (device name, interaction names, read/write safety) combined with free-form text (descriptions, usage examples, message formats). A new key in the existing DeviceShifu ConfigMap is the right fit because:
+Rather than introducing a new CRD or a new ConfigMap key, the interaction documentation is added to resources that already exist:
 
-- **No new resource type** — no additional CRD to register, no `controller-gen` changes, no extra RBAC rules for a new resource kind
-- **Same lifecycle** — the ConfigMap already exists for each DeviceShifu; adding a key keeps documentation co-located with operational config
-- **Simple RBAC** — the MCP server (sidecar in the controller pod) already has access to ConfigMaps via the controller's ServiceAccount; just add `configmaps` read to the existing `shifu-crd-manager-role` ClusterRole
-- **Backward-compatible** — the new key is optional; existing ConfigMaps without `interactionDocs` continue to work. DeviceShifu ignores keys it doesn't know about
-- **Operator-friendly** — `kubectl edit configmap <device-configmap>` to add documentation; no new `kubectl` resource type to learn
+- **No new resource type** — no additional CRD, no extra ConfigMap key, no new RBAC rules
+- **Natural home** — device-level info (`description`, `connectionInfo`) belongs on the EdgeDevice CRD; per-instruction info (`description`, `readWrite`, `safe`) belongs alongside existing instruction config
+- **Simple RBAC** — the controller SA already has access to EdgeDevice CRDs and ConfigMaps; no RBAC changes needed
+- **Backward-compatible** — all new fields are optional; existing EdgeDevice CRs and ConfigMaps work unchanged
+- **Operator-friendly** — `kubectl edit edgedevice <name>` to add device docs; `kubectl edit configmap <name>` to add instruction docs
 
-The existing DeviceShifu ConfigMap keys (`instructions`, `driverProperties`, `telemetries`) stay unchanged — they're operational config mounted into pods. The `interactionDocs` key is completely independent. DeviceShifu never reads it.
+### 4.2 EdgeDevice CRD Extensions
 
-### 4.2 ConfigMap `interactionDocs` Key — Protocol-Agnostic Design
+Two new optional fields on `EdgeDeviceSpec`:
 
-The `interactionDocs` key uses **one set of field names** for all protocols. The word "interaction" replaces protocol-specific terms like "endpoint" (HTTP), "topic" (MQTT), or "subject" (NATS). Protocol-specific details (how to connect, message formats, code examples) go into free-form `description` fields — the AI agent reads prose perfectly.
+```go
+type EdgeDeviceSpec struct {
+    Sku              *string            `json:"sku,omitempty"`
+    Connection       *Connection        `json:"connection,omitempty"`
+    Address          *string            `json:"address,omitempty"`
+    Protocol         *Protocol          `json:"protocol,omitempty"`
+    ProtocolSettings *ProtocolSettings  `json:"protocolSettings,omitempty"`
+    GatewaySettings  *GatewaySettings   `json:"gatewaySettings,omitempty"`
+    CustomMetadata   *map[string]string `json:"customMetadata,omitempty"`
 
-The value of `interactionDocs` is a YAML document with this structure:
-
-```yaml
-# Inside an existing DeviceShifu ConfigMap
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: deviceshifu-robot-arm-configmap
-  namespace: deviceshifu
-data:
-  # Existing keys (unchanged)
-  instructions: |
-    ...
-  driverProperties: |
-    ...
-  telemetries: |
-    ...
-
-  # New key — interaction documentation for the MCP server
-  interactionDocs: |
-    protocol: MQTT
-    description: |
-      6-axis industrial robot arm (FANUC M-20iD) on the main assembly line.
-      Physical device speaks Siemens S7 PLC protocol. Shifu translates PLC
-      registers into MQTT topics — your app publishes commands and subscribes
-      to status topics.
-
-      **SAFETY:** This device controls physical machinery. Command interactions
-      (`robot-arm/commands/*`) actuate real joints and the gripper.
-    connectionInfo: |
-      MQTT broker: mqtt://deviceshifu-robot-arm.deviceshifu.svc.cluster.local:1883
-      No authentication required for in-cluster access.
-    interactions:
-      - name: move_joint
-        readWrite: W
-        safe: false
-        description: |
-          Move a specific joint to a target angle.
-          ## Topic
-          `robot-arm/commands/move_joint`
-          ## Message format (JSON)
-          {"joint": 1, "angle": 45.0, "speed": 50}
-      - name: joint_positions
-        readWrite: R
-        safe: true
-        description: |
-          Subscribe to `robot-arm/status/joint_positions` for real-time positions.
+    // New fields for MCP / AI agent documentation
+    // Description is a free-form markdown description of the device.
+    // +optional
+    Description    *string `json:"description,omitempty"`
+    // ConnectionInfo is free-form markdown describing how apps connect.
+    // +optional
+    ConnectionInfo *string `json:"connectionInfo,omitempty"`
+}
 ```
 
-#### Field reference
+| Field | Description |
+|-------|-------------|
+| `description` | Free-form markdown. What the device is, where it's deployed, safety notes. |
+| `connectionInfo` | Free-form markdown. App-facing connection details: broker URLs, base URLs, auth, code examples. This is how the **application** connects to DeviceShifu — distinct from `address` which is how Shifu connects to the **physical device**. |
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `protocol` | No | App-facing protocol Shifu exposes (HTTP, MQTT, NATS, etc.). Read from EdgeDevice if omitted. |
-| `description` | No | Free-form device description (markdown). What it is, safety notes, etc. |
-| `connectionInfo` | No | Free-form connection instructions (markdown). URLs, broker addresses, auth, code examples. |
-| `interactions` | No | Array of interaction objects |
-| `interactions[].name` | Yes | Interaction identifier |
-| `interactions[].readWrite` | No | `R` = read/subscribe, `W` = write/publish, `RW` = both |
-| `interactions[].safe` | No | `true` if this interaction has no side effects (safe to probe) |
-| `interactions[].description` | No | Free-form documentation (markdown). Protocol details, message formats, code examples, caveats. |
+Example EdgeDevice CR:
 
-### 4.3 ConfigMap `interactionDocs` Examples
+```yaml
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-robot-arm
+  namespace: devices
+spec:
+  sku: "FANUC-M20iD"
+  connection: Ethernet
+  address: "192.168.1.50"
+  protocol: MQTT
+  description: |
+    6-axis industrial robot arm (FANUC M-20iD) on the main assembly line.
+    Physical device speaks Siemens S7 PLC protocol. Shifu translates PLC
+    registers into MQTT topics — your app publishes commands and subscribes
+    to status topics.
 
-#### MQTT Device — Robot Arm (PLC transformed to MQTT)
+    **SAFETY:** This device controls physical machinery. Command interactions
+    (`robot-arm/commands/*`) actuate real joints and the gripper. Always
+    validate joint angles are within safe ranges before publishing.
+  connectionInfo: |
+    MQTT broker: mqtt://deviceshifu-robot-arm.deviceshifu.svc.cluster.local:1883
+    No authentication required for in-cluster access.
 
-A 6-axis robot arm. Physical device speaks Siemens S7 PLC protocol. Shifu transforms it into MQTT topics. The app is an MQTT client that publishes commands and subscribes to status updates.
+    Your app should connect as an MQTT client to this broker.
+    Use QoS 1 for commands (at-least-once delivery).
+    Use QoS 0 for status subscriptions (latest value is fine).
 
+    ## Python (paho-mqtt)
+    ```python
+    import paho.mqtt.client as mqtt
+    client = mqtt.Client()
+    client.connect("deviceshifu-robot-arm.deviceshifu.svc.cluster.local", 1883)
+    ```
+```
+
+### 4.3 Instruction Extensions
+
+Three new optional fields per instruction in the `instructions` ConfigMap key, alongside the existing `argumentPropertyList`:
+
+| Field | Description |
+|-------|-------------|
+| `description` | Free-form markdown. Protocol details, message formats, code examples. |
+| `readWrite` | `R` = read/subscribe, `W` = write/publish, `RW` = both. |
+| `safe` | `true` if this interaction has no side effects. |
+
+These extend `DeviceShifuInstruction`:
+
+```go
+type DeviceShifuInstruction struct {
+    DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
+    DeviceShifuProtocolProperties    map[string]string                `yaml:"protocolPropertyList,omitempty"`
+    DeviceShifuGatewayProperties     map[string]string                `yaml:"gatewayPropertyList,omitempty"`
+
+    // New fields for MCP / AI agent documentation
+    Description string `yaml:"description,omitempty"`
+    ReadWrite   string `yaml:"readWrite,omitempty"` // R, W, RW
+    Safe        *bool  `yaml:"safe,omitempty"`
+}
+```
+
+### 4.4 Examples
+
+Each device needs two things: an EdgeDevice CR (with `description` and `connectionInfo`) and a ConfigMap (with per-instruction `description`, `readWrite`, `safe`).
+
+#### MQTT Device — Robot Arm
+
+EdgeDevice CR:
+```yaml
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-robot-arm
+  namespace: devices
+spec:
+  sku: "FANUC-M20iD"
+  connection: Ethernet
+  address: "192.168.1.50"
+  protocol: MQTT
+  description: |
+    6-axis industrial robot arm (FANUC M-20iD) on the main assembly line.
+    Shifu translates PLC registers into MQTT topics.
+
+    **SAFETY:** Command interactions (`robot-arm/commands/*`) actuate real
+    joints and the gripper. Validate joint angles before publishing.
+  connectionInfo: |
+    MQTT broker: mqtt://deviceshifu-robot-arm.deviceshifu.svc.cluster.local:1883
+    No authentication required. Use QoS 1 for commands, QoS 0 for status.
+
+    ```python
+    import paho.mqtt.client as mqtt
+    client = mqtt.Client()
+    client.connect("deviceshifu-robot-arm.deviceshifu.svc.cluster.local", 1883)
+    ```
+```
+
+ConfigMap (instructions key):
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -221,59 +275,12 @@ data:
   instructions: |
     instructions:
       move_joint:
-      gripper:
-      joint_positions:
-      error:
-      emergency_stop:
-  driverProperties: |
-    driverSku: FANUC-M20iD
-    driverImage: edgehub/deviceshifu-plc-driver:latest
-  interactionDocs: |
-    protocol: MQTT
-    description: |
-      6-axis industrial robot arm (FANUC M-20iD) on the main assembly line.
-      Physical device speaks Siemens S7 PLC protocol. Shifu translates PLC
-      registers into MQTT topics — your app publishes commands and subscribes
-      to status topics.
-
-      **SAFETY:** This device controls physical machinery. Command interactions
-      (`robot-arm/commands/*`) actuate real joints and the gripper. Always
-      validate joint angles are within safe ranges before publishing.
-      Subscribe to `robot-arm/status/error` and handle emergency stop.
-
-    connectionInfo: |
-      MQTT broker: mqtt://deviceshifu-robot-arm.deviceshifu.svc.cluster.local:1883
-      No authentication required for in-cluster access.
-
-      Your app should connect as an MQTT client to this broker.
-      Use QoS 1 for commands (at-least-once delivery).
-      Use QoS 0 for status subscriptions (latest value is fine).
-
-      ## Python (paho-mqtt)
-      ```python
-      import paho.mqtt.client as mqtt
-      client = mqtt.Client()
-      client.connect("deviceshifu-robot-arm.deviceshifu.svc.cluster.local", 1883)
-      ```
-
-      ## Go
-      ```go
-      opts := mqtt.NewClientOptions().
-          AddBroker("tcp://deviceshifu-robot-arm.deviceshifu.svc.cluster.local:1883")
-      client := mqtt.NewClient(opts)
-      client.Connect()
-      ```
-
-    interactions:
-      - name: move_joint
         readWrite: W
         safe: false
         description: |
           Move a specific joint to a target angle.
-
           ## Topic
           `robot-arm/commands/move_joint`
-
           ## Message format (JSON)
           ```json
           {"joint": 1, "angle": 45.0, "speed": 50}
@@ -281,96 +288,61 @@ data:
           - `joint`: 1-6 (axis number)
           - `angle`: degrees. Safe ranges: J1 ±170, J2 -100/+75, J3 -70/+200, J4 ±190, J5 ±125, J6 ±360
           - `speed`: 1-100 (% of max speed)
-
-          Ack on `robot-arm/status/move_ack`:
-          ```json
-          {"joint": 1, "status": "reached", "actual_angle": 45.0}
-          ```
-
-          ## Code example
-          ```python
-          client.publish("robot-arm/commands/move_joint",
-              json.dumps({"joint": 1, "angle": 45.0, "speed": 50}), qos=1)
-          ```
-
-      - name: gripper
+      gripper:
         readWrite: W
         safe: false
         description: |
           Open or close the gripper.
-
           ## Topic
           `robot-arm/commands/gripper`
-
           ## Message format
           ```json
           {"action": "close", "force": 80}
           ```
-          - `action`: "open" or "close"
-          - `force`: 0-100 (% , only for "close")
-
-          Ack on `robot-arm/status/gripper`:
-          ```json
-          {"action": "close", "status": "done", "gripping": true}
-          ```
-
-      - name: joint_positions
+      joint_positions:
         readWrite: R
         safe: true
         description: |
           Real-time joint positions. Subscribe to receive continuous updates.
-
           ## Topic
           `robot-arm/status/joint_positions`
-
-          ## Message format
-          ```json
-          {"joints": [0.0, 45.0, 90.0, 0.0, -30.0, 0.0], "timestamp": "2025-01-15T10:30:00.123Z"}
-          ```
-          Published every 100ms. Array is [J1, J2, J3, J4, J5, J6] in degrees.
-
-          ```python
-          def on_message(client, userdata, msg):
-              data = json.loads(msg.payload)
-              print(f"Positions: {data['joints']}")
-
-          client.subscribe("robot-arm/status/joint_positions")
-          client.on_message = on_message
-          client.loop_start()
-          ```
-
-      - name: error
-        readWrite: R
-        safe: true
-        description: |
-          Error and emergency events.
-
-          ## Topic
-          `robot-arm/status/error`
-
-          ## Message format
-          ```json
-          {"code": "E001", "severity": "critical", "message": "Joint 2 overcurrent"}
-          ```
-          Severity: "info", "warning", "critical".
-          On "critical", the arm stops automatically. Do NOT resume without human confirmation.
-
-      - name: emergency_stop
+          Published every 100ms. Array is [J1..J6] in degrees.
+      emergency_stop:
         readWrite: W
         safe: false
         description: |
           Immediately halt all motion.
-
           ## Topic
           `robot-arm/commands/emergency_stop`
-
-          Publish any message to trigger E-stop. Requires physical reset to resume.
+          Publish any message to trigger E-stop.
 ```
 
-#### NATS Device — Sensor Array (serial transformed to NATS)
+#### NATS Device — Sensor Array
 
-A distributed sensor array. Shifu translates proprietary RS-485 serial protocol into NATS subjects. The app is a NATS client.
+EdgeDevice CR:
+```yaml
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-sensor-array
+  namespace: devices
+spec:
+  protocol: NATS
+  address: "/dev/ttyUSB0"
+  description: |
+    Distributed sensor array across the warehouse floor. 24 sensor nodes.
+    Shifu translates proprietary RS-485 serial protocol into NATS subjects.
+  connectionInfo: |
+    NATS server: nats://deviceshifu-sensor-array.deviceshifu.svc.cluster.local:4222
+    No authentication required. Use NATS wildcards for multiple sensors.
 
+    ```python
+    import nats
+    nc = await nats.connect("nats://deviceshifu-sensor-array.deviceshifu.svc.cluster.local:4222")
+    ```
+```
+
+ConfigMap:
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -381,92 +353,47 @@ data:
   instructions: |
     instructions:
       temperature:
-      vibration:
-      configure_interval:
-  interactionDocs: |
-    protocol: NATS
-    description: |
-      Distributed sensor array across the warehouse floor. 24 sensor nodes
-      measuring temperature, humidity, and vibration. Physical devices use
-      proprietary RS-485 serial protocol. Shifu translates into NATS subjects.
-
-      Your app connects as a NATS client. Subscribe to subjects for readings,
-      use NATS wildcards to subscribe to multiple sensors at once.
-
-    connectionInfo: |
-      NATS server: nats://deviceshifu-sensor-array.deviceshifu.svc.cluster.local:4222
-      No authentication required for in-cluster access.
-
-      ## Python (nats-py)
-      ```python
-      import nats
-      nc = await nats.connect("nats://deviceshifu-sensor-array.deviceshifu.svc.cluster.local:4222")
-      ```
-
-      ## Go
-      ```go
-      nc, _ := nats.Connect("nats://deviceshifu-sensor-array.deviceshifu.svc.cluster.local:4222")
-      ```
-
-    interactions:
-      - name: temperature
         readWrite: R
         safe: true
         description: |
-          Temperature readings from sensor nodes.
-
-          ## Subject
-          `sensors.<node_id>.temperature`
+          Temperature readings. Subject: `sensors.<node_id>.temperature`
           Wildcard: `sensors.*.temperature` for all nodes.
-
-          ## Message format
-          ```json
-          {"node": "node-01", "value": 23.5, "unit": "celsius", "timestamp": "2025-01-15T10:30:00Z"}
-          ```
           Published every 5 seconds per node.
-
-          ```python
-          async def handler(msg):
-              data = json.loads(msg.data)
-              print(f"{data['node']}: {data['value']}°C")
-          await nc.subscribe("sensors.*.temperature", cb=handler)
-          ```
-
-      - name: vibration
+      vibration:
         readWrite: R
         safe: true
         description: |
-          Vibration readings. Used for predictive maintenance.
-
-          ## Subject
-          `sensors.<node_id>.vibration`
-          Wildcard: `sensors.*.vibration`
-
-          ## Message format
-          ```json
-          {"node": "node-01", "axis": {"x": 0.02, "y": 0.01, "z": 0.15}, "unit": "g"}
-          ```
-          Published every 1 second. Values above 0.5g indicate potential failure.
-
-      - name: configure_interval
+          Vibration readings. Subject: `sensors.<node_id>.vibration`
+          Values above 0.5g indicate potential failure.
+      configure_interval:
         readWrite: W
         safe: false
         description: |
-          Change reporting interval for a sensor node. Uses NATS request/reply.
-
-          ## Subject
-          `sensors.<node_id>.config.interval`
-
-          ```python
-          response = await nc.request("sensors.node-01.config.interval",
-              json.dumps({"interval_seconds": 10}).encode(), timeout=5)
-          # response.data: {"status": "ok", "interval_seconds": 10}
-          ```
+          Change reporting interval. Uses NATS request/reply.
+          Subject: `sensors.<node_id>.config.interval`
           Valid intervals: 1-60 seconds. Default is 5.
 ```
 
-#### HTTP Device — Temperature Sensor (Modbus transformed to HTTP)
+#### HTTP Device — Temperature Sensor
 
+EdgeDevice CR:
+```yaml
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-thermometer
+  namespace: devices
+spec:
+  protocol: HTTP
+  address: "192.168.1.100:502"
+  description: |
+    Industrial temperature sensor. Calibrated for -40°C to 200°C range.
+  connectionInfo: |
+    Base URL: http://deviceshifu-thermometer.deviceshifu.svc.cluster.local
+    No authentication required.
+```
+
+ConfigMap:
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -477,125 +404,26 @@ data:
   instructions: |
     instructions:
       get_temperature:
-      set_unit:
-      status:
-  interactionDocs: |
-    protocol: HTTP
-    description: |
-      Industrial temperature sensor on the factory floor. Reads ambient
-      temperature via thermocouple. Calibrated for -40°C to 200°C range.
-      Read-only sensor.
-
-    connectionInfo: |
-      HTTP on port 8080.
-      Base URL: http://deviceshifu-thermometer.deviceshifu.svc.cluster.local
-      No authentication required for in-cluster access.
-
-    interactions:
-      - name: get_temperature
         readWrite: R
         safe: true
         description: |
-          Read current temperature.
-
-          ```
           GET /get_temperature
-          ```
-
-          Response:
-          ```json
-          {"temperature": 36.5, "unit": "celsius", "timestamp": "2025-01-01T00:00:00Z"}
-          ```
+          Response: {"temperature": 36.5, "unit": "celsius"}
           Updates every 3 seconds.
-
-      - name: set_unit
+      set_unit:
         readWrite: W
         safe: false
         description: |
-          Set temperature unit. Accepts "celsius" or "fahrenheit".
-
-          ```
-          POST /set_unit
-          Content-Type: application/json
-
-          {"unit": "fahrenheit"}
-          ```
-
-          Response: `{"status": "ok", "unit": "fahrenheit"}`
-
-      - name: status
-        readWrite: R
-        safe: true
-        description: |
-          ```
-          GET /status
-          ```
-          Returns plain text: `running` or `error: <message>`.
-```
-
-#### Camera — HTTP + RTSP
-
-```yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: deviceshifu-camera-configmap
-  namespace: deviceshifu
-data:
-  instructions: |
-    instructions:
-      capture:
-      stream:
+          POST /set_unit {"unit": "fahrenheit"}
+          Response: {"status": "ok", "unit": "fahrenheit"}
       status:
-  interactionDocs: |
-    protocol: HTTP
-    description: |
-      IP camera at loading dock B. Supports still capture via HTTP
-      and live streaming via RTSP.
-
-    connectionInfo: |
-      HTTP base URL: http://deviceshifu-camera.deviceshifu.svc.cluster.local
-      RTSP stream: rtsp://10.0.0.30:554/stream1 (credentials in K8s secret `camera-creds`)
-      MJPEG stream: http://10.0.0.30:80/mjpeg (no auth, cluster-internal)
-
-    interactions:
-      - name: capture
         readWrite: R
         safe: true
         description: |
-          Capture still image.
-
-          ```
-          GET /capture
-          ```
-          Returns JPEG image bytes.
-
-      - name: stream
-        readWrite: R
-        safe: true
-        description: |
-          Live video. Connect directly — NOT through DeviceShifu HTTP.
-
-          ## RTSP
-          `rtsp://10.0.0.30:554/stream1` — H.264, 1920x1080, 30fps
-          ```python
-          cap = cv2.VideoCapture("rtsp://admin:password@10.0.0.30:554/stream1")
-          ```
-
-          ## MJPEG (simpler, no auth)
-          `http://10.0.0.30:80/mjpeg`
-
-      - name: status
-        readWrite: R
-        safe: true
-        description: |
-          ```
-          GET /status
-          ```
-          Returns plain text: `running` or `error: <message>`.
+          GET /status — returns plain text: `running` or `error: <message>`.
 ```
 
-### 4.4 Design Principles
+### 4.5 Design Principles
 
 **Why no `httpSpec`, `mqttSpec`, `natsSpec` structs?**
 
@@ -609,40 +437,43 @@ Everything else goes in **free-form `description`** fields. The AI agent is the 
 
 **One vocabulary for all protocols:**
 
-| HTTP term | MQTT term | NATS term | interactionDocs term |
+| HTTP term | MQTT term | NATS term | Shifu term |
 |---|---|---|---|
 | endpoint | topic | subject | **interaction** |
 | request body | message payload | message data | *in description* |
 | response | — | reply | *in description* |
 | URL path | topic name | subject name | *in description* |
 
-### 4.5 Discovery
+### 4.6 Discovery
 
-The MCP server reads ConfigMaps for DeviceShifu deployments and parses the `interactionDocs` key. It correlates them to EdgeDevice CRs by matching the `EDGEDEVICE_NAME` env var in the DeviceShifu Deployment.
+The MCP server reads EdgeDevice CRs for device-level metadata (`description`, `connectionInfo`, `protocol`, `phase`) and ConfigMaps for per-interaction documentation (extended `instructions` key). It correlates them by matching the `EDGEDEVICE_NAME` env var in the DeviceShifu Deployment.
 
-### 4.6 Graceful Degradation
+### 4.7 Graceful Degradation
 
-If no `interactionDocs` key exists in a device's ConfigMap, the MCP server falls back to the operational ConfigMap — it returns instruction names (from the `instructions` key) and any existing `argumentPropertyList` / `protocolPropertyList` data. Functional but less descriptive.
+If an EdgeDevice CR has no `description` or `connectionInfo`, those fields are omitted from MCP responses. If the `instructions` key uses the existing format (instruction names without `description`, `readWrite`, or `safe`), the MCP server returns instruction names with minimal metadata. Fully backward-compatible.
 
-### 4.7 Changes to ConfigMap Format
+### 4.8 Changes to Shifu Resources
 
-A new optional key `interactionDocs` is added to the existing DeviceShifu ConfigMap `data:` section. This is **backward-compatible** — existing ConfigMaps without this key continue to work unchanged. DeviceShifu ignores keys it doesn't read.
+**EdgeDevice CRD** — two new optional fields in `EdgeDeviceSpec`:
 
-The `interactionDocs` value is a YAML string containing:
+| Field | Type | Description |
+|-------|------|-------------|
+| `description` | `*string` | Free-form markdown describing the device |
+| `connectionInfo` | `*string` | Free-form markdown on how to connect |
 
-```yaml
-interactionDocs: |
-  protocol: "MQTT"              # optional, app-facing protocol
-  description: "..."            # optional, free-form markdown
-  connectionInfo: "..."         # optional, free-form markdown
-  interactions:                  # optional, array
-    - name: "move_joint"
-      readWrite: "W"            # optional: R, W, RW
-      safe: false               # optional: bool
-      description: "..."        # optional, free-form markdown
-```
+Backward-compatible: existing EdgeDevice CRs without these fields work unchanged.
 
-No changes to Go types, CRD definitions, or `controller-gen` output are required. The MCP server parses this key at read time.
+**DeviceShifu ConfigMap (`instructions` key)** — three new optional fields per instruction in `DeviceShifuInstruction`:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `description` | `string` | Free-form markdown describing the interaction |
+| `readWrite` | `string` | R, W, or RW |
+| `safe` | `*bool` | Whether the interaction has side effects |
+
+Backward-compatible: existing ConfigMaps without these fields work unchanged. The existing `argumentPropertyList` and `protocolPropertyList` continue to work as before.
+
+Requires `controller-gen` for the CRD changes; no schema changes for ConfigMap (parsed at runtime).
 
 ## 5. MCP Tools
 
@@ -658,7 +489,7 @@ Returns all devices in the cluster with a summary, including their current `Edge
 
 **Returns:** array of device summaries
 
-**Data sources:** EdgeDevice CRDs (all namespaces) + ConfigMap `interactionDocs`
+**Data sources:** EdgeDevice CRDs (all namespaces) + DeviceShifu ConfigMaps (`instructions` key)
 
 ```json
 [
@@ -689,7 +520,7 @@ Returns all devices in the cluster with a summary, including their current `Edge
 ]
 ```
 
-**Implementation:** List EdgeDevice CRs across namespaces, for each read `EdgeDevicePhase` from status. Find the matching DeviceShifu service by scanning Deployments for `EDGEDEVICE_NAME` env var match. Populate `description` and `protocol` from the matching ConfigMap `interactionDocs` key. If no `interactionDocs` key exists, `protocol` comes from the EdgeDevice CR and `description` is omitted.
+**Implementation:** List EdgeDevice CRs across namespaces, for each read `EdgeDevicePhase` from status and `description`/`protocol` from spec. Find the matching DeviceShifu service by scanning Deployments for `EDGEDEVICE_NAME` env var match. If the EdgeDevice CR has no `description`, the field is omitted.
 
 ---
 
@@ -702,7 +533,7 @@ Returns the full documentation for a device — what it is, how to connect, and 
 
 **Returns:** device details + full interaction reference
 
-**Data sources:** EdgeDevice CR + ConfigMap `interactionDocs` + DeviceShifu Service
+**Data sources:** EdgeDevice CR (`description`, `connectionInfo`, `protocol`, `phase`) + DeviceShifu ConfigMap (`instructions` key) + DeviceShifu Service
 
 **Example: MQTT device (robot arm)**
 ```json
@@ -771,11 +602,11 @@ Returns the full documentation for a device — what it is, how to connect, and 
 ```
 
 **Implementation:**
-1. Get EdgeDevice CR → `protocol`, `phase`
+1. Get EdgeDevice CR → `protocol`, `phase`, `description`, `connectionInfo`
 2. Find DeviceShifu Service → `service`
-3. Read ConfigMap `interactionDocs` key for the matching DeviceShifu
-4. If `interactionDocs` exists → use `description`, `connectionInfo`, `protocol`, `interactions`
-5. If no `interactionDocs` → fall back to operational ConfigMap: each instruction name becomes an interaction with minimal metadata
+3. Read ConfigMap `instructions` key for the matching DeviceShifu
+4. For each instruction, read `description`, `readWrite`, `safe` → populate `interactions`
+5. If instructions lack extended fields → return instruction names with minimal metadata (graceful degradation)
 
 ---
 
@@ -892,7 +723,7 @@ pkg/
   deviceapi/                   # Reusable API layer (Go library)
     api.go                     # ListDevices(), GetDeviceDesc() — public interface
     resolver.go                # EdgeDevice CR → DeviceShifu Service / ConfigMap resolution
-    configmap.go               # ConfigMap parser for interactionDocs + instruction metadata (fallback)
+    configmap.go               # ConfigMap parser for extended instructions metadata
     types.go                   # DeviceSummary, DeviceDesc, Interaction structs
   mcp/
     server/
@@ -940,23 +771,22 @@ The controller SA already has:
 
 ## 9. Device Resolution Logic
 
-| Resource | Namespace | How to find |
-|----------|-----------|-------------|
-| EdgeDevice CR | `devices` (configurable) | List all EdgeDevice CRs |
-| DeviceShifu Deployment | `deviceshifu` | Find Deployment where env `EDGEDEVICE_NAME` matches |
-| DeviceShifu Service | `deviceshifu` | From Deployment's label selector |
-| ConfigMap (`interactionDocs`) | `deviceshifu` | From Deployment's volume mounts |
-| Operational ConfigMap | `deviceshifu` | Same ConfigMap, `instructions` key (fallback only) |
+| Resource | Namespace | How to find | Data |
+|----------|-----------|-------------|------|
+| EdgeDevice CR | `devices` (configurable) | List all EdgeDevice CRs | `protocol`, `phase`, `description`, `connectionInfo` |
+| DeviceShifu Deployment | `deviceshifu` | Find Deployment where env `EDGEDEVICE_NAME` matches | Links device to service/configmap |
+| DeviceShifu Service | `deviceshifu` | From Deployment's label selector | Cluster DNS endpoint |
+| DeviceShifu ConfigMap | `deviceshifu` | From Deployment's volume mounts | `instructions` key → per-interaction docs |
 
 **Resolution flow:**
 
-1. List all EdgeDevice CRs across namespaces → device names + protocol + phase
+1. List all EdgeDevice CRs across namespaces → device names, `protocol`, `phase`, `description`, `connectionInfo`
 2. For each device, scan DeviceShifu Deployments for `EDGEDEVICE_NAME` env var match → find Service
-3. Read ConfigMap mounted by the Deployment, parse `interactionDocs` key
-4. If `interactionDocs` exists → use it for `description`, `connectionInfo`, `interactions`
-5. If no `interactionDocs` → fall back to operational ConfigMap for instruction names
+3. Read ConfigMap mounted by the Deployment, parse `instructions` key for per-interaction metadata (`description`, `readWrite`, `safe`)
+4. If instructions have extended fields → use them for rich interaction docs
+5. If instructions lack extended fields → return instruction names with minimal metadata (graceful degradation)
 
-This resolution happens in `pkg/mcp/device/resolver.go`.
+This resolution happens in `pkg/deviceapi/resolver.go`.
 
 ## 10. Error Handling
 
@@ -991,14 +821,15 @@ type GetDeviceDescInput struct {
 
 ## 12. Changes Required to Shifu Core
 
-**Minimal.** No new CRDs, no changes to Go types, no `controller-gen` modifications. The changes are purely additive:
+**Minimal.** Changes are additive and backward-compatible:
 
-1. **`interactionDocs` ConfigMap key** — new optional key in existing DeviceShifu ConfigMaps. Backward-compatible; existing ConfigMaps work unchanged. DeviceShifu ignores keys it doesn't read.
-2. **Sidecar container** — added to `shifu-crd-controller-manager` Deployment in `shifu_install.yml`. Runs the MCP server binary alongside the controller.
-3. **`configmaps` read** — added to existing `shifu-crd-manager-role` ClusterRole. The controller SA already has access to pods, services, deployments, and edgedevices.
-4. **LoadBalancer Service** — added to expose the MCP server's Streamable HTTP port (8443) from the sidecar.
-5. **Dockerfile** — `dockerfiles/Dockerfile.mcpServer`
-6. **MCP server binary** — `cmd/shifu-mcp-server/main.go`
-7. **Device API library** — `pkg/deviceapi/` (reusable by `shifuctl` and other tools)
-8. **MCP adapter** — `pkg/mcp/` (wraps `deviceapi` into MCP tool handlers)
-9. **Example ConfigMaps with `interactionDocs`** — MQTT robot arm, NATS sensor array, HTTP thermometer, camera
+1. **EdgeDevice CRD** — two new optional fields (`description`, `connectionInfo`) in `EdgeDeviceSpec`. Requires `controller-gen` to regenerate CRD manifests. Existing EdgeDevice CRs without these fields work unchanged.
+2. **`DeviceShifuInstruction` Go type** — three new optional fields (`description`, `readWrite`, `safe`). Parsed at runtime from the existing `instructions` ConfigMap key. No schema migration needed.
+3. **Sidecar container** — added to `shifu-crd-controller-manager` Deployment in `shifu_install.yml`. Runs the MCP server binary alongside the controller.
+4. **`configmaps` read** — added to existing `shifu-crd-manager-role` ClusterRole. The controller SA already has access to pods, services, deployments, and edgedevices.
+5. **LoadBalancer Service** — added to expose the MCP server's Streamable HTTP port (8443) from the sidecar.
+6. **Dockerfile** — `dockerfiles/Dockerfile.mcpServer`
+7. **MCP server binary** — `cmd/shifu-mcp-server/main.go`
+8. **Device API library** — `pkg/deviceapi/` (reusable by `shifuctl` and other tools)
+9. **MCP adapter** — `pkg/mcp/` (wraps `deviceapi` into MCP tool handlers)
+10. **Example EdgeDevice CRs and ConfigMaps** — MQTT robot arm, NATS sensor array, HTTP thermometer with extended fields
