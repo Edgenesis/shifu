@@ -18,7 +18,7 @@ const (
 
 // Resolver reads Kubernetes resources and resolves device metadata.
 type Resolver struct {
-	clientset        kubernetes.Interface
+	clientset       kubernetes.Interface
 	edgeDeviceLister func(ctx context.Context) ([]v1alpha1.EdgeDevice, error)
 }
 
@@ -26,7 +26,7 @@ type Resolver struct {
 // a custom lister for EdgeDevice CRDs.
 func NewResolver(clientset kubernetes.Interface, edgeDeviceLister func(ctx context.Context) ([]v1alpha1.EdgeDevice, error)) *Resolver {
 	return &Resolver{
-		clientset:        clientset,
+		clientset:       clientset,
 		edgeDeviceLister: edgeDeviceLister,
 	}
 }
@@ -94,3 +94,4 @@ func (r *Resolver) parseInstructions(ctx context.Context, configMapName string) 
 
 	return parseInstructionsFromConfigMap(cm)
 }
+

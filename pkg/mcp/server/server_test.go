@@ -17,9 +17,9 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 )
 
-func strPtr(s string) *string                                       { return &s }
-func protocolPtr(p v1alpha1.Protocol) *v1alpha1.Protocol            { return &p }
-func phasePtr(p v1alpha1.EdgeDevicePhase) *v1alpha1.EdgeDevicePhase { return &p }
+func strPtr(s string) *string                                         { return &s }
+func protocolPtr(p v1alpha1.Protocol) *v1alpha1.Protocol              { return &p }
+func phasePtr(p v1alpha1.EdgeDevicePhase) *v1alpha1.EdgeDevicePhase   { return &p }
 
 func testDevices() []v1alpha1.EdgeDevice {
 	return []v1alpha1.EdgeDevice{
