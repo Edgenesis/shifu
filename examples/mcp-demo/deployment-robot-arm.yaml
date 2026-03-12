@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: deviceshifu-robot-arm
+  namespace: deviceshifu
+  labels:
+    app: deviceshifu-robot-arm
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: deviceshifu-robot-arm
+  template:
+    metadata:
+      labels:
+        app: deviceshifu-robot-arm
+    spec:
+      containers:
+      - name: deviceshifu-http
+        image: edgehub/deviceshifu-http-mqtt:nightly
+        ports:
+        - containerPort: 8080
+        volumeMounts:
+        - name: deviceshifu-config
+          mountPath: "/etc/edgedevice/config"
+          readOnly: true
+        env:
+        - name: EDGEDEVICE_NAME
+          value: "edgedevice-robot-arm"
+        - name: EDGEDEVICE_NAMESPACE
+          value: "devices"
+      volumes:
+      - name: deviceshifu-config
+        configMap:
+          name: deviceshifu-robot-arm-configmap
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: deviceshifu-robot-arm
+  namespace: deviceshifu
+  labels:
+    app: deviceshifu-robot-arm
+spec:
+  selector:
+    app: deviceshifu-robot-arm
+  ports:
+  - port: 8080
+    targetPort: 8080

@@ -49,6 +49,13 @@ type DeviceShifuInstruction struct {
 	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
 	DeviceShifuProtocolProperties    map[string]string                `yaml:"protocolPropertyList,omitempty"`
 	DeviceShifuGatewayProperties     map[string]string                `yaml:"gatewayPropertyList,omitempty"`
+
+	// Description is free-form markdown describing this interaction.
+	Description string `yaml:"description,omitempty"`
+	// ReadWrite indicates the interaction direction: R, W, or RW.
+	ReadWrite string `yaml:"readWrite,omitempty"`
+	// Safe indicates whether this interaction has side effects.
+	Safe *bool `yaml:"safe,omitempty"`
 }
 
 // DeviceShifuInstructionProperty property of instruction
