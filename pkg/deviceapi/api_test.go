@@ -16,7 +16,7 @@ import (
 
 func strPtr(s string) *string { return &s }
 
-func protocolPtr(p v1alpha1.Protocol) *v1alpha1.Protocol { return &p }
+func protocolPtr(p v1alpha1.Protocol) *v1alpha1.Protocol            { return &p }
 func phasePtr(p v1alpha1.EdgeDevicePhase) *v1alpha1.EdgeDevicePhase { return &p }
 
 func newTestDevices() []v1alpha1.EdgeDevice {
@@ -27,9 +27,9 @@ func newTestDevices() []v1alpha1.EdgeDevice {
 				Namespace: "devices",
 			},
 			Spec: v1alpha1.EdgeDeviceSpec{
-				Protocol:    protocolPtr(v1alpha1.ProtocolHTTP),
-				Address:     strPtr("192.168.1.100:502"),
-				Description: strPtr("Industrial temperature sensor.\nCalibrated for -40C to 200C."),
+				Protocol:       protocolPtr(v1alpha1.ProtocolHTTP),
+				Address:        strPtr("192.168.1.100:502"),
+				Description:    strPtr("Industrial temperature sensor.\nCalibrated for -40C to 200C."),
 				ConnectionInfo: strPtr("Base URL: http://deviceshifu-thermometer.deviceshifu.svc.cluster.local\nNo auth required."),
 			},
 			Status: v1alpha1.EdgeDeviceStatus{

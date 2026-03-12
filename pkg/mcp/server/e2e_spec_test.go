@@ -81,8 +81,8 @@ nc = await nats.connect("nats://deviceshifu-sensor-array.deviceshifu.svc.cluster
 				Namespace: "devices",
 			},
 			Spec: v1alpha1.EdgeDeviceSpec{
-				Protocol: protocolPtr(v1alpha1.ProtocolHTTP),
-				Address:  strPtr("192.168.1.100:502"),
+				Protocol:    protocolPtr(v1alpha1.ProtocolHTTP),
+				Address:     strPtr("192.168.1.100:502"),
 				Description: strPtr(`Industrial temperature sensor. Calibrated for -40°C to 200°C range.`),
 				ConnectionInfo: strPtr(`Base URL: http://deviceshifu-thermometer.deviceshifu.svc.cluster.local
 No authentication required.`),
