@@ -15,7 +15,6 @@ import (
 )
 
 func strPtr(s string) *string { return &s }
-func boolPtr(b bool) *bool   { return &b }
 
 func protocolPtr(p v1alpha1.Protocol) *v1alpha1.Protocol { return &p }
 func phasePtr(p v1alpha1.EdgeDevicePhase) *v1alpha1.EdgeDevicePhase { return &p }
