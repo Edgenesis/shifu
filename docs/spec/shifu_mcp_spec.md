@@ -7,8 +7,7 @@ Users of Shifu — specifically engineers and POs — want to "vibe code" edge-c
 The Shifu MCP Server is a **development-time knowledge layer** that provides AI agents with the **knowhow** on what devices exist and how to interact with them:
 1. **Discover** devices available in the cluster
 2. **Understand** interaction contracts — protocols, message formats, connection details, safety characteristics
-3. **Test** device connectivity
-4. **Generate** applications using the correct protocol for each device
+3. **Generate** applications using the correct protocol for each device
 
 **Key insight:** Shifu doesn't just turn everything into HTTP. Shifu's core job is **protocol transformation** — a physical device speaks its native protocol (PLC, Modbus, OPC UA, etc.) and Shifu transforms it into a developer-friendly app-facing protocol:
 
@@ -56,7 +55,6 @@ DEVELOPMENT TIME (building the app)          RUNTIME (app running in cluster)
   │  list_devices│
   │  get_device_ │
   │    desc      │
-  │  test_device │
   └──────┬───────┘
          │ reads metadata from
          ▼
@@ -76,7 +74,7 @@ The MCP server runs as a **sidecar container** in the `shifu-crd-controller-mana
 | **Who** | AI coding agent (Claude Code, Cursor) | The application code the agent writes |
 | **Protocol** | MCP over SSE | Device-specific: HTTP, MQTT, NATS, RTSP, etc. |
 | **Target** | MCP Server → K8s API | App Pod → DeviceShifu Service |
-| **Purpose** | Discover devices, read docs, verify health | Production device interaction |
+| **Purpose** | Discover devices, read docs | Production device interaction |
 | **Example** | `get_device_desc("robot-arm")` → learns MQTT topics | `client.publish("robot-arm/commands/move_joint", ...)` |
 | **Lifetime** | Only during development session | Runs permanently in cluster |
 
@@ -605,7 +603,7 @@ Trying to capture every protocol's specifics in typed fields leads to an ever-gr
 
 Instead, each interaction has just **two structured hints** the MCP server needs programmatically:
 - `readWrite` — R/W/RW (safety classification)
-- `safe` — bool (can `test_device` probe this?)
+- `safe` — bool (does this interaction have side effects?)
 
 Everything else goes in **free-form `description`** fields. The AI agent is the consumer — it reads prose, markdown, code examples, and message format samples perfectly. It doesn't need rigid JSON schemas.
 
@@ -648,17 +646,19 @@ No changes to Go types, CRD definitions, or `controller-gen` output are required
 
 ## 5. MCP Tools
 
-Three tools. The MCP server is a **knowledge layer** — it tells the AI agent everything it needs to write correct device interaction code using the right protocol. It does not provide a generic "call any device" tool because device protocols have fundamentally different interaction patterns (request-response vs publish-subscribe vs streaming).
+Two tools. The MCP server is a **knowledge layer** — it tells the AI agent everything it needs to write correct device interaction code using the right protocol. It does not provide a generic "call any device" tool because device protocols have fundamentally different interaction patterns (request-response vs publish-subscribe vs streaming).
+
+Device health is reported via `EdgeDevicePhase` (maintained by DeviceShifu itself) — no separate health-check tool is needed. The `phase` field is included in both `list_devices` and `get_device_desc` responses.
 
 ### `list_devices`
 
-Returns all devices in the cluster with a summary.
+Returns all devices in the cluster with a summary, including their current `EdgeDevicePhase` status.
 
 **Parameters:** none
 
 **Returns:** array of device summaries
 
-**Data sources:** EdgeDevice CRDs (all namespaces) + DeviceShifu Pod status + ConfigMap `interactionDocs`
+**Data sources:** EdgeDevice CRDs (all namespaces) + ConfigMap `interactionDocs`
 
 ```json
 [
@@ -689,7 +689,7 @@ Returns all devices in the cluster with a summary.
 ]
 ```
 
-**Implementation:** List EdgeDevice CRs across namespaces, for each find the matching DeviceShifu pod/service by scanning for `EDGEDEVICE_NAME` env var match. Populate `description` and `protocol` from the matching ConfigMap `interactionDocs` key. If no `interactionDocs` key exists, `protocol` comes from the EdgeDevice CR and `description` is omitted.
+**Implementation:** List EdgeDevice CRs across namespaces, for each read `EdgeDevicePhase` from status. Find the matching DeviceShifu service by scanning Deployments for `EDGEDEVICE_NAME` env var match. Populate `description` and `protocol` from the matching ConfigMap `interactionDocs` key. If no `interactionDocs` key exists, `protocol` comes from the EdgeDevice CR and `description` is omitted.
 
 ---
 
@@ -779,33 +779,6 @@ Returns the full documentation for a device — what it is, how to connect, and 
 
 ---
 
-### `test_device`
-
-Health check — verifies that the device's DeviceShifu pod is running and the service is reachable. This is a **health check only** — it does NOT proxy device calls. The MCP server verifies pod status and service reachability so the AI agent knows the device is online before writing code against it.
-
-Does **not** trigger device interactions, write operations, or anything with physical side effects.
-
-**Parameters:**
-- `device_name: string` (required)
-
-**Returns:**
-```json
-{
-  "device": "edgedevice-robot-arm",
-  "healthy": true,
-  "phase": "Running",
-  "podRunning": true,
-  "serviceReachable": true
-}
-```
-
-**Implementation:**
-1. Check EdgeDevice CR phase
-2. Check DeviceShifu pod is Running
-3. Check Service exists and has endpoints
-
----
-
 ## 6. Example AI Agent Workflows
 
 ### MQTT — Robot Arm Control App
@@ -832,13 +805,7 @@ Agent learns:
     - SAFETY: validate angles, handle emergency stop
 ```
 
-**Step 3 — Verify connectivity:**
-```
-Agent calls: test_device("edgedevice-robot-arm")
-Agent gets:  healthy=true, podRunning=true, serviceReachable=true
-```
-
-**Step 4 — Write the app (NO MCP involved):**
+**Step 3 — Write the app (NO MCP involved):**
 
 ```python
 import paho.mqtt.client as mqtt
@@ -914,22 +881,22 @@ Agent writes app that:
 
 ## 7. Repository Structure
 
+The code is organized as an **API layer + adapter** pattern. The core device resolution logic lives in `pkg/deviceapi/` as a reusable Go library. The MCP server is one adapter; other tools (`shifuctl`, dashboards, future APIs) can consume the same library.
+
 ```
 cmd/
   shifu-mcp-server/
     main.go                    # Entry point, kubeconfig flag, SSE transport
 
 pkg/
+  deviceapi/                   # Reusable API layer (Go library)
+    api.go                     # ListDevices(), GetDeviceDesc() — public interface
+    resolver.go                # EdgeDevice CR → DeviceShifu Service / ConfigMap resolution
+    configmap.go               # ConfigMap parser for interactionDocs + instruction metadata (fallback)
+    types.go                   # DeviceSummary, DeviceDesc, Interaction structs
   mcp/
     server/
-      server.go                # MCP server setup and tool registration
-    tools/
-      list_devices.go          # list_devices tool
-      get_device_desc.go       # get_device_desc tool
-      test_device.go           # test_device tool
-    device/
-      resolver.go              # EdgeDevice CR → DeviceShifu Service / ConfigMap resolution
-      configmap.go             # ConfigMap parser for interactionDocs + instruction metadata (fallback)
+      server.go                # MCP adapter — wraps deviceapi into MCP tool handlers
 ```
 
 ## 8. Configuration & Deployment
@@ -1003,8 +970,6 @@ This resolution happens in `pkg/mcp/device/resolver.go`.
 | Error | Meaning |
 |-------|---------|
 | `DEVICE_NOT_FOUND` | No EdgeDevice CR with that name |
-| `DEVICE_UNHEALTHY` | Device exists but pod is not running |
-| `SERVICE_UNREACHABLE` | Service does not have ready endpoints |
 
 ## 11. Dependencies
 
@@ -1022,10 +987,6 @@ type ListDevicesInput struct{}
 type GetDeviceDescInput struct {
     DeviceName string `json:"device_name" jsonschema:"description=Name of the EdgeDevice"`
 }
-
-type TestDeviceInput struct {
-    DeviceName string `json:"device_name" jsonschema:"description=Name of the EdgeDevice"`
-}
 ```
 
 ## 12. Changes Required to Shifu Core
@@ -1038,5 +999,6 @@ type TestDeviceInput struct {
 4. **LoadBalancer Service** — added to expose the MCP server's SSE port (8443) from the sidecar.
 5. **Dockerfile** — `dockerfiles/Dockerfile.mcpServer`
 6. **MCP server binary** — `cmd/shifu-mcp-server/main.go`
-7. **MCP server packages** — `pkg/mcp/`
-8. **Example ConfigMaps with `interactionDocs`** — MQTT robot arm, NATS sensor array, HTTP thermometer, camera
+7. **Device API library** — `pkg/deviceapi/` (reusable by `shifuctl` and other tools)
+8. **MCP adapter** — `pkg/mcp/` (wraps `deviceapi` into MCP tool handlers)
+9. **Example ConfigMaps with `interactionDocs`** — MQTT robot arm, NATS sensor array, HTTP thermometer, camera
