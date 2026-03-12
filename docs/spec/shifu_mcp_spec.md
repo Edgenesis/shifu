@@ -43,7 +43,7 @@ DEVELOPMENT TIME (building the app)          RUNTIME (app running in cluster)
       ▼                                           │  protocol-specific
   AI Coding Agent                                 │  (HTTP / MQTT / NATS / ...)
       │                                           ▼
-      │ MCP (SSE)                            DeviceShifu Service
+      │ MCP (Streamable HTTP)                DeviceShifu Service
       ▼                                    (e.g. MQTT broker, HTTP server,
   ┌──────────────┐                          NATS server — depends on device)
   │  MCP Server  │                                │
@@ -72,7 +72,7 @@ The MCP server runs as a **sidecar container** in the `shifu-crd-controller-mana
 | | MCP Plane (Development Time) | Device Interaction Plane (Runtime) |
 |---|---|---|
 | **Who** | AI coding agent (Claude Code, Cursor) | The application code the agent writes |
-| **Protocol** | MCP over SSE | Device-specific: HTTP, MQTT, NATS, RTSP, etc. |
+| **Protocol** | MCP over Streamable HTTP | Device-specific: HTTP, MQTT, NATS, RTSP, etc. |
 | **Target** | MCP Server → K8s API | App Pod → DeviceShifu Service |
 | **Purpose** | Discover devices, read docs | Production device interaction |
 | **Example** | `get_device_desc("robot-arm")` → learns MQTT topics | `client.publish("robot-arm/commands/move_joint", ...)` |
@@ -111,7 +111,7 @@ The MCP server runs as a **sidecar container** in the `shifu-crd-controller-mana
 │  └──────────────┘                     Physical Devices          │
 │                                                                  │
 └──────────────────────────────────────┬───────────────────────────┘
-                                       │ MCP (SSE)
+                                       │ MCP (Streamable HTTP)
                                  ┌─────┴─────┐
                                  │ AI Coding │
                                  │ Agent     │
@@ -886,7 +886,7 @@ The code is organized as an **API layer + adapter** pattern. The core device res
 ```
 cmd/
   shifu-mcp-server/
-    main.go                    # Entry point, kubeconfig flag, SSE transport
+    main.go                    # Entry point, kubeconfig flag, Streamable HTTP transport
 
 pkg/
   deviceapi/                   # Reusable API layer (Go library)
@@ -909,16 +909,16 @@ Changes to the existing install:
 
 1. **Sidecar container** added to `shifu-crd-controller-manager` Deployment — runs the MCP server binary
 2. **`configmaps` read** added to existing `shifu-crd-manager-role` ClusterRole (the controller SA already has access to pods, services, deployments, and edgedevices)
-3. **LoadBalancer Service** added to expose the MCP server's SSE port from the sidecar
+3. **LoadBalancer Service** added to expose the MCP server's HTTP port from the sidecar
 
 A Dockerfile is added at `dockerfiles/Dockerfile.mcpServer`.
 
 ### Connecting an AI agent
 
-The MCP server runs in-cluster as a sidecar and exposes an SSE endpoint via a LoadBalancer Service. On K3s, ServiceLB maps this to the gateway's host IP automatically — no port-forward needed.
+The MCP server runs in-cluster as a sidecar and exposes a Streamable HTTP endpoint via a LoadBalancer Service. On K3s, ServiceLB maps this to the gateway's host IP automatically — no port-forward needed.
 
 ```bash
-claude mcp add shifu --transport sse http://<gateway-ip>:8443/sse
+claude mcp add shifu --transport http http://<gateway-ip>:8443/mcp
 ```
 
 ### RBAC
@@ -996,7 +996,7 @@ type GetDeviceDescInput struct {
 1. **`interactionDocs` ConfigMap key** — new optional key in existing DeviceShifu ConfigMaps. Backward-compatible; existing ConfigMaps work unchanged. DeviceShifu ignores keys it doesn't read.
 2. **Sidecar container** — added to `shifu-crd-controller-manager` Deployment in `shifu_install.yml`. Runs the MCP server binary alongside the controller.
 3. **`configmaps` read** — added to existing `shifu-crd-manager-role` ClusterRole. The controller SA already has access to pods, services, deployments, and edgedevices.
-4. **LoadBalancer Service** — added to expose the MCP server's SSE port (8443) from the sidecar.
+4. **LoadBalancer Service** — added to expose the MCP server's Streamable HTTP port (8443) from the sidecar.
 5. **Dockerfile** — `dockerfiles/Dockerfile.mcpServer`
 6. **MCP server binary** — `cmd/shifu-mcp-server/main.go`
 7. **Device API library** — `pkg/deviceapi/` (reusable by `shifuctl` and other tools)
