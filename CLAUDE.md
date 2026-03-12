@@ -94,7 +94,6 @@ Uses golangci-lint v2 (`.golangci.yml`). Currently `errcheck` and `staticcheck` 
 
 ## Repository Conventions
 
-- Go 1.25.5
 - Apache 2.0 license
 - CRD group: `shifu.edgenesis.io`, version: `v1alpha1`
 - After modifying CRD types in `pkg/k8s/api/v1alpha1/`, run `make manifests generate` from `pkg/k8s/crd/`
