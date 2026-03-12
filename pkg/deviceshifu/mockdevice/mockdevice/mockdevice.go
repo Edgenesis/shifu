@@ -1,7 +1,10 @@
 package mockdevice
 
 import (
+	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"os"
 	"time"
@@ -15,6 +18,7 @@ import (
 type MockDevice struct {
 	Name   string
 	server *http.Server
+	addr   string
 }
 
 // Driver MockDevice Driver interface include main function and instruction handler
@@ -37,18 +41,57 @@ var StatusSetList = []string{
 func (md *MockDevice) Start(stopCh <-chan struct{}) error {
 	logger.Infof("mockDevice %s started", md.Name)
 
+	listener, err := net.Listen("tcp", md.server.Addr)
+	if err != nil {
+		return err
+	}
+
+	md.addr = listener.Addr().String()
+	md.server.Addr = md.addr
+
+	if stopCh != nil {
+		go func() {
+			<-stopCh
+
+			ctx, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+
+			if err := md.server.Shutdown(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+				logger.Errorf("error shutting down mockDevice %s http server: %v", md.Name, err)
+			}
+		}()
+	}
+
 	go func() {
-		err := md.startHTTPServer(stopCh)
-		if err != nil {
-			logger.Errorf("error during HTTP Server is Up")
+		err := md.startHTTPServer(listener)
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
+			logger.Errorf("mockDevice %s http server error: %v", md.Name, err)
 		}
 	}()
 	return nil
 }
 
-func (md *MockDevice) startHTTPServer(stopCh <-chan struct{}) error {
+func (md *MockDevice) startHTTPServer(listener net.Listener) error {
 	logger.Infof("mockDevice %s's http server started", md.Name)
-	return md.server.ListenAndServe()
+	return md.server.Serve(listener)
+}
+
+func (md *MockDevice) URL() string {
+	return "http://127.0.0.1:" + md.Port()
+}
+
+func (md *MockDevice) Port() string {
+	addr := md.addr
+	if addr == "" {
+		addr = md.server.Addr
+	}
+
+	_, port, err := net.SplitHostPort(addr)
+	if err == nil {
+		return port
+	}
+
+	return addr
 }
 
 func deviceHealthHandler(w http.ResponseWriter, r *http.Request) {

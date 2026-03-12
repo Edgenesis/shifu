@@ -9,9 +9,48 @@ If you haven't done so, please take a look at the following documents first:
 
 ## Introduction
 
-`DeviceShifu` is the digital twin of physical device. It receives HTTP requests and support various protocols to communicate with devices such as MQTT and OPCUA.
-A new type of `DeviceShifu` is assigned to each protocol.
-Check [DeviceShifu](https://github.com/Edgenesis/shifu/tree/main/pkg/deviceshifu) directory to see the protocols we already support.
+`DeviceShifu` is the digital twin of a physical device. Each `DeviceShifu` packages the device protocol/driver logic and an application-facing interface into a single container.
+The in-repo implementations are organized per protocol. Check [DeviceShifu](https://github.com/Edgenesis/shifu/tree/main/pkg/deviceshifu) directory to see the protocols we already support.
+
+## Runtime Contract
+
+A `DeviceShifu` is a single container that handles both device communication and the application-facing interface. It must satisfy the following contract:
+
+| Area | Requirement / behavior |
+| --- | --- |
+| Environment variables | `EDGEDEVICE_NAME` and `EDGEDEVICE_NAMESPACE` identify the runtime's `EdgeDevice` and namespace. |
+| Mounted ConfigMap | `/etc/edgedevice/config` (read-only). Common keys: `driverProperties`, `instructions`, `telemetries`. Optional: `customInstructionsPython`, `controlMsgs`. |
+| EdgeDevice lookup | On startup, GET own `EdgeDevice` CR via `shifu.edgenesis.io/v1alpha1`. |
+| Phase updates | Set `EdgeDevicePhase` to `Pending` during init, then update to `Running` or `Failed` via a full-resource `PUT`. |
+| RBAC | `get` + `update` on `edgedevices`. Add `get` on `telemetryservices` when telemetry push is enabled, and `get` on `secrets` for secret-backed credentials. |
+| Application-facing interface | Expose an interface for applications to consume. The shared base always starts an HTTP server on `:8080` for health and instruction handlers; some implementations (e.g. TCP) also expose additional listeners on other ports. The interface can be anything appropriate for the use case (HTTP, MQTT, NATS, gRPC, streaming, etc.). |
+
+### Building a custom DeviceShifu with the Shifu SDK
+
+The recommended way to build a `DeviceShifu` is with the [Shifu SDK](https://github.com/Edgenesis/shifu_sdk) (available in Python and Go). The SDK handles the K8s plumbing (EdgeDevice read/update, ConfigMap loading, health monitoring, phase updates) so you only write device logic and your application-facing interface.
+
+**Python example:**
+
+```python
+from shifu_sdk import init, add_health_checker, start, EdgeDevicePhase
+
+init()                    # reads EDGEDEVICE_NAME, connects to K8s API
+
+def checker() -> EdgeDevicePhase:
+    # your device health logic here
+    return EdgeDevicePhase.RUNNING
+
+add_health_checker(checker)
+start()                   # runs health loop, updates EdgeDevice phase
+```
+
+The SDK manages the control plane (EdgeDevice lifecycle). You own the data plane — serve whatever application-facing interface fits your use case (HTTP, MQTT, NATS, etc.).
+
+See the [Shifu SDK repository](https://github.com/Edgenesis/shifu_sdk) for complete working examples including Dockerfile and K8s manifests.
+
+### Adding a new protocol to this repository
+
+The sections below are for contributors adding a new protocol implementation to the Shifu source tree using the Go `deviceshifubase` package.
 
 ## Overview
 
@@ -80,7 +119,7 @@ The struct should be perfectly aligned with the setting schema you added in CRD.
 
 ### DeviceShifu
 
-`DeviceShifu` is the digital twin running as a pod in the k8s cluster. Basically it converts HTTP requests to whatever underlying protocol needs.
+`DeviceShifu` is the digital twin running as a single-container Pod in the k8s cluster. Most in-repo implementations convert HTTP requests to the underlying device protocol; the TCP implementation additionally exposes a raw TCP listener.
 
 #### shifuctl
 
@@ -225,7 +264,7 @@ The dockerfile, take `MQTT` as example, can be:
 
 ```dockerfile
 # Build the manager binary
-FROM --platform=$BUILDPLATFORM golang:1.22.0 as builder
+FROM --platform=$BUILDPLATFORM golang:1.26.1 as builder
 
 WORKDIR /shifu
 

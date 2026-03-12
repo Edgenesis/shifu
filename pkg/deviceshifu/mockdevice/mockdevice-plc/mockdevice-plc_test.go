@@ -5,10 +5,11 @@ import (
 	"net/http"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/mockdevice"
+	"github.com/edgenesis/shifu/pkg/deviceshifu/mockdevice/testutil"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 func TestInstructionHandler(t *testing.T) {
@@ -22,8 +23,17 @@ func TestInstructionHandler(t *testing.T) {
 		"sendsinglebit",
 		"get_status",
 	}
-	t.Setenv("MOCKDEVICE_NAME", "mockdevice_test")
-	t.Setenv("MOCKDEVICE_PORT", "12345")
+	md, err := mockdevice.New("mockdevice_test", "0", availableFuncs, instructionHandler)
+	require.NoError(t, err)
+
+	stopCh := make(chan struct{})
+	t.Cleanup(func() {
+		close(stopCh)
+	})
+
+	require.NoError(t, md.Start(stopCh))
+
+	baseURL := md.URL()
 	mocks := []struct {
 		name       string
 		url        string
@@ -32,45 +42,44 @@ func TestInstructionHandler(t *testing.T) {
 	}{
 		{
 			"case 1 getcontent rootaddress nil",
-			"http://localhost:12345/getcontent",
+			baseURL + "/getcontent",
 			400,
 			"Nonexistent memory area",
 		},
 		{
 			"case 2 getcontent rootaddress=Q",
-			"http://localhost:12345/getcontent?rootaddress=Q",
+			baseURL + "/getcontent?rootaddress=Q",
 			200,
 			dataStorage["Q"],
 		},
 		{
 			"case 3 sendsinglebit rootaddress nil address=0 digit=1",
-			"http://localhost:12345/sendsinglebit?digit=1&address=0",
+			baseURL + "/sendsinglebit?digit=1&address=0",
 			400,
 			"Nonexistent memory area",
 		},
 		{
 			"case 4 sendsinglebit rootaddress=Q address=0 digit=1",
-			"http://localhost:12345/sendsinglebit?rootaddress=Q&digit=1&address=0&value=1",
+			baseURL + "/sendsinglebit?rootaddress=Q&digit=1&address=0&value=1",
 			200,
 			"0b0000000000000010",
 		},
 		{
 			"case 5 get_status",
-			"http://localhost:12345/get_status",
+			baseURL + "/get_status",
 			200,
 			[]string{"Running", "Idle", "Busy", "Error"},
 		},
 	}
 
-	go mockdevice.StartMockDevice(availableFuncs, instructionHandler)
-
-	time.Sleep(100 * time.Microsecond)
+	testutil.WaitForHTTPServer(t, baseURL+"/health")
 
 	for _, c := range mocks {
 		t.Run(c.name, func(t *testing.T) {
 			resp, err := http.Get(c.url)
-			assert.Nil(t, err)
+			require.NoError(t, err)
 			defer resp.Body.Close()
+			require.Equal(t, c.StatusCode, resp.StatusCode)
 			body, _ := io.ReadAll(resp.Body)
 
 			switch {

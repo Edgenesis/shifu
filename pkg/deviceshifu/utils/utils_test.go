@@ -25,12 +25,10 @@ func TestParseHTTPGetParams(t *testing.T) {
 }
 
 func TestCopyHeader(t *testing.T) {
-	url := "http://www.example.com"
-	resp, err := http.Get(url)
-	if err != nil {
-		t.Errorf("Error: %v", err)
-	}
-	responseHeader := resp.Header
+	responseHeader := http.Header{}
+	responseHeader.Add("Content-Type", "application/json")
+	responseHeader.Add("Set-Cookie", "session=123")
+	responseHeader.Add("Set-Cookie", "theme=light")
 	responseHeader2 := http.Header{}
 	CopyHeader(responseHeader2, responseHeader)
 	if !reflect.DeepEqual(responseHeader2, responseHeader) {

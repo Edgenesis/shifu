@@ -36,7 +36,7 @@ variables:
   - name: tag
     value: ""
   - name: goVersion
-    value: "1.25.5"
+    value: "1.26.1"
 
 pool:
   vmImage: "ubuntu-latest"
