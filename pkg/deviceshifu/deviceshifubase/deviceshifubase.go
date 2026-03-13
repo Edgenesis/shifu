@@ -61,6 +61,7 @@ const (
 	PythonHandlersModuleName                     = "customized_handlers"
 	PythonScriptDir                              = "pythoncustomizedhandlers"
 	ControlMsgsConfigStr                         = "controlMsgs"
+	FSMStr                                       = "fsm"
 )
 
 var (
