@@ -97,6 +97,7 @@ jobs:
     needs: gate
     if: needs.gate.outputs.should_run == 'true' && needs.gate.outputs.dry_run != 'true'
     runs-on: ubuntu-latest
+    timeout-minutes: 355
     steps:
       - name: Generate GitHub App token
         id: app-token
@@ -113,7 +114,15 @@ jobs:
           set -euo pipefail
           source tools/release/automation.sh
 
+          queue_deadline=$(( $(date +%s) + 19800 ))
+
           while true; do
+            remaining_seconds=$(( queue_deadline - $(date +%s) ))
+            if (( remaining_seconds <= 0 )); then
+              release_error "Timed out processing the Dependabot queue before it was empty"
+              exit 1
+            fi
+
             next_pr="$(release_list_dependabot_prs "${{ github.repository }}" | head -n 1)"
 
             if [[ -z "${next_pr}" ]]; then
@@ -122,7 +131,7 @@ jobs:
             fi
 
             release_notice "Processing Dependabot PR #${next_pr}"
-            release_merge_pr_when_ready "${{ github.repository }}" "${next_pr}"
+            release_merge_pr_when_ready "${{ github.repository }}" "${next_pr}" "${remaining_seconds}"
           done
 
   prepare_changelog:

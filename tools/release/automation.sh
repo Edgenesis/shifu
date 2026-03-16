@@ -218,11 +218,21 @@ release_merge_pr_when_ready() {
 	local pr_number="$2"
 	local timeout_seconds="${3:-14400}"
 	local interval_seconds="${4:-30}"
-	local merge_state head_sha
+	local merge_state head_sha max_behind_retries behind_count merge_deadline remaining_seconds
+
+	max_behind_retries=5
+	behind_count=0
+	merge_deadline=$(( $(date +%s) + timeout_seconds ))
 
 	while true; do
+		remaining_seconds=$(( merge_deadline - $(date +%s) ))
+		if (( remaining_seconds <= 0 )); then
+			release_error "Timed out waiting to merge PR #${pr_number}"
+			return 1
+		fi
+
 		release_refresh_pr_branch_if_needed "${repo}" "${pr_number}"
-		release_wait_for_green_checks "${repo}" "${pr_number}" "${timeout_seconds}" "${interval_seconds}"
+		release_wait_for_green_checks "${repo}" "${pr_number}" "${remaining_seconds}" "${interval_seconds}"
 
 		merge_state=$(gh pr view \
 			"${pr_number}" \
@@ -240,6 +250,11 @@ release_merge_pr_when_ready() {
 				return 1
 				;;
 			BEHIND)
+				behind_count=$((behind_count + 1))
+				if (( behind_count > max_behind_retries )); then
+					release_error "PR #${pr_number} became behind its base branch too many times"
+					return 1
+				fi
 				release_notice "PR #${pr_number} became behind its base after checks completed; refreshing again"
 				continue
 				;;

@@ -102,11 +102,11 @@ jobs:
           version="${{ steps.version.outputs.version }}"
 
           if [[ -z "${SHIFU_DEV_DISPATCH_TOKEN}" ]]; then
-            echo "::error::SHIFU_DEV_DISPATCH_TOKEN is not configured"
-            exit 1
+            echo "::warning::SHIFU_DEV_DISPATCH_TOKEN is not configured; skipping shifu.dev version bump dispatch"
+            exit 0
           fi
 
-          jq -nc --arg tag "${version}" \
+          if ! jq -nc --arg tag "${version}" \
             '{event_type:"shifu-tag",client_payload:{tag:$tag}}' \
             | curl -fsSL \
               -X POST \
@@ -114,6 +114,9 @@ jobs:
               -H "Authorization: Bearer ${SHIFU_DEV_DISPATCH_TOKEN}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/Edgenesis/shifu.dev/dispatches \
-              --data-binary @-
+              --data-binary @-; then
+            echo "::warning::Failed to trigger shifu.dev version bump for ${version}"
+            exit 0
+          fi
 
           echo "::notice::Triggered shifu.dev version bump for ${version}"
