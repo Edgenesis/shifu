@@ -43,22 +43,15 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          git fetch --tags --force
+          source tools/release/automation.sh
 
-          latest_tag="$(git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+[.][0-9]+[.][0-9]+$' | head -n 1)"
+          latest_tag="$(release_latest_stable_tag)"
           if [[ -z "${latest_tag}" ]]; then
-            echo "No stable semver tags found (expected vX.Y.Z)" >&2
+            release_error "No stable semver tags found (expected vX.Y.Z)"
             exit 1
           fi
 
-          version="${latest_tag#v}"
-          IFS='.' read -r major minor patch <<< "${version}"
-          if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
-            echo "Latest tag ${latest_tag} is not numeric semver" >&2
-            exit 1
-          fi
-
-          next_tag="v${major}.$((minor + 1)).0"
+          next_tag="$(release_next_minor_version "${latest_tag}")"
           echo "previous_tag=${latest_tag}" >> "$GITHUB_OUTPUT"
           echo "next_tag=${next_tag}" >> "$GITHUB_OUTPUT"
 

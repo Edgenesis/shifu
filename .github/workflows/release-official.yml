@@ -71,15 +71,11 @@ jobs:
           GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
           set -euo pipefail
+          source tools/release/automation.sh
 
-          # Get latest RC pre-release tag using semantic version sorting
           echo "Finding latest RC pre-release..."
 
-          # Fetch all tags for proper version sorting
-          git fetch --tags --force
-
-          # Get RC tags sorted by semantic version (descending)
-          latest_rc=$(git tag --list 'v*-rc*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$' | head -n 1)
+          latest_rc="$(release_latest_rc_tag)"
 
           if [[ -z "${latest_rc}" ]]; then
             echo "::error::No RC tags found. Run the RC workflow first."
@@ -105,18 +101,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          source tools/release/automation.sh
 
           rc_tag="${{ steps.rc.outputs.rc_tag }}"
-
-          # Extract base version (vX.Y.Z) from RC tag (vX.Y.Z-rcN)
-          if ! [[ "${rc_tag}" =~ ^(v[0-9]+\.[0-9]+\.[0-9]+)-rc[0-9]+$ ]]; then
-            echo "::error::Cannot parse version from RC tag ${rc_tag}"
-            exit 1
-          fi
-
-          base_version="${BASH_REMATCH[1]}"
-          release_branch="release_${base_version}"
-          official_branch="official_${base_version}"
+          base_version="$(release_base_version_from_rc_tag "${rc_tag}")"
+          release_branch="$(release_release_branch_name "${base_version}")"
+          official_branch="$(release_official_branch_name "${base_version}")"
 
           echo "Base version: ${base_version}"
           echo "Release branch: ${release_branch}"

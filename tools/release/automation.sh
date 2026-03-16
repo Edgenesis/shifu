@@ -45,6 +45,15 @@ release_is_biweekly_date() {
 	echo "false"
 }
 
+release_validate_stable_version() {
+	local version="$1"
+
+	if ! [[ "${version}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+		release_error "Version ${version} is not stable semver (expected vX.Y.Z)"
+		return 1
+	fi
+}
+
 release_latest_stable_tag() {
 	git fetch --tags --force >/dev/null 2>&1
 	git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+[.][0-9]+[.][0-9]+$' | head -n 1
@@ -54,15 +63,41 @@ release_next_minor_version() {
 	local latest_tag="$1"
 	local version major minor patch
 
+	release_validate_stable_version "${latest_tag}" || return 1
+
 	version="${latest_tag#v}"
 	IFS='.' read -r major minor patch <<< "${version}"
 
-	if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
-		release_error "Latest tag ${latest_tag} is not numeric semver"
-		return 1
-	fi
-
 	echo "v${major}.$((minor + 1)).0"
+}
+
+release_release_branch_name() {
+	local version="$1"
+
+	release_validate_stable_version "${version}" || return 1
+	echo "release_${version}"
+}
+
+release_rc_version() {
+	local version="$1"
+
+	release_validate_stable_version "${version}" || return 1
+	echo "${version}-rc1"
+}
+
+release_rc_branch_name() {
+	local version="$1"
+	local rc_version
+
+	rc_version=$(release_rc_version "${version}") || return 1
+	echo "rc_${rc_version}"
+}
+
+release_official_branch_name() {
+	local version="$1"
+
+	release_validate_stable_version "${version}" || return 1
+	echo "official_${version}"
 }
 
 release_latest_rc_tag() {
@@ -79,6 +114,39 @@ release_base_version_from_rc_tag() {
 	fi
 
 	echo "${BASH_REMATCH[1]}"
+}
+
+release_version_from_release_branch() {
+	local branch_name="$1"
+
+	if ! [[ "${branch_name}" =~ ^release_(v[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
+		release_error "Cannot parse version from branch ${branch_name}"
+		return 1
+	fi
+
+	echo "${BASH_REMATCH[1]}"
+}
+
+release_previous_minor_baseline() {
+	local version="$1"
+	local version_num major minor patch
+
+	release_validate_stable_version "${version}" || return 1
+
+	version_num="${version#v}"
+	IFS='.' read -r major minor patch <<< "${version_num}"
+
+	if (( minor == 0 )); then
+		if (( major == 0 )); then
+			release_error "No previous version available for release notes (${version})"
+			return 1
+		fi
+
+		echo "v$((major - 1)).0.0"
+		return 0
+	fi
+
+	echo "v${major}.$((minor - 1)).0"
 }
 
 release_wait_for_pr() {

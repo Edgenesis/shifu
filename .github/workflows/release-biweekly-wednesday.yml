@@ -22,39 +22,12 @@ concurrency:
 
 jobs:
   gate:
-    runs-on: ubuntu-latest
-    outputs:
-      should_run: ${{ steps.cadence.outputs.should_run }}
-      current_date: ${{ steps.cadence.outputs.current_date }}
-      dry_run: ${{ steps.inputs.outputs.dry_run }}
-    steps:
-      - uses: actions/checkout@v6
-      - id: inputs
-        shell: bash
-        run: |
-          set -euo pipefail
-          dry_run=false
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
-            dry_run=true
-          fi
-          echo "dry_run=${dry_run}" >> "$GITHUB_OUTPUT"
-      - id: cadence
-        shell: bash
-        run: |
-          set -euo pipefail
-          source tools/release/automation.sh
-
-          current_date="$(release_current_utc_date)"
-          should_run="$(release_is_biweekly_date "2026-03-25" "${current_date}")"
-
-          echo "current_date=${current_date}" >> "$GITHUB_OUTPUT"
-          echo "should_run=${should_run}" >> "$GITHUB_OUTPUT"
-
-          if [[ "${should_run}" == "true" ]]; then
-            release_notice "Wednesday automation is active for ${current_date}"
-          else
-            release_notice "Wednesday automation is skipping ${current_date}; next cadence starts on 2026-03-25 and repeats every 14 days"
-          fi
+    uses: ./.github/workflows/release-cadence-gate.yml
+    with:
+      anchor_date: '2026-03-25'
+      schedule_name: 'Wednesday'
+      skip_message: 'next cadence starts on 2026-03-25 and repeats every 14 days'
+      dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
 
   dry_run:
     needs: gate

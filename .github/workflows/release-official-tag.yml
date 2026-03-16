@@ -36,18 +36,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          source tools/release/automation.sh
 
-          # Get the base branch (e.g., release_v1.2.3)
           base_branch="${{ github.base_ref }}"
           echo "Base branch: ${base_branch}"
 
-          # Extract version from branch name (release_vX.Y.Z -> vX.Y.Z)
-          if ! [[ "${base_branch}" =~ ^release_(v[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-            echo "::error::Cannot parse version from branch ${base_branch}"
-            exit 1
-          fi
-
-          version="${BASH_REMATCH[1]}"
+          version="$(release_version_from_release_branch "${base_branch}")"
 
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "Extracted version: ${version}"
