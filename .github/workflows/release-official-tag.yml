@@ -22,23 +22,26 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Generate shifu.dev GitHub App token
+        id: shifu-dev-app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: Edgenesis
+          repositories: shifu.dev
+
       - name: Extract version from branch
         id: version
         shell: bash
         run: |
           set -euo pipefail
+          source tools/release/automation.sh
 
-          # Get the base branch (e.g., release_v1.2.3)
           base_branch="${{ github.base_ref }}"
           echo "Base branch: ${base_branch}"
 
-          # Extract version from branch name (release_vX.Y.Z -> vX.Y.Z)
-          if ! [[ "${base_branch}" =~ ^release_(v[0-9]+\.[0-9]+\.[0-9]+)$ ]]; then
-            echo "::error::Cannot parse version from branch ${base_branch}"
-            exit 1
-          fi
-
-          version="${BASH_REMATCH[1]}"
+          version="$(release_version_from_release_branch "${base_branch}")"
 
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "Extracted version: ${version}"
@@ -91,3 +94,32 @@ jobs:
           echo "release_url=${release_url}" >> "$GITHUB_OUTPUT"
           echo "::notice::Official release created: ${release_url}"
           echo "::notice::Release ${version} is now the Latest release"
+
+      - name: Dispatch shifu.dev version bump
+        shell: bash
+        env:
+          SHIFU_DEV_APP_TOKEN: ${{ steps.shifu-dev-app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.version.outputs.version }}"
+
+          if [[ -z "${SHIFU_DEV_APP_TOKEN}" ]]; then
+            echo "::warning::Unable to mint shifu-release-bot token for shifu.dev; skipping version bump dispatch"
+            exit 0
+          fi
+
+          if ! jq -nc --arg tag "${version}" \
+            '{event_type:"shifu-tag",client_payload:{tag:$tag}}' \
+            | curl -fsSL \
+              -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${SHIFU_DEV_APP_TOKEN}" \
+              -H "X-GitHub-Api-Version: 2022-11-28" \
+              https://api.github.com/repos/Edgenesis/shifu.dev/dispatches \
+              --data-binary @-; then
+            echo "::warning::Failed to trigger shifu.dev version bump for ${version}"
+            exit 0
+          fi
+
+          echo "::notice::Triggered shifu.dev version bump for ${version}"

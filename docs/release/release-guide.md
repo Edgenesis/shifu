@@ -1,13 +1,15 @@
 # Shifu Release Manager Guide
 
-This document describes the automated release process for Shifu. The release cycle consists of a Wednesday RC (Release Candidate) release followed by a Monday official release.
+This document describes the automated biweekly release process for Shifu. The release cycle consists of a Wednesday RC (Release Candidate) release followed by the official release on the following Monday.
 
 ## Release Schedule
 
 | Day | Action | Type |
 |-----|--------|------|
-| Wednesday | RC Release | Semi-automated |
-| Monday | Official Release | Semi-automated |
+| Wednesday | RC Release | Automated on a biweekly cadence |
+| Monday | Official Release | Automated on the following Monday |
+
+The first scheduled automated Wednesday run is **March 25, 2026 at 05:00 UTC**, and the first scheduled automated Monday run is **March 30, 2026 at 05:00 UTC**. Both schedules repeat every 14 days. `05:00 UTC` is the same release moment as `13:00 SGT`. The underlying release workflows remain manually runnable for hotfixes and off-cycle releases.
 
 ## Release Workflow Overview
 
@@ -16,17 +18,17 @@ This document describes the automated release process for Shifu. The release cyc
 │                           WEDNESDAY - RC RELEASE                            │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  1. [MANUAL] Trigger "Prepare Release Changelog" workflow                   │
+│  1. [AUTO] Merge open Dependabot PRs to main sequentially                   │
 │         ↓                                                                   │
-│  2. [AUTO] Changelog PR created (changelog-vX.Y.Z branch → main)            │
+│  2. [AUTO] Trigger "Prepare Release Changelog" workflow                      │
 │         ↓                                                                   │
-│  3. [MANUAL] Review changelog, approve and merge PR                         │
+│  3. [AUTO] Changelog PR created and auto-merged after green checks          │
 │         ↓                                                                   │
 │  4. [AUTO] "Release RC" workflow triggers                                   │
 │         - Creates release_vX.Y.Z branch                                     │
 │         - Creates RC PR (rc_vX.Y.Z-rc1 → release_vX.Y.Z)                    │
 │         ↓                                                                   │
-│  5. [MANUAL] Review RC PR, approve and merge                                │
+│  5. [AUTO] RC PR auto-merged after green checks                             │
 │         ↓                                                                   │
 │  6. [AUTO] "Release RC Tag" workflow triggers                               │
 │         - Creates vX.Y.Z-rc1 pre-release tag                                │
@@ -37,14 +39,15 @@ This document describes the automated release process for Shifu. The release cyc
 │                          MONDAY - OFFICIAL RELEASE                          │
 ├─────────────────────────────────────────────────────────────────────────────┤
 │                                                                             │
-│  7. [MANUAL] Trigger "Release Official" workflow                            │
+│  7. [AUTO] Trigger "Release Official" workflow                              │
 │         ↓                                                                   │
 │  8. [AUTO] Official PR created (official_vX.Y.Z → release_vX.Y.Z)           │
 │         ↓                                                                   │
-│  9. [MANUAL] Review official PR, approve and merge                          │
+│  9. [AUTO] Official PR auto-merged after green checks                       │
 │         ↓                                                                   │
 │  10. [AUTO] "Release Official Tag" workflow triggers                        │
 │          - Creates vX.Y.Z release tag (marked as "Latest")                  │
+│          - Dispatches shifu.dev version bump workflow                       │
 │                                                                             │
 └─────────────────────────────────────────────────────────────────────────────┘
 ```
@@ -53,45 +56,17 @@ This document describes the automated release process for Shifu. The release cyc
 
 ### Wednesday: RC Release
 
-#### Step 1: Generate Changelog
+#### Automated Wednesday sequence
 
-1. Go to **Actions** → **Prepare Release Changelog**
-2. Click **Run workflow** → Select `main` branch → Click **Run workflow**
-3. Wait for the workflow to complete (~2-3 minutes)
+1. The **Biweekly Release Wednesday** workflow checks whether the current UTC date is on the 14-day cadence anchored to March 25, 2026.
+2. If the cadence matches, the workflow merges all open Dependabot PRs targeting `main`, oldest first. Each PR must have a clean merge state and fully passing checks before it is merged.
+3. After the Dependabot queue is empty, the workflow triggers **Prepare Release Changelog** to generate the next changelog PR.
+4. The changelog PR is merged automatically after its checks pass.
+5. Merging the changelog PR triggers **Release RC**, which creates the `release_vX.Y.Z` branch and the RC PR.
+6. The RC PR is merged automatically after its checks pass.
+7. Merging the RC PR triggers **Release RC Tag**, which creates the `vX.Y.Z-rc1` pre-release.
 
-The workflow will:
-- Detect the latest stable tag (e.g., `v0.88.0`)
-- Calculate the next version (e.g., `v0.89.0`)
-- Generate changelog using GitHub's release notes API
-- Process changelog with AI enhancement
-- Create a PR with the changelog file
-
-Note: This workflow always bumps the MINOR version. For patch/hotfix releases, skip it and follow the Patch/Hotfix section below.
-
-#### Step 2: Review and Merge Changelog PR
-
-1. Navigate to the created PR titled **"chore: add changelog for vX.Y.Z"**
-2. Review the changelog in `CHANGELOG/CHANGELOG-vX.Y.Z.md`
-3. Verify:
-   - All significant changes are captured
-   - Categorization is correct (features, fixes, dependencies, etc.)
-   - No sensitive information is exposed
-4. Approve and merge the PR
-
-#### Step 3: Review and Merge RC PR
-
-After merging the changelog PR, the **Release RC** workflow automatically triggers.
-
-1. Wait for the workflow to create the RC PR (~1-2 minutes)
-2. Navigate to the created PR titled **"chore: release vX.Y.Z-rc1"**
-3. Verify:
-   - PR targets the correct `release_vX.Y.Z` branch
-   - Version files are updated correctly
-4. Approve and merge the PR
-
-#### Step 4: Verify RC Pre-release
-
-After merging the RC PR, the **Release RC Tag** workflow automatically creates the pre-release.
+#### Verify RC Pre-release
 
 1. Go to **Releases** page
 2. Verify `vX.Y.Z-rc1` appears as a **Pre-release**
@@ -99,43 +74,32 @@ After merging the RC PR, the **Release RC Tag** workflow automatically creates t
 
 ### Monday: Official Release
 
-#### Step 5: Create Official Release PR
+#### Automated Monday sequence
 
-1. Go to **Actions** → **Release Official**
-2. Click **Run workflow** → Select `main` branch → Click **Run workflow**
-3. Wait for the workflow to complete (~1-2 minutes)
+1. The **Biweekly Release Monday** workflow checks whether the current UTC date is on the 14-day cadence anchored to March 30, 2026.
+2. If the cadence matches, it triggers **Release Official**.
+3. **Release Official** finds the latest RC pre-release tag, creates the official release PR, and returns the PR details to the orchestrator.
+4. The official PR is merged automatically after its checks pass.
+5. Merging the official PR triggers **Release Official Tag**, which creates the stable `vX.Y.Z` release and dispatches `Edgenesis/shifu.dev` to open its version-bump PR.
 
-The workflow will:
-- Find the latest RC pre-release tag
-- Create an official branch from the RC tag
-- Update version files (remove `-rc1` suffix)
-- Create a PR for the official release
-
-#### Step 6: Review and Merge Official PR
-
-1. Navigate to the created PR titled **"chore: release vX.Y.Z"**
-2. Verify:
-   - PR targets the correct `release_vX.Y.Z` branch
-   - Version matches the RC that was tested
-3. Approve and merge the PR
-
-#### Step 7: Verify Official Release
-
-After merging the official PR, the **Release Official Tag** workflow automatically creates the release.
+#### Verify Official Release
 
 1. Go to **Releases** page
 2. Verify `vX.Y.Z` appears as the **Latest** release
 3. Verify the release links to the changelog
 4. Check the **Discussions** → **Announcements** for the release announcement
+5. Check `Edgenesis/shifu.dev` for a new PR titled **"Bump Shifu references to vX.Y.Z"**
 
 ## Workflow Files Reference
 
 | Workflow | File | Trigger |
 |----------|------|---------|
-| Prepare Release Changelog | `.github/workflows/release.yml` | Manual |
+| Biweekly Release Wednesday | `.github/workflows/release-biweekly-wednesday.yml` | Scheduled weekly; runs only on the 14-day Wednesday cadence |
+| Prepare Release Changelog | `.github/workflows/release.yml` | Manual or reusable from Wednesday automation |
 | Release RC | `.github/workflows/release-rc.yml` | Auto (changelog PR merge) or Manual |
 | Release RC Tag | `.github/workflows/release-rc-tag.yml` | Auto (RC PR merge) |
-| Release Official | `.github/workflows/release-official.yml` | Manual |
+| Biweekly Release Monday | `.github/workflows/release-biweekly-monday.yml` | Scheduled weekly; runs only on the 14-day Monday cadence |
+| Release Official | `.github/workflows/release-official.yml` | Manual or reusable from Monday automation |
 | Release Official Tag | `.github/workflows/release-official-tag.yml` | Auto (official PR merge) |
 
 ## Branch Naming Convention
@@ -196,6 +160,18 @@ If you need to release a specific version (e.g., hotfix), use the **Release RC**
 3. Enter version in **Override version** field (e.g., `v0.88.1`)
 4. Click **Run workflow**
 
+### Dry-run the biweekly orchestrators
+
+Both orchestrators support a `dry_run` input for validation without creating or merging PRs:
+1. Go to **Actions** → **Biweekly Release Wednesday** or **Biweekly Release Monday**
+2. Click **Run workflow**
+3. Set **dry_run** to `true`
+4. Review the workflow log for cadence status and the planned release targets
+
+The automated merge helpers are intentionally patient with CI:
+- they wait up to 1 hour for the expected changelog or release PR to appear
+- they wait up to 4 hours for PR checks to finish before failing the run
+
 ### Patch/Hotfix releases (manual changelog)
 
 Patch releases are manual because the changelog workflow always bumps MINOR. For a patch/hotfix:
@@ -227,6 +203,8 @@ Note: The `release_vX.Y.Z` branch should be kept for potential hotfixes.
 1. **Discussions** enabled with "Announcements" category
 2. **Actions** enabled with write permissions for `GITHUB_TOKEN`
 3. **Branch protection** rules should allow the workflows to create branches and PRs
+4. `shifu-release-bot` should be added as a PR bypass actor for both `main` and `release*`
+5. `shifu-release-bot` should also be installed on `Edgenesis/shifu.dev` with permission to dispatch its version-bump workflow
 
 ### Secrets Required
 
@@ -234,6 +212,8 @@ The changelog generation workflow requires these secrets:
 - `AZURE_OPENAI_APIKEY` - Azure OpenAI API key for changelog enhancement
 - `AZURE_OPENAI_HOST` - Azure OpenAI endpoint host
 - `DEPLOYMENT_NAME` - Azure OpenAI deployment name
+- `RELEASE_APP_ID` - GitHub App ID for `shifu-release-bot`
+- `RELEASE_APP_PRIVATE_KEY` - private key for `shifu-release-bot`
 
 ## Version Numbering
 

@@ -56,51 +56,36 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          source tools/release/automation.sh
 
-          # Check for version override from workflow_dispatch
           override="${{ github.event.inputs.version_override }}"
           if [[ -n "${override}" ]]; then
-            # Validate override format
-            if ! [[ "${override}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-              echo "::error::Invalid version_override format: ${override}. Expected vX.Y.Z"
+            if ! release_validate_stable_version "${override}"; then
               exit 1
             fi
+
             echo "Using version override: ${override}"
             version="${override}"
-            echo "version=${version}" >> "$GITHUB_OUTPUT"
-            echo "release_branch=release_${version}" >> "$GITHUB_OUTPUT"
-            echo "rc_version=${version}-rc1" >> "$GITHUB_OUTPUT"
-            echo "rc_branch=rc_${version}-rc1" >> "$GITHUB_OUTPUT"
-            exit 0
+          else
+            latest_tag="$(release_latest_stable_tag)"
+            if [[ -z "${latest_tag}" ]]; then
+              release_error "No stable semver tags found (expected vX.Y.Z)"
+              exit 1
+            fi
+
+            version="$(release_next_minor_version "${latest_tag}")"
+            echo "Detected latest tag: ${latest_tag}"
+            echo "Next version: ${version}"
           fi
 
-          # Auto-detect version from latest stable tag
-          git fetch --tags --force
+          release_branch="$(release_release_branch_name "${version}")"
+          rc_version="$(release_rc_version "${version}")"
+          rc_branch="$(release_rc_branch_name "${version}")"
 
-          latest_tag="$(git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+[.][0-9]+[.][0-9]+$' | head -n 1)"
-          if [[ -z "${latest_tag}" ]]; then
-            echo "::error::No stable semver tags found (expected vX.Y.Z)"
-            exit 1
-          fi
-
-          # Parse version components
-          version="${latest_tag#v}"
-          IFS='.' read -r major minor patch <<< "${version}"
-
-          # Validate numeric components
-          if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
-            echo "::error::Latest tag ${latest_tag} is not numeric semver"
-            exit 1
-          fi
-
-          # Calculate next version (increment minor, reset patch)
-          next_version="v${major}.$((minor + 1)).0"
-          echo "Detected latest tag: ${latest_tag}"
-          echo "Next version: ${next_version}"
-          echo "version=${next_version}" >> "$GITHUB_OUTPUT"
-          echo "release_branch=release_${next_version}" >> "$GITHUB_OUTPUT"
-          echo "rc_version=${next_version}-rc1" >> "$GITHUB_OUTPUT"
-          echo "rc_branch=rc_${next_version}-rc1" >> "$GITHUB_OUTPUT"
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "release_branch=${release_branch}" >> "$GITHUB_OUTPUT"
+          echo "rc_version=${rc_version}" >> "$GITHUB_OUTPUT"
+          echo "rc_branch=${rc_branch}" >> "$GITHUB_OUTPUT"
 
       - name: Check branches do not exist
         shell: bash

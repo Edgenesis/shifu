@@ -1,0 +1,68 @@
+name: Release Cadence Gate
+
+on:
+  workflow_call:
+    inputs:
+      anchor_date:
+        description: 'First active date in UTC for the biweekly cadence.'
+        required: true
+        type: string
+      schedule_name:
+        description: 'Short label used in workflow notices.'
+        required: true
+        type: string
+      skip_message:
+        description: 'Explanation printed when the cadence is inactive.'
+        required: true
+        type: string
+      dry_run:
+        description: 'Whether the caller requested dry-run mode.'
+        required: false
+        default: false
+        type: boolean
+    outputs:
+      should_run:
+        description: 'Whether the caller should continue the biweekly flow.'
+        value: ${{ jobs.gate.outputs.should_run }}
+      current_date:
+        description: 'Current UTC date used for cadence evaluation.'
+        value: ${{ jobs.gate.outputs.current_date }}
+      dry_run:
+        description: 'Dry-run mode forwarded from the caller.'
+        value: ${{ jobs.gate.outputs.dry_run }}
+
+permissions:
+  contents: read
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.cadence.outputs.should_run }}
+      current_date: ${{ steps.cadence.outputs.current_date }}
+      dry_run: ${{ steps.cadence.outputs.dry_run }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: cadence
+        shell: bash
+        env:
+          ANCHOR_DATE: ${{ inputs.anchor_date }}
+          DRY_RUN: ${{ inputs.dry_run }}
+          SCHEDULE_NAME: ${{ inputs.schedule_name }}
+          SKIP_MESSAGE: ${{ inputs.skip_message }}
+        run: |
+          set -euo pipefail
+          source tools/release/automation.sh
+
+          current_date="$(release_current_utc_date)"
+          should_run="$(release_is_biweekly_date "${ANCHOR_DATE}" "${current_date}")"
+
+          echo "current_date=${current_date}" >> "$GITHUB_OUTPUT"
+          echo "should_run=${should_run}" >> "$GITHUB_OUTPUT"
+          echo "dry_run=${DRY_RUN}" >> "$GITHUB_OUTPUT"
+
+          if [[ "${should_run}" == "true" ]]; then
+            release_notice "${SCHEDULE_NAME} automation is active for ${current_date}"
+          else
+            release_notice "${SCHEDULE_NAME} automation is skipping ${current_date}; ${SKIP_MESSAGE}"
+          fi

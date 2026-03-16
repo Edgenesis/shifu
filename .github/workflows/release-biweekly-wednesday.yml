@@ -1,0 +1,149 @@
+name: Biweekly Release Wednesday
+
+on:
+  schedule:
+    - cron: '0 5 * * 3'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Validate cadence and planned actions without creating or merging PRs.'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: biweekly-release-wednesday
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    uses: ./.github/workflows/release-cadence-gate.yml
+    with:
+      anchor_date: '2026-03-25'
+      schedule_name: 'Wednesday'
+      skip_message: 'next cadence starts on 2026-03-25 and repeats every 14 days'
+      dry_run: ${{ github.event_name == 'workflow_dispatch' && inputs.dry_run || false }}
+
+  dry_run:
+    needs: gate
+    if: needs.gate.outputs.should_run == 'true' && needs.gate.outputs.dry_run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_DATE: ${{ needs.gate.outputs.current_date }}
+        run: |
+          set -euo pipefail
+          source tools/release/automation.sh
+
+          mapfile -t dependabot_prs < <(release_list_dependabot_prs "${{ github.repository }}")
+          latest_tag="$(release_latest_stable_tag)"
+          next_tag="$(release_next_minor_version "${latest_tag}")"
+
+          release_notice "Dry run for ${CURRENT_DATE} (Wednesday cadence active)"
+          release_notice "Latest stable tag: ${latest_tag}"
+          release_notice "Planned next release: ${next_tag}"
+
+          if (( ${#dependabot_prs[@]} == 0 )); then
+            release_notice "No open Dependabot PRs targeting main"
+          else
+            printf 'Dependabot merge order:\n' >&2
+            for pr in "${dependabot_prs[@]}"; do
+              gh pr view "${pr}" --repo "${{ github.repository }}" --json number,title,url --jq '"- #\(.number): \(.title) (\(.url))"' >&2
+            done
+          fi
+
+          release_notice "Expected changelog branch: changelog-${next_tag}"
+          release_notice "Expected RC branch: rc_${next_tag}-rc1"
+          release_notice "Expected release branch: release_${next_tag}"
+
+  merge_dependabot:
+    needs: gate
+    if: needs.gate.outputs.should_run == 'true' && needs.gate.outputs.dry_run != 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 355
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          repositories: ${{ github.event.repository.name }}
+      - uses: actions/checkout@v6
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          source tools/release/automation.sh
+
+          queue_deadline=$(( $(date +%s) + 19800 ))
+
+          while true; do
+            remaining_seconds=$(( queue_deadline - $(date +%s) ))
+            if (( remaining_seconds <= 0 )); then
+              release_error "Timed out processing the Dependabot queue before it was empty"
+              exit 1
+            fi
+
+            next_pr="$(release_list_dependabot_prs "${{ github.repository }}" | head -n 1)"
+
+            if [[ -z "${next_pr}" ]]; then
+              release_notice "No open Dependabot PRs targeting main"
+              exit 0
+            fi
+
+            release_notice "Processing Dependabot PR #${next_pr}"
+            release_merge_pr_when_ready "${{ github.repository }}" "${next_pr}" "${remaining_seconds}"
+          done
+
+  prepare_changelog:
+    needs: merge_dependabot
+    if: needs.merge_dependabot.result == 'success'
+    uses: ./.github/workflows/release.yml
+    secrets: inherit
+
+  merge_changelog_and_rc:
+    needs: prepare_changelog
+    if: needs.prepare_changelog.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          repositories: ${{ github.event.repository.name }}
+      - uses: actions/checkout@v6
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          source tools/release/automation.sh
+
+          next_tag="${{ needs.prepare_changelog.outputs.next_tag }}"
+          changelog_pr="${{ needs.prepare_changelog.outputs.pr_number }}"
+
+          if [[ -z "${changelog_pr}" ]]; then
+            release_error "Prepare Release Changelog did not return a PR number"
+            exit 1
+          fi
+
+          release_notice "Merging changelog PR #${changelog_pr} for ${next_tag}"
+          release_merge_pr_when_ready "${{ github.repository }}" "${changelog_pr}"
+
+          rc_pr="$(release_wait_for_pr "${{ github.repository }}" "rc_${next_tag}-rc1" "release_${next_tag}")"
+          release_notice "Merging RC PR #${rc_pr} for ${next_tag}"
+          release_merge_pr_when_ready "${{ github.repository }}" "${rc_pr}"
