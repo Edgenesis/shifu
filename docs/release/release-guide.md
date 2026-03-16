@@ -9,7 +9,7 @@ This document describes the automated biweekly release process for Shifu. The re
 | Wednesday | RC Release | Automated on a biweekly cadence |
 | Monday | Official Release | Automated on the following Monday |
 
-The first scheduled automated Wednesday run is **March 25, 2026 at 13:00 SGT**, and the first scheduled automated Monday run is **March 30, 2026 at 13:00 SGT**. Both schedules repeat every 14 days. The underlying release workflows remain manually runnable for hotfixes and off-cycle releases.
+The first scheduled automated Wednesday run is **March 25, 2026 at 05:00 UTC**, and the first scheduled automated Monday run is **March 30, 2026 at 05:00 UTC**. Both schedules repeat every 14 days. `05:00 UTC` is the same release moment as `13:00 SGT`. The underlying release workflows remain manually runnable for hotfixes and off-cycle releases.
 
 ## Release Workflow Overview
 
@@ -58,7 +58,7 @@ The first scheduled automated Wednesday run is **March 25, 2026 at 13:00 SGT**, 
 
 #### Automated Wednesday sequence
 
-1. The **Biweekly Release Wednesday** workflow checks whether the current Singapore date is on the 14-day cadence anchored to March 25, 2026.
+1. The **Biweekly Release Wednesday** workflow checks whether the current UTC date is on the 14-day cadence anchored to March 25, 2026.
 2. If the cadence matches, the workflow merges all open Dependabot PRs targeting `main`, oldest first. Each PR must have a clean merge state and fully passing checks before it is merged.
 3. After the Dependabot queue is empty, the workflow triggers **Prepare Release Changelog** to generate the next changelog PR.
 4. The changelog PR is merged automatically after its checks pass.
@@ -76,7 +76,7 @@ The first scheduled automated Wednesday run is **March 25, 2026 at 13:00 SGT**, 
 
 #### Automated Monday sequence
 
-1. The **Biweekly Release Monday** workflow checks whether the current Singapore date is on the 14-day cadence anchored to March 30, 2026.
+1. The **Biweekly Release Monday** workflow checks whether the current UTC date is on the 14-day cadence anchored to March 30, 2026.
 2. If the cadence matches, it triggers **Release Official**.
 3. **Release Official** finds the latest RC pre-release tag, creates the official release PR, and returns the PR details to the orchestrator.
 4. The official PR is merged automatically after its checks pass.

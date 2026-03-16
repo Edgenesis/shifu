@@ -44,7 +44,7 @@ jobs:
           set -euo pipefail
           source tools/release/automation.sh
 
-          current_date="$(release_current_sg_date)"
+          current_date="$(release_current_utc_date)"
           should_run="$(release_is_biweekly_date "2026-03-30" "${current_date}")"
 
           echo "current_date=${current_date}" >> "$GITHUB_OUTPUT"

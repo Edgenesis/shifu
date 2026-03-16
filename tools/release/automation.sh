@@ -8,19 +8,19 @@ release_error() {
 	echo "::error::$*" >&2
 }
 
-release_current_sg_date() {
-	TZ=Asia/Singapore date '+%F'
+release_current_utc_date() {
+	TZ=UTC date '+%F'
 }
 
 release_to_epoch() {
 	local timestamp="$1"
 
 	if date -d "${timestamp}" +%s >/dev/null 2>&1; then
-		TZ=Asia/Singapore date -d "${timestamp}" +%s
+		TZ=UTC date -d "${timestamp}" +%s
 		return 0
 	fi
 
-	TZ=Asia/Singapore date -jf '%Y-%m-%d %H:%M:%S' "${timestamp}" +%s
+	TZ=UTC date -jf '%Y-%m-%d %H:%M:%S' "${timestamp}" +%s
 }
 
 release_is_biweekly_date() {
