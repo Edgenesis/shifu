@@ -1,0 +1,123 @@
+name: Biweekly Release Monday
+
+on:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Validate cadence and planned actions without creating or merging PRs.'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  actions: write
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: biweekly-release-monday
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.cadence.outputs.should_run }}
+      current_date: ${{ steps.cadence.outputs.current_date }}
+      dry_run: ${{ steps.inputs.outputs.dry_run }}
+    steps:
+      - uses: actions/checkout@v6
+      - id: inputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          dry_run=false
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" && "${{ inputs.dry_run }}" == "true" ]]; then
+            dry_run=true
+          fi
+          echo "dry_run=${dry_run}" >> "$GITHUB_OUTPUT"
+      - id: cadence
+        shell: bash
+        run: |
+          set -euo pipefail
+          source tools/release/automation.sh
+
+          current_date="$(release_current_sg_date)"
+          should_run="$(release_is_biweekly_date "2026-03-30" "${current_date}")"
+
+          echo "current_date=${current_date}" >> "$GITHUB_OUTPUT"
+          echo "should_run=${should_run}" >> "$GITHUB_OUTPUT"
+
+          if [[ "${should_run}" == "true" ]]; then
+            release_notice "Monday automation is active for ${current_date}"
+          else
+            release_notice "Monday automation is skipping ${current_date}; first official biweekly Monday is 2026-03-30 and repeats every 14 days"
+          fi
+
+  dry_run:
+    needs: gate
+    if: needs.gate.outputs.should_run == 'true' && needs.gate.outputs.dry_run == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_DATE: ${{ needs.gate.outputs.current_date }}
+        run: |
+          set -euo pipefail
+          source tools/release/automation.sh
+
+          latest_rc="$(release_latest_rc_tag)"
+          if [[ -z "${latest_rc}" ]]; then
+            release_error "No RC tag found for Monday dry run"
+            exit 1
+          fi
+
+          base_version="$(release_base_version_from_rc_tag "${latest_rc}")"
+
+          release_notice "Dry run for ${CURRENT_DATE} (Monday cadence active)"
+          release_notice "Latest RC tag: ${latest_rc}"
+          release_notice "Expected official branch: official_${base_version}"
+          release_notice "Expected release branch: release_${base_version}"
+
+  prepare_official:
+    needs: gate
+    if: needs.gate.outputs.should_run == 'true' && needs.gate.outputs.dry_run != 'true'
+    uses: ./.github/workflows/release-official.yml
+    secrets: inherit
+
+  merge_official:
+    needs: prepare_official
+    if: needs.prepare_official.result == 'success'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Generate GitHub App token
+        id: app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          repositories: ${{ github.event.repository.name }}
+      - uses: actions/checkout@v6
+      - shell: bash
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+        run: |
+          set -euo pipefail
+          source tools/release/automation.sh
+
+          official_pr="${{ needs.prepare_official.outputs.pr_number }}"
+          base_version="${{ needs.prepare_official.outputs.base_version }}"
+
+          if [[ -z "${official_pr}" ]]; then
+            release_error "Release Official did not return a PR number"
+            exit 1
+          fi
+
+          release_notice "Merging official release PR #${official_pr} for ${base_version}"
+          release_merge_pr_when_ready "${{ github.repository }}" "${official_pr}"
