@@ -204,6 +204,7 @@ Note: The `release_vX.Y.Z` branch should be kept for potential hotfixes.
 2. **Actions** enabled with write permissions for `GITHUB_TOKEN`
 3. **Branch protection** rules should allow the workflows to create branches and PRs
 4. `shifu-release-bot` should be added as a PR bypass actor for both `main` and `release*`
+5. `shifu-release-bot` should also be installed on `Edgenesis/shifu.dev` with permission to dispatch its version-bump workflow
 
 ### Secrets Required
 
@@ -211,7 +212,8 @@ The changelog generation workflow requires these secrets:
 - `AZURE_OPENAI_APIKEY` - Azure OpenAI API key for changelog enhancement
 - `AZURE_OPENAI_HOST` - Azure OpenAI endpoint host
 - `DEPLOYMENT_NAME` - Azure OpenAI deployment name
-- `SHIFU_DEV_DISPATCH_TOKEN` - token with permission to dispatch the version-bump workflow in `Edgenesis/shifu.dev`
+- `RELEASE_APP_ID` - GitHub App ID for `shifu-release-bot`
+- `RELEASE_APP_PRIVATE_KEY` - private key for `shifu-release-bot`
 
 ## Version Numbering
 

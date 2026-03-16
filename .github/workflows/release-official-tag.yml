@@ -22,6 +22,15 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Generate shifu.dev GitHub App token
+        id: shifu-dev-app-token
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: Edgenesis
+          repositories: shifu.dev
+
       - name: Extract version from branch
         id: version
         shell: bash
@@ -95,14 +104,14 @@ jobs:
       - name: Dispatch shifu.dev version bump
         shell: bash
         env:
-          SHIFU_DEV_DISPATCH_TOKEN: ${{ secrets.SHIFU_DEV_DISPATCH_TOKEN }}
+          SHIFU_DEV_APP_TOKEN: ${{ steps.shifu-dev-app-token.outputs.token }}
         run: |
           set -euo pipefail
 
           version="${{ steps.version.outputs.version }}"
 
-          if [[ -z "${SHIFU_DEV_DISPATCH_TOKEN}" ]]; then
-            echo "::warning::SHIFU_DEV_DISPATCH_TOKEN is not configured; skipping shifu.dev version bump dispatch"
+          if [[ -z "${SHIFU_DEV_APP_TOKEN}" ]]; then
+            echo "::warning::Unable to mint shifu-release-bot token for shifu.dev; skipping version bump dispatch"
             exit 0
           fi
 
@@ -111,7 +120,7 @@ jobs:
             | curl -fsSL \
               -X POST \
               -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${SHIFU_DEV_DISPATCH_TOKEN}" \
+              -H "Authorization: Bearer ${SHIFU_DEV_APP_TOKEN}" \
               -H "X-GitHub-Api-Version: 2022-11-28" \
               https://api.github.com/repos/Edgenesis/shifu.dev/dispatches \
               --data-binary @-; then
