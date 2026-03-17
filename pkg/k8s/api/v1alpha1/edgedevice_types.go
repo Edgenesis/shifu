@@ -167,6 +167,13 @@ type EdgeDeviceSpec struct {
 	GatewaySettings  *GatewaySettings   `json:"gatewaySettings,omitempty"`
 	CustomMetadata   *map[string]string `json:"customMetadata,omitempty"`
 
+	// Description is a free-form markdown description of the device.
+	// +optional
+	Description *string `json:"description,omitempty"`
+	// ConnectionInfo is free-form markdown describing how apps connect to the DeviceShifu service.
+	// +optional
+	ConnectionInfo *string `json:"connectionInfo,omitempty"`
+
 	// TODO: add other fields like disconnectTimemoutInSeconds
 }
 
