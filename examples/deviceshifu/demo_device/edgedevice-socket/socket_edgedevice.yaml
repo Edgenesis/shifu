@@ -4,10 +4,16 @@ metadata:
   name: edgedevice-socket
   namespace: devices
 spec:
-  sku: "testSocket" 
+  sku: "testSocket"
   connection: Ethernet
   address: mockdevice-socket.devices.svc.cluster.local:11122 #change this accordingly
   protocol: Socket
+  description: |
+    Socket-based test device. Communicates over raw TCP socket
+    with UTF-8 encoding.
+  connectionInfo: |
+    Socket endpoint: deviceshifu-socket.deviceshifu.svc.cluster.local
+    Protocol: TCP, Encoding: UTF-8, Buffer: 10 bytes
   protocolSettings:
     SocketSetting:
       encoding: utf-8

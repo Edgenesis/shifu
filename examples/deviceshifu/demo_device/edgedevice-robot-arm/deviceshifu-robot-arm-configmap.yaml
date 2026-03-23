@@ -12,7 +12,17 @@ data:
       defaultTimeoutSeconds: 8
     instructions:
       get_coordinate:
+        readWrite: R
+        safe: true
+        description: |
+          GET /get_coordinate
+          Returns the current joint positions of all 6 axes.
       get_status:
+        readWrite: R
+        safe: true
+        description: |
+          GET /get_status
+          Returns device health and uptime info.
 # Telemetries are configurable health checks of the EdgeDevice
 # Developer/user can configure certain instructions to be used as health check
 # of the device. In this example, the device_health telemetry is mapped to

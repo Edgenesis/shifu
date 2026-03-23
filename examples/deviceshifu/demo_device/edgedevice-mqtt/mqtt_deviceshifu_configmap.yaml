@@ -10,15 +10,31 @@ data:
   instructions: |
     instructions:
       get_topicmsg1:
+        readWrite: R
+        safe: true
+        description: |
+          Subscribe to /test/test1 topic for messages.
         protocolPropertyList:
           MQTTTopic: "/test/test1"
       get_topicmsg2:
+        readWrite: R
+        safe: true
+        description: |
+          Subscribe to /test/test2 topic for messages.
         protocolPropertyList:
           MQTTTopic: "/test/test2"
       get_topicmsg3:
+        readWrite: R
+        safe: true
+        description: |
+          Subscribe to /test/test3 topic for messages.
         protocolPropertyList:
           MQTTTopic: "/test/test3"
       get_topicmsg4:
+        readWrite: R
+        safe: true
+        description: |
+          Subscribe to /test/test4 topic for messages.
         protocolPropertyList:
           MQTTTopic: "/test/test4"
   telemetries: |
