@@ -1,0 +1,115 @@
+# Shifu MCP Server Install
+#
+# Prerequisites: Shifu must already be installed (shifu_install.yml).
+# This adds the MCP server as a sidecar-style deployment that reuses
+# the existing shifu-crd-controller-manager ServiceAccount.
+#
+# Install:
+#   kubectl apply -f shifu_mcp_install.yml
+#
+# Connect to Claude Code:
+#   claude mcp add shifu --transport http http://<gateway-ip>:8443/mcp
+#
+---
+# Grant the controller SA read access to ConfigMaps across all namespaces.
+# The MCP server reads the "instructions" key from DeviceShifu ConfigMaps
+# to build per-interaction documentation.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shifu-mcp-configmap-reader
+rules:
+- apiGroups:
+  - ""
+  resources:
+  - configmaps
+  verbs:
+  - get
+  - list
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: shifu-mcp-configmap-reader-binding
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: shifu-mcp-configmap-reader
+subjects:
+- kind: ServiceAccount
+  name: shifu-crd-controller-manager
+  namespace: shifu-crd-system
+---
+# MCP Server Deployment — runs alongside the controller manager,
+# reusing the same ServiceAccount for K8s API access.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: shifu-mcp-server
+    app.kubernetes.io/part-of: shifu
+  name: shifu-mcp-server
+  namespace: shifu-crd-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: shifu-mcp-server
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: shifu-mcp-server
+    spec:
+      containers:
+      - name: mcp-server
+        image: edgehub/shifu-mcp-server:nightly
+        args:
+        - --addr=:8443
+        ports:
+        - containerPort: 8443
+          name: mcp
+          protocol: TCP
+        livenessProbe:
+          tcpSocket:
+            port: 8443
+          initialDelaySeconds: 10
+          periodSeconds: 20
+        readinessProbe:
+          tcpSocket:
+            port: 8443
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        resources:
+          limits:
+            cpu: 100m
+            memory: 64Mi
+          requests:
+            cpu: 50m
+            memory: 32Mi
+        securityContext:
+          allowPrivilegeEscalation: false
+      securityContext:
+        runAsNonRoot: true
+      serviceAccountName: shifu-crd-controller-manager
+      terminationGracePeriodSeconds: 10
+---
+# LoadBalancer Service exposes the MCP endpoint.
+# On K3s, ServiceLB maps this to the gateway's host IP automatically.
+# On cloud providers, a cloud load balancer is provisioned.
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: shifu-mcp-server
+    app.kubernetes.io/part-of: shifu
+  name: shifu-mcp-server
+  namespace: shifu-crd-system
+spec:
+  type: LoadBalancer
+  selector:
+    app.kubernetes.io/name: shifu-mcp-server
+  ports:
+  - name: mcp
+    port: 8443
+    targetPort: 8443
+    protocol: TCP
