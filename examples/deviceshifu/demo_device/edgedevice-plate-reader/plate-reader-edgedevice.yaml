@@ -4,7 +4,15 @@ metadata:
   name: edgedevice-plate-reader
   namespace: devices
 spec:
-  sku: "Tecan SPark" 
+  sku: "Tecan SPark"
   connection: Ethernet
   address: plate-reader.devices.svc.cluster.local:11111
   protocol: HTTP
+  description: |
+    Tecan SPark microplate reader.
+    Supports absorbance, fluorescence, and luminescence measurements.
+  connectionInfo: |
+    HTTP endpoint: http://deviceshifu-plate-reader.deviceshifu.svc.cluster.local
+    Endpoints:
+    - GET /get_measurement → current plate measurement
+    - GET /get_status      → device health
