@@ -11,9 +11,6 @@ spec:
   description: |
     OPC UA test server. Exposes numeric value nodes, a writable node,
     and server status nodes.
-  connectionInfo: |
-    OPC UA endpoint: opc.tcp://deviceshifu-opcua.deviceshifu.svc.cluster.local:4840
-    Security mode: None, Authentication: Anonymous
   protocolSettings:
     OPCUASetting:
       SecurityMode: None

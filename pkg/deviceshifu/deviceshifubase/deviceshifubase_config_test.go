@@ -42,9 +42,7 @@ type ConfigMapData struct {
 
 func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
-		InstructionValueTypeInt32       = "Int32"
-		InstructionReadWriteW           = "W"
-		TelemetrySettingInterval  int64 = 1000
+		TelemetrySettingInterval int64 = 1000
 	)
 
 	var DriverProperties = DeviceShifuDriverProperties{
@@ -56,18 +54,9 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	var mockDeviceInstructions = map[string]*DeviceShifuInstruction{
 		"get_reading": nil,
 		"get_status":  nil,
-		"set_reading": {
-			DeviceShifuInstructionProperties: []DeviceShifuInstructionProperty{
-				{
-					ValueType:    InstructionValueTypeInt32,
-					ReadWrite:    InstructionReadWriteW,
-					DefaultValue: nil,
-				},
-			},
-			DeviceShifuProtocolProperties: nil,
-		},
-		"start": nil,
-		"stop":  nil,
+		"set_reading": nil,
+		"start":       nil,
+		"stop":        nil,
 	}
 
 	var mockDeviceTelemetries = &DeviceShifuTelemetries{

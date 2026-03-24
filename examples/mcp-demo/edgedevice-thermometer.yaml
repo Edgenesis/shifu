@@ -12,15 +12,6 @@ spec:
     Industrial temperature sensor (Acme Thermo-3000).
     Measures ambient temperature in Celsius with ±0.1°C accuracy.
     Supports configurable sampling rates and threshold alerts.
-  connectionInfo: |
-    The DeviceShifu service is available at:
-      http://deviceshifu-thermometer.deviceshifu.svc.cluster.local:8080
-
-    Endpoints:
-    - GET /read_temp       → current temperature reading
-    - GET /read_humidity   → current humidity percentage
-    - POST /set_threshold  → configure alert threshold (JSON body: {"min": 10, "max": 40})
-    - GET /get_status      → device health and uptime
   customMetadata:
     Vendor: Acme Corp
     Model: Thermo-3000

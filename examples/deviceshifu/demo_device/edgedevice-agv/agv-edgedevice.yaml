@@ -11,11 +11,6 @@ spec:
   description: |
     Quicktron M60 automated guided vehicle (AGV).
     Supports position tracking and health status monitoring.
-  connectionInfo: |
-    HTTP endpoint: http://deviceshifu-agv.deviceshifu.svc.cluster.local
-    Endpoints:
-    - GET /get_position → current AGV position
-    - GET /get_status   → device health
   customMetadata:
     Vendor: Quicktron
     Type: AMR

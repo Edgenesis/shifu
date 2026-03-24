@@ -8,10 +8,20 @@ data:
     driverSku: FANUC-M20iD
     driverImage: edgehub/deviceshifu-http-mqtt:nightly
   instructions: |
+    connectionInfo: |
+      MQTT broker: mqtt://deviceshifu-robot-arm.deviceshifu.svc.cluster.local:1883
+      No authentication required. Use QoS 1 for commands, QoS 0 for status.
+
+      ```python
+      import paho.mqtt.client as mqtt
+      client = mqtt.Client()
+      client.connect("deviceshifu-robot-arm.deviceshifu.svc.cluster.local", 1883)
+      ```
     instructions:
       move_joint:
         readWrite: W
-        safe: false
+        hasSideEffects: true
+        riskLevel: RequireConfirmation
         description: |
           Move a specific joint to a target angle.
           ## Topic
@@ -25,7 +35,8 @@ data:
           - `speed`: 1-100 (% of max speed)
       gripper:
         readWrite: W
-        safe: false
+        hasSideEffects: true
+        riskLevel: RequireConfirmation
         description: |
           Open or close the gripper.
           ## Topic
@@ -36,7 +47,7 @@ data:
           ```
       joint_positions:
         readWrite: R
-        safe: true
+        hasSideEffects: false
         description: |
           Real-time joint positions. Subscribe to receive continuous updates.
           ## Topic
@@ -44,7 +55,8 @@ data:
           Published every 100ms. Array is [J1..J6] in degrees.
       emergency_stop:
         readWrite: W
-        safe: false
+        hasSideEffects: true
+        riskLevel: RequireManagerConsent
         description: |
           Immediately halt all motion.
           ## Topic

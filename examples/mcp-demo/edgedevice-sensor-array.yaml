@@ -9,13 +9,5 @@ spec:
   description: |
     Distributed sensor array across the warehouse floor. 24 sensor nodes.
     Shifu translates proprietary RS-485 serial protocol into NATS subjects.
-  connectionInfo: |
-    NATS server: nats://deviceshifu-sensor-array.deviceshifu.svc.cluster.local:4222
-    No authentication required. Use NATS wildcards for multiple sensors.
-
-    ```python
-    import nats
-    nc = await nats.connect("nats://deviceshifu-sensor-array.deviceshifu.svc.cluster.local:4222")
-    ```
 status:
   edgedevicephase: "Running"

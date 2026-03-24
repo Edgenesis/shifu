@@ -8,18 +8,23 @@ data:
     driverSku: Franka Emika
     driverImage: edgenesis/franka-emika:v0.0.1
   instructions: |
+    connectionInfo: |
+      HTTP endpoint: http://deviceshifu-robot-arm.deviceshifu.svc.cluster.local
+      Endpoints:
+      - GET /get_coordinate → current joint positions
+      - GET /get_status     → device health
     instructionSettings:
       defaultTimeoutSeconds: 8
     instructions:
       get_coordinate:
         readWrite: R
-        safe: true
+        hasSideEffects: false
         description: |
           GET /get_coordinate
           Returns the current joint positions of all 6 axes.
       get_status:
         readWrite: R
-        safe: true
+        hasSideEffects: false
         description: |
           GET /get_status
           Returns device health and uptime info.

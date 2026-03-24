@@ -12,10 +12,6 @@ data:
         protocolPropertyList:
           MQTTTopic: "/test/test2"
       set_reading:
-        argumentPropertyList:
-        - valueType: "Int32"
-          readWrite: "W"
-          defaultValue: null
       get_topicmsg3:
         protocolPropertyList:
           MQTTTopic: "/test/test3"

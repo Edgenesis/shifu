@@ -34,8 +34,6 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
 		TelemetryInstructionNameGetStatus         = "get_status"
 		TelemetryInstructionNameGetReading        = "get_reading"
-		InstructionValueTypeInt32                 = "Int32"
-		InstructionReadWriteW                     = "W"
 		TelemetryMs1000                           = int64(1000)
 		TelemetryMs3000                           = int64(3000)
 		TelemetryMs6000                           = int64(6000)
@@ -54,18 +52,9 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
 		"get_reading": nil,
 		"get_status":  nil,
-		"set_reading": {
-			DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
-				{
-					ValueType:    InstructionValueTypeInt32,
-					ReadWrite:    InstructionReadWriteW,
-					DefaultValue: nil,
-				},
-			},
-			DeviceShifuProtocolProperties: nil,
-		},
-		"start": nil,
-		"stop":  nil,
+		"set_reading": nil,
+		"start":       nil,
+		"stop":        nil,
 	}
 
 	var mockDeviceTelemetries = map[string]*deviceshifubase.DeviceShifuTelemetry{

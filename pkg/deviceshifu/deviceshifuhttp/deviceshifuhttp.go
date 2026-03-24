@@ -142,17 +142,9 @@ func createURIFromRequest(address string, handlerInstruction string, r *http.Req
 // This function executes the instruction by requesting the url returned by createURIFromRequest
 func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		handlerProperties := handler.HandlerMetaData.properties
 		handlerInstruction := handler.HandlerMetaData.instruction
 		handlerEdgeDeviceSpec := handler.HandlerMetaData.edgeDeviceSpec
 		handlerHTTPClient := handler.client.Client
-
-		if handlerProperties != nil {
-			// TODO: handle validation compile
-			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				logger.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
-			}
-		}
 
 		var (
 			resp              *http.Response
@@ -307,17 +299,9 @@ type DeviceCommandHandlerHTTPCommandline struct {
 func (handler DeviceCommandHandlerHTTPCommandline) commandHandleFunc() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		driverExecution := handler.CommandlineHandlerMetadata.driverExecution
-		handlerProperties := handler.CommandlineHandlerMetadata.properties
 		handlerInstruction := handler.CommandlineHandlerMetadata.instruction
 		handlerEdgeDeviceSpec := handler.CommandlineHandlerMetadata.edgeDeviceSpec
 		handlerHTTPClient := handler.client.Client
-
-		if handlerProperties != nil {
-			// TODO: handle validation compile
-			for _, instructionProperty := range handlerProperties.DeviceShifuInstructionProperties {
-				logger.Infof("Properties of command: %v %v", handlerInstruction, instructionProperty)
-			}
-		}
 
 		var (
 			resp              *http.Response

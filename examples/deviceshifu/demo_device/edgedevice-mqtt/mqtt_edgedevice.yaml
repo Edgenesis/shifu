@@ -10,8 +10,5 @@ spec:
   protocol: MQTT
   description: |
     MQTT test device. Publishes and subscribes to multiple test topics.
-  connectionInfo: |
-    MQTT broker: mqtt://deviceshifu-mqtt.deviceshifu.svc.cluster.local
-    Topics: /test/test1 through /test/test4
   protocolSettings:
     MQTTSetting:

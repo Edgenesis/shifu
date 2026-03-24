@@ -356,13 +356,6 @@ func mockHandlerServer(t *testing.T) *httptest.Server {
 
 func mockDeviceShifuInstruction() *deviceshifubase.DeviceShifuInstruction {
 	return &deviceshifubase.DeviceShifuInstruction{
-		DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
-			{
-				ValueType:    "testing",
-				ReadWrite:    "rw",
-				DefaultValue: "0",
-			},
-		},
 		DeviceShifuProtocolProperties: map[string]string{
 			"test_key": "test_value",
 		},

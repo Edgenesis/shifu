@@ -8,10 +8,14 @@ data:
     driverSku: testSocket
     driverImage: 
   instructions: |
+    connectionInfo: |
+      Socket endpoint: deviceshifu-socket.deviceshifu.svc.cluster.local
+      Protocol: TCP, Encoding: UTF-8, Buffer: 10 bytes
     instructions:
       cmd:
         readWrite: RW
-        safe: false
+        hasSideEffects: true
+        riskLevel: RequireAttention
         description: |
           Send a raw command over the socket connection and receive a response.
   telemetries: |

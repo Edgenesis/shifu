@@ -37,6 +37,8 @@ type DeviceShifuDriverProperties struct {
 type DeviceShifuInstructions struct {
 	Instructions        map[string]*DeviceShifuInstruction `yaml:"instructions"`
 	InstructionSettings *DeviceShifuInstructionSettings    `yaml:"instructionSettings,omitempty"`
+	// ConnectionInfo is free-form markdown describing how apps connect to the DeviceShifu service.
+	ConnectionInfo string `yaml:"connectionInfo,omitempty"`
 }
 
 // DeviceShifuInstructionSettings Settings of all instructions
@@ -44,25 +46,37 @@ type DeviceShifuInstructionSettings struct {
 	DefaultTimeoutSeconds *int64 `yaml:"defaultTimeoutSeconds,omitempty"`
 }
 
+// ReadWriteMode indicates the interaction direction.
+type ReadWriteMode string
+
+const (
+	ReadWriteR  ReadWriteMode = "R"
+	ReadWriteW  ReadWriteMode = "W"
+	ReadWriteRW ReadWriteMode = "RW"
+)
+
+// RiskLevel indicates the level of risk/approval required for an interaction.
+type RiskLevel string
+
+const (
+	RiskLevelRequireAttention      RiskLevel = "RequireAttention"
+	RiskLevelRequireConfirmation   RiskLevel = "RequireConfirmation"
+	RiskLevelRequireManagerConsent RiskLevel = "RequireManagerConsent"
+)
+
 // DeviceShifuInstruction Instruction of deviceshifu
 type DeviceShifuInstruction struct {
-	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
-	DeviceShifuProtocolProperties    map[string]string                `yaml:"protocolPropertyList,omitempty"`
-	DeviceShifuGatewayProperties     map[string]string                `yaml:"gatewayPropertyList,omitempty"`
+	DeviceShifuProtocolProperties map[string]string `yaml:"protocolPropertyList,omitempty"`
+	DeviceShifuGatewayProperties  map[string]string `yaml:"gatewayPropertyList,omitempty"`
 
 	// Description is free-form markdown describing this interaction.
 	Description string `yaml:"description,omitempty"`
 	// ReadWrite indicates the interaction direction: R, W, or RW.
-	ReadWrite string `yaml:"readWrite,omitempty"`
-	// Safe indicates whether this interaction has side effects.
-	Safe *bool `yaml:"safe,omitempty"`
-}
-
-// DeviceShifuInstructionProperty property of instruction
-type DeviceShifuInstructionProperty struct {
-	ValueType    string      `yaml:"valueType"`
-	ReadWrite    string      `yaml:"readWrite"`
-	DefaultValue interface{} `yaml:"defaultValue"`
+	ReadWrite ReadWriteMode `yaml:"readWrite,omitempty"`
+	// HasSideEffects indicates whether this interaction has side effects.
+	HasSideEffects *bool `yaml:"hasSideEffects,omitempty"`
+	// RiskLevel indicates the level of risk/approval required for this interaction.
+	RiskLevel RiskLevel `yaml:"riskLevel,omitempty"`
 }
 
 // DeviceShifuTelemetryPushSettings settings of push under telemetry

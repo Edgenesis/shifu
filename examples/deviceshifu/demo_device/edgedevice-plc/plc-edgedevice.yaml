@@ -11,10 +11,3 @@ spec:
   description: |
     Programmable logic controller (PLC).
     Supports reading/writing registers and single-bit operations.
-  connectionInfo: |
-    HTTP endpoint: http://deviceshifu-plc.deviceshifu.svc.cluster.local
-    Endpoints:
-    - GET  /getcontent    → read register content
-    - POST /sendcontent   → write register content
-    - POST /sendsinglebit → write a single bit
-    - GET  /get_status    → device health

@@ -11,8 +11,3 @@ spec:
   description: |
     6-axis industrial robot arm (Franka Emika).
     Supports coordinate reading and health status monitoring.
-  connectionInfo: |
-    HTTP endpoint: http://deviceshifu-robot-arm.deviceshifu.svc.cluster.local
-    Endpoints:
-    - GET /get_coordinate → current joint positions
-    - GET /get_status     → device health

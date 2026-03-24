@@ -8,30 +8,39 @@ data:
     driverSku: PLC
     driverImage: edgenesis/plc:v0.0.1
   instructions: |
+    connectionInfo: |
+      HTTP endpoint: http://deviceshifu-plc.deviceshifu.svc.cluster.local
+      Endpoints:
+      - GET  /getcontent    → read register content
+      - POST /sendcontent   → write register content
+      - POST /sendsinglebit → write a single bit
+      - GET  /get_status    → device health
     instructionSettings:
       defaultTimeoutSeconds: 8
     instructions:
       sendcontent:
         readWrite: W
-        safe: false
+        hasSideEffects: true
+        riskLevel: RequireConfirmation
         description: |
           POST /sendcontent
           Write content to PLC registers.
       getcontent:
         readWrite: R
-        safe: true
+        hasSideEffects: false
         description: |
           GET /getcontent
           Read content from PLC registers.
       get_status:
         readWrite: R
-        safe: true
+        hasSideEffects: false
         description: |
           GET /get_status
           Returns device health and uptime info.
       sendsinglebit:
         readWrite: W
-        safe: false
+        hasSideEffects: true
+        riskLevel: RequireConfirmation
         description: |
           POST /sendsinglebit
           Write a single bit to a PLC register.

@@ -11,8 +11,3 @@ spec:
   description: |
     Tecan SPark microplate reader.
     Supports absorbance, fluorescence, and luminescence measurements.
-  connectionInfo: |
-    HTTP endpoint: http://deviceshifu-plate-reader.deviceshifu.svc.cluster.local
-    Endpoints:
-    - GET /get_measurement → current plate measurement
-    - GET /get_status      → device health

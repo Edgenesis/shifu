@@ -11,8 +11,3 @@ spec:
   description: |
     Industrial temperature sensor. Measures ambient temperature in Celsius.
     Supports configurable sampling rates and threshold alerts.
-  connectionInfo: |
-    HTTP endpoint: http://deviceshifu-thermometer.deviceshifu.svc.cluster.local
-    Endpoints:
-    - GET /get_status  → device health
-    - GET /read_value  → current temperature reading
