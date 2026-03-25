@@ -27,8 +27,7 @@ func parseInstructionsFromConfigMap(cm *corev1.ConfigMap) ([]Interaction, error)
 		interaction := Interaction{Name: name}
 		if instr != nil {
 			interaction.Description = strings.TrimSpace(instr.Description)
-			interaction.ReadWrite = instr.ReadWrite
-			interaction.Safe = instr.Safe
+			interaction.ReadWrite = string(instr.ReadWrite)
 		}
 		interactions = append(interactions, interaction)
 	}

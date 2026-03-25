@@ -172,7 +172,6 @@ func specK8sObjects() []runtime.Object {
 				"instructions": `instructions:
   move_joint:
     readWrite: W
-    safe: false
     description: |
       Move a specific joint to a target angle.
       ## Topic
@@ -186,7 +185,6 @@ func specK8sObjects() []runtime.Object {
       - ` + "`speed`" + `: 1-100 (% of max speed)
   gripper:
     readWrite: W
-    safe: false
     description: |
       Open or close the gripper.
       ## Topic
@@ -197,7 +195,6 @@ func specK8sObjects() []runtime.Object {
       ` + "```" + `
   joint_positions:
     readWrite: R
-    safe: true
     description: |
       Real-time joint positions. Subscribe to receive continuous updates.
       ## Topic
@@ -205,7 +202,6 @@ func specK8sObjects() []runtime.Object {
       Published every 100ms. Array is [J1..J6] in degrees.
   emergency_stop:
     readWrite: W
-    safe: false
     description: |
       Immediately halt all motion.
       ## Topic
@@ -261,20 +257,17 @@ func specK8sObjects() []runtime.Object {
 				"instructions": `instructions:
   temperature:
     readWrite: R
-    safe: true
     description: |
       Temperature readings. Subject: ` + "`sensors.<node_id>.temperature`" + `
       Wildcard: ` + "`sensors.*.temperature`" + ` for all nodes.
       Published every 5 seconds per node.
   vibration:
     readWrite: R
-    safe: true
     description: |
       Vibration readings. Subject: ` + "`sensors.<node_id>.vibration`" + `
       Values above 0.5g indicate potential failure.
   configure_interval:
     readWrite: W
-    safe: false
     description: |
       Change reporting interval. Uses NATS request/reply.
       Subject: ` + "`sensors.<node_id>.config.interval`" + `
@@ -329,20 +322,17 @@ func specK8sObjects() []runtime.Object {
 				"instructions": `instructions:
   get_temperature:
     readWrite: R
-    safe: true
     description: |
       GET /get_temperature
       Response: {"temperature": 36.5, "unit": "celsius"}
       Updates every 3 seconds.
   set_unit:
     readWrite: W
-    safe: false
     description: |
       POST /set_unit {"unit": "fahrenheit"}
       Response: {"status": "ok", "unit": "fahrenheit"}
   status:
     readWrite: R
-    safe: true
     description: |
       GET /status — returns plain text: ` + "`running`" + ` or ` + "`error: <message>`" + `.
 `,
@@ -466,34 +456,26 @@ func TestE2ESpecRobotArmMQTT(t *testing.T) {
 		interactionMap[intr.Name] = intr
 	}
 
-	// move_joint: W, unsafe, topic info
+	// move_joint: W, topic info
 	moveJoint := interactionMap["move_joint"]
 	assert.Equal(t, "W", moveJoint.ReadWrite)
-	require.NotNil(t, moveJoint.Safe)
-	assert.False(t, *moveJoint.Safe)
 	assert.Contains(t, moveJoint.Description, "robot-arm/commands/move_joint")
 	assert.Contains(t, moveJoint.Description, "joint")
 	assert.Contains(t, moveJoint.Description, "angle")
 
-	// gripper: W, unsafe
+	// gripper: W
 	gripper := interactionMap["gripper"]
 	assert.Equal(t, "W", gripper.ReadWrite)
-	require.NotNil(t, gripper.Safe)
-	assert.False(t, *gripper.Safe)
 	assert.Contains(t, gripper.Description, "robot-arm/commands/gripper")
 
-	// joint_positions: R, safe
+	// joint_positions: R
 	jointPos := interactionMap["joint_positions"]
 	assert.Equal(t, "R", jointPos.ReadWrite)
-	require.NotNil(t, jointPos.Safe)
-	assert.True(t, *jointPos.Safe)
 	assert.Contains(t, jointPos.Description, "robot-arm/status/joint_positions")
 
-	// emergency_stop: W, unsafe
+	// emergency_stop: W
 	eStop := interactionMap["emergency_stop"]
 	assert.Equal(t, "W", eStop.ReadWrite)
-	require.NotNil(t, eStop.Safe)
-	assert.False(t, *eStop.Safe)
 	assert.Contains(t, eStop.Description, "robot-arm/commands/emergency_stop")
 }
 
@@ -536,26 +518,20 @@ func TestE2ESpecSensorArrayNATS(t *testing.T) {
 		interactionMap[intr.Name] = intr
 	}
 
-	// temperature: R, safe, NATS subject pattern
+	// temperature: R, NATS subject pattern
 	temp := interactionMap["temperature"]
 	assert.Equal(t, "R", temp.ReadWrite)
-	require.NotNil(t, temp.Safe)
-	assert.True(t, *temp.Safe)
 	assert.Contains(t, temp.Description, "sensors.")
 	assert.Contains(t, temp.Description, "temperature")
 
-	// vibration: R, safe
+	// vibration: R
 	vib := interactionMap["vibration"]
 	assert.Equal(t, "R", vib.ReadWrite)
-	require.NotNil(t, vib.Safe)
-	assert.True(t, *vib.Safe)
 	assert.Contains(t, vib.Description, "vibration")
 
-	// configure_interval: W, unsafe, request/reply
+	// configure_interval: W, request/reply
 	cfgInterval := interactionMap["configure_interval"]
 	assert.Equal(t, "W", cfgInterval.ReadWrite)
-	require.NotNil(t, cfgInterval.Safe)
-	assert.False(t, *cfgInterval.Safe)
 	assert.Contains(t, cfgInterval.Description, "request/reply")
 }
 
@@ -593,25 +569,19 @@ func TestE2ESpecThermometerHTTP(t *testing.T) {
 		interactionMap[intr.Name] = intr
 	}
 
-	// get_temperature: R, safe, GET endpoint
+	// get_temperature: R, GET endpoint
 	getTemp := interactionMap["get_temperature"]
 	assert.Equal(t, "R", getTemp.ReadWrite)
-	require.NotNil(t, getTemp.Safe)
-	assert.True(t, *getTemp.Safe)
 	assert.Contains(t, getTemp.Description, "GET /get_temperature")
 
-	// set_unit: W, unsafe, POST endpoint
+	// set_unit: W, POST endpoint
 	setUnit := interactionMap["set_unit"]
 	assert.Equal(t, "W", setUnit.ReadWrite)
-	require.NotNil(t, setUnit.Safe)
-	assert.False(t, *setUnit.Safe)
 	assert.Contains(t, setUnit.Description, "POST /set_unit")
 
-	// status: R, safe
+	// status: R
 	status := interactionMap["status"]
 	assert.Equal(t, "R", status.ReadWrite)
-	require.NotNil(t, status.Safe)
-	assert.True(t, *status.Safe)
 	assert.Contains(t, status.Description, "GET /status")
 }
 
@@ -760,7 +730,6 @@ func TestE2ESpecGracefulDegradation(t *testing.T) {
 	for _, intr := range desc.Interactions {
 		interactionNames[intr.Name] = true
 		assert.Equal(t, "", intr.ReadWrite, "legacy instructions have no readWrite")
-		assert.Nil(t, intr.Safe, "legacy instructions have no safe field")
 		assert.Equal(t, "", intr.Description, "legacy instructions have no description")
 	}
 	assert.True(t, interactionNames["read_value"])

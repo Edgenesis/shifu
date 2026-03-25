@@ -110,13 +110,11 @@ func testK8sObjects() []runtime.Object {
 				"instructions": `instructions:
   get_temperature:
     readWrite: R
-    safe: true
     description: |
       GET /get_temperature
       Response: {"temperature": 36.5, "unit": "celsius"}
   set_unit:
     readWrite: W
-    safe: false
     description: |
       POST /set_unit {"unit": "fahrenheit"}
 `,
@@ -175,20 +173,17 @@ func testK8sObjects() []runtime.Object {
 				"instructions": `instructions:
   move_joint:
     readWrite: W
-    safe: false
     description: |
       Move a specific joint to a target angle.
       Topic: robot-arm/commands/move_joint
       Message format: {"joint": 1, "angle": 45.0, "speed": 50}
   joint_positions:
     readWrite: R
-    safe: true
     description: |
       Real-time joint positions. Subscribe to receive continuous updates.
       Topic: robot-arm/status/joint_positions
   emergency_stop:
     readWrite: W
-    safe: false
     description: |
       Immediately halt all motion. Publish any message to trigger.
       Topic: robot-arm/commands/emergency_stop
@@ -308,15 +303,11 @@ func TestMCPGetDeviceDescHTTP(t *testing.T) {
 	getTemp, ok := interactionMap["get_temperature"]
 	require.True(t, ok)
 	assert.Equal(t, "R", getTemp.ReadWrite)
-	assert.NotNil(t, getTemp.Safe)
-	assert.True(t, *getTemp.Safe)
 	assert.Contains(t, getTemp.Description, "GET /get_temperature")
 
 	setUnit, ok := interactionMap["set_unit"]
 	require.True(t, ok)
 	assert.Equal(t, "W", setUnit.ReadWrite)
-	assert.NotNil(t, setUnit.Safe)
-	assert.False(t, *setUnit.Safe)
 }
 
 func TestMCPGetDeviceDescMQTT(t *testing.T) {
@@ -346,15 +337,11 @@ func TestMCPGetDeviceDescMQTT(t *testing.T) {
 	moveJoint, ok := interactionMap["move_joint"]
 	require.True(t, ok)
 	assert.Equal(t, "W", moveJoint.ReadWrite)
-	assert.NotNil(t, moveJoint.Safe)
-	assert.False(t, *moveJoint.Safe)
 	assert.Contains(t, moveJoint.Description, "robot-arm/commands/move_joint")
 
 	jointPos, ok := interactionMap["joint_positions"]
 	require.True(t, ok)
 	assert.Equal(t, "R", jointPos.ReadWrite)
-	assert.NotNil(t, jointPos.Safe)
-	assert.True(t, *jointPos.Safe)
 
 	eStop, ok := interactionMap["emergency_stop"]
 	require.True(t, ok)

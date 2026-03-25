@@ -19,13 +19,11 @@ func TestParseInstructionsFromConfigMap(t *testing.T) {
 			"instructions": `instructions:
   read_temp:
     readWrite: R
-    safe: true
     description: |
       GET /read_temp
       Returns temperature in Celsius.
   write_config:
     readWrite: W
-    safe: false
     description: |
       POST /write_config with JSON body.
   legacy_instruction:
@@ -44,19 +42,14 @@ func TestParseInstructionsFromConfigMap(t *testing.T) {
 
 	readTemp := interactionMap["read_temp"]
 	assert.Equal(t, "R", readTemp.ReadWrite)
-	assert.NotNil(t, readTemp.Safe)
-	assert.True(t, *readTemp.Safe)
 	assert.Contains(t, readTemp.Description, "GET /read_temp")
 
 	writeConfig := interactionMap["write_config"]
 	assert.Equal(t, "W", writeConfig.ReadWrite)
-	assert.NotNil(t, writeConfig.Safe)
-	assert.False(t, *writeConfig.Safe)
 
 	// Legacy instruction without extended fields.
 	legacy := interactionMap["legacy_instruction"]
 	assert.Equal(t, "", legacy.ReadWrite)
-	assert.Nil(t, legacy.Safe)
 	assert.Equal(t, "", legacy.Description)
 }
 

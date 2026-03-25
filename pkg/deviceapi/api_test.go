@@ -103,18 +103,15 @@ func newTestDeploymentAndConfigMap() []runtime.Object {
 				"instructions": `instructions:
   get_temperature:
     readWrite: R
-    safe: true
     description: |
       GET /get_temperature
       Response: {"temperature": 36.5, "unit": "celsius"}
   set_unit:
     readWrite: W
-    safe: false
     description: |
       POST /set_unit {"unit": "fahrenheit"}
   status:
     readWrite: R
-    safe: true
 `,
 			},
 		},
@@ -185,13 +182,11 @@ func newTestDeploymentAndConfigMap() []runtime.Object {
 				"instructions": `instructions:
   move_joint:
     readWrite: W
-    safe: false
     description: |
       Move a specific joint to a target angle.
       Topic: robot-arm/commands/move_joint
   joint_positions:
     readWrite: R
-    safe: true
     description: |
       Real-time joint positions.
       Topic: robot-arm/status/joint_positions
@@ -264,15 +259,11 @@ func TestGetDeviceDesc(t *testing.T) {
 	getTemp, ok := interactionMap["get_temperature"]
 	require.True(t, ok, "get_temperature interaction should exist")
 	assert.Equal(t, "R", getTemp.ReadWrite)
-	assert.NotNil(t, getTemp.Safe)
-	assert.True(t, *getTemp.Safe)
 	assert.Contains(t, getTemp.Description, "GET /get_temperature")
 
 	setUnit, ok := interactionMap["set_unit"]
 	require.True(t, ok, "set_unit interaction should exist")
 	assert.Equal(t, "W", setUnit.ReadWrite)
-	assert.NotNil(t, setUnit.Safe)
-	assert.False(t, *setUnit.Safe)
 }
 
 func TestGetDeviceDescNotFound(t *testing.T) {
@@ -307,14 +298,10 @@ func TestGetDeviceDescRobotArm(t *testing.T) {
 	moveJoint, ok := interactionMap["move_joint"]
 	require.True(t, ok)
 	assert.Equal(t, "W", moveJoint.ReadWrite)
-	assert.NotNil(t, moveJoint.Safe)
-	assert.False(t, *moveJoint.Safe)
 
 	jointPos, ok := interactionMap["joint_positions"]
 	require.True(t, ok)
 	assert.Equal(t, "R", jointPos.ReadWrite)
-	assert.NotNil(t, jointPos.Safe)
-	assert.True(t, *jointPos.Safe)
 }
 
 func TestListDevicesNoDevices(t *testing.T) {

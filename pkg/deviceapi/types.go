@@ -25,6 +25,5 @@ type DeviceDesc struct {
 type Interaction struct {
 	Name        string `json:"name"`
 	ReadWrite   string `json:"readWrite,omitempty"`
-	Safe        *bool  `json:"safe,omitempty"`
 	Description string `json:"description,omitempty"`
 }
