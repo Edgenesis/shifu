@@ -12,7 +12,15 @@ data:
       defaultTimeoutSeconds: 8
     instructions:
       get_status:
+        readWrite: R
+        description: |
+          GET /get_status
+          Returns device health and uptime info.
       read_value:
+        readWrite: R
+        description: |
+          GET /read_value
+          Returns the current temperature reading in Celsius.
   telemetries: |
     telemetries:
       device_health:

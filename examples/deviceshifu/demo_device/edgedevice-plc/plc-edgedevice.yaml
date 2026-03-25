@@ -8,3 +8,8 @@ spec:
   connection: Ethernet
   address: plc.devices.svc.cluster.local:11111
   protocol: HTTP
+  description: |
+    Programmable logic controller (PLC).
+    Supports reading/writing registers and single-bit operations.
+  connectionInfo: |
+    HTTP protocol. Supports GET for reads, POST for writes.

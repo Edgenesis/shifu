@@ -1,0 +1,28 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deviceshifu-sensor-array-configmap
+  namespace: deviceshifu
+data:
+  driverProperties: |
+    driverSku: SensorArray-RS485
+    driverImage: edgehub/deviceshifu-http-nats:nightly
+  instructions: |
+    instructions:
+      temperature:
+        readWrite: R
+        description: |
+          Temperature readings. Subject: `sensors.<node_id>.temperature`
+          Wildcard: `sensors.*.temperature` for all nodes.
+          Published every 5 seconds per node.
+      vibration:
+        readWrite: R
+        description: |
+          Vibration readings. Subject: `sensors.<node_id>.vibration`
+          Values above 0.5g indicate potential failure.
+      configure_interval:
+        readWrite: W
+        description: |
+          Change reporting interval. Uses NATS request/reply.
+          Subject: `sensors.<node_id>.config.interval`
+          Valid intervals: 1-60 seconds. Default is 5.

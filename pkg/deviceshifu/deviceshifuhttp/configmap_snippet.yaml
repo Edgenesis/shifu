@@ -10,10 +10,6 @@ data:
       get_reading:
       get_status:
       set_reading:
-        argumentPropertyList:
-        - valueType: "Int32"
-          readWrite: "W"
-          defaultValue: null
       start:
       stop:
   telemetries: |

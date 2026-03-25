@@ -1,0 +1,20 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-robot-arm
+  namespace: devices
+spec:
+  sku: "FANUC-M20iD"
+  connection: Ethernet
+  address: "192.168.1.50"
+  protocol: MQTT
+  description: |
+    6-axis industrial robot arm (FANUC M-20iD) on the main assembly line.
+    Shifu translates PLC registers into MQTT topics.
+
+    **SAFETY:** Command interactions (`robot-arm/commands/*`) actuate real
+    joints and the gripper. Validate joint angles before publishing.
+  connectionInfo: |
+    MQTT protocol. No authentication required. Use QoS 1 for commands, QoS 0 for status.
+status:
+  edgedevicephase: "Running"

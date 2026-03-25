@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: deviceshifu-robot-arm-configmap
+  namespace: deviceshifu
+data:
+  driverProperties: |
+    driverSku: FANUC-M20iD
+    driverImage: edgehub/deviceshifu-http-mqtt:nightly
+  instructions: |
+    instructions:
+      move_joint:
+        readWrite: W
+        description: |
+          Move a specific joint to a target angle.
+          ## Topic
+          `robot-arm/commands/move_joint`
+          ## Message format (JSON)
+          ```json
+          {"joint": 1, "angle": 45.0, "speed": 50}
+          ```
+          - `joint`: 1-6 (axis number)
+          - `angle`: degrees. Safe ranges: J1 ±170, J2 -100/+75, J3 -70/+200, J4 ±190, J5 ±125, J6 ±360
+          - `speed`: 1-100 (% of max speed)
+      gripper:
+        readWrite: W
+        description: |
+          Open or close the gripper.
+          ## Topic
+          `robot-arm/commands/gripper`
+          ## Message format
+          ```json
+          {"action": "close", "force": 80}
+          ```
+      joint_positions:
+        readWrite: R
+        description: |
+          Real-time joint positions. Subscribe to receive continuous updates.
+          ## Topic
+          `robot-arm/status/joint_positions`
+          Published every 100ms. Array is [J1..J6] in degrees.
+      emergency_stop:
+        readWrite: W
+        description: |
+          Immediately halt all motion.
+          ## Topic
+          `robot-arm/commands/emergency_stop`
+          Publish any message to trigger E-stop.

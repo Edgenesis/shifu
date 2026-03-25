@@ -1,0 +1,23 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-thermometer
+  namespace: devices
+spec:
+  sku: "Acme-Thermo-3000"
+  connection: Ethernet
+  address: deviceshifu-thermometer.deviceshifu.svc.cluster.local:8080
+  protocol: HTTP
+  description: |
+    Industrial temperature sensor (Acme Thermo-3000).
+    Measures ambient temperature in Celsius with ±0.1°C accuracy.
+    Supports configurable sampling rates and threshold alerts.
+  connectionInfo: |
+    HTTP protocol. No authentication required.
+  customMetadata:
+    Vendor: Acme Corp
+    Model: Thermo-3000
+    FirmwareVersion: "2.1.4"
+    Location: Factory Floor A
+status:
+  edgedevicephase: "Running"

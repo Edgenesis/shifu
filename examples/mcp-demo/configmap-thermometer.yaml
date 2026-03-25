@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: thermometer-configmap
+  namespace: deviceshifu
+data:
+  driverProperties: |
+    driverSku: Acme-Thermo-3000
+    driverImage: edgehub/deviceshifu-http-http:nightly
+  instructions: |
+    instructionSettings:
+      defaultTimeoutSeconds: 5
+    instructions:
+      read_temp:
+        readWrite: R
+        description: |
+          GET /read_temp
+          Returns the current temperature in Celsius as a plain-text float (e.g. "23.5").
+          No request body required. Read-only, no side effects.
+      read_humidity:
+        readWrite: R
+        description: |
+          GET /read_humidity
+          Returns relative humidity as a percentage (e.g. "62.3").
+          No request body required.
+      set_threshold:
+        readWrite: W
+        description: |
+          POST /set_threshold
+          Sets the temperature alert threshold. Requires JSON body:
+            {"min": <float>, "max": <float>}
+          Returns 200 OK on success. This WRITES device configuration.
+      get_status:
+        readWrite: R
+        description: |
+          GET /get_status
+          Returns device health info as JSON:
+            {"status": "ok", "uptime_hours": 1234, "firmware": "2.1.4"}
+  telemetries: |
+    telemetrySettings:
+      telemetryUpdateIntervalInMilliseconds: 5000
+    telemetries:
+      device_health:
+        properties:
+          instruction: get_status
+          initialDelayMs: 1000
+          intervalMs: 5000

@@ -44,18 +44,24 @@ type DeviceShifuInstructionSettings struct {
 	DefaultTimeoutSeconds *int64 `yaml:"defaultTimeoutSeconds,omitempty"`
 }
 
+// ReadWriteMode indicates the interaction direction.
+type ReadWriteMode string
+
+const (
+	ReadWriteR  ReadWriteMode = "R"
+	ReadWriteW  ReadWriteMode = "W"
+	ReadWriteRW ReadWriteMode = "RW"
+)
+
 // DeviceShifuInstruction Instruction of deviceshifu
 type DeviceShifuInstruction struct {
-	DeviceShifuInstructionProperties []DeviceShifuInstructionProperty `yaml:"argumentPropertyList,omitempty"`
-	DeviceShifuProtocolProperties    map[string]string                `yaml:"protocolPropertyList,omitempty"`
-	DeviceShifuGatewayProperties     map[string]string                `yaml:"gatewayPropertyList,omitempty"`
-}
+	DeviceShifuProtocolProperties map[string]string `yaml:"protocolPropertyList,omitempty"`
+	DeviceShifuGatewayProperties  map[string]string `yaml:"gatewayPropertyList,omitempty"`
 
-// DeviceShifuInstructionProperty property of instruction
-type DeviceShifuInstructionProperty struct {
-	ValueType    string      `yaml:"valueType"`
-	ReadWrite    string      `yaml:"readWrite"`
-	DefaultValue interface{} `yaml:"defaultValue"`
+	// Description is free-form markdown describing this interaction.
+	Description string `yaml:"description,omitempty"`
+	// ReadWrite indicates the interaction direction: R, W, or RW.
+	ReadWrite ReadWriteMode `yaml:"readWrite,omitempty"`
 }
 
 // DeviceShifuTelemetryPushSettings settings of push under telemetry

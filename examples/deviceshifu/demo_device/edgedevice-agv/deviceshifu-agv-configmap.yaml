@@ -12,7 +12,15 @@ data:
       defaultTimeoutSeconds: 8
     instructions:
       get_position:
+        readWrite: R
+        description: |
+          GET /get_position
+          Returns the current position of the AGV.
       get_status:
+        readWrite: R
+        description: |
+          GET /get_status
+          Returns device health and uptime info.
 # Telemetries are configurable health checks of the EdgeDevice
 # Developer/user can configure certain instructions to be used as health check
 # of the device. In this example, the device_health telemetry is mapped to

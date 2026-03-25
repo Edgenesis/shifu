@@ -4,10 +4,15 @@ metadata:
   name: edgedevice-agv
   namespace: devices
 spec:
-  sku: "AGV" 
+  sku: "AGV"
   connection: Ethernet
   address: agv.devices.svc.cluster.local:11111
   protocol: HTTP
+  description: |
+    Quicktron M60 automated guided vehicle (AGV).
+    Supports position tracking and health status monitoring.
+  connectionInfo: |
+    HTTP protocol. No authentication required.
   customMetadata:
     Vendor: Quicktron
     Type: AMR

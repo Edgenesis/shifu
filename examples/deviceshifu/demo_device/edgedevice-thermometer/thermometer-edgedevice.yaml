@@ -4,7 +4,12 @@ metadata:
   name: edgedevice-thermometer
   namespace: devices
 spec:
-  sku: "Thermometer" 
+  sku: "Thermometer"
   connection: Ethernet
   address: thermometer.devices.svc.cluster.local:11111
   protocol: HTTP
+  description: |
+    Industrial temperature sensor. Measures ambient temperature in Celsius.
+    Supports configurable sampling rates and threshold alerts.
+  connectionInfo: |
+    HTTP protocol. No authentication required.

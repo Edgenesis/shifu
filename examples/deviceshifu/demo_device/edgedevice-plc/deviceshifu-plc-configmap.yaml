@@ -12,9 +12,25 @@ data:
       defaultTimeoutSeconds: 8
     instructions:
       sendcontent:
+        readWrite: W
+        description: |
+          POST /sendcontent
+          Write content to PLC registers.
       getcontent:
+        readWrite: R
+        description: |
+          GET /getcontent
+          Read content from PLC registers.
       get_status:
+        readWrite: R
+        description: |
+          GET /get_status
+          Returns device health and uptime info.
       sendsinglebit:
+        readWrite: W
+        description: |
+          POST /sendsinglebit
+          Write a single bit to a PLC register.
 # Telemetries are configurable health checks of the EdgeDevice
 # Developer/user can configure certain instructions to be used as health check
 # of the device. In this example, the device_health telemetry is mapped to

@@ -12,7 +12,15 @@ data:
       defaultTimeoutSeconds: 8
     instructions:
       get_measurement:
+        readWrite: R
+        description: |
+          GET /get_measurement
+          Returns the current plate measurement results.
       get_status:
+        readWrite: R
+        description: |
+          GET /get_status
+          Returns device health and uptime info.
 # Telemetries are configurable health checks of the EdgeDevice
 # Developer/user can configure certain instructions to be used as health check
 # of the device. In this example, the device_health telemetry is mapped to

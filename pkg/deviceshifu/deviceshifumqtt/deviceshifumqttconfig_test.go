@@ -31,9 +31,7 @@ type ConfigMapData struct {
 
 func TestNewDeviceShifuConfig(t *testing.T) {
 	var (
-		InstructionValueTypeInt32       = "Int32"
-		InstructionReadWriteW           = "W"
-		TelemetrySettingInterval  int64 = 1000
+		TelemetrySettingInterval int64 = 1000
 	)
 
 	err := GenerateConfigMapFromSnippet(MockDeviceCmStr, MockDeviceConfigFolder)
@@ -49,35 +47,22 @@ func TestNewDeviceShifuConfig(t *testing.T) {
 
 	var mockDeviceInstructions = map[string]*deviceshifubase.DeviceShifuInstruction{
 		"get_topicmsg1": {
-			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test1",
 			},
 		},
 		"get_topicmsg2": {
-			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test2",
 			},
 		},
-		"set_reading": {
-			DeviceShifuInstructionProperties: []deviceshifubase.DeviceShifuInstructionProperty{
-				{
-					ValueType:    InstructionValueTypeInt32,
-					ReadWrite:    InstructionReadWriteW,
-					DefaultValue: nil,
-				},
-			},
-			DeviceShifuProtocolProperties: nil,
-		},
+		"set_reading": nil,
 		"get_topicmsg3": {
-			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test3",
 			},
 		},
 		"get_topicmsg4": {
-			DeviceShifuInstructionProperties: nil,
 			DeviceShifuProtocolProperties: map[string]string{
 				"MQTTTopic": "/test/test4",
 			},

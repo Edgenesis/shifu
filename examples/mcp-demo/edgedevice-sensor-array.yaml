@@ -1,0 +1,15 @@
+apiVersion: shifu.edgenesis.io/v1alpha1
+kind: EdgeDevice
+metadata:
+  name: edgedevice-sensor-array
+  namespace: devices
+spec:
+  protocol: NATS
+  address: "/dev/ttyUSB0"
+  description: |
+    Distributed sensor array across the warehouse floor. 24 sensor nodes.
+    Shifu translates proprietary RS-485 serial protocol into NATS subjects.
+  connectionInfo: |
+    NATS protocol. No authentication required. Use NATS wildcards for multiple sensors.
+status:
+  edgedevicephase: "Running"

@@ -4,7 +4,12 @@ metadata:
   name: edgedevice-robotarm
   namespace: devices
 spec:
-  sku: "Franka Emika" 
+  sku: "Franka Emika"
   connection: Ethernet
   address: robotarm.devices.svc.cluster.local:11111
   protocol: HTTP
+  description: |
+    6-axis industrial robot arm (Franka Emika).
+    Supports coordinate reading and health status monitoring.
+  connectionInfo: |
+    HTTP protocol. No authentication required.

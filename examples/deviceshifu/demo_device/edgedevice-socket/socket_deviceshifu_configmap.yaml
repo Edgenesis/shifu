@@ -10,6 +10,9 @@ data:
   instructions: |
     instructions:
       cmd:
+        readWrite: RW
+        description: |
+          Send a raw command over the socket connection and receive a response.
   telemetries: |
     telemetrySettings:
       telemetryUpdateIntervalInMiliseconds: 1000

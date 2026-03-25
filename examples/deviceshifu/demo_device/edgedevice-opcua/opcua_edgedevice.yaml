@@ -4,10 +4,15 @@ metadata:
   name: edgedevice-opcua
   namespace: devices
 spec:
-  sku: "opcua-test" 
+  sku: "opcua-test"
   connection: Ethernet
   address: opc.tcp://mockdevice-opcua.devices.svc.cluster.local:4840/freeopcua/server #change this accordingly
   protocol: OPCUA
+  description: |
+    OPC UA test server. Exposes numeric value nodes, a writable node,
+    and server status nodes.
+  connectionInfo: |
+    OPC UA protocol. Subscription-based data access.
   protocolSettings:
     OPCUASetting:
       SecurityMode: None
