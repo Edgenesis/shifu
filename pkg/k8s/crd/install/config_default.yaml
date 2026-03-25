@@ -51,6 +51,10 @@ spec:
                 description: Connection specifies the EdgeDevice-EdgeNode connection
                   type.
                 type: string
+              connectionInfo:
+                description: ConnectionInfo is free-form markdown describing how apps
+                  connect to the DeviceShifu service.
+                type: string
               customMetadata:
                 additionalProperties:
                   type: string

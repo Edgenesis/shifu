@@ -14,5 +14,7 @@ spec:
 
     **SAFETY:** Command interactions (`robot-arm/commands/*`) actuate real
     joints and the gripper. Validate joint angles before publishing.
+  connectionInfo: |
+    MQTT protocol. No authentication required. Use QoS 1 for commands, QoS 0 for status.
 status:
   edgedevicephase: "Running"

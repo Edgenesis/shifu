@@ -11,3 +11,5 @@ spec:
   description: |
     6-axis industrial robot arm (Franka Emika).
     Supports coordinate reading and health status monitoring.
+  connectionInfo: |
+    HTTP protocol. No authentication required.

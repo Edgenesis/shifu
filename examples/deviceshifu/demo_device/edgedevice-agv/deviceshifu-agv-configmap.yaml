@@ -8,23 +8,16 @@ data:
     driverSku: AGV
     driverImage: edgenesis/agv:v0.0.1
   instructions: |
-    connectionInfo: |
-      HTTP endpoint: http://deviceshifu-agv.deviceshifu.svc.cluster.local
-      Endpoints:
-      - GET /get_position → current AGV position
-      - GET /get_status   → device health
     instructionSettings:
       defaultTimeoutSeconds: 8
     instructions:
       get_position:
         readWrite: R
-        hasSideEffects: false
         description: |
           GET /get_position
           Returns the current position of the AGV.
       get_status:
         readWrite: R
-        hasSideEffects: false
         description: |
           GET /get_status
           Returns device health and uptime info.

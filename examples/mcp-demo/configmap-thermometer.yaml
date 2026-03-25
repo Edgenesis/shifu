@@ -8,36 +8,23 @@ data:
     driverSku: Acme-Thermo-3000
     driverImage: edgehub/deviceshifu-http-http:nightly
   instructions: |
-    connectionInfo: |
-      The DeviceShifu service is available at:
-        http://deviceshifu-thermometer.deviceshifu.svc.cluster.local:8080
-
-      Endpoints:
-      - GET /read_temp       → current temperature reading
-      - GET /read_humidity   → current humidity percentage
-      - POST /set_threshold  → configure alert threshold (JSON body: {"min": 10, "max": 40})
-      - GET /get_status      → device health and uptime
     instructionSettings:
       defaultTimeoutSeconds: 5
     instructions:
       read_temp:
         readWrite: R
-        hasSideEffects: false
         description: |
           GET /read_temp
           Returns the current temperature in Celsius as a plain-text float (e.g. "23.5").
           No request body required. Read-only, no side effects.
       read_humidity:
         readWrite: R
-        hasSideEffects: false
         description: |
           GET /read_humidity
           Returns relative humidity as a percentage (e.g. "62.3").
           No request body required.
       set_threshold:
         readWrite: W
-        hasSideEffects: true
-        riskLevel: RequireConfirmation
         description: |
           POST /set_threshold
           Sets the temperature alert threshold. Requires JSON body:
@@ -45,7 +32,6 @@ data:
           Returns 200 OK on success. This WRITES device configuration.
       get_status:
         readWrite: R
-        hasSideEffects: false
         description: |
           GET /get_status
           Returns device health info as JSON:

@@ -8,35 +8,27 @@ data:
     driverSku: Test OPC UA Server
     driverImage:
   instructions: |
-    connectionInfo: |
-      OPC UA endpoint: opc.tcp://deviceshifu-opcua.deviceshifu.svc.cluster.local:4840
-      Security mode: None, Authentication: Anonymous
     instructions:
       get_value:
         readWrite: R
-        hasSideEffects: false
         description: |
           Read numeric value from OPC UA node ns=2;i=2.
         protocolPropertyList:
           OPCUANodeID: "ns=2;i=2"
       writable_value:
         readWrite: RW
-        hasSideEffects: true
-        riskLevel: RequireAttention
         description: |
           Read or write numeric value at OPC UA node ns=2;i=3.
         protocolPropertyList:
           OPCUANodeID: "ns=2;i=3"
       get_time:
         readWrite: R
-        hasSideEffects: false
         description: |
           Read the server's current time from OPC UA node i=2258.
         protocolPropertyList:
           OPCUANodeID: "i=2258"
       get_server:
         readWrite: R
-        hasSideEffects: false
         description: |
           Read the server status from OPC UA node i=2261.
         protocolPropertyList:

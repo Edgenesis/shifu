@@ -11,6 +11,8 @@ spec:
   description: |
     Quicktron M60 automated guided vehicle (AGV).
     Supports position tracking and health status monitoring.
+  connectionInfo: |
+    HTTP protocol. No authentication required.
   customMetadata:
     Vendor: Quicktron
     Type: AMR

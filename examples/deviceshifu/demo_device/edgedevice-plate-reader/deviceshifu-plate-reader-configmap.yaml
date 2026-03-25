@@ -8,23 +8,16 @@ data:
     driverSku: Tecan SPark
     driverImage: edgenesis/plate-reader:v0.0.1
   instructions: |
-    connectionInfo: |
-      HTTP endpoint: http://deviceshifu-plate-reader.deviceshifu.svc.cluster.local
-      Endpoints:
-      - GET /get_measurement → current plate measurement
-      - GET /get_status      → device health
     instructionSettings:
       defaultTimeoutSeconds: 8
     instructions:
       get_measurement:
         readWrite: R
-        hasSideEffects: false
         description: |
           GET /get_measurement
           Returns the current plate measurement results.
       get_status:
         readWrite: R
-        hasSideEffects: false
         description: |
           GET /get_status
           Returns device health and uptime info.

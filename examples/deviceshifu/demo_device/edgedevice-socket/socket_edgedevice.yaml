@@ -11,6 +11,8 @@ spec:
   description: |
     Socket-based test device. Communicates over raw TCP socket
     with UTF-8 encoding.
+  connectionInfo: |
+    Raw socket protocol. UTF-8 encoding.
   protocolSettings:
     SocketSetting:
       encoding: utf-8

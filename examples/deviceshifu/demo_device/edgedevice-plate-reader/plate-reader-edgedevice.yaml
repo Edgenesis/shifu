@@ -11,3 +11,5 @@ spec:
   description: |
     Tecan SPark microplate reader.
     Supports absorbance, fluorescence, and luminescence measurements.
+  connectionInfo: |
+    HTTP protocol. No authentication required.

@@ -8,32 +8,20 @@ data:
     driverSku: SensorArray-RS485
     driverImage: edgehub/deviceshifu-http-nats:nightly
   instructions: |
-    connectionInfo: |
-      NATS server: nats://deviceshifu-sensor-array.deviceshifu.svc.cluster.local:4222
-      No authentication required. Use NATS wildcards for multiple sensors.
-
-      ```python
-      import nats
-      nc = await nats.connect("nats://deviceshifu-sensor-array.deviceshifu.svc.cluster.local:4222")
-      ```
     instructions:
       temperature:
         readWrite: R
-        hasSideEffects: false
         description: |
           Temperature readings. Subject: `sensors.<node_id>.temperature`
           Wildcard: `sensors.*.temperature` for all nodes.
           Published every 5 seconds per node.
       vibration:
         readWrite: R
-        hasSideEffects: false
         description: |
           Vibration readings. Subject: `sensors.<node_id>.vibration`
           Values above 0.5g indicate potential failure.
       configure_interval:
         readWrite: W
-        hasSideEffects: true
-        riskLevel: RequireConfirmation
         description: |
           Change reporting interval. Uses NATS request/reply.
           Subject: `sensors.<node_id>.config.interval`

@@ -11,6 +11,8 @@ spec:
   description: |
     OPC UA test server. Exposes numeric value nodes, a writable node,
     and server status nodes.
+  connectionInfo: |
+    OPC UA protocol. Subscription-based data access.
   protocolSettings:
     OPCUASetting:
       SecurityMode: None

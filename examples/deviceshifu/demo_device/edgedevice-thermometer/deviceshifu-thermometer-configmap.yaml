@@ -8,23 +8,16 @@ data:
     driverSku: Thermometer
     driverImage: edgenesis/thermometer:v0.0.1
   instructions: |
-    connectionInfo: |
-      HTTP endpoint: http://deviceshifu-thermometer.deviceshifu.svc.cluster.local
-      Endpoints:
-      - GET /get_status  → device health
-      - GET /read_value  → current temperature reading
     instructionSettings:
       defaultTimeoutSeconds: 8
     instructions:
       get_status:
         readWrite: R
-        hasSideEffects: false
         description: |
           GET /get_status
           Returns device health and uptime info.
       read_value:
         readWrite: R
-        hasSideEffects: false
         description: |
           GET /read_value
           Returns the current temperature reading in Celsius.

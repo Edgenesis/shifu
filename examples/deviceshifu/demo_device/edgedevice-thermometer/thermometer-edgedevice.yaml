@@ -11,3 +11,5 @@ spec:
   description: |
     Industrial temperature sensor. Measures ambient temperature in Celsius.
     Supports configurable sampling rates and threshold alerts.
+  connectionInfo: |
+    HTTP protocol. No authentication required.

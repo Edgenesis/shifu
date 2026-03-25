@@ -10,5 +10,7 @@ spec:
   protocol: MQTT
   description: |
     MQTT test device. Publishes and subscribes to multiple test topics.
+  connectionInfo: |
+    MQTT protocol. No authentication required. Use QoS 1 for commands, QoS 0 for status.
   protocolSettings:
     MQTTSetting:
