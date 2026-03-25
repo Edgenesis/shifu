@@ -281,12 +281,110 @@ release_wait_for_green_checks() {
 	return 1
 }
 
+release_pr_review_decision() {
+	local repo="$1"
+	local pr_number="$2"
+
+	gh pr view \
+		"${pr_number}" \
+		--repo "${repo}" \
+		--json reviewDecision \
+		--jq '.reviewDecision // "NONE"'
+}
+
+release_is_self_review_error() {
+	local message="$1"
+
+	[[ "${message}" == *"approve your own pull request"* ]] || [[ "${message}" == *"approval review cannot be from pull request author"* ]]
+}
+
+release_approve_pr_if_needed() {
+	local repo="$1"
+	local pr_number="$2"
+	local review_decision approval_output status attempt
+
+	review_decision=$(release_pr_review_decision "${repo}" "${pr_number}")
+	if [[ "${review_decision}" != "REVIEW_REQUIRED" ]]; then
+		return 0
+	fi
+
+	release_notice "Approving PR #${pr_number} to satisfy branch policy"
+	set +e
+	approval_output=$(gh pr review \
+		"${pr_number}" \
+		--repo "${repo}" \
+		--approve \
+		--body "Approved by release automation after all required checks passed." 2>&1)
+	status=$?
+	set -e
+
+	if [[ "${status}" -ne 0 ]]; then
+		if release_is_self_review_error "${approval_output}"; then
+			release_error "PR #${pr_number} requires review, but release automation cannot approve its own pull request"
+			return 1
+		fi
+
+		release_error "Failed to approve PR #${pr_number}: ${approval_output}"
+		return 1
+	fi
+
+	for attempt in 1 2 3 4 5; do
+		review_decision=$(release_pr_review_decision "${repo}" "${pr_number}")
+		if [[ "${review_decision}" != "REVIEW_REQUIRED" ]]; then
+			return 0
+		fi
+
+		if (( attempt < 5 )); then
+			release_notice "Approval submitted for PR #${pr_number}; waiting for GitHub to reflect the review state"
+			sleep 5
+		fi
+	done
+
+	release_error "PR #${pr_number} still requires approval after release automation submitted a review"
+	return 1
+}
+
+release_wait_for_pr_merge() {
+	local repo="$1"
+	local pr_number="$2"
+	local timeout_seconds="${3:-14400}"
+	local interval_seconds="${4:-30}"
+	local deadline pr_state
+
+	deadline=$(( $(date +%s) + timeout_seconds ))
+
+	while (( $(date +%s) < deadline )); do
+		pr_state=$(gh pr view \
+			"${pr_number}" \
+			--repo "${repo}" \
+			--json state,mergedAt \
+			--jq 'if .mergedAt then "MERGED" else .state end')
+
+		case "${pr_state}" in
+			MERGED)
+				release_notice "PR #${pr_number} merged"
+				return 0
+				;;
+			CLOSED)
+				release_error "PR #${pr_number} closed before it was merged"
+				return 1
+				;;
+		esac
+
+		release_notice "Waiting for PR #${pr_number} to merge"
+		sleep "${interval_seconds}"
+	done
+
+	release_error "Timed out waiting for PR #${pr_number} to merge"
+	return 1
+}
+
 release_merge_pr_when_ready() {
 	local repo="$1"
 	local pr_number="$2"
 	local timeout_seconds="${3:-14400}"
 	local interval_seconds="${4:-30}"
-	local merge_state head_sha max_behind_retries behind_count merge_deadline remaining_seconds
+	local merge_state head_sha max_behind_retries behind_count merge_deadline remaining_seconds merge_output status
 
 	max_behind_retries=5
 	behind_count=0
@@ -328,14 +426,80 @@ release_merge_pr_when_ready() {
 				;;
 		esac
 
+		if [[ "${merge_state}" == "BLOCKED" ]] && [[ "$(release_pr_review_decision "${repo}" "${pr_number}")" == "REVIEW_REQUIRED" ]]; then
+			release_approve_pr_if_needed "${repo}" "${pr_number}"
+			merge_state=$(gh pr view \
+				"${pr_number}" \
+				--repo "${repo}" \
+				--json isDraft,mergeStateStatus,mergeable \
+				--jq 'if .isDraft then "DRAFT" else if .mergeable == "CONFLICTING" then "CONFLICTING" else .mergeStateStatus end end')
+
+			case "${merge_state}" in
+				DRAFT)
+					release_error "PR #${pr_number} is still a draft"
+					return 1
+					;;
+				DIRTY|CONFLICTING)
+					release_error "PR #${pr_number} cannot be merged cleanly (${merge_state})"
+					return 1
+					;;
+				BEHIND)
+					behind_count=$((behind_count + 1))
+					if (( behind_count > max_behind_retries )); then
+						release_error "PR #${pr_number} became behind its base branch too many times"
+						return 1
+					fi
+					release_notice "PR #${pr_number} became behind its base after approval completed; refreshing again"
+					continue
+					;;
+			esac
+		fi
+
 		head_sha=$(gh pr view "${pr_number}" --repo "${repo}" --json headRefOid --jq '.headRefOid')
 		release_notice "Merging PR #${pr_number}"
-		gh pr merge \
+		set +e
+		merge_output=$(gh pr merge \
 			"${pr_number}" \
 			--repo "${repo}" \
 			--squash \
 			--delete-branch \
-			--match-head-commit "${head_sha}"
-		return 0
+			--match-head-commit "${head_sha}" 2>&1)
+		status=$?
+		set -e
+
+		if [[ "${status}" -eq 0 ]]; then
+			return 0
+		fi
+
+		if [[ "${merge_output}" == *"base branch policy prohibits the merge"* ]] || [[ "${merge_output}" == *'add the `--auto` flag'* ]]; then
+			release_notice "Direct merge blocked for PR #${pr_number}; enabling auto-merge"
+			set +e
+			merge_output=$(gh pr merge \
+				"${pr_number}" \
+				--repo "${repo}" \
+				--auto \
+				--squash \
+				--delete-branch \
+				--match-head-commit "${head_sha}" 2>&1)
+			status=$?
+			set -e
+
+			if [[ "${status}" -ne 0 ]]; then
+				release_error "Failed to enable auto-merge for PR #${pr_number}: ${merge_output}"
+				return 1
+			fi
+
+			remaining_seconds=$(( merge_deadline - $(date +%s) ))
+			if (( remaining_seconds <= 0 )); then
+				release_error "Timed out waiting to merge PR #${pr_number}"
+				return 1
+			fi
+
+			release_wait_for_pr_merge "${repo}" "${pr_number}" "${remaining_seconds}" "${interval_seconds}"
+			return 0
+		fi
+
+		release_error "Failed to merge PR #${pr_number}: ${merge_output}"
+		return 1
 	done
 }
