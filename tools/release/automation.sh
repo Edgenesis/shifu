@@ -340,8 +340,13 @@ release_approve_pr_if_needed() {
 		fi
 	done
 
-	release_error "PR #${pr_number} still requires approval after release automation submitted a review"
-	return 1
+	# The approval was submitted but did not satisfy the review requirement.
+	# This typically happens when CODEOWNERS rules require approval from a
+	# specific set of users and the automation account is not among them.
+	# Return success so the caller can proceed to attempt the merge — the
+	# --auto merge path will handle the remaining branch-protection gate.
+	release_notice "PR #${pr_number} review decision is still REVIEW_REQUIRED after bot approval; proceeding to merge attempt"
+	return 0
 }
 
 release_wait_for_pr_merge() {
