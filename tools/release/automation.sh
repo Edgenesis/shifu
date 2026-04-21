@@ -477,7 +477,23 @@ release_merge_pr_when_ready() {
 		fi
 
 		if [[ "${merge_output}" == *"base branch policy prohibits the merge"* ]] || [[ "${merge_output}" == *'add the `--auto` flag'* ]]; then
-			release_notice "Direct merge blocked for PR #${pr_number}; enabling auto-merge"
+			release_notice "Direct merge blocked for PR #${pr_number}; trying admin merge"
+			set +e
+			merge_output=$(gh pr merge \
+				"${pr_number}" \
+				--repo "${repo}" \
+				--squash \
+				--delete-branch \
+				--admin \
+				--match-head-commit "${head_sha}" 2>&1)
+			status=$?
+			set -e
+
+			if [[ "${status}" -eq 0 ]]; then
+				return 0
+			fi
+
+			release_notice "Admin merge failed for PR #${pr_number}: ${merge_output}; falling back to auto-merge"
 			set +e
 			merge_output=$(gh pr merge \
 				"${pr_number}" \
