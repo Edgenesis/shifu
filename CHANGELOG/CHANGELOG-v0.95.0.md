@@ -1,10 +1,10 @@
 # Changelog since [v0.94.0](https://github.com/Edgenesis/shifu/releases/tag/v0.94.0)
 
-## Bug Fixes
+## Bug Fixes 🐛
 
-- Fix admin-merge fallback when direct release-bot merge is blocked by branch policy in https://github.com/Edgenesis/shifu/pull/1434
+- Fix release automation so the release bot can fall back to admin merge when direct merge is blocked by branch policy in https://github.com/Edgenesis/shifu/pull/1434
 
-## Dependabot Updates
+## Dependabot Updates 🤖
 
 - Bump golang.org/x/crypto from 0.49.0 to 0.50.0 in https://github.com/Edgenesis/shifu/pull/1435
 
