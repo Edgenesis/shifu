@@ -2,6 +2,27 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## For Edgenesis maintainers using internal Claude Code agents
+
+Shifu is mirrored into Edgenesis's internal `physical-ai-runtime`
+monorepo at `oss/shifu/`. If you are an Edgenesis engineer working
+through Claude Code from a checkout of `physical-ai-runtime` alongside
+this repo (typically at `~/Projects/physical-ai-runtime/`), **MUST
+OBEY**: orient via that monorepo first by reading
+
+1. `physical-ai-runtime/AGENTS.md`
+2. `physical-ai-runtime/CLAUDE.md`
+3. `physical-ai-runtime/PROGRAM_INDEX.md`
+4. `physical-ai-runtime/products/physical-ai-runtime/PROGRAM_INDEX.md`
+
+before editing here. Edits intended for the monorepo should round-trip
+through `tools/mirror-shifu-public/` rather than landing as ad-hoc
+divergent changes. External contributors and most maintenance work can
+ignore this section — the rest of this file is the canonical guidance
+for working on Shifu itself.
+
+---
+
 ## Project Overview
 
 Shifu is a Kubernetes-native IoT gateway (CNCF landscape project) that creates "digital twins" of physical IoT devices as Kubernetes pods. Each device gets a DeviceShifu pod that translates between the device's native protocol and a unified HTTP API.
