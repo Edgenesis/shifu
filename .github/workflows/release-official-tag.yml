@@ -79,6 +79,26 @@ jobs:
           echo "Creating official release tag: ${version}"
           echo "Tag target commit: ${target_sha}"
 
+          if existing_json=$(gh release view "${version}" --json isPrerelease,targetCommitish,url 2>/dev/null); then
+            existing_url=$(jq -r '.url // empty' <<< "${existing_json}")
+            existing_target=$(jq -r '.targetCommitish // empty' <<< "${existing_json}")
+            existing_prerelease=$(jq -r '.isPrerelease' <<< "${existing_json}")
+
+            if [[ "${existing_prerelease}" != "false" ]]; then
+              echo "::error::Existing ${version} release is still marked as a pre-release"
+              exit 1
+            fi
+            if [[ "${existing_target}" != "${target_sha}" ]]; then
+              echo "::error::Existing ${version} release targets ${existing_target}, expected ${target_sha}"
+              exit 1
+            fi
+
+            echo "release_url=${existing_url}" >> "$GITHUB_OUTPUT"
+            echo "::notice::Official release already exists: ${existing_url}"
+            echo "::notice::Release ${version} is now the Latest release"
+            exit 0
+          fi
+
           # Create the release (NOT pre-release, becomes "Latest")
           release_url=$(gh release create "${version}" \
             --title "${version}" \
