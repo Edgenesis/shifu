@@ -842,8 +842,11 @@ stages:
               sudo kubectl wait --for=condition=Ready pod/nginx -n deviceshifu --timeout=150s
               sudo kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-agv/get_position
             displayName: "test run_demo result"
+          # Legacy shifu.run mirror: disabled by default because the shifurun-ssh
+          # service connection points at shifu.run, whose DNS no longer resolves.
+          # Set ENABLE_SHIFURUN_LEGACY_MIRROR=true in Azure if the mirror returns.
           - task: CopyFilesOverSSH@0
-            condition: succeeded()
+            condition: and(succeeded(), eq(variables['ENABLE_SHIFURUN_LEGACY_MIRROR'], 'true'))
             inputs:
               sshEndpoint: "shifurun-ssh"
               contents: |
@@ -853,7 +856,7 @@ stages:
               readyTimeout: "20000"
               failOnEmptySource: true
           - task: SSH@0
-            condition: succeeded()
+            condition: and(succeeded(), eq(variables['ENABLE_SHIFURUN_LEGACY_MIRROR'], 'true'))
             inputs:
               sshEndpoint: "shifurun-ssh"
               runOptions: "inline"
@@ -895,8 +898,11 @@ stages:
               bash ./test/scripts/deviceshifu-demo-aio.sh build_demo arm64 darwin
               ls -al
             displayName: "Build macOS ARM64 demo"
+          # Legacy shifu.run mirror: disabled by default because the shifurun-ssh
+          # service connection points at shifu.run, whose DNS no longer resolves.
+          # Set ENABLE_SHIFURUN_LEGACY_MIRROR=true in Azure if the mirror returns.
           - task: CopyFilesOverSSH@0
-            condition: succeeded()
+            condition: and(succeeded(), eq(variables['ENABLE_SHIFURUN_LEGACY_MIRROR'], 'true'))
             inputs:
               sshEndpoint: "shifurun-ssh"
               contents: |
@@ -905,7 +911,7 @@ stages:
               readyTimeout: "20000"
               failOnEmptySource: true
           - task: SSH@0
-            condition: succeeded()
+            condition: and(succeeded(), eq(variables['ENABLE_SHIFURUN_LEGACY_MIRROR'], 'true'))
             inputs:
               sshEndpoint: "shifurun-ssh"
               runOptions: "inline"
