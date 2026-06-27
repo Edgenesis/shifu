@@ -215,6 +215,7 @@ func (handler DeviceCommandHandlerHTTP) commandHandleFunc() http.HandlerFunc {
 			instructionFuncName, shouldUsePythonCustomProcessing := deviceshifubase.CustomInstructionsPython[handlerInstruction]
 			if !shouldUsePythonCustomProcessing {
 				utils.CopyHeader(w.Header(), resp.Header)
+				w.WriteHeader(resp.StatusCode)
 				_, err := io.Copy(w, resp.Body)
 				if err != nil {
 					logger.Errorf("cannot copy requestBody from requestBody, error: %s", err.Error())
