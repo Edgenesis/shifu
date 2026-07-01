@@ -4,7 +4,7 @@ go 1.26.1
 
 require (
 	github.com/eclipse/paho.mqtt.golang v1.5.1
-	github.com/gopcua/opcua v0.8.0
+	github.com/gopcua/opcua v0.9.0
 	gopkg.in/yaml.v3 v3.0.1
 	k8s.io/apimachinery v0.36.2
 	k8s.io/client-go v0.36.2
