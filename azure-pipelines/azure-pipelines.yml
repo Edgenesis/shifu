@@ -844,24 +844,6 @@ stages:
             displayName: "test run_demo result"
           - task: CopyFilesOverSSH@0
             condition: succeeded()
-            inputs:
-              sshEndpoint: "shifurun-ssh"
-              contents: |
-                shifu_demo_aio_linux_amd64.tar
-                shifu_demo_aio_linux_arm64.tar
-              targetFolder: "/home/ubuntu/demo-files"
-              readyTimeout: "20000"
-              failOnEmptySource: true
-          - task: SSH@0
-            condition: succeeded()
-            inputs:
-              sshEndpoint: "shifurun-ssh"
-              runOptions: "inline"
-              inline: "sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content"
-              readyTimeout: "20000"
-
-          - task: CopyFilesOverSSH@0
-            condition: succeeded()
             displayName: push demo file to shifu.dev
             inputs:
               sshEndpoint: "shifu.dev"
@@ -895,23 +877,6 @@ stages:
               bash ./test/scripts/deviceshifu-demo-aio.sh build_demo arm64 darwin
               ls -al
             displayName: "Build macOS ARM64 demo"
-          - task: CopyFilesOverSSH@0
-            condition: succeeded()
-            inputs:
-              sshEndpoint: "shifurun-ssh"
-              contents: |
-                shifu_demo_aio_darwin_arm64.tar
-              targetFolder: "/home/ubuntu/demo-files"
-              readyTimeout: "20000"
-              failOnEmptySource: true
-          - task: SSH@0
-            condition: succeeded()
-            inputs:
-              sshEndpoint: "shifurun-ssh"
-              runOptions: "inline"
-              inline: "sudo cp -R /home/ubuntu/demo-files/* /var/www/demo-site/demo-content"
-              readyTimeout: "20000"
-
           - task: CopyFilesOverSSH@0
             condition: succeeded()
             displayName: push demo file to shifu.dev mac
