@@ -18,7 +18,7 @@ require (
 	github.com/minio/minio-go/v7 v7.3.0
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.32.1
-	github.com/onsi/gomega v1.42.1
+	github.com/onsi/gomega v1.43.0
 	github.com/openai/openai-go v1.12.0
 	github.com/pion/dtls/v3 v3.1.5
 	github.com/plgd-dev/go-coap/v3 v3.5.4
