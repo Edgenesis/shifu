@@ -2,6 +2,8 @@ package deviceshifubase
 
 import (
 	"errors"
+	"net"
+	"net/http"
 	"os"
 	"testing"
 
@@ -9,8 +11,10 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/util/wait"
 )
 
 func TestMain(m *testing.M) {
@@ -99,6 +103,26 @@ func TestStartTelemetryCollection(t *testing.T) {
 		})
 	}
 
+}
+
+func TestStartReturnsListenError(t *testing.T) {
+	listener, err := net.Listen("tcp", "127.0.0.1:0")
+	require.NoError(t, err)
+	t.Cleanup(func() {
+		require.NoError(t, listener.Close())
+	})
+
+	ds := &DeviceShifuBase{
+		Name: "test",
+		Server: &http.Server{
+			Addr: listener.Addr().String(),
+		},
+	}
+
+	err = ds.Start(wait.NeverStop, func() (bool, error) {
+		return true, nil
+	})
+	require.ErrorContains(t, err, "unable to start deviceshifu test's http server")
 }
 
 func TestNew(t *testing.T) {
