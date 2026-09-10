@@ -1,13 +1,9 @@
 # Release RC Workflow
-# Creates release branch and RC pull request when changelog PR is merged
+# Manual fallback for creating a release branch and RC pull request. The
+# external release agent owns normal release orchestration.
 name: Release RC
 
 on:
-  pull_request:
-    branches:
-      - main
-    types:
-      - closed
   workflow_dispatch:
     inputs:
       version_override:
@@ -21,10 +17,6 @@ permissions:
 
 jobs:
   release_rc:
-    if: |
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.pull_request.merged == true &&
-       startsWith(github.head_ref, 'changelog-'))
     runs-on: ubuntu-latest
     steps:
       - name: Generate GitHub App token
