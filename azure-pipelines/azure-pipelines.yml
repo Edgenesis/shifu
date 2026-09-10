@@ -82,9 +82,54 @@ stages:
               command: "build"
               workingDirectory: "$(System.DefaultWorkingDirectory)/cmd/httpstub/powershellstub"
               arguments: "-a -o $(System.DefaultWorkingDirectory)/output/http2powershell.exe"
-          - script: |
-              START "" $(System.DefaultWorkingDirectory)/output/http2powershell.exe
-              curl.exe -d "ls" "http://localhost:11112/issue_cmd"
+          - powershell: |
+              $ErrorActionPreference = "Stop"
+              $ProgressPreference = "SilentlyContinue"
+
+              $stubPath = Join-Path "$(System.DefaultWorkingDirectory)" "output/http2powershell.exe"
+              $stub = Start-Process -FilePath $stubPath -PassThru
+
+              try {
+                $deadline = (Get-Date).AddSeconds(30)
+                $ready = $false
+
+                while ((Get-Date) -lt $deadline) {
+                  if ($stub.HasExited) {
+                    throw "PowerShell stub exited before becoming ready with code $($stub.ExitCode)"
+                  }
+
+                  try {
+                    $health = Invoke-WebRequest `
+                      -Uri "http://localhost:11112/stub_health" `
+                      -UseBasicParsing `
+                      -TimeoutSec 2
+                    if ($health.StatusCode -eq 200) {
+                      $ready = $true
+                      break
+                    }
+                  } catch {
+                    # The server may still be binding; retry until the deadline.
+                  }
+
+                  Start-Sleep -Milliseconds 250
+                }
+
+                if (-not $ready) {
+                  throw "PowerShell stub did not become ready within 30 seconds"
+                }
+
+                Invoke-WebRequest `
+                  -Uri "http://localhost:11112/issue_cmd" `
+                  -Method Post `
+                  -Body "ls" `
+                  -UseBasicParsing `
+                  -TimeoutSec 10
+              } finally {
+                if (-not $stub.HasExited) {
+                  Stop-Process -Id $stub.Id -Force
+                  $stub.WaitForExit()
+                }
+              }
             displayName: test powershell stub
 
       - job: kind_e2e_test_http
