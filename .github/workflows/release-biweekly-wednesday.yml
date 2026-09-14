@@ -1,8 +1,8 @@
 name: Biweekly Release Wednesday
 
+# The external release agent owns the schedule. Keep this workflow as a
+# manually dispatched fallback so two release orchestrators cannot race.
 on:
-  schedule:
-    - cron: '0 5 * * 3'
   workflow_dispatch:
     inputs:
       dry_run:
