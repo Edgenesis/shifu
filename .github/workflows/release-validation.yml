@@ -1,0 +1,33 @@
+name: Release Validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - 'release_*'
+      - 'rc_*'
+      - 'official_*'
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  release-validation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Test release safety regressions
+        run: python3 -m unittest discover -s tools/release -p 'test_*.py' -v
+      - name: Validate candidate version and release-managed images
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 tools/release/validate_version.py --expected "$(cat version.txt)"
+      - name: Validate release automation shell syntax
+        run: bash -n tools/release/automation.sh

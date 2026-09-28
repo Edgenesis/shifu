@@ -55,7 +55,7 @@ release_validate_stable_version() {
 }
 
 release_latest_stable_tag() {
-	git fetch --tags --force >/dev/null 2>&1
+	git fetch --tags >/dev/null 2>&1 || return 1
 	git tag --list 'v*' --sort=-v:refname | grep -E '^v[0-9]+[.][0-9]+[.][0-9]+$' | head -n 1
 }
 
@@ -101,7 +101,7 @@ release_official_branch_name() {
 }
 
 release_latest_rc_tag() {
-	git fetch --tags --force >/dev/null 2>&1
+	git fetch --tags >/dev/null 2>&1 || return 1
 	git tag --list 'v*-rc*' --sort=-v:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+-rc[0-9]+$' | head -n 1
 }
 
@@ -202,7 +202,7 @@ release_refresh_pr_branch_if_needed() {
 		"${pr_number}" \
 		--repo "${repo}" \
 		--json isDraft,mergeStateStatus,mergeable \
-		--jq 'if .isDraft then "DRAFT" else if .mergeable == "CONFLICTING" then "CONFLICTING" else .mergeStateStatus end end')
+		--jq 'if .isDraft then "DRAFT" else if .mergeable == "CONFLICTING" then "CONFLICTING" else .mergeStateStatus end end') || return 1
 
 	case "${pr_state}" in
 		DRAFT)
@@ -215,8 +215,10 @@ release_refresh_pr_branch_if_needed() {
 			;;
 		BEHIND)
 			release_notice "Updating PR #${pr_number} because it is behind the base branch"
-			gh pr update-branch "${pr_number}" --repo "${repo}"
+			gh pr update-branch "${pr_number}" --repo "${repo}" || return 1
 			;;
+		CLEAN|BLOCKED|HAS_HOOKS) ;;
+		*) release_error "Unsafe or unknown PR state: ${pr_state}"; return 1 ;;
 	esac
 }
 
@@ -231,13 +233,11 @@ release_wait_for_green_checks() {
 	saw_checks="false"
 
 	while (( $(date +%s) < deadline )); do
-		set +e
+		status=0
 		checks_json=$(gh pr checks \
 			"${pr_number}" \
 			--repo "${repo}" \
-			--json name,bucket,state,link 2>&1)
-		status=$?
-		set -e
+			--json name,bucket,state,link 2>&1) || status=$?
 
 		if [[ "${status}" -ne 0 && "${status}" -ne 8 ]]; then
 			release_error "Failed to read checks for PR #${pr_number}: ${checks_json}"
@@ -255,6 +255,10 @@ release_wait_for_green_checks() {
 			continue
 		fi
 
+		if ! jq -e 'all(.[]; .bucket == "pass" or .bucket == "skipping" or .bucket == "fail" or .bucket == "cancel" or .bucket == "pending")' >/dev/null 2>&1 <<< "${checks_json}"; then
+			release_error "Unknown check state for PR #${pr_number}"
+			return 1
+		fi
 		saw_checks="true"
 
 		if jq -e 'map(select(.bucket == "fail" or .bucket == "cancel")) | length > 0' >/dev/null 2>&1 <<< "${checks_json}"; then
@@ -303,20 +307,18 @@ release_approve_pr_if_needed() {
 	local pr_number="$2"
 	local review_decision approval_output status attempt
 
-	review_decision=$(release_pr_review_decision "${repo}" "${pr_number}")
+	review_decision=$(release_pr_review_decision "${repo}" "${pr_number}") || return 1
 	if [[ "${review_decision}" != "REVIEW_REQUIRED" ]]; then
 		return 0
 	fi
 
 	release_notice "Approving PR #${pr_number} to satisfy branch policy"
-	set +e
+	status=0
 	approval_output=$(gh pr review \
 		"${pr_number}" \
 		--repo "${repo}" \
 		--approve \
-		--body "Approved by release automation after all required checks passed." 2>&1)
-	status=$?
-	set -e
+		--body "Approved by release automation after all required checks passed." 2>&1) || status=$?
 
 	if [[ "${status}" -ne 0 ]]; then
 		if release_is_self_review_error "${approval_output}"; then
@@ -329,7 +331,7 @@ release_approve_pr_if_needed() {
 	fi
 
 	for attempt in 1 2 3 4 5; do
-		review_decision=$(release_pr_review_decision "${repo}" "${pr_number}")
+		review_decision=$(release_pr_review_decision "${repo}" "${pr_number}") || return 1
 		if [[ "${review_decision}" != "REVIEW_REQUIRED" ]]; then
 			return 0
 		fi
@@ -363,7 +365,7 @@ release_wait_for_pr_merge() {
 			"${pr_number}" \
 			--repo "${repo}" \
 			--json state,mergedAt \
-			--jq 'if .mergedAt then "MERGED" else .state end')
+			--jq 'if .mergedAt then "MERGED" else .state end') || return 1
 
 		case "${pr_state}" in
 			MERGED)
@@ -389,7 +391,7 @@ release_merge_pr_when_ready() {
 	local pr_number="$2"
 	local timeout_seconds="${3:-14400}"
 	local interval_seconds="${4:-30}"
-	local merge_state head_sha max_behind_retries behind_count merge_deadline remaining_seconds merge_output status
+	local merge_state head_sha checked_sha review_decision max_behind_retries behind_count merge_deadline remaining_seconds merge_output status
 
 	max_behind_retries=5
 	behind_count=0
@@ -402,14 +404,16 @@ release_merge_pr_when_ready() {
 			return 1
 		fi
 
-		release_refresh_pr_branch_if_needed "${repo}" "${pr_number}"
-		release_wait_for_green_checks "${repo}" "${pr_number}" "${remaining_seconds}" "${interval_seconds}"
+		release_refresh_pr_branch_if_needed "${repo}" "${pr_number}" || return 1
+		checked_sha=$(gh pr view "${pr_number}" --repo "${repo}" --json headRefOid --jq '.headRefOid') || return 1
+		[[ "${checked_sha}" =~ ^[0-9a-f]{40}$ ]] || { release_error "Invalid PR head SHA"; return 1; }
+		release_wait_for_green_checks "${repo}" "${pr_number}" "${remaining_seconds}" "${interval_seconds}" || return 1
 
 		merge_state=$(gh pr view \
 			"${pr_number}" \
 			--repo "${repo}" \
 			--json isDraft,mergeStateStatus,mergeable \
-			--jq 'if .isDraft then "DRAFT" else if .mergeable == "CONFLICTING" then "CONFLICTING" else .mergeStateStatus end end')
+			--jq 'if .isDraft then "DRAFT" else if .mergeable == "CONFLICTING" then "CONFLICTING" else .mergeStateStatus end end') || return 1
 
 		case "${merge_state}" in
 			DRAFT)
@@ -431,13 +435,18 @@ release_merge_pr_when_ready() {
 				;;
 		esac
 
-		if [[ "${merge_state}" == "BLOCKED" ]] && [[ "$(release_pr_review_decision "${repo}" "${pr_number}")" == "REVIEW_REQUIRED" ]]; then
-			release_approve_pr_if_needed "${repo}" "${pr_number}"
+		review_decision=$(release_pr_review_decision "${repo}" "${pr_number}") || return 1
+		case "${review_decision}" in
+			NONE|APPROVED|REVIEW_REQUIRED) ;;
+			*) release_error "Unsafe or unknown review state: ${review_decision}"; return 1 ;;
+		esac
+		if [[ "${merge_state}" == "BLOCKED" && "${review_decision}" == "REVIEW_REQUIRED" ]]; then
+			release_approve_pr_if_needed "${repo}" "${pr_number}" || return 1
 			merge_state=$(gh pr view \
 				"${pr_number}" \
 				--repo "${repo}" \
 				--json isDraft,mergeStateStatus,mergeable \
-				--jq 'if .isDraft then "DRAFT" else if .mergeable == "CONFLICTING" then "CONFLICTING" else .mergeStateStatus end end')
+				--jq 'if .isDraft then "DRAFT" else if .mergeable == "CONFLICTING" then "CONFLICTING" else .mergeStateStatus end end') || return 1
 
 			case "${merge_state}" in
 				DRAFT)
@@ -460,50 +469,54 @@ release_merge_pr_when_ready() {
 			esac
 		fi
 
-		head_sha=$(gh pr view "${pr_number}" --repo "${repo}" --json headRefOid --jq '.headRefOid')
+		case "${merge_state}" in
+			CLEAN|BLOCKED|HAS_HOOKS) ;;
+			*) release_error "Unsafe or unknown merge state: ${merge_state}"; return 1 ;;
+		esac
+		head_sha=$(gh pr view "${pr_number}" --repo "${repo}" --json headRefOid --jq '.headRefOid') || return 1
+		[[ "${head_sha}" == "${checked_sha}" ]] || { release_error "PR head changed after checks"; return 1; }
 		release_notice "Merging PR #${pr_number}"
-		set +e
+		status=0
 		merge_output=$(gh pr merge \
 			"${pr_number}" \
 			--repo "${repo}" \
 			--squash \
 			--delete-branch \
-			--match-head-commit "${head_sha}" 2>&1)
-		status=$?
-		set -e
+			--match-head-commit "${head_sha}" 2>&1) || status=$?
 
 		if [[ "${status}" -eq 0 ]]; then
 			return 0
 		fi
 
 		if [[ "${merge_output}" == *"base branch policy prohibits the merge"* ]] || [[ "${merge_output}" == *'add the `--auto` flag'* ]]; then
+			# Recheck before bypassing branch policy; failures must propagate in $().
+			release_refresh_pr_branch_if_needed "${repo}" "${pr_number}" || return 1
+			release_wait_for_green_checks "${repo}" "${pr_number}" "${remaining_seconds}" "${interval_seconds}" || return 1
+			head_sha=$(gh pr view "${pr_number}" --repo "${repo}" --json headRefOid --jq '.headRefOid') || return 1
+			[[ "${head_sha}" == "${checked_sha}" ]] || { release_error "PR head changed before admin merge"; return 1; }
 			release_notice "Direct merge blocked for PR #${pr_number}; trying admin merge"
-			set +e
+			status=0
 			merge_output=$(gh pr merge \
 				"${pr_number}" \
 				--repo "${repo}" \
 				--squash \
 				--delete-branch \
 				--admin \
-				--match-head-commit "${head_sha}" 2>&1)
-			status=$?
-			set -e
+				--match-head-commit "${head_sha}" 2>&1) || status=$?
 
 			if [[ "${status}" -eq 0 ]]; then
 				return 0
 			fi
 
 			release_notice "Admin merge failed for PR #${pr_number}: ${merge_output}; falling back to auto-merge"
-			set +e
+			status=0
 			merge_output=$(gh pr merge \
 				"${pr_number}" \
 				--repo "${repo}" \
 				--auto \
 				--squash \
 				--delete-branch \
-				--match-head-commit "${head_sha}" 2>&1)
-			status=$?
-			set -e
+				--match-head-commit "${head_sha}" 2>&1) || status=$?
 
 			if [[ "${status}" -ne 0 ]]; then
 				release_error "Failed to enable auto-merge for PR #${pr_number}: ${merge_output}"
@@ -516,7 +529,7 @@ release_merge_pr_when_ready() {
 				return 1
 			fi
 
-			release_wait_for_pr_merge "${repo}" "${pr_number}" "${remaining_seconds}" "${interval_seconds}"
+			release_wait_for_pr_merge "${repo}" "${pr_number}" "${remaining_seconds}" "${interval_seconds}" || return 1
 			return 0
 		fi
 
