@@ -263,11 +263,16 @@ docker-push-image-mockdevices:
 clean-images:
 	docker rmi $(shell sudo docker images | grep 'edgehub')
 
+# The helper owns version.txt, generation and validation as one transaction.
+# Pass VERSION through the environment, not shell interpolation.
+.PHONY: tag test-release-version
+export VERSION
+export MAKE
 tag:
-	go run tools/tag.go ${PROJECT_ROOT} ${IMAGE_VERSION} $(VERSION)
-	cd pkg/k8s/crd/ && (make generate-controller-yaml IMG=edgehub/shifu-controller:$(VERSION) generate-install-yaml)
-	sed -e "s/${IMAGE_VERSION}/${VERSION}/g" ./test/scripts/deviceshifu-demo-aio.sh > ./test/scripts/tmp.sh && mv ./test/scripts/tmp.sh ./test/scripts/deviceshifu-demo-aio.sh
-	echo $(VERSION) > version.txt
+	python3 tools/release/retag.py --version "$$VERSION" --root "$(PROJECT_ROOT)" --make "$$MAKE"
+
+test-release-version:
+	PYTHONDONTWRITEBYTECODE=1 python3 -m unittest discover -s tools/release -p 'test_retag.py' -v
 
 ## Location to install dependencies to
 LOCALBIN ?= $(shell pwd)/bin

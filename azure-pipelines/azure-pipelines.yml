@@ -212,6 +212,16 @@ stages:
               kubectl exec -it -n deviceshifu nginx -- curl http://deviceshifu-thermometer/read_value
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-thermometer
             displayName: "Shifu demo device HTTP E2E test"
+          - script: |
+              kubectl --request-timeout=10s get pods -A -o wide || true
+              kubectl --request-timeout=10s get events -A --sort-by=.lastTimestamp || true
+              kubectl --request-timeout=10s describe pods -A || true
+              for namespace in shifu-crd-system deviceshifu devices; do
+                kubectl --request-timeout=10s logs -n "$namespace" --all-containers=true --prefix=true --tail=100 -l app --max-log-requests=10 || true
+              done
+            displayName: "Failed Kind E2E diagnostics"
+            condition: failed()
+            timeoutInMinutes: 2
 
       - job: kind_e2e_test_opcua
         steps:
@@ -255,6 +265,16 @@ stages:
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-opcua/mock-device
             displayName: "Shifu demo device OPCUA E2E test"
+          - script: |
+              kubectl --request-timeout=10s get pods -A -o wide || true
+              kubectl --request-timeout=10s get events -A --sort-by=.lastTimestamp || true
+              kubectl --request-timeout=10s describe pods -A || true
+              for namespace in shifu-crd-system deviceshifu devices; do
+                kubectl --request-timeout=10s logs -n "$namespace" --all-containers=true --prefix=true --tail=100 -l app --max-log-requests=10 || true
+              done
+            displayName: "Failed Kind E2E diagnostics"
+            condition: failed()
+            timeoutInMinutes: 2
 
       - job: kind_e2e_test_lwm2m
         steps:
@@ -301,6 +321,16 @@ stages:
               bash $(System.DefaultWorkingDirectory)/examples/deviceshifu/mockdevice/lwM2M/checkoutput.sh
               kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwM2MDeviceshifuWithoutSecurity
             displayName: "Shifu demo device lwM2M E2E test without security"
+          - script: |
+              kubectl --request-timeout=10s get pods -A -o wide || true
+              kubectl --request-timeout=10s get events -A --sort-by=.lastTimestamp || true
+              kubectl --request-timeout=10s describe pods -A || true
+              for namespace in shifu-crd-system deviceshifu devices; do
+                kubectl --request-timeout=10s logs -n "$namespace" --all-containers=true --prefix=true --tail=100 -l app --max-log-requests=10 || true
+              done
+            displayName: "Failed Kind E2E diagnostics"
+            condition: failed()
+            timeoutInMinutes: 2
 
       - job: kind_e2e_test_socket
         steps:
@@ -344,6 +374,16 @@ stages:
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/demo_device/edgedevice-socket/mock-device
             displayName: "Shifu demo device Socket E2E test"
+          - script: |
+              kubectl --request-timeout=10s get pods -A -o wide || true
+              kubectl --request-timeout=10s get events -A --sort-by=.lastTimestamp || true
+              kubectl --request-timeout=10s describe pods -A || true
+              for namespace in shifu-crd-system deviceshifu devices; do
+                kubectl --request-timeout=10s logs -n "$namespace" --all-containers=true --prefix=true --tail=100 -l app --max-log-requests=10 || true
+              done
+            displayName: "Failed Kind E2E diagnostics"
+            condition: failed()
+            timeoutInMinutes: 2
 
       - job: kind_e2e_test_gateway_lwm2m_http
         steps:
@@ -393,6 +433,16 @@ stages:
               bash $(System.DefaultWorkingDirectory)/examples/lwm2m_gw_http/checkoutput.sh
               kubectl delete -R -f $(System.DefaultWorkingDirectory)/examples/lwm2m_gw_http
             displayName: "Shifu demo device lwM2M http E2E test"
+          - script: |
+              kubectl --request-timeout=10s get pods -A -o wide || true
+              kubectl --request-timeout=10s get events -A --sort-by=.lastTimestamp || true
+              kubectl --request-timeout=10s describe pods -A || true
+              for namespace in shifu-crd-system deviceshifu devices; do
+                kubectl --request-timeout=10s logs -n "$namespace" --all-containers=true --prefix=true --tail=100 -l app --max-log-requests=10 || true
+              done
+            displayName: "Failed Kind E2E diagnostics"
+            condition: failed()
+            timeoutInMinutes: 2
 
       - job: kind_e2e_test_mqtt
         steps:
@@ -432,6 +482,16 @@ stages:
               kubectl delete -f examples/deviceshifu/demo_device/edgedevice-mqtt
               kubectl delete po mosquitto -n devices
             displayName: "Shifu demo device MQTT E2E test"
+          - script: |
+              kubectl --request-timeout=10s get pods -A -o wide || true
+              kubectl --request-timeout=10s get events -A --sort-by=.lastTimestamp || true
+              kubectl --request-timeout=10s describe pods -A || true
+              for namespace in shifu-crd-system deviceshifu devices; do
+                kubectl --request-timeout=10s logs -n "$namespace" --all-containers=true --prefix=true --tail=100 -l app --max-log-requests=10 || true
+              done
+            displayName: "Failed Kind E2E diagnostics"
+            condition: failed()
+            timeoutInMinutes: 2
 
       - job: kind_e2e_test_customized
         steps:
@@ -486,6 +546,16 @@ stages:
               cd $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector && bash checkout.sh && cd -
               kubectl delete -f $(System.DefaultWorkingDirectory)/examples/deviceshifu/customized/humidity_detector/configuration
             displayName: "Shifu demo humidity_detector deviceshifu E2E test"
+          - script: |
+              kubectl --request-timeout=10s get pods -A -o wide || true
+              kubectl --request-timeout=10s get events -A --sort-by=.lastTimestamp || true
+              kubectl --request-timeout=10s describe pods -A || true
+              for namespace in shifu-crd-system deviceshifu devices; do
+                kubectl --request-timeout=10s logs -n "$namespace" --all-containers=true --prefix=true --tail=100 -l app --max-log-requests=10 || true
+              done
+            displayName: "Failed Kind E2E diagnostics"
+            condition: failed()
+            timeoutInMinutes: 2
 
       - job: docker_e2e_test_telemetryservice
         steps:
