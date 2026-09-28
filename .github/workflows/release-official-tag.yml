@@ -1,5 +1,5 @@
-# Release Official Tag Workflow
-# Creates stable tag and GitHub release when official PR is merged to release branch
+# Validation only. Hermes owns immutable tag creation, tag-build verification,
+# publication and docs dispatch, in that order. Never publish from this workflow.
 name: Release Official Tag
 
 on:
@@ -10,8 +10,7 @@ on:
       - closed
 
 permissions:
-  contents: write
-  discussions: write
+  contents: read
 
 jobs:
   tag_official:
@@ -20,126 +19,18 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
-
-      - name: Generate shifu.dev GitHub App token
-        id: shifu-dev-app-token
-        uses: actions/create-github-app-token@v1
-        with:
-          app-id: ${{ secrets.RELEASE_APP_ID }}
-          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-          owner: Edgenesis
-          repositories: shifu.dev
-
-      - name: Extract version from branch
-        id: version
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          persist-credentials: false
+      - name: Validate merged release tree
         shell: bash
+        env:
+          BASE_BRANCH: ${{ github.base_ref }}
+          HEAD_BRANCH: ${{ github.head_ref }}
         run: |
           set -euo pipefail
           source tools/release/automation.sh
-
-          base_branch="${{ github.base_ref }}"
-          echo "Base branch: ${base_branch}"
-
-          version="$(release_version_from_release_branch "${base_branch}")"
-
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "Extracted version: ${version}"
-
-      - name: Generate release notes body
-        id: notes
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          version="${{ steps.version.outputs.version }}"
-
-          # Generate release body with changelog link (matches existing release format)
-          release_body="## See [CHANGELOG-${version}.md](CHANGELOG/CHANGELOG-${version}.md) for details"
-
-          # Use heredoc to preserve formatting
-          echo "release_body<<EOF" >> "$GITHUB_OUTPUT"
-          echo "${release_body}" >> "$GITHUB_OUTPUT"
-          echo "EOF" >> "$GITHUB_OUTPUT"
-
-          echo "Release notes body generated"
-
-      - name: Create official tag and release
-        id: release
-        shell: bash
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          set -euo pipefail
-
-          version="${{ steps.version.outputs.version }}"
-          target_sha="${{ github.event.pull_request.merge_commit_sha }}"
-          release_body="${{ steps.notes.outputs.release_body }}"
-
-          echo "Creating official release tag: ${version}"
-          echo "Tag target commit: ${target_sha}"
-
-          if existing_json=$(gh release view "${version}" --json isPrerelease,targetCommitish,url 2>/dev/null); then
-            existing_url=$(jq -r '.url // empty' <<< "${existing_json}")
-            existing_target=$(jq -r '.targetCommitish // empty' <<< "${existing_json}")
-            existing_prerelease=$(jq -r '.isPrerelease' <<< "${existing_json}")
-
-            if [[ "${existing_prerelease}" != "false" ]]; then
-              echo "::error::Existing ${version} release is still marked as a pre-release"
-              exit 1
-            fi
-            if [[ "${existing_target}" != "${target_sha}" ]]; then
-              echo "::error::Existing ${version} release targets ${existing_target}, expected ${target_sha}"
-              exit 1
-            fi
-
-            echo "release_url=${existing_url}" >> "$GITHUB_OUTPUT"
-            echo "::notice::Official release already exists: ${existing_url}"
-            echo "::notice::Release ${version} is now the Latest release"
-            exit 0
-          fi
-
-          # Create the release (NOT pre-release, becomes "Latest")
-          release_url=$(gh release create "${version}" \
-            --title "${version}" \
-            --notes "${release_body}" \
-            --target "${target_sha}" \
-            --discussion-category "Announcements")
-
-          if [[ -z "${release_url}" ]]; then
-            echo "::error::Failed to create release"
-            exit 1
-          fi
-
-          echo "release_url=${release_url}" >> "$GITHUB_OUTPUT"
-          echo "::notice::Official release created: ${release_url}"
-          echo "::notice::Release ${version} is now the Latest release"
-
-      - name: Dispatch shifu.dev version bump
-        shell: bash
-        env:
-          SHIFU_DEV_APP_TOKEN: ${{ steps.shifu-dev-app-token.outputs.token }}
-        run: |
-          set -euo pipefail
-
-          version="${{ steps.version.outputs.version }}"
-
-          if [[ -z "${SHIFU_DEV_APP_TOKEN}" ]]; then
-            echo "::warning::Unable to mint shifu-release-bot token for shifu.dev; skipping version bump dispatch"
-            exit 0
-          fi
-
-          if ! jq -nc --arg tag "${version}" \
-            '{event_type:"shifu-tag",client_payload:{tag:$tag}}' \
-            | curl -fsSL \
-              -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${SHIFU_DEV_APP_TOKEN}" \
-              -H "X-GitHub-Api-Version: 2022-11-28" \
-              https://api.github.com/repos/Edgenesis/shifu.dev/dispatches \
-              --data-binary @-; then
-            echo "::warning::Failed to trigger shifu.dev version bump for ${version}"
-            exit 0
-          fi
-
-          echo "::notice::Triggered shifu.dev version bump for ${version}"
+          version="$(release_version_from_release_branch "$BASE_BRANCH")"
+          expected="$version"
+          [[ "$HEAD_BRANCH" == "official_${version}" ]]
+          python3 tools/release/validate_version.py --expected "$expected"
+          echo "Validated $expected; publication is owned by the Hermes release manager."

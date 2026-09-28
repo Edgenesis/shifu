@@ -1,5 +1,5 @@
-# Release RC Tag Workflow
-# Creates pre-release tag when RC PR is merged to release branch
+# Validation only. Hermes owns immutable tag creation, tag-build verification,
+# publication and docs dispatch, in that order. Never publish from this workflow.
 name: Release RC Tag
 
 on:
@@ -10,7 +10,7 @@ on:
       - closed
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   tag_rc:
@@ -19,88 +19,19 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0
-
-      - name: Extract version from branch
-        id: version
-        shell: bash
-        run: |
-          set -euo pipefail
-          source tools/release/automation.sh
-
-          base_branch="${{ github.base_ref }}"
-          echo "Base branch: ${base_branch}"
-
-          version="$(release_version_from_release_branch "${base_branch}")"
-          rc_tag="$(release_rc_version "${version}")"
-
-          echo "version=${version}" >> "$GITHUB_OUTPUT"
-          echo "rc_tag=${rc_tag}" >> "$GITHUB_OUTPUT"
-          echo "Extracted version: ${version}, RC tag: ${rc_tag}"
-
-      - name: Calculate previous minor version
-        id: prev_version
-        shell: bash
-        run: |
-          set -euo pipefail
-          source tools/release/automation.sh
-
-          version="${{ steps.version.outputs.version }}"
-          prev_tag="$(release_previous_minor_baseline "${version}")"
-
-          echo "prev_tag=${prev_tag}" >> "$GITHUB_OUTPUT"
-          echo "Previous version for release notes: ${prev_tag}"
-
-      - name: Create RC tag and release
-        id: release
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+          persist-credentials: false
+      - name: Validate merged release tree
         shell: bash
         env:
-          GH_TOKEN: ${{ github.token }}
+          BASE_BRANCH: ${{ github.base_ref }}
+          HEAD_BRANCH: ${{ github.head_ref }}
         run: |
           set -euo pipefail
-
-          rc_tag="${{ steps.version.outputs.rc_tag }}"
-          prev_tag="${{ steps.prev_version.outputs.prev_tag }}"
-          target_sha="${{ github.event.pull_request.merge_commit_sha }}"
-
-          echo "Creating pre-release tag: ${rc_tag}"
-          echo "Release notes baseline: ${prev_tag}"
-          echo "Tag target commit: ${target_sha}"
-
-          # Fetch all tags to ensure we have the baseline
-          git fetch --tags --force
-
-          if existing_json=$(gh release view "${rc_tag}" --json isPrerelease,targetCommitish,url 2>/dev/null); then
-            existing_url=$(jq -r '.url // empty' <<< "${existing_json}")
-            existing_target=$(jq -r '.targetCommitish // empty' <<< "${existing_json}")
-            existing_prerelease=$(jq -r '.isPrerelease' <<< "${existing_json}")
-
-            if [[ "${existing_prerelease}" != "true" ]]; then
-              echo "::error::Existing ${rc_tag} release is not marked as a pre-release"
-              exit 1
-            fi
-            if [[ "${existing_target}" != "${target_sha}" ]]; then
-              echo "::error::Existing ${rc_tag} release targets ${existing_target}, expected ${target_sha}"
-              exit 1
-            fi
-
-            echo "release_url=${existing_url}" >> "$GITHUB_OUTPUT"
-            echo "::notice::Pre-release already exists: ${existing_url}"
-            exit 0
-          fi
-
-          # Create the release with auto-generated notes
-          release_url=$(gh release create "${rc_tag}" \
-            --prerelease \
-            --generate-notes \
-            --notes-start-tag "${prev_tag}" \
-            --target "${target_sha}" \
-            --title "Release ${rc_tag}")
-
-          if [[ -z "${release_url}" ]]; then
-            echo "::error::Failed to create release"
-            exit 1
-          fi
-
-          echo "release_url=${release_url}" >> "$GITHUB_OUTPUT"
-          echo "::notice::Pre-release created: ${release_url}"
+          source tools/release/automation.sh
+          version="$(release_version_from_release_branch "$BASE_BRANCH")"
+          expected="${HEAD_BRANCH#rc_}"
+          [[ "$expected" =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc[1-9][0-9]*$ ]]
+          [[ "${expected%-rc*}" == "$version" ]]
+          python3 tools/release/validate_version.py --expected "$expected"
+          echo "Validated $expected; publication is owned by the Hermes release manager."
