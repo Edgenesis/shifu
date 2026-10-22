@@ -8,6 +8,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/k8s/api/v1alpha1"
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/wait"
 	"net"
@@ -70,17 +71,13 @@ func TestStart(t *testing.T) {
 	defer server.Close()
 
 	mockds, err := New(deviceShifuMetadata)
-	if err != nil {
-		t.Errorf("Failed creating new deviceshifu due to: %v", err.Error())
-	}
+	require.NoError(t, err)
 
-	if err := mockds.Start(wait.NeverStop); err != nil {
-		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
-	}
-
-	if err := mockds.Stop(); err != nil {
-		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
-	}
+	mockds.base.Server.Addr = "127.0.0.1:0"
+	require.NoError(t, mockds.Start(wait.NeverStop))
+	t.Cleanup(func() {
+		require.NoError(t, mockds.Stop())
+	})
 }
 
 func TestCollectTCPTelemetry(t *testing.T) {

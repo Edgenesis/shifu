@@ -13,6 +13,7 @@ import (
 	"github.com/edgenesis/shifu/pkg/logger"
 	"github.com/gopcua/opcua/ua"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 
 	"k8s.io/apimachinery/pkg/util/wait"
 )
@@ -68,17 +69,13 @@ func TestStart(t *testing.T) {
 	}
 
 	mockds, err := New(deviceShifuMetadata)
-	if err != nil {
-		t.Errorf("Failed creating new deviceshifu")
-	}
+	require.NoError(t, err)
 
-	if err := mockds.Start(wait.NeverStop); err != nil {
-		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
-	}
-
-	if err := mockds.Stop(); err != nil {
-		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
-	}
+	mockds.base.Server.Addr = "127.0.0.1:0"
+	require.NoError(t, mockds.Start(wait.NeverStop))
+	t.Cleanup(func() {
+		require.NoError(t, mockds.Stop())
+	})
 }
 
 func TestDeviceHealthHandler(t *testing.T) {
@@ -90,32 +87,21 @@ func TestDeviceHealthHandler(t *testing.T) {
 	}
 
 	mockds, err := New(deviceShifuMetadata)
-	if err != nil {
-		t.Errorf("Failed creating new deviceshifu")
-	}
+	require.NoError(t, err)
 
-	if err := mockds.Start(wait.NeverStop); err != nil {
-		t.Errorf("DeviceShifu.Start failed due to: %v", err.Error())
-	}
+	mockds.base.Server.Addr = "127.0.0.1:0"
+	require.NoError(t, mockds.Start(wait.NeverStop))
+	t.Cleanup(func() {
+		require.NoError(t, mockds.Stop())
+	})
 
-	resp, err := unitest.RetryAndGetHTTP("http://localhost:8080/health", 3)
-	if err != nil {
-		t.Errorf("HTTP GET returns an error %v", err.Error())
-	}
+	resp, err := unitest.RetryAndGetHTTP("http://"+mockds.base.Server.Addr+"/health", 3)
+	require.NoError(t, err)
 
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		t.Errorf("unable to read response body, error: %v", err.Error())
-	}
-
-	if string(body) != deviceshifubase.DeviceIsHealthyStr {
-		t.Errorf("%+v", body)
-	}
-
-	if err := mockds.Stop(); err != nil {
-		t.Errorf("unable to stop mock deviceShifu, error: %+v", err)
-	}
+	require.NoError(t, err)
+	require.Equal(t, deviceshifubase.DeviceIsHealthyStr, string(body))
 }
 
 func TestCreateValue(t *testing.T) {

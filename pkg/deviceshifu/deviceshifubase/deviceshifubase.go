@@ -2,7 +2,9 @@ package deviceshifubase
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"time"
 
@@ -221,18 +223,24 @@ func (ds *DeviceShifuBase) StartTelemetryCollection(fn collectTelemetry) error {
 	}
 }
 
-func (ds *DeviceShifuBase) startHTTPServer(stopCh <-chan struct{}) error {
+func (ds *DeviceShifuBase) startHTTPServer(listener net.Listener) error {
 	logger.Infof("deviceshifu %s's http server started", ds.Name)
-	return ds.Server.ListenAndServe()
+	return ds.Server.Serve(listener)
 }
 
 // Start HTTP server and telemetryCollection
 func (ds *DeviceShifuBase) Start(stopCh <-chan struct{}, fn collectTelemetry) error {
 	logger.Infof("deviceshifu %s started", ds.Name)
 
+	listener, err := net.Listen("tcp", ds.Server.Addr)
+	if err != nil {
+		return fmt.Errorf("unable to start deviceshifu %s's http server on %s: %w", ds.Name, ds.Server.Addr, err)
+	}
+	ds.Server.Addr = listener.Addr().String()
+
 	go func() {
-		err := ds.startHTTPServer(stopCh)
-		if err != nil {
+		err := ds.startHTTPServer(listener)
+		if err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logger.Errorf("error during Http Server is up, error: %v", err)
 		}
 	}()
