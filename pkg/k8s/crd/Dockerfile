@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM --platform=$BUILDPLATFORM golang:1.26.1 AS builder
+FROM --platform=$BUILDPLATFORM golang:1.27.4 AS builder
 
 ENV GO111MODULE=on
 ENV GOPRIVATE=github.com/Edgenesis
