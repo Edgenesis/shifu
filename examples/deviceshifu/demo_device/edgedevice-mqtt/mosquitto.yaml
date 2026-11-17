@@ -16,11 +16,13 @@ spec:
       containers:
         - name: mosquitto
           image: eclipse-mosquitto:2.0.14
+          # Use the standard config path permitted by Mosquitto AppArmor profiles.
+          args: ["mosquitto", "-c", "/etc/mosquitto/mosquitto.conf"]
           ports:
           - containerPort: 1883
           volumeMounts:
           - name: mosquitto-config
-            mountPath: /mosquitto/config/mosquitto.conf
+            mountPath: /etc/mosquitto/mosquitto.conf
             subPath: mosquitto.conf
       volumes:
       - name: mosquitto-config
