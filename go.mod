@@ -9,7 +9,7 @@ require (
 	github.com/go-sql-driver/mysql v1.10.1
 	github.com/gopcua/opcua v0.9.1
 	github.com/imdario/mergo v0.3.16
-	github.com/microsoft/go-mssqldb v1.11.2
+	github.com/microsoft/go-mssqldb v1.12.0
 	github.com/minio/minio-go/v7 v7.4.1
 	github.com/mochi-co/mqtt v1.3.2
 	github.com/onsi/ginkgo/v2 v2.34.0

@@ -170,8 +170,8 @@ github.com/mattn/go-isatty v0.0.22 h1:j8l17JJ9i6VGPUFUYoTUKPSgKe/83EYU2zBC7YNKMw
 github.com/mattn/go-isatty v0.0.22/go.mod h1:ZXfXG4SQHsB/w3ZeOYbR0PrPwLy+n6xiMrJlRFqopa4=
 github.com/mfridman/tparse v0.18.0 h1:wh6dzOKaIwkUGyKgOntDW4liXSo37qg5AXbIhkMV3vE=
 github.com/mfridman/tparse v0.18.0/go.mod h1:gEvqZTuCgEhPbYk/2lS3Kcxg1GmTxxU7kTC8DvP0i/A=
-github.com/microsoft/go-mssqldb v1.11.2 h1:FCgeBIK8um2+X4tbun6Q71N1KsfyCDPKY41e1yGVjSE=
-github.com/microsoft/go-mssqldb v1.11.2/go.mod h1:CYgwG5AMXFojbjTg+GNP5G/y6uz1BhTyZaPqQWzkGnQ=
+github.com/microsoft/go-mssqldb v1.12.0 h1:Jwg/8jz2MKlFOYf4Oj7wMOQuTpCLrP4PIx0aINasMfw=
+github.com/microsoft/go-mssqldb v1.12.0/go.mod h1:iYsISdcqI4Tf8x/JwwkHfBu5pxtSD6lSJB8tCrOoo6E=
 github.com/minio/crc64nvme v1.1.1 h1:8dwx/Pz49suywbO+auHCBpCtlW1OfpcLN7wYgVR6wAI=
 github.com/minio/crc64nvme v1.1.1/go.mod h1:eVfm2fAzLlxMdUGc0EEBGSMmPwmXD5XiNRpnu9J3bvg=
 github.com/minio/md5-simd v1.1.2 h1:Gdi1DZK69+ZVMoNHRXJyNcxrMA4dSxoYHZSQbirFg34=
