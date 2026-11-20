@@ -6,7 +6,7 @@ require (
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/briandowns/spinner v1.23.2
 	github.com/eclipse/paho.mqtt.golang v1.5.1
-	github.com/go-sql-driver/mysql v1.10.1
+	github.com/go-sql-driver/mysql v1.10.2
 	github.com/gopcua/opcua v0.9.1
 	github.com/imdario/mergo v0.3.16
 	github.com/microsoft/go-mssqldb v1.11.2
